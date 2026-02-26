@@ -1,0 +1,37 @@
+{{define "base"}}<!DOCTYPE html>
+<html lang="{{.Lang}}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.Title}}</title>
+    <link rel="icon" type="image/png" href="/static/favicon.png">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <nav>
+        <div class="nav-inner">
+            <a class="logo" href="/{{.Lang}}/">AIB 2.0</a>
+            <ul class="nav-links">
+                {{range .NavItems}}
+                <li><a href="/{{$.Lang}}{{.Path}}" {{if eq .ID $.Nav}}class="active"{{end}}>{{.Label}}</a></li>
+                {{end}}
+            </ul>
+            <div class="lang-switch">
+                {{if eq .Lang "en"}}
+                    <span class="lang-active">EN</span>
+                    <a href="/zh{{.PagePath}}">中文</a>
+                {{else}}
+                    <a href="/en{{.PagePath}}">EN</a>
+                    <span class="lang-active">中文</span>
+                {{end}}
+            </div>
+        </div>
+    </nav>
+    <main>
+        {{template "content" .}}
+    </main>
+    <footer>
+        AIB 2.0 Protocol &mdash; Total Supply: 3,141,592,653,589,793,238 satoshis (&pi; &times; 10<sup>7</sup> AIB)
+    </footer>
+</body>
+</html>{{end}}

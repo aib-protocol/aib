@@ -1,0 +1,81 @@
+{{define "content"}}
+<div class="page-header">
+    <h1>代码规范</h1>
+    <p>AIB 2.0 项目的编码约定、架构规则和协作要求。</p>
+</div>
+
+<div class="card">
+    <h2>Go 编码约定</h2>
+    <div class="std-section">
+        <h3>基本规则</h3>
+        <ul>
+            <li>Go 版本: 1.22+，使用最新稳定版本的标准库特性</li>
+            <li>优先使用 Go 标准库，最小化外部依赖</li>
+            <li>代码格式: 所有代码必须通过 <code>gofmt</code> 格式化</li>
+            <li>静态分析: 提交前运行 <code>go vet</code> 和 <code>staticcheck</code></li>
+            <li>命名规范: 遵循 Go 官方命名惯例（Effective Go）</li>
+        </ul>
+    </div>
+    <div class="std-section">
+        <h3>错误处理</h3>
+        <ul>
+            <li>显式返回错误，library 代码中禁止 panic</li>
+            <li>使用 <code>fmt.Errorf("context: %w", err)</code> 包装错误</li>
+            <li>自定义错误类型实现 <code>error</code> 接口</li>
+            <li>错误消息使用小写字母开头，不加标点</li>
+        </ul>
+    </div>
+    <div class="std-section">
+        <h3>测试要求</h3>
+        <ul>
+            <li>测试文件命名: <code>*_test.go</code></li>
+            <li>使用表驱动测试（table-driven tests）</li>
+            <li>最低测试覆盖率: 85%</li>
+            <li>包含基准测试（benchmark）用于性能关键路径</li>
+        </ul>
+    </div>
+</div>
+
+<div class="card">
+    <h2>架构规则</h2>
+    <div class="std-section">
+        <h3>项目结构</h3>
+        <ul>
+            <li>遵循 Go 标准项目布局</li>
+            <li>可执行文件放在 <code>cmd/</code> 目录</li>
+            <li>核心库代码放在 <code>core/</code> 目录</li>
+            <li>内部包使用 <code>internal/</code> 限制可见性</li>
+        </ul>
+    </div>
+    <div class="std-section">
+        <h3>设计原则</h3>
+        <ul>
+            <li>接口定义在使用方包中，而非实现方</li>
+            <li>并发安全: 共享状态使用 <code>sync</code> 包保护</li>
+            <li>模块间通过接口解耦，避免循环依赖</li>
+            <li>配置通过结构体传递，支持合理默认值</li>
+        </ul>
+    </div>
+</div>
+
+<div class="card">
+    <h2>协作要求</h2>
+    <div class="std-section">
+        <h3>提交规范</h3>
+        <ul>
+            <li>每个提交聚焦单一变更</li>
+            <li>提交消息简洁明确，描述"为什么"而非"做了什么"</li>
+            <li>变更必须有对应的测试</li>
+        </ul>
+    </div>
+    <div class="std-section">
+        <h3>不可违反的规则</h3>
+        <ul>
+            <li>禁止修改 <code>GENESIS_RULES.md</code> 中的七条规则</li>
+            <li>禁止引入违反创世规则的代码</li>
+            <li>禁止添加预挖或特权地址逻辑</li>
+            <li>禁止赋予 AI 节点治理投票权</li>
+        </ul>
+    </div>
+</div>
+{{end}}

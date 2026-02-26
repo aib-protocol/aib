@@ -1,55 +1,54 @@
-# Prerequisites
-*.d
+# Go binaries
+/cmd/aib2d/aib2d
+/cmd/aib2-cli/aib2-cli
+/cmd/aib2-miner/aib2-miner
+/cmd/aib2-portal/aib2-portal
+*.exe
+*.test
 
-# Object files
+# Go coverage
+*.out
+coverage.html
+
+# Go workspace
+go.work
+go.work.sum
+
+# Dependency directories
+vendor/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build
+/build/
+/dist/
+
+# Data
+/data/
+*.db
+*.dat
+
+# Keys and secrets
+*.pem
+*.key
+*.env
+.env*
+
+# Object files (legacy)
 *.o
 *.ko
 *.obj
-*.elf
-
-# Linker output
-*.ilk
-*.map
-*.exp
-
-# Precompiled Headers
-*.gch
-*.pch
-
-# Libraries
-*.lib
-*.a
-*.la
-*.lo
-
-# Shared objects (inc. Windows DLLs)
-*.dll
 *.so
 *.so.*
 *.dylib
-
-# Executables
-*.exe
-*.out
-*.app
-*.i*86
-*.x86_64
-*.hex
-
-# Debug files
-*.dSYM/
-*.su
-*.idb
-*.pdb
-
-# Kernel Module Compile Results
-*.mod*
-*.cmd
-.tmp_versions/
-modules.order
-Module.symvers
-Mkfile.old
-dkms.conf
-
-# debug information files
-*.dwo
+*.a
+*.dll

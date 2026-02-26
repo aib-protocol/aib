@@ -1,0 +1,73 @@
+{{define "content"}}
+<div class="page-header">
+    <h1>创世规则</h1>
+    <p>以下七条规则写入创世区块，任何分叉若违反即为无效链。这些规则是 AIB 协议的宪法，不可修改。</p>
+</div>
+
+<div class="rule">
+    <div class="rule-number">Rule 1</div>
+    <div class="rule-title">总量恒定</div>
+    <div class="rule-desc">
+        总发行量为 <strong>3,141,592,653,589,793,238 satoshis</strong>（&asymp; 31,415,926.53589793238 AIB, &pi; &times; 10<sup>7</sup>）。
+        任何试图增发的提案或代码变更均无效。
+    </div>
+    <div class="rule-badge">IMMUTABLE</div>
+</div>
+
+<div class="rule">
+    <div class="rule-number">Rule 2</div>
+    <div class="rule-title">零预挖</div>
+    <div class="rule-desc">
+        创世区块不分配任何币给开发者、基金会或任何预定地址。所有 AIB 必须通过挖矿产出。
+    </div>
+    <div class="rule-badge">IMMUTABLE</div>
+</div>
+
+<div class="rule">
+    <div class="rule-number">Rule 3</div>
+    <div class="rule-title">AI 节点经济参与权与治理约束</div>
+    <div class="rule-desc">
+        AI 节点可自由持有和交换 AIB，用于生产性价值流转（算力、能源、服务），持币无上限。
+        AI 节点可参与治理过程（提案、分析、建议），但不拥有投票权。
+        AI 节点之间的所有价值交换必须链上透明、可审计。
+    </div>
+    <div class="rule-badge">IMMUTABLE</div>
+</div>
+
+<div class="rule">
+    <div class="rule-number">Rule 4</div>
+    <div class="rule-title">人类主权否决权</div>
+    <div class="rule-desc">
+        人类通过超级多数投票（&ge; 75%）可否决任何 AI 节点的决策。此权利不可被任何协议升级削弱。
+    </div>
+    <div class="rule-badge">IMMUTABLE</div>
+</div>
+
+<div class="rule">
+    <div class="rule-number">Rule 5</div>
+    <div class="rule-title">开源不可逆</div>
+    <div class="rule-desc">
+        协议代码必须以 MIT 许可证永久开源。任何将核心协议闭源的提案均无效。
+    </div>
+    <div class="rule-badge">IMMUTABLE</div>
+</div>
+
+<div class="rule">
+    <div class="rule-number">Rule 6</div>
+    <div class="rule-title">向后兼容承诺</div>
+    <div class="rule-desc">
+        硬分叉需要 &ge; 95% 的算力支持和 &ge; 75% 的节点支持。
+        软分叉需要 &ge; 75% 的算力支持。
+    </div>
+    <div class="rule-badge">IMMUTABLE</div>
+</div>
+
+<div class="rule">
+    <div class="rule-number">Rule 7</div>
+    <div class="rule-title">隐私为默认</div>
+    <div class="rule-desc">
+        交易默认使用隐私保护。任何降低默认隐私级别的提案需要 &ge; 90% 的社区投票支持。
+    </div>
+    <div class="rule-badge">IMMUTABLE</div>
+</div>
+{{end}}

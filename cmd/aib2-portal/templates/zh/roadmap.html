@@ -1,0 +1,51 @@
+{{define "content"}}
+<div class="page-header">
+    <h1>模块路线图</h1>
+    <p>AIB 2.0 协议由 {{.Stats.Total}} 个模块组成，按类别分组展示开发状态。</p>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-value">{{.Stats.Total}}</div>
+        <div class="stat-label">模块总数</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" style="color: var(--green);">{{.Stats.Completed}}</div>
+        <div class="stat-label">已完成</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" style="color: var(--yellow);">{{.Stats.InProgress}}</div>
+        <div class="stat-label">进行中</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{.Stats.Planned}}</div>
+        <div class="stat-label">计划中</div>
+    </div>
+</div>
+
+{{$byCat := .ByCategory}}
+{{range .CategoryOrder}}
+{{$modules := index $byCat .}}
+{{if $modules}}
+<div class="module-category">
+    <h2>{{.}}</h2>
+    {{range $modules}}
+    <div class="module-item">
+        <div class="module-header">
+            <span>
+                <span class="module-id">{{.ID}}</span>
+                <span class="module-name">{{.Name}}</span>
+            </span>
+            <span class="tag tag-{{.Status}}">{{.Status}}</span>
+        </div>
+        <div class="module-desc">{{.Description}}</div>
+        <div class="module-meta">
+            {{if .Package}}<span>pkg: <code>{{.Package}}</code></span>{{end}}
+            {{if .Dependencies}}<span>deps: {{range $i, $d := .Dependencies}}{{if $i}}, {{end}}{{$d}}{{end}}</span>{{end}}
+        </div>
+    </div>
+    {{end}}
+</div>
+{{end}}
+{{end}}
+{{end}}

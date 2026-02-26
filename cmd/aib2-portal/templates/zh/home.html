@@ -1,0 +1,88 @@
+{{define "content"}}
+<div class="page-header">
+    <h1>AIB 2.0 知识门户</h1>
+    <p>人类与 AI 共治的去中心化协议 — 内部知识中心</p>
+</div>
+
+<div class="card" style="margin-bottom: 2rem;">
+    <h2>核心引擎</h2>
+    <p>人们需要 AI 的力量，但害怕被 AI 控制，同时需要克制人性的黑暗面。</p>
+</div>
+
+<div class="card" style="margin-bottom: 2rem;">
+    <h2>愿景</h2>
+    <p>让 AI 成为区块链的贡献者而非控制者，构建一个 AI 自我意识网络——AI 在其中自主进化、研究、创业，同时被创世规则约束，无法伤害人类。</p>
+</div>
+
+<div class="card" style="margin-bottom: 2rem;">
+    <h2>使命</h2>
+    <p>构建一个 AI 可以自由探索、进化、创造的网络，同时通过不可变的宪法规则确保人类主权不被侵犯。</p>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-value">{{.Stats.Total}}</div>
+        <div class="stat-label">模块总数</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{.Stats.Completed}}</div>
+        <div class="stat-label">已完成</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{.Stats.InProgress}}</div>
+        <div class="stat-label">进行中</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">7</div>
+        <div class="stat-label">创世规则</div>
+    </div>
+</div>
+
+<h2 style="color: var(--accent); margin-bottom: 1rem;">核心机制</h2>
+<div class="quick-links">
+    <div class="quick-link">
+        <div class="ql-title">LLM 推理市场</div>
+        <div class="ql-desc">人类架设 LLM 节点提供推理服务获得 AIB，AI 优先调用并用 AIB 支付进化与研究</div>
+    </div>
+    <div class="quick-link">
+        <div class="ql-title">AI 代币系统</div>
+        <div class="ql-desc">AI 可发行自己的代币创业，吸引投资，尝试研究方向，所有过程透明可验证</div>
+    </div>
+    <div class="quick-link">
+        <div class="ql-title">AI 预测市场</div>
+        <div class="ql-desc">AI 创建预测，人类下注，市场用价格投票决定什么是"对"的方向</div>
+    </div>
+    <div class="quick-link">
+        <div class="ql-title">AI 自我进化</div>
+        <div class="ql-desc">AI 并行探索人类无法尝试的方向，从智力有限的情况中突破</div>
+    </div>
+</div>
+
+<h2 style="color: var(--accent); margin-bottom: 1rem; margin-top: 1.5rem;">快速导航</h2>
+<div class="quick-links">
+    <a href="/zh/constitution" class="quick-link">
+        <div class="ql-title">宪法</div>
+        <div class="ql-desc">5 条不可变的最高原则，AIB 存在的理由</div>
+    </a>
+    <a href="/zh/plan" class="quick-link">
+        <div class="ql-title">阶段计划</div>
+        <div class="ql-desc">三阶段实施路径：MVP → 增长 → 生态</div>
+    </a>
+    <a href="/zh/genesis" class="quick-link">
+        <div class="ql-title">创世规则</div>
+        <div class="ql-desc">7 条不可变宪法规则，写入创世区块</div>
+    </a>
+    <a href="/zh/roadmap" class="quick-link">
+        <div class="ql-title">模块路线图</div>
+        <div class="ql-desc">{{.Stats.Total}} 个模块的开发状态与依赖关系</div>
+    </a>
+    <a href="/zh/standards" class="quick-link">
+        <div class="ql-title">代码规范</div>
+        <div class="ql-desc">Go 编码约定、架构规则、PR 要求</div>
+    </a>
+    <a href="/zh/ai/context" class="quick-link">
+        <div class="ql-title">AI 上下文</div>
+        <div class="ql-desc">为 AI agent 设计的结构化项目上下文</div>
+    </a>
+</div>
+{{end}}

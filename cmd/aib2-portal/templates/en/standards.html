@@ -1,0 +1,81 @@
+{{define "content"}}
+<div class="page-header">
+    <h1>Code Standards</h1>
+    <p>Coding conventions, architecture rules, and collaboration requirements for the AIB 2.0 project.</p>
+</div>
+
+<div class="card">
+    <h2>Go Coding Conventions</h2>
+    <div class="std-section">
+        <h3>Basic Rules</h3>
+        <ul>
+            <li>Go version: 1.22+, use latest stable standard library features</li>
+            <li>Prefer Go standard library, minimize external dependencies</li>
+            <li>Formatting: all code must pass <code>gofmt</code></li>
+            <li>Static analysis: run <code>go vet</code> and <code>staticcheck</code> before committing</li>
+            <li>Naming: follow Go official naming conventions (Effective Go)</li>
+        </ul>
+    </div>
+    <div class="std-section">
+        <h3>Error Handling</h3>
+        <ul>
+            <li>Return errors explicitly; no panic in library code</li>
+            <li>Wrap errors with <code>fmt.Errorf("context: %w", err)</code></li>
+            <li>Custom error types implement the <code>error</code> interface</li>
+            <li>Error messages start with lowercase, no trailing punctuation</li>
+        </ul>
+    </div>
+    <div class="std-section">
+        <h3>Testing Requirements</h3>
+        <ul>
+            <li>Test file naming: <code>*_test.go</code></li>
+            <li>Use table-driven tests</li>
+            <li>Minimum test coverage: 85%</li>
+            <li>Include benchmarks for performance-critical paths</li>
+        </ul>
+    </div>
+</div>
+
+<div class="card">
+    <h2>Architecture Rules</h2>
+    <div class="std-section">
+        <h3>Project Structure</h3>
+        <ul>
+            <li>Follow Go standard project layout</li>
+            <li>Executables go in <code>cmd/</code> directory</li>
+            <li>Core library code goes in <code>core/</code> directory</li>
+            <li>Internal packages use <code>internal/</code> for visibility restriction</li>
+        </ul>
+    </div>
+    <div class="std-section">
+        <h3>Design Principles</h3>
+        <ul>
+            <li>Define interfaces in the consuming package, not the implementing one</li>
+            <li>Concurrency safety: protect shared state with <code>sync</code> package</li>
+            <li>Decouple modules through interfaces, avoid circular dependencies</li>
+            <li>Pass configuration via structs with sensible defaults</li>
+        </ul>
+    </div>
+</div>
+
+<div class="card">
+    <h2>Collaboration Requirements</h2>
+    <div class="std-section">
+        <h3>Commit Standards</h3>
+        <ul>
+            <li>Each commit focuses on a single change</li>
+            <li>Commit messages are concise and describe "why", not "what"</li>
+            <li>Changes must have corresponding tests</li>
+        </ul>
+    </div>
+    <div class="std-section">
+        <h3>Inviolable Rules</h3>
+        <ul>
+            <li>Never modify the seven rules in <code>GENESIS_RULES.md</code></li>
+            <li>Never introduce code that violates genesis rules</li>
+            <li>Never add premine or privileged address logic</li>
+            <li>Never grant AI nodes voting rights in governance decisions</li>
+        </ul>
+    </div>
+</div>
+{{end}}

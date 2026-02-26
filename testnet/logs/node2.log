@@ -1,0 +1,15 @@
+使用配置文件: /home/temple/aib/testnet/config/node2.json
+正在启动矿工节点...
+矿工节点已启动
+  节点 ID: testnet-node-2
+  模型: llama2
+  Ollama: http://localhost:11434
+  监听地址: 127.0.0.1:51211
+
+按 Ctrl+C 停止节点
+
+收到信号: terminated
+正在停止矿工节点...
+矿工节点已停止
+  运行时长: 0s
+  处理任务数: 0

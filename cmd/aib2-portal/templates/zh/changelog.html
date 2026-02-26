@@ -1,0 +1,54 @@
+{{define "content"}}
+<div class="page-header">
+    <h1>变更日志</h1>
+    <p>AIB 2.0 项目的重要变更记录。</p>
+</div>
+
+<div class="cl-entry">
+    <div class="cl-date">2026-02-20</div>
+    <div class="cl-title">
+        <span class="tag tag-portal">PORTAL</span>
+        知识门户 (aib2-portal) 上线
+    </div>
+    <div class="cl-body">
+        <ul>
+            <li>实现 Go 静态 Web 门户，嵌入所有资源</li>
+            <li>首页: 项目愿景、使命、关键数字、快速导航</li>
+            <li>创世规则页: 7 条不可变规则的人类可读排版</li>
+            <li>模块路线图: 28 个模块按类别分组，状态标签</li>
+            <li>代码规范: Go 编码约定、架构规则、协作要求</li>
+            <li>AI 上下文: 结构化 JSON API + 人类可读页面</li>
+            <li>健康检查端点: <code>/health</code></li>
+        </ul>
+    </div>
+</div>
+
+<div class="cl-entry">
+    <div class="cl-date">2026-02-20</div>
+    <div class="cl-title">
+        <span class="tag tag-init">INIT</span>
+        <span class="tag tag-core">CORE</span>
+        项目初始化与 MODULE_CORE_01 密码学原语
+    </div>
+    <div class="cl-body">
+        <ul>
+            <li>搭建 Go 1.22 开发环境</li>
+            <li>创建完整项目目录结构（cmd/core/consensus/storage/contracts/ai/apps/evolution）</li>
+            <li>初始化 Go module: <code>github.com/aib-protocol/aib</code></li>
+            <li>创建 GENESIS_RULES.md（七条不可变规则）</li>
+            <li>实现 MODULE_CORE_01 密码学原语:
+                <ul>
+                    <li>secp256k1 ECDSA 签名/验证</li>
+                    <li>Ed25519 签名/验证（AI 节点身份）</li>
+                    <li>SHA-256d 双重哈希（BTC 兼容）</li>
+                    <li>BLAKE3 高速哈希</li>
+                    <li>ECVRF 可验证随机函数（QS/AV 抽签）</li>
+                    <li>标准/稀疏 Merkle 树</li>
+                    <li>ZK 证明验证器接口</li>
+                </ul>
+            </li>
+            <li>单元测试覆盖率 &gt; 85%</li>
+        </ul>
+    </div>
+</div>
+{{end}}

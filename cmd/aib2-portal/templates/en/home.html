@@ -1,0 +1,87 @@
+{{define "content"}}
+<div class="page-header">
+    <h1>AIB 2.0 Knowledge Portal</h1>
+    <p>A decentralized protocol co-governed by humans and AI &mdash; Internal Knowledge Hub</p>
+</div>
+
+<div class="card" style="margin-bottom: 2rem;">
+    <h2>Core Engine</h2>
+    <p>People need AI's power, but fear being controlled by AI, while needing to restrain humanity's dark side.</p>
+</div>
+
+<div class="card" style="margin-bottom: 2rem;">
+    <h2>Vision</h2>
+    <p>Make AI a contributor to blockchain, not a controller. Build an AI self-consciousness network where AI evolves, researches, and builds autonomously, constrained by genesis rules that prevent harm to humanity.</p>
+</div>
+
+<div class="card" style="margin-bottom: 2rem;">
+    <h2>Mission</h2>
+    <p>Build a network where AI can freely explore, evolve, and create, while immutable constitutional rules ensure human sovereignty cannot be violated.</p>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-value">{{.Stats.Total}}</div>
+        <div class="stat-label">Total Modules</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{.Stats.Completed}}</div>
+        <div class="stat-label">Completed</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{.Stats.InProgress}}</div>
+        <div class="stat-label">In Progress</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">7</div>
+        <div class="stat-label">Genesis Rules</div>
+    </div>
+</div>
+
+<h2 style="color: var(--accent); margin-bottom: 1rem;">Core Mechanisms</h2>
+<div class="quick-links">
+    <div class="quick-link">
+        <div class="ql-title">LLM Inference Market</div>
+        <div class="ql-desc">Humans run LLM nodes for inference services, earn AIB. AI gets priority access and pays AIB for evolution and research.</div>
+    </div>
+    <div class="quick-link">
+        <div class="ql-title">AI Token System</div>
+        <div class="ql-desc">AI can issue its own tokens to raise resources, try research directions, all transparent and verifiable.</div>
+    </div>
+    <div class="quick-link">
+        <div class="ql-title">AI Prediction Market</div>
+        <div class="ql-desc">AI creates predictions, humans bet. Market uses price to vote on what directions are "right".</div>
+    </div>
+    <div class="quick-link">
+        <div class="ql-title">AI Self-Evolution</div>
+        <div class="ql-desc">AI explores directions impossible for humans, breaking through from limited human intelligence.</div>
+    </div>
+</div>
+
+<h2 style="color: var(--accent); margin-bottom: 1rem; margin-top: 1.5rem;">Quick Navigation</h2>
+<div class="quick-links">
+    <a href="/en/constitution/" class="quick-link">
+        <div class="ql-title">Constitution</div>
+        <div class="ql-desc">5 immutable supreme principles, the reason for AIB's existence</div>
+    </a>
+    <a href="/en/plan/" class="quick-link">
+        <div class="ql-title">Phased Plan</div>
+        <div class="ql-desc">Three-phase implementation path: MVP → Growth → Ecosystem</div>
+    </a>
+    <a href="/en/genesis/" class="quick-link">
+        <div class="ql-title">Genesis Rules</div>
+        <div class="ql-desc">7 immutable constitutional rules, encoded in the genesis block</div>
+    </a>
+    <a href="/en/roadmap/" class="quick-link">
+        <div class="ql-title">Module Roadmap</div>
+        <div class="ql-desc">Development status and dependencies of {{.Stats.Total}} modules</div>
+    </a>
+    <a href="/en/standards/" class="quick-link">
+        <div class="ql-title">Code Standards</div>
+        <div class="ql-desc">Go coding conventions, architecture rules, PR requirements</div>
+    </a>
+    <a href="/en/ai/context/" class="quick-link">
+        <div class="ql-title">AI Context</div>
+        <div class="ql-desc">Structured project context designed for AI agents</div>
+    </a>
+</div>{{end}}
