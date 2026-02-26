@@ -20,6 +20,13 @@ type BlockHeader struct {
 	Height        uint64
 	Proposer      [32]byte // Address of the block proposer
 	Signature     []byte   // Signature of the block proposer
+
+	// VRF (Verifiable Random Function) for proposer selection
+	VRFProof []byte // VRF proof that this proposer was legitimately selected
+	VRFSeed  [32]byte // VRF output used as random seed for next block
+
+	// Validator state (for verification)
+	ValidatorStateRoot [32]byte // Merkle root of validator states at this block
 }
 
 // Block represents a block in the blockchain.

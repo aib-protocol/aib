@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/ed25519"
 	"crypto/sha256"
+	"fmt"
 	"testing"
 
 	"github.com/aib-protocol/aib/internal/interfaces"
@@ -579,5 +580,226 @@ func TestDeterministicHash(t *testing.T) {
 
 	if !bytes.Equal(hash1[:], hash2[:]) {
 		t.Error("Same input should produce same hash")
+	}
+}
+
+// ============================================================================
+// Consensus Verification Tests
+// ============================================================================
+
+func TestSelectProposer_Deterministic(t *testing.T) {
+	config := DefaultPoSConfig()
+	config.MinStake = 100
+	cs := NewConsensusState(config)
+
+	// Add validators
+	_, privA, _ := ed25519.GenerateKey(nil)
+	_, privB, _ := ed25519.GenerateKey(nil)
+	addrA := sha256.Sum256(privA.Public().(ed25519.PublicKey))
+	addrB := sha256.Sum256(privB.Public().(ed25519.PublicKey))
+
+	cs.AddValidator(addrA, 1000, privA.Public().(ed25519.PublicKey))
+	cs.AddValidator(addrB, 500, privB.Public().(ed25519.PublicKey))
+
+	seed := []byte("block-seed-123")
+
+	// Same seed should always select the same proposer
+	proposer1, err := cs.SelectProposer(seed)
+	if err != nil {
+		t.Fatalf("SelectProposer failed: %v", err)
+	}
+
+	proposer2, err := cs.SelectProposer(seed)
+	if err != nil {
+		t.Fatalf("SelectProposer failed: %v", err)
+	}
+
+	if proposer1 != proposer2 {
+		t.Error("Same seed should produce same proposer")
+	}
+}
+
+func TestSelectProposer_WeightedByStake(t *testing.T) {
+	config := DefaultPoSConfig()
+	config.MinStake = 100
+	cs := NewConsensusState(config)
+
+	// Add validators with different stakes
+	_, privHigh, _ := ed25519.GenerateKey(nil)
+	_, privLow, _ := ed25519.GenerateKey(nil)
+	addrHigh := sha256.Sum256(privHigh.Public().(ed25519.PublicKey))
+	addrLow := sha256.Sum256(privLow.Public().(ed25519.PublicKey))
+
+	cs.AddValidator(addrHigh, 9000, privHigh.Public().(ed25519.PublicKey))
+	cs.AddValidator(addrLow, 1000, privLow.Public().(ed25519.PublicKey))
+
+	// Run many selections with different seeds
+	highCount := 0
+	for i := 0; i < 100; i++ {
+		seed := sha256.Sum256([]byte(fmt.Sprintf("seed-%d", i)))
+		proposer, err := cs.SelectProposer(seed[:])
+		if err != nil {
+			t.Fatalf("SelectProposer failed: %v", err)
+		}
+		if proposer == addrHigh {
+			highCount++
+		}
+	}
+
+	// High-stake node should be selected significantly more often
+	// 9000/10000 = 90% expected, allow 60-100% range
+	if highCount < 60 {
+		t.Errorf("high-stake node selected %d/100 times, expected ~90", highCount)
+	}
+}
+
+func TestVerifyBlockProposer(t *testing.T) {
+	config := DefaultPoSConfig()
+	config.MinStake = 100
+	cs := NewConsensusState(config)
+
+	_, priv, _ := ed25519.GenerateKey(nil)
+	addr := sha256.Sum256(priv.Public().(ed25519.PublicKey))
+	cs.AddValidator(addr, 1000, priv.Public().(ed25519.PublicKey))
+
+	seed := []byte("test-seed")
+	expectedProposer, _ := cs.SelectProposer(seed)
+
+	// Create a block with the correct proposer
+	block := NewBlock(nil, [32]byte{}, 1, expectedProposer)
+	blockHash := block.CalculateHash()
+	block.Header.Signature = ed25519.Sign(priv, blockHash[:])
+
+	prevBlock := &Block{}
+	copy(prevBlock.Header.VRFSeed[:], seed)
+
+	result := cs.VerifyBlockProposer(block, prevBlock)
+
+	if !result.Valid {
+		t.Errorf("expected valid proposer, got error: %s", result.Error)
+	}
+
+	if result.Stake != 1000 {
+		t.Errorf("expected stake 1000, got %d", result.Stake)
+	}
+}
+
+func TestVerifyBlockProposer_WrongProposer(t *testing.T) {
+	config := DefaultPoSConfig()
+	config.MinStake = 100
+	cs := NewConsensusState(config)
+
+	_, priv, _ := ed25519.GenerateKey(nil)
+	addr := sha256.Sum256(priv.Public().(ed25519.PublicKey))
+	cs.AddValidator(addr, 1000, priv.Public().(ed25519.PublicKey))
+
+	// Create a block with the WRONG proposer
+	fakeAddr := [32]byte{0xff, 0xfe, 0xfd}
+	block := NewBlock(nil, [32]byte{}, 1, fakeAddr)
+
+	prevBlock := &Block{}
+
+	result := cs.VerifyBlockProposer(block, prevBlock)
+
+	if result.Valid {
+		t.Error("expected invalid proposer, but got valid")
+	}
+}
+
+func TestValidatorStateRoot_Deterministic(t *testing.T) {
+	config := DefaultPoSConfig()
+	config.MinStake = 100
+	cs := NewConsensusState(config)
+
+	_, priv, _ := ed25519.GenerateKey(nil)
+	addr := sha256.Sum256(priv.Public().(ed25519.PublicKey))
+	cs.AddValidator(addr, 1000, priv.Public().(ed25519.PublicKey))
+
+	root1, err := cs.CalculateValidatorStateRoot()
+	if err != nil {
+		t.Fatalf("failed: %v", err)
+	}
+
+	root2, err := cs.CalculateValidatorStateRoot()
+	if err != nil {
+		t.Fatalf("failed: %v", err)
+	}
+
+	if root1 != root2 {
+		t.Error("same validators should produce same state root")
+	}
+
+	// Verify using the helper
+	valid, err := cs.VerifyValidatorStateRoot(root1)
+	if err != nil || !valid {
+		t.Error("state root should verify")
+	}
+}
+
+func TestValidatorStateRoot_ChangesOnStakeUpdate(t *testing.T) {
+	config := DefaultPoSConfig()
+	config.MinStake = 100
+	cs := NewConsensusState(config)
+
+	_, priv, _ := ed25519.GenerateKey(nil)
+	addr := sha256.Sum256(priv.Public().(ed25519.PublicKey))
+	cs.AddValidator(addr, 1000, priv.Public().(ed25519.PublicKey))
+
+	root1, _ := cs.CalculateValidatorStateRoot()
+
+	// Change stake
+	cs.mu.Lock()
+	cs.validators[addr].Stake = 2000
+	cs.mu.Unlock()
+
+	root2, _ := cs.CalculateValidatorStateRoot()
+
+	if root1 == root2 {
+		t.Error("different stakes should produce different state roots")
+	}
+
+	// Old root should no longer verify
+	valid, _ := cs.VerifyValidatorStateRoot(root1)
+	if valid {
+		t.Error("old state root should not verify after stake change")
+	}
+}
+
+func TestTransactionFee_Calculation(t *testing.T) {
+	tx := NewTransaction(
+		[]TXInput{{TxHash: [32]byte{1}, Index: 0, Signature: make([]byte, 64), PublicKey: make([]byte, 32)}},
+		[]TXOutput{{Value: 500, Script: []byte("pay"), Address: [32]byte{2}}},
+	)
+
+	config := DefaultPoSConfig()
+	fee := tx.CalculateFee(config.BaseFeePerByte)
+
+	if fee == 0 {
+		t.Error("expected non-zero fee")
+	}
+
+	expectedFee := uint64(tx.SerializeSize()) * config.BaseFeePerByte
+	if fee != expectedFee {
+		t.Errorf("expected fee %d, got %d", expectedFee, fee)
+	}
+}
+
+func TestTransactionFee_CoinbaseIsZero(t *testing.T) {
+	coinbase := CreateCoinbaseTransaction([32]byte{1}, 10*1e8, nil)
+
+	fee := coinbase.CalculateFee(100)
+	if fee != 0 {
+		t.Errorf("coinbase fee should be 0, got %d", fee)
+	}
+}
+
+func TestCreateCoinbaseWithFees(t *testing.T) {
+	subsidy := uint64(10 * 1e8)
+	fees := uint64(5000)
+	coinbase := CreateCoinbaseWithFees([32]byte{1}, subsidy, fees, nil)
+
+	reward := coinbase.TotalOutputValue()
+	if reward != subsidy+fees {
+		t.Errorf("expected reward %d, got %d", subsidy+fees, reward)
 	}
 }
