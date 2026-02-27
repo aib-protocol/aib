@@ -18,6 +18,7 @@ type Transaction struct {
 	Inputs   []TXInput
 	Outputs  []TXOutput
 	LockTime uint32
+	Sequence uint64 // Sequence number for replay protection
 }
 
 // TXInput represents a transaction input (reference to a UTXO).
@@ -95,6 +96,9 @@ func (tx *Transaction) Serialize() []byte {
 
 	// LockTime
 	binary.Write(&buf, binary.LittleEndian, tx.LockTime)
+
+	// Sequence (replay protection)
+	binary.Write(&buf, binary.LittleEndian, tx.Sequence)
 
 	return buf.Bytes()
 }
@@ -174,6 +178,14 @@ func DeserializeTransaction(data []byte) (*Transaction, error) {
 	// LockTime
 	if err := binary.Read(buf, binary.LittleEndian, &tx.LockTime); err != nil {
 		return nil, fmt.Errorf("failed to read locktime: %w", err)
+	}
+
+	// Sequence (optional - default 0 if not present)
+	if buf.Len() >= 8 {
+		if err := binary.Read(buf, binary.LittleEndian, &tx.Sequence); err != nil {
+			// If we can't read sequence, default to 0
+			tx.Sequence = 0
+		}
 	}
 
 	return tx, nil

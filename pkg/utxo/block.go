@@ -424,3 +424,108 @@ func (b *Block) ValidateBlockChain(parentBlock *Block) error {
 
 	return nil
 }
+
+// ============================================================================
+// Security Validation
+// ============================================================================
+
+// CoinbaseMaturityBlocks is the number of blocks before coinbase output can be spent.
+const CoinbaseMaturityBlocks = 100
+
+// MaxBlockSize is the maximum block size in bytes.
+const MaxBlockSize = 1_000_000 // 1 MB
+
+// MinTransactionFee is the minimum fee per transaction in satoshi.
+const MinTransactionFee = uint64(100) // 100 satoshi
+
+// ValidateBlockSecurity performs comprehensive security validation.
+func (b *Block) ValidateBlockSecurity(utxoProvider UTXOProvider, currentHeight uint64) []error {
+	var errs []error
+
+	// 1. Validate only one coinbase transaction
+	coinbaseCount := 0
+	for _, tx := range b.Transactions {
+		if tx.IsCoinbase() {
+			coinbaseCount++
+		}
+	}
+	if coinbaseCount > 1 {
+		errs = append(errs, fmt.Errorf("block contains %d coinbase transactions, expected at most 1", coinbaseCount))
+	}
+	if len(b.Transactions) > 0 && !b.Transactions[0].IsCoinbase() {
+		errs = append(errs, fmt.Errorf("first transaction must be coinbase"))
+	}
+
+	// 2. Validate minimum transaction fees
+	for i := 1; i < len(b.Transactions); i++ {
+		tx := b.Transactions[i]
+		fee, err := tx.GetFee(utxoProvider)
+		if err != nil {
+			errs = append(errs, fmt.Errorf("tx %d: cannot calculate fee: %v", i, err))
+			continue
+		}
+		if fee < MinTransactionFee {
+			errs = append(errs, fmt.Errorf("tx %d: fee %d below minimum %d", i, fee, MinTransactionFee))
+		}
+	}
+
+	// 3. Validate Merkle root
+	computedRoot := b.CalculateMerkleRoot()
+	if computedRoot != b.Header.MerkleRoot {
+		errs = append(errs, fmt.Errorf("merkle root mismatch: computed %x, header %x", computedRoot, b.Header.MerkleRoot))
+	}
+
+	// 4. Validate all transaction signatures
+	for i := 1; i < len(b.Transactions); i++ {
+		tx := b.Transactions[i]
+		if !tx.VerifyAllInputs() {
+			errs = append(errs, fmt.Errorf("tx %d: invalid signature", i))
+		}
+	}
+
+	// 5. Validate no duplicate inputs (double spend within block)
+	inputSet := make(map[[36]byte]bool)
+	for i := 1; i < len(b.Transactions); i++ {
+		for _, input := range b.Transactions[i].Inputs {
+			var key [36]byte
+			copy(key[:32], input.TxHash[:])
+			key[32] = byte(input.Index)
+			key[33] = byte(input.Index >> 8)
+			key[34] = byte(input.Index >> 16)
+			key[35] = byte(input.Index >> 24)
+
+			if inputSet[key] {
+				errs = append(errs, fmt.Errorf("tx %d: double spend of UTXO %x:%d within block", i, input.TxHash, input.Index))
+			}
+			inputSet[key] = true
+		}
+	}
+
+	return errs
+}
+
+// ValidateTransactionMinFee validates that a transaction meets the minimum fee.
+func ValidateTransactionMinFee(tx *Transaction, utxoProvider UTXOProvider) error {
+	if tx.IsCoinbase() {
+		return nil
+	}
+
+	fee, err := tx.GetFee(utxoProvider)
+	if err != nil {
+		return fmt.Errorf("cannot calculate fee: %w", err)
+	}
+
+	if fee < MinTransactionFee {
+		return fmt.Errorf("fee %d below minimum %d", fee, MinTransactionFee)
+	}
+
+	return nil
+}
+
+// IsCoinbaseSpendable checks if a coinbase UTXO is old enough to be spent.
+func IsCoinbaseSpendable(coinbaseHeight uint64, currentHeight uint64) bool {
+	if coinbaseHeight == 0 {
+		return true // Genesis coinbase
+	}
+	return currentHeight-coinbaseHeight >= CoinbaseMaturityBlocks
+}
