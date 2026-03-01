@@ -101,6 +101,7 @@ func (s *Server) routes(staticFS fs.FS) {
 	s.mux.HandleFunc("GET /explorer/", s.handleExplorer)
 	s.mux.HandleFunc("GET /versions/", s.handleDocs)
 	s.mux.HandleFunc("GET /l2-dex/", s.handleDocs)
+	s.mux.HandleFunc("GET /dex/", s.handleDocs)
 
 	// Root redirects to /en/
 	s.mux.HandleFunc("GET /{$}", func(w http.ResponseWriter, r *http.Request) {
