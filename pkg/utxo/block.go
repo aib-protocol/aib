@@ -422,6 +422,19 @@ func (b *Block) ValidateBlockChain(parentBlock *Block) error {
 		return fmt.Errorf("block timestamp must be greater than parent")
 	}
 
+	// 验证区块时间
+	blockTime := time.Unix(int64(b.Header.Timestamp), 0)
+	parentTime := time.Unix(int64(parentBlock.Header.Timestamp), 0)
+	timeDiff := blockTime.Sub(parentTime)
+
+	if timeDiff < MinBlockTime {
+		return fmt.Errorf("block time %v below minimum %v", timeDiff, MinBlockTime)
+	}
+
+	if timeDiff > MaxBlockTimeDrift {
+		return fmt.Errorf("block time %v exceeds maximum drift %v", timeDiff, MaxBlockTimeDrift)
+	}
+
 	return nil
 }
 

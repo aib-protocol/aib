@@ -22,8 +22,8 @@ const (
 	MinStakeV2Satoshi    = MinStakeV2 * 1e8
 	InitialNodeStake     = uint64(100)            // 初始节点100 AIB
 	InitialNodeCount     = 100
-	UnlockPeriodBlocks   = uint64(60480)          // 7天 (10秒/块)
-	ScoreCheckInterval   = uint64(100)            // 每100块校验评分
+	UnlockPeriodBlocks   = uint64(10080)          // 7天 (60秒/块): 7*24*60*60/60
+	ScoreCheckInterval   = uint64(314)           // 每314块校验评分 (~314分钟)
 )
 
 // CoinbaseV2 创建v2版coinbase交易，分配质押+推理奖励
@@ -76,7 +76,7 @@ func InitGenesisValidators(cs *ConsensusState, keys []ed25519.PublicKey) error {
 
 	// 使用V2配置
 	config := &PoSConfig{
-		EpochLength:     100,
+		EpochLength:     314,
 		MinStake:        MinStakeV2Satoshi,
 		BlockReward:     BlockRewardSatoshi,
 		MaxValidators:   InitialNodeCount,
@@ -260,7 +260,7 @@ func CalculateBlockRewardsV2() (stakingReward, inferenceReward uint64) {
 // GetV2Config 返回V2协议配置
 func GetV2Config() *PoSConfig {
 	return &PoSConfig{
-		EpochLength:     100,
+		EpochLength:     314,
 		MinStake:        MinStakeV2Satoshi,
 		BlockReward:     BlockRewardSatoshi,
 		MaxValidators:   InitialNodeCount,

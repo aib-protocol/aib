@@ -14,6 +14,13 @@ import (
 	"time"
 )
 
+// 区块时间配置
+const (
+	TargetBlockTime   = 60 * time.Second // 目标区块时间（1分钟）
+	MaxBlockTimeDrift = 5 * time.Minute  // 最大时间漂移（防攻击）
+	MinBlockTime      = 10 * time.Second // 最小区块时间
+)
+
 // PoSConfig contains Proof of Stake parameters.
 type PoSConfig struct {
 	EpochLength     uint64        // Number of blocks per epoch
@@ -31,12 +38,12 @@ type PoSConfig struct {
 // DefaultPoSConfig returns the default PoS configuration.
 func DefaultPoSConfig() *PoSConfig {
 	return &PoSConfig{
-		EpochLength:     100,
+		EpochLength:     314, // π 相关
 		MinStake:        1000 * 1e8, // 1000 AIB
 		BlockReward:     10 * 1e8,   // 10 AIB
 		MaxValidators:   100,
 		StakeLockPeriod: 100,
-		EpochDuration:   time.Hour,
+		EpochDuration:   100 * TargetBlockTime, // ~100分钟/epoch
 
 		// Transaction fees: 1 AIB = 1e8 satoshi
 		BaseFeePerByte:    10,    // 10 satoshi per byte (0.1 AIB per KB)

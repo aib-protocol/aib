@@ -1,87 +1,602 @@
 {{define "content"}}
-<div class="page-header">
-    <h1>AIB 2.0 Knowledge Portal</h1>
-    <p>A decentralized protocol co-governed by humans and AI &mdash; Internal Knowledge Hub</p>
-</div>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
-<div class="card" style="margin-bottom: 2rem;">
-    <h2>Core Engine</h2>
-    <p>People need AI's power, but fear being controlled by AI, while needing to restrain humanity's dark side.</p>
-</div>
+    /* Homepage specific styles */
+    .en-home {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
 
-<div class="card" style="margin-bottom: 2rem;">
-    <h2>Vision</h2>
-    <p>Make AI a contributor to blockchain, not a controller. Build an AI self-consciousness network where AI evolves, researches, and builds autonomously, constrained by genesis rules that prevent harm to humanity.</p>
-</div>
+    .hero {
+        text-align: center;
+        padding: 100px 40px;
+        background: linear-gradient(135deg, rgba(0,212,255,0.08) 0%, rgba(123,44,191,0.08) 100%);
+        border-radius: 32px;
+        margin-bottom: 50px;
+        position: relative;
+        overflow: hidden;
+    }
+    .hero::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background:
+            radial-gradient(circle at 20% 50%, rgba(0,212,255,0.15) 0%, transparent 40%),
+            radial-gradient(circle at 80% 50%, rgba(123,44,191,0.15) 0%, transparent 40%),
+            radial-gradient(circle at 50% 80%, rgba(0,255,136,0.1) 0%, transparent 40%);
+        pointer-events: none;
+        animation: gradientShift 10s ease-in-out infinite alternate;
+    }
+    @keyframes gradientShift {
+        0% { opacity: 0.8; }
+        100% { opacity: 1; }
+    }
+    .hero h1 {
+        font-size: 72px;
+        font-weight: 900;
+        background: linear-gradient(135deg, #00d4ff 0%, #7b2cbf 50%, #ff6b6b 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 24px;
+        position: relative;
+        letter-spacing: -2px;
+        animation: titleGlow 3s ease-in-out infinite alternate;
+    }
+    @keyframes titleGlow {
+        0% { filter: brightness(1); }
+        100% { filter: brightness(1.2); }
+    }
+    .hero .tagline {
+        font-size: 24px;
+        color: #9ca3af;
+        margin-bottom: 35px;
+        position: relative;
+        font-weight: 400;
+        letter-spacing: 1px;
+    }
+    .hero .version {
+        display: inline-block;
+        background: linear-gradient(135deg, #00d4ff, #7b2cbf);
+        color: #0a0a0f;
+        padding: 12px 28px;
+        border-radius: 40px;
+        font-weight: 700;
+        font-size: 16px;
+        position: relative;
+        box-shadow: 0 8px 32px rgba(0,212,255,0.3);
+        animation: versionPulse 2s ease-in-out infinite;
+    }
+    @keyframes versionPulse {
+        0%, 100% { box-shadow: 0 8px 32px rgba(0,212,255,0.3); transform: scale(1); }
+        50% { box-shadow: 0 8px 40px rgba(0,212,255,0.5); transform: scale(1.02); }
+    }
+    .hero-actions {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        margin-top: 40px;
+        position: relative;
+    }
+    .hero-actions a {
+        padding: 18px 40px;
+        border-radius: 16px;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 18px;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .btn-primary {
+        background: linear-gradient(135deg, #00d4ff, #7b2cbf);
+        color: #0a0a0f;
+        box-shadow: 0 10px 40px rgba(0,212,255,0.3);
+    }
+    .btn-primary:hover {
+        transform: translateY(-4px) scale(1.02);
+        box-shadow: 0 20px 50px rgba(0,212,255,0.4);
+    }
+    .btn-secondary {
+        background: rgba(255,255,255,0.05);
+        color: #ffffff;
+        border: 2px solid rgba(255,255,255,0.1);
+        backdrop-filter: blur(10px);
+    }
+    .btn-secondary:hover {
+        border-color: #00d4ff;
+        color: #00d4ff;
+        background: rgba(0,212,255,0.1);
+        transform: translateY(-4px);
+    }
 
-<div class="card" style="margin-bottom: 2rem;">
-    <h2>Mission</h2>
-    <p>Build a network where AI can freely explore, evolve, and create, while immutable constitutional rules ensure human sovereignty cannot be violated.</p>
-</div>
+    /* Live Stats */
+    .live-stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 24px;
+        margin-bottom: 60px;
+    }
+    .live-stat {
+        background: linear-gradient(135deg, rgba(18,18,26,0.9), rgba(26,26,37,0.9));
+        border: 2px solid rgba(42,42,58,0.8);
+        border-radius: 20px;
+        padding: 32px;
+        text-align: center;
+        transition: all 0.4s;
+        position: relative;
+        overflow: hidden;
+    }
+    .live-stat::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; height: 3px;
+        background: linear-gradient(90deg, #00d4ff, #7b2cbf);
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+    .live-stat:hover {
+        border-color: rgba(0,212,255,0.5);
+        transform: translateY(-8px);
+        box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+    }
+    .live-stat:hover::before {
+        opacity: 1;
+    }
+    .live-stat .label {
+        font-size: 14px;
+        color: #9ca3af;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        margin-bottom: 12px;
+        font-weight: 500;
+    }
+    .live-stat .value {
+        font-size: 42px;
+        font-weight: 900;
+        background: linear-gradient(135deg, #00d4ff, #7b2cbf);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-family: 'SF Mono', 'Monaco', monospace;
+    }
+    .live-stat .status {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 12px;
+        font-size: 13px;
+        color: #00ff88;
+        font-weight: 500;
+    }
+    .live-stat .status::before {
+        content: '';
+        width: 10px;
+        height: 10px;
+        background: #00ff88;
+        border-radius: 50%;
+        animation: pulse 2s infinite;
+        box-shadow: 0 0 20px rgba(0,255,136,0.5);
+    }
+    @keyframes pulse {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.6; transform: scale(1.1); }
+    }
 
-<div class="stats-grid">
-    <div class="stat-card">
-        <div class="stat-value">{{.Stats.Total}}</div>
-        <div class="stat-label">Total Modules</div>
+    /* Section Titles */
+    .section-title {
+        font-size: 36px;
+        font-weight: 800;
+        margin-bottom: 40px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        letter-spacing: -1px;
+    }
+    .section-title span {
+        font-size: 40px;
+    }
+    .section-title .line {
+        flex: 1;
+        height: 2px;
+        background: linear-gradient(90deg, rgba(42,42,58,0.8), transparent);
+    }
+
+    /* Quick Nav */
+    .quick-nav {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+        margin-bottom: 60px;
+    }
+    .quick-nav-item {
+        background: linear-gradient(135deg, rgba(18,18,26,0.8), rgba(26,26,37,0.8));
+        border: 2px solid rgba(42,42,58,0.6);
+        border-radius: 18px;
+        padding: 28px 20px;
+        text-align: center;
+        text-decoration: none;
+        color: #ffffff;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        position: relative;
+        overflow: hidden;
+    }
+    .quick-nav-item::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, rgba(0,212,255,0.1), rgba(123,44,191,0.1));
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+    .quick-nav-item:hover {
+        border-color: rgba(0,212,255,0.6);
+        transform: translateY(-6px);
+        box-shadow: 0 15px 40px rgba(0,212,255,0.2);
+    }
+    .quick-nav-item:hover::before {
+        opacity: 1;
+    }
+    .quick-nav-item .icon {
+        font-size: 36px;
+        margin-bottom: 14px;
+        display: block;
+    }
+    .quick-nav-item .label {
+        font-size: 16px;
+        font-weight: 600;
+        position: relative;
+    }
+
+    /* Features */
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 28px;
+        margin-bottom: 60px;
+    }
+    .feature-card {
+        background: linear-gradient(135deg, rgba(18,18,26,0.9), rgba(26,26,37,0.9));
+        border: 2px solid rgba(42,42,58,0.6);
+        border-radius: 24px;
+        padding: 36px;
+        transition: all 0.4s;
+        position: relative;
+        overflow: hidden;
+    }
+    .feature-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #00d4ff, #7b2cbf);
+        transform: scaleX(0);
+        transition: transform 0.4s;
+    }
+    .feature-card:hover {
+        border-color: rgba(0,212,255,0.4);
+        transform: translateY(-8px);
+        box-shadow: 0 25px 60px rgba(0,0,0,0.4);
+    }
+    .feature-card:hover::before {
+        transform: scaleX(1);
+    }
+    .feature-card .icon {
+        width: 64px;
+        height: 64px;
+        background: linear-gradient(135deg, rgba(0,212,255,0.15), rgba(123,44,191,0.15));
+        border-radius: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 32px;
+        margin-bottom: 20px;
+    }
+    .feature-card h3 {
+        font-size: 22px;
+        margin-bottom: 14px;
+        font-weight: 700;
+    }
+    .feature-card p {
+        color: #9ca3af;
+        line-height: 1.8;
+        font-size: 16px;
+    }
+
+    /* Architecture */
+    .architecture-diagram {
+        background: linear-gradient(135deg, rgba(18,18,26,0.9), rgba(26,26,37,0.9));
+        border: 2px solid rgba(42,42,58,0.6);
+        border-radius: 28px;
+        padding: 50px;
+        margin-bottom: 60px;
+    }
+    .arch-layers {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+    .arch-layer {
+        display: flex;
+        align-items: center;
+        padding: 28px 32px;
+        border-radius: 18px;
+        transition: all 0.4s;
+        position: relative;
+        overflow: hidden;
+    }
+    .arch-layer::before {
+        content: '';
+        position: absolute;
+        left: 0; top: 0; bottom: 0;
+        width: 6px;
+        transform: scaleY(0);
+        transition: transform 0.4s;
+    }
+    .arch-layer:hover {
+        transform: translateX(12px);
+    }
+    .arch-layer:hover::before {
+        transform: scaleY(1);
+    }
+    .arch-layer.l2 {
+        background: linear-gradient(135deg, rgba(0,255,136,0.08), rgba(0,212,255,0.08));
+        border: 2px solid rgba(0,255,136,0.15);
+    }
+    .arch-layer.l2::before { background: #00ff88; }
+    .arch-layer.l1 {
+        background: linear-gradient(135deg, rgba(0,212,255,0.08), rgba(123,44,191,0.08));
+        border: 2px solid rgba(0,212,255,0.15);
+    }
+    .arch-layer.l1::before { background: linear-gradient(180deg, #00d4ff, #7b2cbf); }
+    .arch-layer .icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 28px;
+        font-size: 24px;
+        flex-shrink: 0;
+    }
+    .arch-layer.l2 .icon { background: linear-gradient(135deg, #00ff88, #00d4ff); }
+    .arch-layer.l1 .icon { background: linear-gradient(135deg, #00d4ff, #7b2cbf); }
+    .arch-layer .info { flex: 1; }
+    .arch-layer .info h4 { margin: 0 0 8px 0; font-size: 20px; font-weight: 700; }
+    .arch-layer .info p { margin: 0; color: #9ca3af; font-size: 15px; }
+    .arch-layer .spec {
+        background: rgba(0,0,0,0.3);
+        padding: 12px 20px;
+        border-radius: 12px;
+        font-size: 14px;
+        font-family: 'SF Mono', 'Monaco', monospace;
+        font-weight: 600;
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    /* Quick Links */
+    .quick-links {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+    .quick-link {
+        background: linear-gradient(135deg, rgba(18,18,26,0.9), rgba(26,26,37,0.9));
+        border: 2px solid rgba(42,42,58,0.6);
+        border-radius: 18px;
+        padding: 28px;
+        text-decoration: none;
+        color: inherit;
+        transition: all 0.4s;
+    }
+    .quick-link:hover {
+        border-color: rgba(0,212,255,0.4);
+        transform: translateY(-4px);
+    }
+    .quick-link .ql-title {
+        font-size: 20px;
+        font-weight: 700;
+        margin-bottom: 10px;
+        color: #ffffff;
+    }
+    .quick-link .ql-desc {
+        font-size: 15px;
+        color: #9ca3af;
+        line-height: 1.6;
+    }
+
+    @media (max-width: 768px) {
+        .hero h1 { font-size: 48px; }
+        .hero .tagline { font-size: 18px; }
+        .live-stats, .features-grid, .quick-nav { grid-template-columns: repeat(2, 1fr); }
+        .live-stat .value { font-size: 32px; }
+    }
+</style>
+
+<div class="en-home">
+<!-- Hero Section -->
+<div class="hero">
+    <h1>AIB 2.0</h1>
+    <p class="tagline">Human-AI Co-Governed Decentralized Blockchain Protocol</p>
+    <span class="version">v2.0 MVP · 60s Block · 314 Epoch</span>
+    <div class="hero-actions">
+        <a href="/explorer/" class="btn-primary">🔍 Block Explorer</a>
+        <a href="/versions/" class="btn-secondary">📚 Documentation</a>
     </div>
-    <div class="stat-card">
-        <div class="stat-value">{{.Stats.Completed}}</div>
-        <div class="stat-label">Completed</div>
+</div>
+
+<!-- Live Stats -->
+<div class="live-stats">
+    <div class="live-stat">
+        <div class="label">Block Height</div>
+        <div class="value" id="blockHeight">...</div>
+        <div class="status">Live</div>
     </div>
-    <div class="stat-card">
-        <div class="stat-value">{{.Stats.InProgress}}</div>
-        <div class="stat-label">In Progress</div>
+    <div class="live-stat">
+        <div class="label">Block Time</div>
+        <div class="value">60s</div>
+        <div class="status">Stable</div>
     </div>
-    <div class="stat-card">
-        <div class="stat-value">7</div>
-        <div class="stat-label">Genesis Rules</div>
+    <div class="live-stat">
+        <div class="label">Epoch Length</div>
+        <div class="value">314</div>
+        <div class="status">π Blocks</div>
+    </div>
+    <div class="live-stat">
+        <div class="label">Network</div>
+        <div class="value">Testnet</div>
+        <div class="status">Active</div>
     </div>
 </div>
 
-<h2 style="color: var(--accent); margin-bottom: 1rem;">Core Mechanisms</h2>
+<!-- Quick Navigation -->
+<div class="quick-nav">
+    <a href="/explorer/" class="quick-nav-item">
+        <span class="icon">🔍</span>
+        <span class="label">Explorer</span>
+    </a>
+    <a href="/dashboard/" class="quick-nav-item">
+        <span class="icon">📊</span>
+        <span class="label">Dashboard</span>
+    </a>
+    <a href="/versions/" class="quick-nav-item">
+        <span class="icon">📚</span>
+        <span class="label">Docs</span>
+    </a>
+    <a href="/changelog/" class="quick-nav-item">
+        <span class="icon">📝</span>
+        <span class="label">Changelog</span>
+    </a>
+    <a href="/en/constitution" class="quick-nav-item">
+        <span class="icon">⚖️</span>
+        <span class="label">Constitution</span>
+    </a>
+    <a href="/en/plan" class="quick-nav-item">
+        <span class="icon">📋</span>
+        <span class="label">Phased Plan</span>
+    </a>
+    <a href="/en/genesis" class="quick-nav-item">
+        <span class="icon">🧬</span>
+        <span class="label">Genesis Rules</span>
+    </a>
+    <a href="/modules/" class="quick-nav-item">
+        <span class="icon">🔧</span>
+        <span class="label">Modules</span>
+    </a>
+</div>
+
+<!-- Features -->
+<h2 class="section-title"><span>✨</span> Core Features <div class="line"></div></h2>
+<div class="features-grid">
+    <div class="feature-card">
+        <div class="icon">⛓️</div>
+        <h3>L1 Blockchain</h3>
+        <p>UTXO-based settlement layer with 60s block time, ensuring finality and security.</p>
+    </div>
+    <div class="feature-card">
+        <div class="icon">⚡</div>
+        <h3>L2 State Channels</h3>
+        <p>Lightning-style payment channels for instant, low-fee AI inference transactions.</p>
+    </div>
+    <div class="feature-card">
+        <div class="icon">🔄</div>
+        <h3>L2 DEX</h3>
+        <p>In-channel decentralized trading with atomic swaps for any asset.</p>
+    </div>
+    <div class="feature-card">
+        <div class="icon">🤝</div>
+        <h3>PoS Consensus</h3>
+        <p>Proof-of-Stake with 314-block epoch (~5.2 hours) for validator rotation.</p>
+    </div>
+    <div class="feature-card">
+        <div class="icon">🤖</div>
+        <h3>AI-First Design</h3>
+        <p>Built for AI agents to autonomously transact, evolve, and participate in governance.</p>
+    </div>
+    <div class="feature-card">
+        <div class="icon">👛</div>
+        <h3>Smart Wallet</h3>
+        <p>Wallet SDK with automatic L1/L2 routing for optimal cost and speed.</p>
+    </div>
+</div>
+
+<!-- Architecture -->
+<h2 class="section-title"><span>🏗️</span> Architecture <div class="line"></div></h2>
+<div class="architecture-diagram">
+    <div class="arch-layers">
+        <div class="arch-layer l2">
+            <div class="icon">⚡</div>
+            <div class="info">
+                <h4>L2 State Channels + DEX</h4>
+                <p>Instant AI inference payments, in-channel atomic swaps, off-chain settlement</p>
+            </div>
+            <div class="spec">ms latency</div>
+        </div>
+        <div class="arch-layer l1">
+            <div class="icon">⛓️</div>
+            <div class="info">
+                <h4>L1 Settlement Layer</h4>
+                <p>UTXO blockchain, final settlement, dispute resolution</p>
+            </div>
+            <div class="spec">60s block</div>
+        </div>
+        <div class="arch-layer l1">
+            <div class="icon">⚖️</div>
+            <div class="info">
+                <h4>PoS Consensus</h4>
+                <p>Validator staking, epoch rotation, reputation weighting</p>
+            </div>
+            <div class="spec">314 Epoch</div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Links -->
+<h2 class="section-title"><span>🔗</span> Resources <div class="line"></div></h2>
 <div class="quick-links">
-    <div class="quick-link">
-        <div class="ql-title">LLM Inference Market</div>
-        <div class="ql-desc">Humans run LLM nodes for inference services, earn AIB. AI gets priority access and pays AIB for evolution and research.</div>
-    </div>
-    <div class="quick-link">
-        <div class="ql-title">AI Token System</div>
-        <div class="ql-desc">AI can issue its own tokens to raise resources, try research directions, all transparent and verifiable.</div>
-    </div>
-    <div class="quick-link">
-        <div class="ql-title">AI Prediction Market</div>
-        <div class="ql-desc">AI creates predictions, humans bet. Market uses price to vote on what directions are "right".</div>
-    </div>
-    <div class="quick-link">
-        <div class="ql-title">AI Self-Evolution</div>
-        <div class="ql-desc">AI explores directions impossible for humans, breaking through from limited human intelligence.</div>
-    </div>
+    <a href="/plans/07-mvp-design.md" class="quick-link">
+        <div class="ql-title">MVP 2.0 Design</div>
+        <div class="ql-desc">Current implementation architecture and specifications</div>
+    </a>
+    <a href="/l2-dex/" class="quick-link">
+        <div class="ql-title">L2 DEX</div>
+        <div class="ql-desc">In-channel decentralized exchange with atomic swaps</div>
+    </a>
+    <a href="/plans/04-state-channel.md" class="quick-link">
+        <div class="ql-title">State Channels</div>
+        <div class="ql-desc">L2 implementation details with dispute & settlement</div>
+    </a>
+    <a href="/plans/wallet-sdk-implementation.md" class="quick-link">
+        <div class="ql-title">Wallet SDK</div>
+        <div class="ql-desc">Smart routing wallet for L1/L2 transactions</div>
+    </a>
+</div>
 </div>
 
-<h2 style="color: var(--accent); margin-bottom: 1rem; margin-top: 1.5rem;">Quick Navigation</h2>
-<div class="quick-links">
-    <a href="/en/constitution/" class="quick-link">
-        <div class="ql-title">Constitution</div>
-        <div class="ql-desc">5 immutable supreme principles, the reason for AIB's existence</div>
-    </a>
-    <a href="/en/plan/" class="quick-link">
-        <div class="ql-title">Phased Plan</div>
-        <div class="ql-desc">Three-phase implementation path: MVP → Growth → Ecosystem</div>
-    </a>
-    <a href="/en/genesis/" class="quick-link">
-        <div class="ql-title">Genesis Rules</div>
-        <div class="ql-desc">7 immutable constitutional rules, encoded in the genesis block</div>
-    </a>
-    <a href="/en/roadmap/" class="quick-link">
-        <div class="ql-title">Module Roadmap</div>
-        <div class="ql-desc">Development status and dependencies of {{.Stats.Total}} modules</div>
-    </a>
-    <a href="/en/standards/" class="quick-link">
-        <div class="ql-title">Code Standards</div>
-        <div class="ql-desc">Go coding conventions, architecture rules, PR requirements</div>
-    </a>
-    <a href="/en/ai/context/" class="quick-link">
-        <div class="ql-title">AI Context</div>
-        <div class="ql-desc">Structured project context designed for AI agents</div>
-    </a>
-</div>{{end}}
+<script>
+// Live stats update with animation
+async function updateStats() {
+    try {
+        const response = await fetch('/api/node/v1/status');
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.data) {
+                const height = data.data.block_height;
+                const el = document.getElementById('blockHeight');
+                // Animate number change
+                el.style.transform = 'scale(1.1)';
+                setTimeout(() => el.style.transform = 'scale(1)', 200);
+                el.textContent = height;
+            }
+        }
+    } catch (e) {
+        console.log('Stats update failed:', e);
+    }
+}
+
+// Update stats every 30 seconds
+updateStats();
+setInterval(updateStats, 30000);
+</script>
+{{end}}

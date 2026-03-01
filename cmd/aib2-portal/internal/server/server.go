@@ -80,6 +80,10 @@ func (s *Server) routes(staticFS fs.FS) {
 	s.mux.HandleFunc("GET /api/system", s.handleAPISystem)
 	s.mux.HandleFunc("GET /api/tests", s.handleAPITests)
 
+	// Node API proxy - serves over HTTPS by proxying to HTTP node
+	// Use trailing slash to match all /api/node/ paths including /api/node/v1/*
+	s.mux.HandleFunc("GET /api/node/", s.handleNodeProxy)
+
 	// ZKML blockchain proxy endpoints
 	s.mux.HandleFunc("GET /api/zkml/status", s.handleZKMLProxy)
 	s.mux.HandleFunc("GET /api/zkml/blocks", s.handleZKMLProxy)
@@ -94,6 +98,9 @@ func (s *Server) routes(staticFS fs.FS) {
 	s.mux.HandleFunc("GET /changelog/", s.handleDocs)
 	s.mux.HandleFunc("GET /dashboard/", s.handleDocs)
 	s.mux.HandleFunc("GET /modules/", s.handleDocs)
+	s.mux.HandleFunc("GET /explorer/", s.handleExplorer)
+	s.mux.HandleFunc("GET /versions/", s.handleDocs)
+	s.mux.HandleFunc("GET /l2-dex/", s.handleDocs)
 
 	// Root redirects to /en/
 	s.mux.HandleFunc("GET /{$}", func(w http.ResponseWriter, r *http.Request) {
@@ -405,6 +412,17 @@ func (s *Server) handleDocs(w http.ResponseWriter, r *http.Request) {
 	w.Write(content)
 }
 
+// handleExplorer serves the AIB 2.0 Blockchain Explorer
+func (s *Server) handleExplorer(w http.ResponseWriter, r *http.Request) {
+	content, err := os.ReadFile("/home/temple/aib/cmd/aib2-portal/internal/data/explorer/index.html")
+	if err != nil {
+		http.Error(w, "Explorer not found", http.StatusNotFound)
+		return
+	}
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.Write(content)
+}
+
 // API handlers
 
 type APIStats struct {
@@ -581,6 +599,43 @@ func (s *Server) handleZKMLProxy(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(resp.StatusCode)
 	// Copy body
+	buf := make([]byte, 4096)
+	for {
+		n, err := resp.Body.Read(buf)
+		if n > 0 {
+			w.Write(buf[:n])
+		}
+		if err != nil {
+			break
+		}
+	}
+}
+
+// handleNodeProxy proxies requests to the AIB Node API (port 51211)
+func (s *Server) handleNodeProxy(w http.ResponseWriter, r *http.Request) {
+	// Node API endpoint
+	nodeBase := "http://127.0.0.1:51211"
+
+	// Get the request path and strip /api/node prefix
+	path := r.URL.Path
+	apiPath := strings.TrimPrefix(path, "/api/node")
+
+	// Create request to Node API
+	nodeURL := nodeBase + apiPath
+	resp, err := http.Get(nodeURL)
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"error":   "Node API not available",
+		})
+		return
+	}
+	defer resp.Body.Close()
+
+	// Copy response headers and body
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(resp.StatusCode)
 	buf := make([]byte, 4096)
 	for {
 		n, err := resp.Body.Read(buf)

@@ -16,15 +16,33 @@ import (
 
 // DisputeResolver handles dispute resolution for state channels.
 type DisputeResolver struct {
-	manager        *Manager
-	evidenceStore  map[[32]byte][]Evidence
-	challengeQueue chan DisputeTask
-	mu             sync.RWMutex
+	manager                *Manager
+	evidenceStore          map[[32]byte][]Evidence
+	challengeQueue         chan DisputeTask
+	mu                     sync.RWMutex
+	blockChecker           BlockChecker
+	penaltyRecipient       interfaces.Address // Address to receive fraud penalties (treasury/burn)
 
 	// Configuration
-	maxEvidenceAge       time.Duration
-	evidenceExpiry       time.Duration
+	challengePeriod        time.Duration
+	maxEvidenceAge        time.Duration
+	evidenceExpiry        time.Duration
 	fraudPenaltyMultiplier float64
+	minChallengePeriod     time.Duration
+	maxChallengePeriod     time.Duration
+}
+
+// DisputeResolution represents the result of dispute resolution.
+type DisputeResolution struct {
+	ChannelID      [32]byte
+	Winner         interfaces.Address
+	Loser          interfaces.Address
+	FinalBalanceA  uint64
+	FinalBalanceB  uint64
+	PenaltyAmount  uint64
+	ResolutionType string // "challenge_success", "counter_evidence", "timeout", "fraud_proof"
+	Timestamp      time.Time
+	BlockNumber    uint64
 }
 
 // Evidence represents evidence submitted during a dispute.
@@ -66,15 +84,64 @@ const (
 	TaskFinalize
 )
 
+// BlockChecker provides blockchain state verification for disputes.
+type BlockChecker interface {
+	// GetCurrentBlock returns the current block number.
+	GetCurrentBlock(ctx context.Context) (uint64, error)
+	// GetBlockTimestamp returns the timestamp of a block.
+	GetBlockTimestamp(ctx context.Context, blockNum uint64) (time.Time, error)
+	// VerifyTxInBlock verifies if a transaction exists in a block.
+	VerifyTxInBlock(ctx context.Context, txHash [32]byte, blockNum uint64) (bool, error)
+}
+
+// DisputeConfig holds configuration for the dispute resolver.
+type DisputeConfig struct {
+	ChallengePeriod        time.Duration
+	MinChallengePeriod     time.Duration
+	MaxChallengePeriod     time.Duration
+	MaxEvidenceAge        time.Duration
+	EvidenceExpiry        time.Duration
+	FraudPenaltyMultiplier float64
+	PenaltyRecipient      interfaces.Address
+	BlockChecker          BlockChecker
+}
+
+// DefaultDisputeConfig returns the default dispute configuration.
+func DefaultDisputeConfig() *DisputeConfig {
+	return &DisputeConfig{
+		ChallengePeriod:        24 * time.Hour,
+		MinChallengePeriod:     1 * time.Hour,
+		MaxChallengePeriod:     7 * 24 * time.Hour,
+		MaxEvidenceAge:         7 * 24 * time.Hour,
+		EvidenceExpiry:         30 * 24 * time.Hour,
+		FraudPenaltyMultiplier: 1.0, // 100% penalty (all funds to honest party)
+		PenaltyRecipient:       interfaces.Address{}, // Burn to zero address by default
+	}
+}
+
 // NewDisputeResolver creates a new dispute resolver.
 func NewDisputeResolver(manager *Manager) *DisputeResolver {
+	return NewDisputeResolverWithConfig(manager, DefaultDisputeConfig())
+}
+
+// NewDisputeResolverWithConfig creates a new dispute resolver with custom config.
+func NewDisputeResolverWithConfig(manager *Manager, cfg *DisputeConfig) *DisputeResolver {
+	if cfg == nil {
+		cfg = DefaultDisputeConfig()
+	}
+
 	return &DisputeResolver{
 		manager:                manager,
 		evidenceStore:          make(map[[32]byte][]Evidence),
 		challengeQueue:         make(chan DisputeTask, 100),
-		maxEvidenceAge:         7 * 24 * time.Hour,
-		evidenceExpiry:         30 * 24 * time.Hour,
-		fraudPenaltyMultiplier: 1.0,
+		challengePeriod:        cfg.ChallengePeriod,
+		minChallengePeriod:     cfg.MinChallengePeriod,
+		maxChallengePeriod:     cfg.MaxChallengePeriod,
+		maxEvidenceAge:         cfg.MaxEvidenceAge,
+		evidenceExpiry:         cfg.EvidenceExpiry,
+		fraudPenaltyMultiplier: cfg.FraudPenaltyMultiplier,
+		penaltyRecipient:       cfg.PenaltyRecipient,
+		blockChecker:           cfg.BlockChecker,
 	}
 }
 
