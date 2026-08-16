@@ -229,8 +229,26 @@ func (m *InferenceChannelManager) GetChannel(id [32]byte) (*InferenceChannel, er
 		return nil, ErrChannelNotFound
 	}
 
-	// 返回副本
-	chCopy := *channel
+	// 返回副本 (manual field copy: never duplicate a sync.Mutex)
+	chCopy := InferenceChannel{
+		ChannelID:      channel.ChannelID,
+		UserPubKey:     channel.UserPubKey,
+		NodePubKey:     channel.NodePubKey,
+		UserBalance:    channel.UserBalance,
+		NodeBalance:    channel.NodeBalance,
+		TotalDeposit:   channel.TotalDeposit,
+		Level:          channel.Level,
+		InferenceCount: channel.InferenceCount,
+		SequenceNum:    channel.SequenceNum,
+		Status:         channel.Status,
+		CreatedAt:      channel.CreatedAt,
+		ClosedAt:       channel.ClosedAt,
+	}
+	if channel.ChallengeEnd != nil {
+		t := *channel.ChallengeEnd
+		chCopy.ChallengeEnd = &t
+	}
+	chCopy.ChallengeReason = channel.ChallengeReason
 	return &chCopy, nil
 }
 
@@ -258,10 +276,34 @@ func (m *InferenceChannelManager) GetChannels() []*InferenceChannel {
 
 	result := make([]*InferenceChannel, 0, len(m.channels))
 	for _, ch := range m.channels {
-		chCopy := *ch
-		result = append(result, &chCopy)
+		result = append(result, ch.snapshot())
 	}
 	return result
+}
+
+// snapshot returns a field-wise copy of the channel without copying its
+// mutex (copying a sync.Mutex is flagged by go vet and is unsafe).
+func (c *InferenceChannel) snapshot() *InferenceChannel {
+	cp := InferenceChannel{
+		ChannelID:      c.ChannelID,
+		UserPubKey:     c.UserPubKey,
+		NodePubKey:     c.NodePubKey,
+		UserBalance:    c.UserBalance,
+		NodeBalance:    c.NodeBalance,
+		TotalDeposit:   c.TotalDeposit,
+		Level:          c.Level,
+		InferenceCount: c.InferenceCount,
+		SequenceNum:    c.SequenceNum,
+		Status:         c.Status,
+		CreatedAt:      c.CreatedAt,
+		ClosedAt:       c.ClosedAt,
+		ChallengeReason: c.ChallengeReason,
+	}
+	if c.ChallengeEnd != nil {
+		t := *c.ChallengeEnd
+		cp.ChallengeEnd = &t
+	}
+	return &cp
 }
 
 // GetChannelCount 返回通道数量
