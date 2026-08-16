@@ -81,10 +81,15 @@ func DefaultHubConfig() *HubConfig {
 // MigrationHub is the central contract that orchestrates all migration activities.
 // It manages AIB1 snapshot claims, cross-chain migrations (BTC/ETH/SOL),
 // vesting schedules, and token minting.
+// MigrationHub struct - updated to support clock injection for testability.
 type MigrationHub struct {
 	mu sync.RWMutex
 
 	config HubConfig
+
+	// now returns the current time. It is time.Now in production and can be
+	// overridden in tests to make time-dependent behaviour deterministic.
+	now func() time.Time
 
 	// Sub-contracts
 	aib1Migration *AIB1Migration
@@ -97,6 +102,16 @@ type MigrationHub struct {
 
 	// Events log
 	events []MigrationEvent
+}
+
+// SetClock overrides the hub's clock. Intended for tests: pass a function
+// returning a fixed time to make window/rate calculations deterministic.
+func (h *MigrationHub) SetClock(now func() time.Time) {
+	if now == nil {
+		now = time.Now
+	}
+	h.now = now
+	h.aib1Migration.SetClock(now) // keep the AIB1 claim window in sync
 }
 
 // MigrationEventType represents the type of migration event.
@@ -174,6 +189,7 @@ func NewMigrationHub(cfg *HubConfig) (*MigrationHub, error) {
 
 	return &MigrationHub{
 		config:        *cfg,
+		now:           time.Now,
 		aib1Migration: aib1,
 		btcMigration:  btc,
 		ethMigration:  eth,
@@ -239,6 +255,11 @@ func (h *MigrationHub) IsAIB1ClaimOpen() bool {
 	return h.aib1Migration.IsClaimWindowOpen()
 }
 
+// SetAIB1Clock overrides the AIB1 claim window clock. Intended for tests.
+func (h *MigrationHub) SetAIB1Clock(now func() time.Time) {
+	h.aib1Migration.SetClock(now)
+}
+
 // ============================================================================
 // Cross-Chain Migration
 // ============================================================================
@@ -292,7 +313,7 @@ func (h *MigrationHub) migrateChain(
 		return fmt.Errorf("%w: expected %s, got %s", ErrInvalidChain, expectedChain, proof.Chain)
 	}
 
-	now := time.Now()
+	now := h.now()
 
 	// Get the contract
 	contract, err := h.getCrossChainContract(expectedChain)
@@ -336,7 +357,7 @@ func (h *MigrationHub) migrateChain(
 
 // ClaimUnlocked allows a user to claim all unlocked tokens from cross-chain migrations.
 func (h *MigrationHub) ClaimUnlocked(userAddr interfaces.Address) (uint64, error) {
-	now := time.Now()
+	now := h.now()
 	var totalClaimed uint64
 
 	// Claim from each chain
@@ -416,7 +437,7 @@ type MigrationStatus struct {
 
 // GetMigrationStatus returns the overall migration status.
 func (h *MigrationHub) GetMigrationStatus() *MigrationStatus {
-	now := time.Now()
+	now := h.now()
 
 	return &MigrationStatus{
 		AIB1TotalMigrated: h.aib1Migration.GetTotalMigrated(),
@@ -461,7 +482,7 @@ type UserMigrationInfo struct {
 
 // GetUserMigrationInfo returns migration info for a specific user.
 func (h *MigrationHub) GetUserMigrationInfo(addr interfaces.Address) *UserMigrationInfo {
-	now := time.Now()
+	now := h.now()
 	balance, _ := h.aib1Migration.GetSnapshotBalance(addr)
 
 	return &UserMigrationInfo{
@@ -498,11 +519,11 @@ func (h *MigrationHub) GetCrossChainRate(chain ChainType) (uint64, error) {
 	if err != nil {
 		return 0, err
 	}
-	return contract.GetCurrentRate(time.Now()), nil
+	return contract.GetCurrentRate(h.now()), nil
 }
 
 // IsMigrationWindowOpen checks if the cross-chain migration window is open.
 func (h *MigrationHub) IsMigrationWindowOpen() bool {
-	now := time.Now()
+	now := h.now()
 	return !now.Before(h.config.MigrationWindowStart) && now.Before(h.config.MigrationWindowEnd)
 }

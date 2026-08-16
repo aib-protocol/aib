@@ -54,6 +54,9 @@ type AIB1Migration struct {
 	snapshotData   map[interfaces.Address]uint64
 	totalMigrated  uint64
 	hasher         crypto.Hasher
+
+	// now returns the current time; overridable for tests.
+	now func() time.Time
 }
 
 // AIB1Config holds configuration for AIB1 migration.
@@ -72,6 +75,7 @@ func NewAIB1Migration(cfg *AIB1Config) *AIB1Migration {
 		claims:        make(map[interfaces.Address]bool),
 		snapshotData:  make(map[interfaces.Address]uint64),
 		hasher:        crypto.NewSHA256d(),
+		now:           time.Now,
 	}
 }
 
@@ -170,7 +174,7 @@ func (m *AIB1Migration) Claim(targetAddr interfaces.Address, amount uint64, pubK
 	defer m.mu.Unlock()
 
 	// Check if claim deadline has passed
-	if time.Now().After(m.claimDeadline) {
+	if m.now().After(m.claimDeadline) {
 		return ErrClaimExpired
 	}
 
@@ -219,7 +223,7 @@ func (m *AIB1Migration) ClaimWithMerkle(targetAddr interfaces.Address, amount ui
 	defer m.mu.Unlock()
 
 	// Check if claim deadline has passed
-	if time.Now().After(m.claimDeadline) {
+	if m.now().After(m.claimDeadline) {
 		return ErrClaimExpired
 	}
 
@@ -273,7 +277,15 @@ func (m *AIB1Migration) GetClaimDeadline() time.Time {
 
 // IsClaimWindowOpen checks if the claim window is still open.
 func (m *AIB1Migration) IsClaimWindowOpen() bool {
-	return time.Now().Before(m.claimDeadline)
+	return m.now().Before(m.claimDeadline)
+}
+
+// SetClock overrides the claim-clock. Intended for tests.
+func (m *AIB1Migration) SetClock(now func() time.Time) {
+	if now == nil {
+		now = time.Now
+	}
+	m.now = now
 }
 
 // ============================================================================

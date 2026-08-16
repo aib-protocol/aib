@@ -51,6 +51,11 @@ func (m *mockMinter) BalanceOf(addr interfaces.Address) (uint64, error) {
 // Helper functions
 // ============================================================================
 
+// fixedNow pins the test clock to 2026-03-15 (month 3 of the default
+// migration window 2026-01-01 .. 2026-04-01) so rate/window assertions are
+// deterministic regardless of when the tests run.
+var fixedNow = time.Date(2026, 3, 15, 0, 0, 0, 0, time.UTC)
+
 func createTestHub(t *testing.T) *MigrationHub {
 	config := DefaultHubConfig()
 	config.Minter = newMockMinter()
@@ -59,6 +64,7 @@ func createTestHub(t *testing.T) *MigrationHub {
 	if err != nil {
 		t.Fatalf("failed to create test hub: %v", err)
 	}
+	hub.SetClock(func() time.Time { return fixedNow })
 	return hub
 }
 
