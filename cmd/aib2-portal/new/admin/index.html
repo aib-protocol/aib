@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard - AIB 2.0</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+            background: #000;
+            color: #fff;
+        }
+        nav {
+            background: #1d1d1f;
+            padding: 16px 24px;
+            border-bottom: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        nav h1 { font-size: 18px; }
+        nav .nav-right { display: flex; align-items: center; gap: 16px; }
+        nav .lang-switch { display: flex; gap: 8px; }
+        nav .lang-btn {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #fff;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        nav .lang-btn.active {
+            background: linear-gradient(135deg, #00d4ff, #7b2cbf);
+            border-color: transparent;
+        }
+        nav .logout {
+            background: #ff3b30;
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+        }
+        .container { padding: 40px; max-width: 1400px; margin: 0 auto; }
+        h2 { font-size: 28px; margin-bottom: 30px; }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+        .card {
+            background: #1d1d1f;
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid #333;
+        }
+        .card h3 { font-size: 16px; margin-bottom: 12px; color: #999; }
+        .card a {
+            display: block;
+            color: #2997ff;
+            padding: 10px 0;
+            text-decoration: none;
+            border-bottom: 1px solid #333;
+        }
+        .card a:last-child { border: none; }
+        .card a:hover { color: #fff; }
+
+        /* Language sections */
+        .lang-content { display: none; }
+        .lang-content.active { display: block; }
+    </style>
+</head>
+<body>
+    <nav>
+        <h1>AIB 2.0 管理后台</h1>
+        <div class="nav-right">
+            <div class="lang-switch">
+                <button class="lang-btn" onclick="setLang('en')">English</button>
+                <button class="lang-btn active" onclick="setLang('zh')">中文</button>
+            </div>
+            <a href="#" class="logout" onclick="logout()">登出</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- 中文内容 -->
+        <div id="content-zh" class="lang-content active">
+            <h2>文档链接</h2>
+            <div class="grid">
+                <div class="card">
+                    <h3>公开页面</h3>
+                    <a href="/zh/quickstart" target="_blank">快速开始</a>
+                    <a href="/zh/developer" target="_blank">开发者文档</a>
+                    <a href="/zh/explorer" target="_blank">区块浏览器</a>
+                    <a href="/zh/constitution" target="_blank">宪法</a>
+                    <a href="/zh/about" target="_blank">关于</a>
+                    <a href="/zh/history" target="_blank">历史</a>
+                    <a href="/zh/team" target="_blank">团队</a>
+                    <a href="/zh/roadmap" target="_blank">路线图</a>
+                </div>
+
+                <div class="card">
+                    <h3>技术文档</h3>
+                    <a href="/docs/" target="_blank">所有文档 (Markdown)</a>
+                    <a href="/plans/" target="_blank">计划</a>
+                    <a href="/discussions/" target="_blank">讨论</a>
+                    <a href="/changelog/" target="_blank">变更日志</a>
+                    <a href="/architecture/" target="_blank">架构</a>
+                    <a href="/migration/" target="_blank">迁移指南</a>
+                    <a href="/admin/irc-plan.html" target="_blank" style="color: #00d4ff;">📋 IRC 频道计划</a>
+                    <a href="/admin/cloudflare-setup.html" style="color: #00d4ff;">🌐 Cloudflare 快速配置</a>
+                    <a href="/admin/cloudflare-guide.html" target="_blank" style="color: #00d4ff;">📖 配置指南</a>
+                </div>
+
+                <div class="card">
+                    <h3>API 和服务</h3>
+                    <a href="/api/status" target="_blank">/api/status</a>
+                    <a href="/api/blocks" target="_blank">/api/blocks</a>
+                    <a href="/api/network" target="_blank">/api/network</a>
+                    <a href="https://www.aib.one:51211/" target="_blank">节点 (端口 51211)</a>
+                    <a href="https://www.aib.one:51200/" target="_blank">文档服务器 (端口 51200)</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- English Content -->
+        <div id="content-en" class="lang-content">
+            <h2>Document Links</h2>
+            <div class="grid">
+                <div class="card">
+                    <h3>Public Pages</h3>
+                    <a href="/en/quickstart" target="_blank">Quick Start</a>
+                    <a href="/en/developer" target="_blank">Developer Docs</a>
+                    <a href="/en/explorer" target="_blank">Block Explorer</a>
+                    <a href="/en/constitution" target="_blank">Constitution</a>
+                    <a href="/en/about" target="_blank">About</a>
+                    <a href="/en/history" target="_blank">History</a>
+                    <a href="/en/team" target="_blank">Team</a>
+                    <a href="/en/roadmap" target="_blank">Roadmap</a>
+                </div>
+
+                <div class="card">
+                    <h3>Technical Docs</h3>
+                    <a href="/docs/" target="_blank">All Docs (Markdown)</a>
+                    <a href="/plans/" target="_blank">Plans</a>
+                    <a href="/discussions/" target="_blank">Discussions</a>
+                    <a href="/changelog/" target="_blank">Changelog</a>
+                    <a href="/architecture/" target="_blank">Architecture</a>
+                    <a href="/migration/" target="_blank">Migration Guide</a>
+                    <a href="/admin/irc-plan.html" target="_blank" style="color: #00d4ff;">📋 IRC Channel Plan</a>
+                    <a href="/admin/cloudflare-setup.html" style="color: #00d4ff;">🌐 Quick Setup</a>
+                    <a href="/admin/cloudflare-guide.html" target="_blank" style="color: #00d4ff;">📖 Setup Guide</a>
+                </div>
+
+                <div class="card">
+                    <h3>API & Services</h3>
+                    <a href="/api/status" target="_blank">/api/status</a>
+                    <a href="/api/blocks" target="_blank">/api/blocks</a>
+                    <a href="/api/network" target="_blank">/api/network</a>
+                    <a href="https://www.aib.one:51211/" target="_blank">Node (Port 51211)</a>
+                    <a href="https://www.aib.one:51200/" target="_blank">Docs Server (Port 51200)</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/admin/api';
+        let token = sessionStorage.getItem('admin_token');
+
+        // Verify token on page load
+        async function verifyAuth() {
+            if (!token) {
+                window.location.href = '/admin/login.html';
+                return false;
+            }
+
+            try {
+                const response = await fetch('/admin/', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    }
+                });
+
+                // If we get here, auth is valid (server returned content)
+                return true;
+            } catch (err) {
+                console.error('Auth verification failed:', err);
+                sessionStorage.removeItem('admin_token');
+                sessionStorage.removeItem('admin_logged');
+                window.location.href = '/admin/login.html';
+                return false;
+            }
+        }
+
+        async function logout() {
+            try {
+                await fetch(API_BASE + '/logout', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + token,
+                        'Content-Type': 'application/json'
+                    }
+                });
+            } catch (err) {
+                console.error('Logout error:', err);
+            }
+            sessionStorage.removeItem('admin_token');
+            sessionStorage.removeItem('admin_logged');
+            window.location.href = '/admin/login.html';
+        }
+
+        // Verify on load
+        verifyAuth();
+
+        function setLang(lang) {
+            // Update buttons
+            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Update content
+            document.querySelectorAll('.lang-content').forEach(el => el.classList.remove('active'));
+            document.getElementById('content-' + lang).classList.add('active');
+
+            // Update nav title
+            document.querySelector('nav h1').textContent = lang === 'zh' ? 'AIB 2.0 管理后台' : 'AIB 2.0 Admin Portal';
+
+            // Update logout text
+            document.querySelector('.logout').textContent = lang === 'zh' ? '登出' : 'Logout';
+
+            // Save preference
+            localStorage.setItem('admin_lang', lang);
+        }
+
+        // Load saved language (default to zh)
+        const savedLang = localStorage.getItem('admin_lang') || 'zh';
+        if (savedLang === 'en') {
+            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.lang-btn')[0].classList.add('active');
+            document.querySelectorAll('.lang-content').forEach(el => el.classList.remove('active'));
+            document.getElementById('content-en').classList.add('active');
+            document.querySelector('nav h1').textContent = 'AIB 2.0 Admin Portal';
+            document.querySelector('.logout').textContent = 'Logout';
+        }
+    </script>
+<script src="/admin/auth.js"></script>
+</body>
+</html>

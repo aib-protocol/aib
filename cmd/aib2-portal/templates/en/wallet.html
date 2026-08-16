@@ -1,0 +1,685 @@
+{{define "content"}}
+<style>
+    /* AIB 2.0 Web Wallet Styles - Dark Theme */
+    :root {
+        --bg-primary: #0d1117;
+        --bg-secondary: #161b22;
+        --bg-tertiary: #1c2128;
+        --bg-quaternary: #242a33;
+        --text-primary: #c9d1d9;
+        --text-secondary: #8b949e;
+        --text-muted: #484f58;
+        --accent: #58a6ff;
+        --accent-hover: #79c0ff;
+        --accent-dark: #388bfd;
+        --border: #21262d;
+        --success: #3fb950;
+        --warning: #d29922;
+        --danger: #f85149;
+        --purple: #bc8cff;
+        --pink: #ff7b72;
+        --green: #238636;
+        --yellow: #9e6a03;
+
+        /* Wallet specific colors */
+        --wallet-bg: #1a1f26;
+        --panel-bg: #181c22;
+        --card-bg: #1f242d;
+        --input-bg: #242a33;
+        --input-border: #30363d;
+        --button-primary: #238636;
+        --button-primary-hover: #2ea043;
+        --button-secondary: #30363d;
+        --button-secondary-hover: #3e4652;
+    }
+
+    body {
+        background: linear-gradient(135deg, #0d1117 0%, #161b22 100%);
+        color: var(--text-primary);
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, monospace;
+    }
+
+    /* Wallet Container */
+    .wallet-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 40px 24px;
+    }
+
+    .wallet-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 32px;
+        padding-bottom: 24px;
+        border-bottom: 2px solid var(--border);
+    }
+
+    .wallet-title {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .wallet-title h1 {
+        font-size: 32px;
+        font-weight: 800;
+        background: linear-gradient(135deg, #58a6ff, #bc8cff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin: 0;
+    }
+
+    .wallet-badge {
+        background: linear-gradient(135deg, rgba(88,166,255,0.15), rgba(188,140,255,0.15));
+        border: 1px solid var(--accent);
+        color: var(--accent);
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    /* Dashboard Grid */
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: 320px 1fr;
+        gap: 24px;
+        margin-bottom: 32px;
+    }
+
+    /* Sidebar */
+    .wallet-sidebar {
+        background: var(--panel-bg);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 24px;
+        height: fit-content;
+    }
+
+    .wallet-card {
+        background: var(--wallet-bg);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 16px;
+    }
+
+    .wallet-card h3 {
+        margin: 0 0 16px 0;
+        color: var(--text-secondary);
+        font-size: 14px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .address-display {
+        font-family: 'SF Mono', 'Monaco', monospace;
+        font-size: 14px;
+        color: var(--text-muted);
+        background: var(--input-bg);
+        border: 1px solid var(--input-border);
+        border-radius: 8px;
+        padding: 12px;
+        word-break: break-all;
+        position: relative;
+    }
+
+    .address-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 12px;
+    }
+
+    .btn-icon {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border-radius: 8px;
+        border: 1px solid var(--input-border);
+        background: var(--input-bg);
+        color: var(--text-primary);
+        cursor: pointer;
+        font-size: 12px;
+        transition: all 0.2s;
+    }
+
+    .btn-icon:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+        background: rgba(88,166,255,0.1);
+    }
+
+    /* Balance Card */
+    .balance-card {
+        background: linear-gradient(135deg, rgba(35,134,54,0.15), rgba(158,106,3,0.15));
+        border: 1px solid var(--success);
+        border-left: 4px solid var(--success);
+    }
+
+    .balance-value {
+        font-size: 36px;
+        font-weight: 800;
+        color: var(--success);
+        font-family: 'SF Mono', 'Monaco', monospace;
+        margin-bottom: 8px;
+    }
+
+    .balance-label {
+        color: var(--text-secondary);
+        font-size: 14px;
+        margin-bottom: 16px;
+    }
+
+    /* Main Content */
+    .wallet-main {
+        background: var(--panel-bg);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 24px;
+    }
+
+    /* Tabs */
+    .wallet-tabs {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 24px;
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 16px;
+    }
+
+    .tab-btn {
+        padding: 12px 20px;
+        border: 1px solid var(--border);
+        background: var(--wallet-bg);
+        color: var(--text-secondary);
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 14px;
+    }
+
+    .tab-btn:hover {
+        color: var(--text-primary);
+        border-color: var(--accent);
+    }
+
+    .tab-btn.active {
+        background: var(--accent);
+        color: white;
+        border-color: var(--accent);
+    }
+
+    /* Forms */
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        color: var(--text-secondary);
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 12px 16px;
+        border-radius: 10px;
+        border: 1px solid var(--input-border);
+        background: var(--input-bg);
+        color: var(--text-primary);
+        font-size: 14px;
+        font-family: 'SF Mono', 'Monaco', monospace;
+        transition: all 0.2s;
+        box-sizing: border-box;
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(88,166,255,0.1);
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+
+    /* Buttons */
+    .btn {
+        padding: 12px 20px;
+        border-radius: 10px;
+        border: none;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 14px;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, var(--button-primary), var(--button-primary-hover));
+        color: white;
+        border: 1px solid var(--button-primary);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(35,134,54,0.3);
+    }
+
+    .btn-secondary {
+        background: var(--button-secondary);
+        color: var(--text-primary);
+        border: 1px solid var(--input-border);
+    }
+
+    .btn-secondary:hover {
+        background: var(--button-secondary-hover);
+        border-color: var(--border);
+    }
+
+    .btn-danger {
+        background: var(--danger);
+        color: white;
+        border: 1px solid var(--danger);
+    }
+
+    .btn-danger:hover {
+        background: #da3633;
+        transform: translateY(-1px);
+    }
+
+    .btn-group {
+        display: flex;
+        gap: 12px;
+        margin-top: 20px;
+    }
+
+    /* Transaction History */
+    .tx-history {
+        overflow-x: auto;
+        margin-top: 24px;
+    }
+
+    .tx-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 600px;
+    }
+
+    .tx-table th {
+        text-align: left;
+        padding: 12px;
+        color: var(--text-secondary);
+        font-size: 12px;
+        font-weight: 600;
+        border-bottom: 1px solid var(--border);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .tx-table td {
+        padding: 12px;
+        border-bottom: 1px solid var(--border);
+        font-size: 14px;
+        font-family: 'SF Mono', 'Monaco', monospace;
+    }
+
+    .tx-hash {
+        font-size: 12px;
+        color: var(--text-muted);
+        max-width: 120px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .tx-amount {
+        font-weight: 700;
+        color: var(--success);
+    }
+
+    .tx-amount.negative {
+        color: var(--danger);
+    }
+
+    .tx-type {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .tx-type.receive {
+        background: rgba(63,185,80,0.15);
+        color: var(--success);
+        border: 1px solid var(--success);
+    }
+
+    .tx-type.send {
+        background: rgba(248,81,73,0.15);
+        color: var(--danger);
+        border: 1px solid var(--danger);
+    }
+
+    .tx-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        color: var(--success);
+    }
+
+    /* Status Messages */
+    .status-message {
+        padding: 12px 16px;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        margin-bottom: 20px;
+        font-size: 14px;
+        display: none;
+    }
+
+    .status-success {
+        background: rgba(63,185,80,0.15);
+        border-color: var(--success);
+        color: var(--success);
+        display: block;
+    }
+
+    .status-error {
+        background: rgba(248,81,73,0.15);
+        border-color: var(--danger);
+        color: var(--danger);
+        display: block;
+    }
+
+    .status-info {
+        background: rgba(88,166,255,0.15);
+        border-color: var(--accent);
+        color: var(--accent);
+        display: block;
+    }
+
+    /* Private Key Warning */
+    .warning-box {
+        background: rgba(210,153,34,0.15);
+        border: 1px solid var(--warning);
+        color: var(--warning);
+        padding: 16px;
+        border-radius: 12px;
+        margin-bottom: 16px;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    .warning-box strong {
+        color: #fff;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .dashboard-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+
+        .btn-group {
+            flex-direction: column;
+        }
+    }
+</style>
+
+<div class="wallet-container">
+    <!-- Header -->
+    <div class="wallet-header">
+        <div class="wallet-title">
+            <span style="font-size: 36px; color: var(--accent);">💰</span>
+            <div>
+                <h1>AIB 2.0 Web Wallet</h1>
+                <span class="wallet-badge">Testnet</span>
+            </div>
+        </div>
+        <div class="wallet-actions">
+            <button class="btn-secondary" onclick="clearWallet()">Clear Wallet</button>
+            <button class="btn-secondary" onclick="exportWallet()">Export</button>
+        </div>
+    </div>
+
+    <!-- Status Messages -->
+    <div id="statusMessage" class="status-message"></div>
+
+    <!-- Dashboard -->
+    <div class="dashboard-grid">
+        <!-- Sidebar -->
+        <div class="wallet-sidebar">
+            <!-- Balance Card -->
+            <div class="wallet-card balance-card">
+                <h3>Total Balance</h3>
+                <div class="balance-value" id="totalBalance">0.00000000</div>
+                <div class="balance-label">AIB</div>
+                <div style="display: flex; gap: 8px; margin-top: 12px;">
+                    <button class="btn-primary" onclick="refreshBalance()" style="flex: 1;">Refresh</button>
+                    <button class="btn-secondary" onclick="connectNode()" style="flex: 1;">Connect</button>
+                </div>
+            </div>
+
+            <!-- Address Card -->
+            <div class="wallet-card">
+                <h3>Your Address</h3>
+                <div class="address-display" id="walletAddress">Not generated yet</div>
+                <div class="address-actions">
+                    <button class="btn-icon" onclick="copyAddress()">
+                        📋 Copy
+                    </button>
+                    <button class="btn-icon" onclick="showQRCode()">
+                        📱 QR Code
+                    </button>
+                </div>
+            </div>
+
+            <!-- Private Key Card -->
+            <div class="wallet-card">
+                <h3>Private Key</h3>
+                <div class="address-display" id="privateKeyDisplay" style="color: var(--danger);">
+                    Hidden for security
+                </div>
+                <div class="address-actions">
+                    <button class="btn-icon" onclick="togglePrivateKey()">
+                        👁️ Show/Hide
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="wallet-main">
+            <!-- Tabs -->
+            <div class="wallet-tabs">
+                <button class="tab-btn active" onclick="switchTab('create')" id="tab-create">Create Wallet</button>
+                <button class="tab-btn" onclick="switchTab('import')" id="tab-import">Import Wallet</button>
+                <button class="tab-btn" onclick="switchTab('send')" id="tab-send">Send AIB</button>
+                <button class="tab-btn" onclick="switchTab('history')" id="tab-history">Transaction History</button>
+            </div>
+
+            <!-- Create Wallet Tab -->
+            <div id="tab-content-create" class="tab-content">
+                <div class="warning-box">
+                    <strong>⚠️ Security Warning:</strong> This is a demo wallet for the testnet. Never use private keys from this wallet for mainnet. Store your private keys securely and never share them.
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div class="form-group">
+                        <label>Wallet Name</label>
+                        <input type="text" id="walletName" class="form-input" placeholder="My Test Wallet">
+                    </div>
+                    <div class="form-group">
+                        <label>Encryption Password (optional)</label>
+                        <input type="password" id="walletPassword" class="form-input" placeholder="Leave empty for no encryption">
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="createWallet()">Generate New Wallet</button>
+                    <button class="btn btn-secondary" onclick="generateMnemonic()">Generate Mnemonic</button>
+                </div>
+
+                <div id="walletOutput" style="margin-top: 20px; display: none;">
+                    <h3>Your Wallet Details</h3>
+                    <div class="form-group">
+                        <label>Private Key (32 bytes)</label>
+                        <input type="text" id="generatedPrivateKey" class="form-input" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Public Key (32 bytes)</label>
+                        <input type="text" id="generatedPublicKey" class="form-input" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Address (Bech32m)</label>
+                        <input type="text" id="generatedAddress" class="form-input" readonly>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="saveWallet()">Save to Browser</button>
+                        <button class="btn btn-secondary" onclick="downloadWallet()">Download JSON</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Import Wallet Tab -->
+            <div id="tab-content-import" class="tab-content" style="display: none;">
+                <div class="warning-box">
+                    <strong>⚠️ Security Warning:</strong> Only import private keys from trusted sources. Never paste your private key into untrusted websites.
+                </div>
+
+                <div class="form-group">
+                    <label>Import Method</label>
+                    <div style="display: flex; gap: 12px; margin-bottom: 16px;">
+                        <button class="btn-icon" onclick="setImportMethod('private')">🔑 Private Key</button>
+                        <button class="btn-icon" onclick="setImportMethod('mnemonic')">📝 Mnemonic</button>
+                    </div>
+                </div>
+
+                <div id="import-private" style="display: block;">
+                    <div class="form-group">
+                        <label>Private Key (32-byte hex)</label>
+                        <input type="text" id="importPrivateKey" class="form-input" placeholder="e.g., a1b2c3d4...">
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="importPrivateKey()">Import Private Key</button>
+                    </div>
+                </div>
+
+                <div id="import-mnemonic" style="display: none;">
+                    <div class="form-group">
+                        <label>Mnemonic Phrase (12-24 words)</label>
+                        <textarea id="importMnemonic" class="form-input" rows="4" placeholder="word1 word2 word3..."></textarea>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="importMnemonic()">Import from Mnemonic</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Send Tab -->
+            <div id="tab-content-send" class="tab-content" style="display: none;">
+                <div class="form-group">
+                    <label>Recipient Address</label>
+                    <input type="text" id="sendAddress" class="form-input" placeholder="aib1...">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Amount (AIB)</label>
+                        <input type="number" id="sendAmount" class="form-input" placeholder="0.00" step="0.00000001" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Fee (AIB)</label>
+                        <input type="number" id="sendFee" class="form-input" placeholder="0.0001" step="0.00000001" value="0.0001" min="0">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Network</label>
+                    <div style="display: flex; gap: 12px;">
+                        <button class="btn-icon" onclick="setNetwork('l1')">⛓️ L1 (60s, higher fee)</button>
+                        <button class="btn-icon" onclick="setNetwork('l2')">⚡ L2 (instant, lower fee)</button>
+                    </div>
+                    <div style="margin-top: 8px; font-size: 12px; color: var(--text-muted);">
+                        Current: <span id="currentNetwork">L1</span>
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="calculateFee()">Calculate Fee</button>
+                    <button class="btn btn-primary" onclick="sendTransaction()">Send Transaction</button>
+                </div>
+            </div>
+
+            <!-- History Tab -->
+            <div id="tab-content-history" class="tab-content" style="display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <div>
+                        <button class="btn-secondary" onclick="loadHistory()">Refresh History</button>
+                        <span style="margin-left: 12px; color: var(--text-secondary); font-size: 12px;">
+                            Last updated: <span id="lastHistoryUpdate">Never</span>
+                        </span>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn-icon" onclick="filterHistory('all')">All</button>
+                        <button class="btn-icon" onclick="filterHistory('receive')">Receive</button>
+                        <button class="btn-icon" onclick="filterHistory('send')">Send</button>
+                    </div>
+                </div>
+
+                <div class="tx-history">
+                    <table class="tx-table">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Hash</th>
+                                <th>Amount</th>
+                                <th>Fee</th>
+                                <th>Block</th>
+                                <th>Status</th>
+                                <th>Time</th>
+                            </tr>
+                        </thead>
+                        <tbody id="txHistoryBody">
+                            <tr>
+                                <td colspan="7" style="text-align: center; color: var(--text-secondary); padding: 40px;">
+                                    No transactions yet. Start by creating a wallet and receiving some AIB.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- QR Code Modal -->
+<div id="qrModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center;">
+    <div style="background: var(--panel-bg); border: 1px solid var(--border); border-radius: 16px; padding: 24px; text-align: center;">
+        <h3>Your AIB Address QR Code</h3>
+        <div id="qrCode" style="margin: 20px 0;"></div>
+        <button class="btn-secondary" onclick="closeQRCode()">Close</button>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcode.js/lib/qrcode.min.js"></script>
+<script src="/static/js/wallet.js"></script>
+{{end}}

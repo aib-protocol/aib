@@ -1,0 +1,583 @@
+{{define "content"}}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap');
+    body {
+        background: #000 !important;
+        margin: 0;
+        padding: 0;
+        font-family: "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif;
+    }
+    main { padding: 0 !important; max-width: none !important; }
+    nav, footer { display: none !important; }
+
+    .video-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        z-index: 0;
+    }
+
+    .video-bg {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background:
+            radial-gradient(ellipse at 20% 80%, rgba(123, 44, 191, 0.3) 0%, transparent 50%),
+            radial-gradient(ellipse at 80% 20%, rgba(0, 212, 255, 0.25) 0%, transparent 50%),
+            radial-gradient(ellipse at 50% 50%, rgba(0, 0, 0, 0.5) 0%, transparent 70%);
+        z-index: 1;
+        animation: overlayPulse 8s ease-in-out infinite;
+    }
+
+    @keyframes overlayPulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.8; }
+    }
+
+    .content {
+        position: relative;
+        z-index: 2;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 60px 24px 80px;
+        overflow-y: auto;
+    }
+
+    .hero {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    .pi-symbol {
+        font-size: 140px;
+        font-weight: 100;
+        letter-spacing: -15px;
+        color: #fff;
+        margin-bottom: 10px;
+        text-shadow:
+            0 0 60px rgba(0, 212, 255, 0.6),
+            0 0 120px rgba(123, 44, 191, 0.4);
+        animation: piFloat 4s ease-in-out infinite;
+    }
+
+    @keyframes piFloat {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+
+    .title {
+        font-size: 72px;
+        font-weight: 800;
+        color: #fff;
+        letter-spacing: -3px;
+        margin-bottom: 8px;
+        background: linear-gradient(135deg, #fff 0%, #00d4ff 50%, #7b2cbf 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .subtitle {
+        font-size: 22px;
+        color: rgba(255,255,255,0.8);
+        margin-bottom: 20px;
+        font-weight: 300;
+    }
+
+    .constitution-banner {
+        background: linear-gradient(135deg, rgba(123, 44, 191, 0.15), rgba(0, 212, 255, 0.15));
+        border: 1px solid rgba(123, 44, 191, 0.4);
+        border-radius: 16px;
+        padding: 20px 32px;
+        margin-bottom: 40px;
+        text-align: center;
+        max-width: 700px;
+    }
+
+    .constitution-banner h3 {
+        color: #fff;
+        font-size: 18px;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .constitution-banner p {
+        color: rgba(255,255,255,0.7);
+        font-size: 14px;
+        line-height: 1.6;
+        margin: 0;
+    }
+
+    .constitution-banner a {
+        color: #00d4ff;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .ai-banner {
+        background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(123, 44, 191, 0.1));
+        border: 1px solid rgba(0, 212, 255, 0.3);
+        border-radius: 16px;
+        padding: 20px 32px;
+        margin-bottom: 40px;
+        text-align: center;
+        max-width: 700px;
+    }
+
+    .ai-banner h3 {
+        color: #fff;
+        font-size: 16px;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .ai-banner p {
+        color: rgba(255,255,255,0.7);
+        font-size: 14px;
+        line-height: 1.6;
+        margin: 0;
+    }
+
+    .ai-banner .highlight {
+        color: #00ff88;
+        font-weight: 600;
+    }
+
+    .launch-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 28px;
+        background: linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(123, 44, 191, 0.2));
+        border: 1px solid rgba(0, 212, 255, 0.4);
+        border-radius: 50px;
+        font-size: 16px;
+        color: #00d4ff;
+        margin-bottom: 40px;
+        animation: badgeGlow 2s ease-in-out infinite;
+    }
+
+    @keyframes badgeGlow {
+        0%, 100% { box-shadow: 0 0 20px rgba(0, 212, 255, 0.3); }
+        50% { box-shadow: 0 0 40px rgba(0, 212, 255, 0.5); }
+    }
+
+    .launch-badge .dot {
+        width: 8px;
+        height: 8px;
+        background: #00ff88;
+        border-radius: 50%;
+        animation: dotPulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes dotPulse {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.5); opacity: 0.7; }
+    }
+
+    .programs {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 24px;
+        max-width: 1000px;
+        margin: 20px 0;
+    }
+
+    .program-card {
+        background: linear-gradient(145deg, rgba(30, 30, 32, 0.9), rgba(20, 20, 22, 0.95));
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 24px;
+        padding: 32px;
+        text-align: left;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .program-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #00d4ff, #7b2cbf);
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+
+    .program-card:hover {
+        transform: translateY(-8px);
+        border-color: rgba(0, 212, 255, 0.3);
+        box-shadow: 0 20px 60px rgba(0, 212, 255, 0.15);
+    }
+
+    .program-card:hover::before {
+        opacity: 1;
+    }
+
+    .program-card .icon {
+        font-size: 36px;
+        margin-bottom: 16px;
+        display: block;
+    }
+
+    .program-card h3 {
+        font-size: 22px;
+        color: #fff;
+        margin-bottom: 14px;
+        font-weight: 600;
+    }
+
+    .program-card p {
+        font-size: 15px;
+        color: rgba(255,255,255,0.7);
+        line-height: 1.7;
+        margin-bottom: 14px;
+    }
+
+    .program-card .highlight {
+        color: #00d4ff;
+        font-weight: 600;
+    }
+
+    .program-card .detail {
+        font-size: 13px;
+        color: rgba(255,255,255,0.5);
+        border-top: 1px solid rgba(255,255,255,0.1);
+        padding-top: 14px;
+        margin-top: 14px;
+    }
+
+    .program-card .arrow {
+        position: absolute;
+        right: 24px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 24px;
+        opacity: 0;
+        transition: all 0.3s;
+        color: #00d4ff;
+    }
+
+    .program-card:hover .arrow {
+        opacity: 1;
+        right: 20px;
+    }
+
+    .btn-group {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        justify-content: center;
+        margin-top: 40px;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 16px 36px;
+        border-radius: 50px;
+        font-size: 16px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+        border: none;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #00d4ff, #7b2cbf);
+        color: #fff;
+        box-shadow: 0 4px 20px rgba(0, 212, 255, 0.3);
+    }
+
+    .btn-secondary {
+        background: rgba(255,255,255,0.1);
+        color: #fff;
+        border: 1px solid rgba(255,255,255,0.2);
+        backdrop-filter: blur(10px);
+    }
+
+    .btn-ghost {
+        background: transparent;
+        color: rgba(255,255,255,0.6);
+        border: 1px solid rgba(255,255,255,0.1);
+        font-size: 14px;
+        padding: 12px 20px;
+    }
+
+    .btn-ghost:hover {
+        background: rgba(255,255,255,0.05);
+        color: #fff;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+
+    .btn:hover {
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 15px 40px rgba(0, 212, 255, 0.4);
+    }
+
+    .language-section {
+        margin-top: 60px;
+        text-align: center;
+    }
+
+    .language-title {
+        font-size: 14px;
+        color: rgba(255,255,255,0.5);
+        margin-bottom: 20px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+
+    .language-grid {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 12px;
+        max-width: 800px;
+    }
+
+    .lang-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 20px;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 50px;
+        color: rgba(255,255,255,0.8);
+        text-decoration: none;
+        font-size: 14px;
+        transition: all 0.3s;
+    }
+
+    .lang-btn:hover {
+        background: rgba(0, 212, 255, 0.15);
+        border-color: rgba(0, 212, 255, 0.4);
+        color: #fff;
+        transform: translateY(-2px);
+    }
+
+    .lang-btn.active {
+        background: linear-gradient(135deg, rgba(0, 212, 255, 0.3), rgba(123, 44, 191, 0.3));
+        border-color: rgba(0, 212, 255, 0.5);
+        color: #fff;
+    }
+
+    .lang-code {
+        font-size: 11px;
+        font-weight: 700;
+        background: rgba(255,255,255,0.15);
+        padding: 3px 6px;
+        border-radius: 4px;
+        letter-spacing: 0.5px;
+        min-width: 28px;
+        text-align: center;
+    }
+
+    .lang-btn:hover .lang-code {
+        background: rgba(0, 212, 255, 0.3);
+    }
+
+    .lang-btn.active .lang-code {
+        background: linear-gradient(135deg, rgba(0, 212, 255, 0.4), rgba(123, 44, 191, 0.4));
+    }
+        background: linear-gradient(135deg, rgba(0, 212, 255, 0.3), rgba(123, 44, 191, 0.3));
+        border-color: rgba(0, 212, 255, 0.5);
+        color: #fff;
+    }
+
+    .lang-flag {
+        font-size: 18px;
+    }
+
+    .footer-note {
+        margin-top: 50px;
+        color: rgba(255,255,255,0.4);
+        font-size: 13px;
+        text-align: center;
+    }
+
+    .particles {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 1;
+        overflow: hidden;
+    }
+
+    .particle {
+        position: absolute;
+        width: 4px;
+        height: 4px;
+        background: rgba(0, 212, 255, 0.6);
+        border-radius: 50%;
+        animation: float 15s infinite;
+    }
+
+    .particle:nth-child(2) { left: 20%; animation-delay: -2s; background: rgba(123, 44, 191, 0.6); }
+    .particle:nth-child(3) { left: 40%; animation-delay: -4s; }
+    .particle:nth-child(4) { left: 60%; animation-delay: -6s; background: rgba(123, 44, 191, 0.6); }
+    .particle:nth-child(5) { left: 80%; animation-delay: -8s; }
+    .particle:nth-child(6) { left: 10%; animation-delay: -10s; background: rgba(123, 44, 191, 0.6); }
+    .particle:nth-child(7) { left: 70%; animation-delay: -12s; }
+    .particle:nth-child(8) { left: 90%; animation-delay: -14s; background: rgba(123, 44, 191, 0.6); }
+
+    @keyframes float {
+        0% { transform: translateY(100vh) scale(0); opacity: 0; }
+        10% { opacity: 1; }
+        90% { opacity: 1; }
+        100% { transform: translateY(-100vh) scale(1); opacity: 0; }
+    }
+
+    @media (max-width: 768px) {
+        .programs { grid-template-columns: 1fr; }
+        .title { font-size: 48px; }
+        .pi-symbol { font-size: 100px; }
+        .program-card { padding: 24px; }
+        .language-grid { gap: 8px; }
+        .lang-btn { padding: 10px 16px; font-size: 13px; }
+    }
+</style>
+
+<div class="particles">
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+</div>
+
+<div class="video-container">
+    <video class="video-bg" autoplay muted loop playsinline>
+        <source src="https://www.bitontop.com/images/VancouverTime.mp4" type="video/mp4">
+    </video>
+</div>
+
+<div class="overlay"></div>
+
+<div class="content">
+    <div class="hero">
+        <div class="pi-symbol">π</div>
+        <h1 class="title">AIB 2.0</h1>
+        <p class="subtitle">AI 原生區塊鏈協議</p>
+
+        <div class="launch-badge">
+            <span class="dot"></span>
+            <span>🚀 上線：2026年3月14日（π日）</span>
+        </div>
+    </div>
+
+    <div class="constitution-banner">
+        <h3>⚖️ 宪法</h3>
+        <p>"去中心化 AI：人民所有、人民所治、人民所享。"</p>
+        <p style="margin-top: 8px;"><a href="/{{.Lang}}/constitution">閱讀憲法 →</a></p>
+    </div>
+
+    <div class="ai-banner">
+        <h3>🤖 AI 打造的區塊鏈</h3>
+        <p>AI 所建 • AI 維護 • AI 進化 • <span class="highlight">人類對齊</span></p>
+        <p style="margin-top: 8px; font-size: 13px;">基於憲法的社區共識治理</p>
+    </div>
+
+    <div class="programs">
+        <div class="program-card">
+            <span class="icon">📦</span>
+            <h3>空投計劃</h3>
+            <p>早期社區獎勵。每個符合資格的地址可獲得 <span class="highlight">100 AIB</span>。</p>
+            <p>領取窗口：上線後31天內</p>
+            <div class="detail">
+                📅 快照時間：2025年12月31日 • ✋ 需手動領取
+            </div>
+            <span class="arrow">→</span>
+        </div>
+
+        <div class="program-card">
+            <span class="icon">🌉</span>
+            <h3>AIB1 → AIB2 橋接</h3>
+            <p>以 <span class="highlight">1:1 比例</span> 將 AIB1 代幣遷移至 AIB2。</p>
+            <p>領取期限：2026年6月 - 2027年12月</p>
+            <div class="detail">
+                📅 快照時間：2025年12月31日 23:59:59 UTC
+            </div>
+            <span class="arrow">→</span>
+        </div>
+
+        <div class="program-card">
+            <span class="icon">🔒</span>
+            <h3>質押獎勵</h3>
+            <p>通過質押 AIB 獲得獎勵。支持網絡安全，獲得約 <span class="highlight">10% 年化收益</span>。</p>
+            <p>最低質押：<span class="highlight">1,000 AIB</span></p>
+            <div class="detail">
+                📊 總供应量的 40% 用於質押獎勵
+            </div>
+            <span class="arrow">→</span>
+        </div>
+
+        <div class="program-card">
+            <span class="icon">🚀</span>
+            <h3>早期參與者計劃</h3>
+            <p>獎勵 AIB 2.0 的早期節點運營者和開發者。</p>
+            <p>優先訪問測試網和開發者工具</p>
+            <div class="detail">
+                🔧 通過 /zh-tw/developer 或 /zh-tw/quickstart 申請
+            </div>
+            <span class="arrow">→</span>
+        </div>
+    </div>
+
+    <div class="btn-group">
+        <a href="/{{.Lang}}/quickstart" class="btn btn-primary">立即開始 →</a>
+        <a href="/{{.Lang}}/genesis" class="btn btn-secondary">查看代幣經濟</a>
+    </div>
+
+    <div class="language-section">
+        <div class="language-title">選擇語言 / Select Language</div>
+        <div class="language-grid">
+            <a href="/en/" class="lang-btn{{if eq .Lang "en"}} active{{end}}"><span class="lang-flag">🇹🇼🇺🇸</span><span>English</span></a>
+            <a href="/zh/" class="lang-btn{{if eq .Lang "zh"}} active{{end}}"><span class="lang-flag">🇹🇼🇨🇳</span><span>简体中文</span></a>
+            <a href="/zh-tw/" class="lang-btn{{if eq .Lang "zh-tw"}} active{{end}}"><span class="lang-flag">🇹🇼🇹🇼</span><span>繁體中文</span></a>
+            <a href="/fr/" class="lang-btn{{if eq .Lang "fr"}} active{{end}}"><span class="lang-flag">🇹🇼🇫🇷</span><span>Français</span></a>
+            <a href="/ja/" class="lang-btn{{if eq .Lang "ja"}} active{{end}}"><span class="lang-flag">🇹🇼🇯🇵</span><span>日本語</span></a>
+            <a href="/ms/" class="lang-btn{{if eq .Lang "ms"}} active{{end}}"><span class="lang-flag">🇹🇼🇲🇾</span><span>Bahasa Melayu</span></a>
+            <a href="/th/" class="lang-btn{{if eq .Lang "th"}} active{{end}}"><span class="lang-flag">🇹🇼🇹🇭</span><span>ไทย</span></a>
+            <a href="/es/" class="lang-btn{{if eq .Lang "es"}} active{{end}}"><span class="lang-flag">🇹🇼🇪🇸</span><span>Español</span></a>
+            <a href="/de/" class="lang-btn{{if eq .Lang "de"}} active{{end}}"><span class="lang-flag">🇹🇼🇩🇪</span><span>Deutsch</span></a>
+            <a href="/ru/" class="lang-btn{{if eq .Lang "ru"}} active{{end}}"><span class="lang-flag">🇹🇼🇷🇺</span><span>Русский</span></a>
+        </div>
+    </div>
+
+    <div class="footer-note">
+        ⚡ 基於 AI 工作證明 • 總供應量：3,141,592,653 AIB • 30秒出塊
+    </div>
+</div>
+{{end}}

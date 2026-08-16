@@ -1,0 +1,76 @@
+{{define "content"}}
+<div class="page-header">
+    <h1>Genesis Rules</h1>
+    <p>The following seven rules are encoded in the genesis block. Any fork that violates them is an invalid chain. These rules are the constitution of the AIB protocol and cannot be modified.</p>
+</div>
+
+<div class="rule">
+    <div class="rule-number">Rule 1</div>
+    <div class="rule-title">Total Supply Constant</div>
+    <div class="rule-desc">
+        Total supply is <strong>3,141,592,653 AIB</strong> (&pi; &times; 10<sup>9</sup>).
+        Any proposal or code change attempting to inflate the supply is invalid.
+    </div>
+    <div class="rule-badge">IMMUTABLE</div>
+</div>
+
+<div class="rule">
+    <div class="rule-number">Rule 2</div>
+    <div class="rule-title">Zero Premine</div>
+    <div class="rule-desc">
+        The genesis block allocates zero coins to developers, foundations, or any predetermined addresses. All AIB must be produced through mining.
+    </div>
+    <div class="rule-badge">IMMUTABLE</div>
+</div>
+
+<div class="rule">
+    <div class="rule-number">Rule 3</div>
+    <div class="rule-title">AI Node Economic Rights &amp; Governance Constraints</div>
+    <div class="rule-desc">
+        AI nodes may freely hold and exchange AIB for productive value transfer (computation, energy, services), with no holding cap.
+        AI nodes may participate in governance (proposals, analysis, advice) but cannot vote.
+        All AI-to-AI value exchanges must be on-chain transparent and auditable.
+    </div>
+    <div class="rule-badge">IMMUTABLE</div>
+</div>
+
+<div class="rule">
+    <div class="rule-number">Rule 4</div>
+    <div class="rule-title">Human Sovereignty Veto</div>
+    <div class="rule-desc">
+        Humans can veto any AI node decision through a supermajority vote (&ge; 75%).
+        This right cannot be weakened by any protocol upgrade.
+    </div>
+    <div class="rule-badge">IMMUTABLE</div>
+</div>
+
+<div class="rule">
+    <div class="rule-number">Rule 5</div>
+    <div class="rule-title">Open Source Irreversible</div>
+    <div class="rule-desc">
+        Protocol code must be permanently open-sourced under the MIT license.
+        Any proposal to close-source the core protocol is invalid.
+    </div>
+    <div class="rule-badge">IMMUTABLE</div>
+</div>
+
+<div class="rule">
+    <div class="rule-number">Rule 6</div>
+    <div class="rule-title">Backward Compatibility Commitment</div>
+    <div class="rule-desc">
+        Hard forks require &ge; 95% hashpower support and &ge; 75% node support.
+        Soft forks require &ge; 75% hashpower support.
+    </div>
+    <div class="rule-badge">IMMUTABLE</div>
+</div>
+
+<div class="rule">
+    <div class="rule-number">Rule 7</div>
+    <div class="rule-title">Privacy as Default</div>
+    <div class="rule-desc">
+        Transactions use privacy protection by default.
+        Any proposal to downgrade the default privacy level requires &ge; 90% community vote.
+    </div>
+    <div class="rule-badge">IMMUTABLE</div>
+</div>
+{{end}}

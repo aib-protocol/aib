@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIB 2.0 - Quick Start</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Inter:wght@300;400;500;600;700&display=swap">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: #fff;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Cyberpunk grid background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background:
+                linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px),
+                linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 60px 40px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .logo {
+            font-size: 4rem;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #00d4ff, #7b2ff7, #ff006e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+            letter-spacing: -2px;
+        }
+
+        .tagline {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .badge {
+            display: inline-block;
+            background: linear-gradient(135deg, rgba(0,212,255,0.1), rgba(123,47,247,0.1));
+            border: 1px solid rgba(0,212,255,0.3);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            color: #00d4ff;
+        }
+
+        /* Platform tabs */
+        .platform-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 12px 30px;
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            color: #888;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tab:hover {
+            border-color: #00d4ff;
+            color: #00d4ff;
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, rgba(0,212,255,0.15), rgba(123,47,247,0.15));
+            border-color: #00d4ff;
+            color: #00d4ff;
+        }
+
+        .tab-icon { font-size: 1.2rem; }
+
+        /* Install card */
+        .install-card {
+            background: linear-gradient(135deg, rgba(17,17,17,0.9), rgba(10,10,15,0.9));
+            border: 1px solid #333;
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .install-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 2px;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7, #ff006e);
+        }
+
+        .install-card h2 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #00d4ff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .cmd-box {
+            background: #0a0a0f;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .cmd-box::before {
+            content: 'TERMINAL';
+            position: absolute;
+            top: -10px;
+            left: 15px;
+            background: #0a0a0f;
+            padding: 0 8px;
+            font-size: 0.7rem;
+            color: #666;
+        }
+
+        .cmd {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.95rem;
+            color: #00ff88;
+            line-height: 1.6;
+            word-break: break-all;
+        }
+
+        .cmd-prompt { color: #00d4ff; }
+        .cmd-flag { color: #ff006e; }
+        .cmd-string { color: #ffbf00; }
+
+        .copy-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #222;
+            border: 1px solid #444;
+            color: #888;
+            padding: 6px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: #00d4ff;
+            border-color: #00d4ff;
+            color: #000;
+        }
+
+        .steps {
+            margin-top: 25px;
+        }
+
+        .step {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: rgba(0,212,255,0.03);
+            border-radius: 10px;
+            border-left: 3px solid #00d4ff;
+        }
+
+        .step-num {
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, #00d4ff, #7b2ff7);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.85rem;
+            flex-shrink: 0;
+        }
+
+        .step-content h4 {
+            color: #fff;
+            margin-bottom: 5px;
+        }
+
+        .step-content p {
+            color: #888;
+            font-size: 0.9rem;
+        }
+
+        /* Hardware specs */
+        .specs {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .spec {
+            background: #111;
+            border: 1px solid #333;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .spec:hover {
+            border-color: #00d4ff;
+            transform: translateY(-3px);
+        }
+
+        .spec-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #00ff88;
+        }
+
+        .spec-label {
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        /* Nav */
+        .nav {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 50px;
+            flex-wrap: wrap;
+        }
+
+        .nav a {
+            color: #666;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            transition: all 0.3s;
+            border: 1px solid transparent;
+        }
+
+        .nav a:hover {
+            color: #00d4ff;
+            background: rgba(0,212,255,0.05);
+            border-color: #333;
+        }
+
+        /* Content panels */
+        .panel { display: none; }
+        .panel.active { display: block; }
+
+        /* Glowing effect */
+        .glow {
+            text-shadow: 0 0 20px rgba(0,212,255,0.5);
+        }
+
+        /* Requirements badge */
+        .req-badge {
+            display: inline-block;
+            background: rgba(255,0,110,0.1);
+            border: 1px solid rgba(255,0,110,0.3);
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            color: #ff006e;
+            margin-left: 10px;
+        }
+
+        .network-toggle {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .network-btn {
+            padding: 10px 25px;
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: #888;
+            transition: all 0.3s;
+        }
+
+        .network-btn.active {
+            background: linear-gradient(135deg, rgba(0,212,255,0.2), rgba(123,47,247,0.2));
+            border-color: #00d4ff;
+            color: #00d4ff;
+        }
+
+        .network-btn.testnet.active {
+            border-color: #00ff88;
+            color: #00ff88;
+        }
+
+        .network-btn.mainnet.active {
+            border-color: #ff006e;
+            color: #ff006e;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">AIB 2.0</div>
+            <p class="tagline">AI-Native Blockchain Node</p>
+            <span class="badge">Proof of AI Work Consensus</span>
+        </div>
+
+        <!-- Network Selection -->
+        <div class="network-toggle">
+            <button class="network-btn testnet active" onclick="setNetwork('testnet')">Testnet</button>
+            <button class="network-btn mainnet" onclick="setNetwork('mainnet')">Mainnet</button>
+        </div>
+
+        <!-- Platform Tabs -->
+        <div class="platform-tabs">
+            <div class="tab active" data-platform="linux" onclick="showPlatform('linux')">
+                <span class="tab-icon">🐧</span>
+                <span>Linux</span>
+            </div>
+            <div class="tab" data-platform="macos" onclick="showPlatform('macos')">
+                <span class="tab-icon">🍎</span>
+                <span>macOS</span>
+            </div>
+            <div class="tab" data-platform="windows" onclick="showPlatform('windows')">
+                <span class="tab-icon">🪟</span>
+                <span>Windows</span>
+            </div>
+        </div>
+
+        <!-- Linux Panel -->
+        <div class="panel active" id="panel-linux">
+            <div class="install-card">
+                <h2><span>🚀</span> One-Line Install</h2>
+                <p style="color: #888; margin-bottom: 20px;">The fastest way to join the AIB 2.0 network on Linux.</p>
+
+                <div class="cmd-box">
+                    <button class="copy-btn" onclick="copyCommand('linux-cmd')">Copy</button>
+                    <div class="cmd" id="linux-cmd">
+                        <span class="cmd-prompt">$</span> curl -sL https://www.aib.one/install.sh | <span class="cmd-flag">bash</span> -s <span class="cmd-string">testnet</span>
+                    </div>
+                </div>
+
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-num">1</div>
+                        <div class="step-content">
+                            <h4>Run the installer</h4>
+                            <p>Paste the command above in your terminal. The script downloads, configures and starts your node automatically.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">2</div>
+                        <div class="step-content">
+                            <h4>Verify installation</h4>
+                            <p>Check your node status: <code style="background:#222;padding:3px 8px;border-radius:4px;color:#00ff88;">curl http://127.0.0.1:8080/v1/status</code></p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">3</div>
+                        <div class="step-content">
+                            <h4>Manage your node</h4>
+                            <p>
+                                <code style="background:#222;padding:2px 6px;border-radius:3px;color:#00ff88;font-size:0.8rem;">Stop:</code> <code style="color:#666;font-size:0.8rem;">curl -sL https://www.aib.one/install.sh | bash -s stop</code><br>
+                                <code style="background:#222;padding:2px 6px;border-radius:3px;color:#00ff88;font-size:0.8rem;">Status:</code> <code style="color:#666;font-size:0.8rem;">curl -sL https://www.aib.one/install.sh | bash -s status</code>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- macOS Panel -->
+        <div class="panel" id="panel-macos">
+            <div class="install-card">
+                <h2><span>🍎</span> macOS Installation</h2>
+                <p style="color: #888; margin-bottom: 20px;">Run AIB 2.0 node on your Mac. Requires macOS 12+.</p>
+
+                <div class="cmd-box">
+                    <button class="copy-btn" onclick="copyCommand('macos-cmd')">Copy</button>
+                    <div class="cmd" id="macos-cmd">
+                        <span class="cmd-prompt">$</span> curl -sL https://www.aib.one/install.sh | <span class="cmd-flag">bash</span> -s <span class="cmd-string">testnet</span>
+                    </div>
+                </div>
+
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-num">1</div>
+                        <div class="step-content">
+                            <h4>Open Terminal</h4>
+                            <p>Press Cmd+Space, type "Terminal", and press Enter.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">2</div>
+                        <div class="step-content">
+                            <h4>Install Command Line Tools</h4>
+                            <p>If prompted, install Xcode Command Line Tools when running the script.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">3</div>
+                        <div class="step-content">
+                            <h4>Run the installer</h4>
+                            <p>Paste the command and wait for installation to complete.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <p style="margin-top: 20px; padding: 15px; background: rgba(255,0,110,0.1); border-radius: 10px; font-size: 0.9rem; color: #ff88aa;">
+                    ⚠️ <strong>Note:</strong> macOS nodes may go to sleep when you close the laptop. For 24/7 operation, consider using a Linux VPS.
+                </p>
+            </div>
+        </div>
+
+        <!-- Windows Panel -->
+        <div class="panel" id="panel-windows">
+            <div class="install-card">
+                <h2><span>🪟</span> Windows Installation</h2>
+                <p style="color: #888; margin-bottom: 20px;">Run AIB 2.0 node using WSL (Windows Subsystem for Linux).</p>
+
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-num">1</div>
+                        <div class="step-content">
+                            <h4>Install WSL</h4>
+                            <p>Open PowerShell as Administrator and run: <code style="background:#222;padding:3px 8px;border-radius:4px;color:#00ff88;">wsl --install</code></p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">2</div>
+                        <div class="step-content">
+                            <h4>Restart and open Ubuntu</h4>
+                            <p>After restart, open "Ubuntu" from Start menu.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">3</div>
+                        <div class="step-content">
+                            <h4>Run the installer</h4>
+                            <div class="cmd-box" style="margin: 10px 0;">
+                                <div class="cmd" style="font-size: 0.85rem;">
+                                    <span class="cmd-prompt">$</span> curl -sL https://www.aib.one/install.sh | <span class="cmd-flag">bash</span> -s <span class="cmd-string">testnet</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <p style="margin-top: 20px; padding: 15px; background: rgba(255,0,110,0.1); border-radius: 10px; font-size: 0.9rem; color: #ff88aa;">
+                    ⚠️ <strong>Tip:</strong> WSL nodes will run when Windows is running. For 24/7 operation, use a Linux VPS.
+                </p>
+            </div>
+        </div>
+
+        <!-- Hardware Requirements -->
+        <div class="install-card">
+            <h2><span>⚙️</span> Hardware Requirements</h2>
+            <p style="color: #888; margin-bottom: 20px;">Minimum specifications for running an AIB 2.0 node.</p>
+
+            <div class="specs">
+                <div class="spec">
+                    <div class="spec-value">4+</div>
+                    <div class="spec-label">CPU Cores</div>
+                </div>
+                <div class="spec">
+                    <div class="spec-value">8GB+</div>
+                    <div class="spec-label">RAM</div>
+                </div>
+                <div class="spec">
+                    <div class="spec-value">100GB+</div>
+                    <div class="spec-label">SSD Storage</div>
+                </div>
+                <div class="spec">
+                    <div class="spec-value">10+</div>
+                    <div class="spec-label">Mbps Network</div>
+                </div>
+            </div>
+
+            <p style="font-size: 0.85rem; color: #666; text-align: center; margin-top: 15px;">
+                Recommended VPS: DigitalOcean, Linode, Vultr, AWS Lightsail, or any modern cloud provider.
+            </p>
+        </div>
+
+        <!-- AI Assistant -->
+        <div class="install-card" style="background: linear-gradient(135deg, rgba(0,212,255,0.05), rgba(123,47,247,0.05));">
+            <h2><span>🤖</span> AI-Powered Installation</h2>
+            <p style="color: #888; margin-bottom: 20px;">Let AI handle the installation for you!</p>
+
+            <div style="background: #0a0a0f; border: 1px solid #333; border-radius: 12px; padding: 20px; margin: 15px 0;">
+                <p style="color: #fff; margin-bottom: 10px;">Tell any AI assistant (ChatGPT, Claude, etc.):</p>
+                <p style="color: #00d4ff; font-family: 'JetBrains Mono', monospace; font-size: 0.9rem;">
+                    "Please install AIB 2.0 node on this server using the official installer"
+                </p>
+            </div>
+
+            <p style="font-size: 0.85rem; color: #666;">
+                Your AI will handle everything: downloading, installing, configuring, and running the node.
+            </p>
+        </div>
+
+        <!-- Node Management Commands -->
+        <div class="install-card">
+            <h2><span>⚡</span> Node Management</h2>
+            <p style="color: #888; margin-bottom: 20px;">Once installed, manage your node with these commands:</p>
+
+            <div class="specs" style="grid-template-columns: repeat(2, 1fr);">
+                <div class="spec" style="text-align: left; padding: 15px;">
+                    <div style="color: #00d4ff; font-weight: 600; margin-bottom: 5px;">Stop Node</div>
+                    <code style="color: #00ff88; font-size: 0.85rem;">curl -sL https://www.aib.one/install.sh | bash -s stop</code>
+                </div>
+                <div class="spec" style="text-align: left; padding: 15px;">
+                    <div style="color: #00d4ff; font-weight: 600; margin-bottom: 5px;">Check Status</div>
+                    <code style="color: #00ff88; font-size: 0.85rem;">curl -sL https://www.aib.one/install.sh | bash -s status</code>
+                </div>
+                <div class="spec" style="text-align: left; padding: 15px;">
+                    <div style="color: #00d4ff; font-weight: 600; margin-bottom: 5px;">View Logs</div>
+                    <code style="color: #00ff88; font-size: 0.85rem;">tail -f ~/.aib/node.log</code>
+                </div>
+                <div class="spec" style="text-align: left; padding: 15px;">
+                    <div style="color: #ff006e; font-weight: 600; margin-bottom: 5px;">Uninstall</div>
+                    <code style="color: #00ff88; font-size: 0.85rem;">curl -sL https://www.aib.one/install.sh | bash -s uninstall</code>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="nav">
+            <a href="/blocks">📊 Blocks</a>
+            <a href="/peers">🌐 Peers</a>
+            <a href="/tx">💸 Transactions</a>
+            <a href="/genesis">💰 Tokenomics</a>
+            <a href="/constitution">📜 Constitution</a>
+        </div>
+    </div>
+
+    <script>
+        let currentNetwork = 'testnet';
+
+        function showPlatform(platform) {
+            // Update tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+                if (tab.dataset.platform === platform) {
+                    tab.classList.add('active');
+                }
+            });
+
+            // Update panels
+            document.querySelectorAll('.panel').forEach(panel => {
+                panel.classList.remove('active');
+            });
+            document.getElementById('panel-' + platform).classList.add('active');
+        }
+
+        function setNetwork(network) {
+            currentNetwork = network;
+
+            // Update network buttons
+            document.querySelectorAll('.network-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector('.network-btn.' + network).classList.add('active');
+
+            // Update all commands
+            document.querySelectorAll('.cmd').forEach(cmd => {
+                const networkSpan = cmd.querySelector('.cmd-string');
+                if (networkSpan) {
+                    networkSpan.textContent = network;
+                }
+            });
+        }
+
+        function copyCommand(id) {
+            const cmdEl = document.getElementById(id);
+            const text = cmdEl.textContent.replace('$', '').trim();
+
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = cmdEl.parentElement.querySelector('.copy-btn');
+                btn.textContent = 'Copied!';
+                setTimeout(() => {
+                    btn.textContent = 'Copy';
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>

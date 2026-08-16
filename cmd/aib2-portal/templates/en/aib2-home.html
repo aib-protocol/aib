@@ -1,0 +1,688 @@
+{{define "content"}}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+    .aib2-home {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        background: #0d1117;
+        color: #c9d1d9;
+        min-height: 100vh;
+    }
+
+    .glass-card {
+        background: rgba(22, 27, 34, 0.7);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(0, 212, 255, 0.15);
+        border-radius: 16px;
+    }
+
+    .glow-text {
+        background: linear-gradient(135deg, #00d4ff, #7b2cbf, #e040fb);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .glow-border {
+        border: 1px solid rgba(0, 212, 255, 0.3);
+        box-shadow: 0 0 20px rgba(0, 212, 255, 0.1), inset 0 0 20px rgba(0, 212, 255, 0.05);
+    }
+
+    .hero {
+        text-align: center;
+        padding: 100px 40px;
+        background: linear-gradient(180deg, rgba(0,212,255,0.08) 0%, rgba(123,44,191,0.08) 50%, rgba(224,64,251,0.08) 100%);
+        border-radius: 24px;
+        margin-bottom: 60px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background:
+            radial-gradient(ellipse at 20% 20%, rgba(0,212,255,0.15) 0%, transparent 50%),
+            radial-gradient(ellipse at 80% 80%, rgba(123,44,191,0.15) 0%, transparent 50%),
+            radial-gradient(ellipse at 50% 50%, rgba(224,64,251,0.1) 0%, transparent 60%);
+        animation: gradient-shift 8s ease-in-out infinite alternate;
+    }
+
+    @keyframes gradient-shift {
+        0% { opacity: 0.6; transform: scale(1); }
+        100% { opacity: 1; transform: scale(1.05); }
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 1;
+    }
+
+    .hero h1 {
+        font-size: 4.5rem;
+        font-weight: 900;
+        background: linear-gradient(135deg, #00d4ff 0%, #7b2cbf 50%, #e040fb 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 16px;
+        letter-spacing: -2px;
+        text-shadow: 0 0 60px rgba(0,212,255,0.5);
+    }
+
+    .hero .pi-symbol {
+        font-size: 3.5rem;
+        font-weight: 900;
+        background: linear-gradient(135deg, #00d4ff, #7b2cbf);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 8px;
+        animation: pulse-glow 3s ease-in-out infinite;
+    }
+
+    @keyframes pulse-glow {
+        0%, 100% { filter: drop-shadow(0 0 10px rgba(0,212,255,0.5)); }
+        50% { filter: drop-shadow(0 0 25px rgba(123,44,191,0.8)); }
+    }
+
+    .hero .tagline {
+        font-size: 1.4rem;
+        color: #8b949e;
+        font-weight: 400;
+        margin-bottom: 32px;
+    }
+
+    .hero .version {
+        display: inline-block;
+        background: linear-gradient(135deg, #00d4ff 0%, #7b2cbf 100%);
+        color: white;
+        padding: 8px 20px;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        margin-bottom: 20px;
+        box-shadow: 0 0 20px rgba(0,212,255,0.4);
+    }
+
+    .hero .supply {
+        font-size: 1.1rem;
+        color: #8b949e;
+        margin-bottom: 28px;
+        font-family: 'Courier New', monospace;
+        letter-spacing: 1px;
+    }
+
+    .cta-buttons {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        padding: 16px 32px;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 1rem;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #00d4ff 0%, #7b2cbf 100%);
+        color: white;
+        border: none;
+        box-shadow: 0 4px 20px rgba(0,212,255,0.3);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 30px rgba(0,212,255,0.5), 0 0 40px rgba(123,44,191,0.3);
+    }
+
+    .btn-secondary {
+        background: transparent;
+        color: #00d4ff;
+        border: 1px solid rgba(0,212,255,0.5);
+    }
+
+    .btn-secondary:hover {
+        background: rgba(0,212,255,0.1);
+        border-color: #00d4ff;
+        box-shadow: 0 0 20px rgba(0,212,255,0.2);
+    }
+
+    .stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+        margin-bottom: 80px;
+    }
+
+    .stat-item {
+        text-align: center;
+        padding: 28px 20px;
+        background: rgba(22, 27, 34, 0.7);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(0, 212, 255, 0.15);
+        border-radius: 16px;
+        transition: all 0.3s ease;
+    }
+
+    .stat-item:hover {
+        border-color: rgba(0,212,255,0.4);
+        box-shadow: 0 0 30px rgba(0,212,255,0.15);
+        transform: translateY(-4px);
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #00d4ff 0%, #7b2cbf 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .stat-label {
+        color: #8b949e;
+        font-size: 0.85rem;
+        margin-top: 8px;
+        font-weight: 500;
+    }
+
+    .section-title {
+        text-align: center;
+        font-size: 2.2rem;
+        font-weight: 800;
+        color: #c9d1d9;
+        margin-bottom: 16px;
+    }
+
+    .section-subtitle {
+        text-align: center;
+        color: #8b949e;
+        font-size: 1rem;
+        margin-bottom: 48px;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .features {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 24px;
+        margin-bottom: 80px;
+    }
+
+    .feature-card {
+        background: rgba(22, 27, 34, 0.7);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(0, 212, 255, 0.12);
+        border-radius: 20px;
+        padding: 32px;
+        transition: all 0.3s ease;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-6px);
+        border-color: rgba(0,212,255,0.35);
+        box-shadow: 0 8px 40px rgba(0,212,255,0.15), 0 0 60px rgba(123,44,191,0.1);
+    }
+
+    .feature-icon {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, rgba(0,212,255,0.2) 0%, rgba(123,44,191,0.2) 100%);
+        border: 1px solid rgba(0,212,255,0.3);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        margin-bottom: 20px;
+    }
+
+    .feature-card h3 {
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin-bottom: 12px;
+        color: #c9d1d9;
+    }
+
+    .feature-card p {
+        color: #8b949e;
+        line-height: 1.6;
+        font-size: 0.95rem;
+    }
+
+    .comparison {
+        margin-bottom: 80px;
+        background: rgba(22, 27, 34, 0.7);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(0, 212, 255, 0.15);
+        border-radius: 24px;
+        padding: 48px;
+    }
+
+    .comparison-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .comparison-table th,
+    .comparison-table td {
+        padding: 18px 16px;
+        text-align: center;
+        border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+    }
+
+    .comparison-table th {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #c9d1d9;
+    }
+
+    .comparison-table th:first-child {
+        text-align: left;
+    }
+
+    .comparison-table td:first-child {
+        text-align: left;
+        font-weight: 500;
+        color: #8b949e;
+    }
+
+    .comparison-table .highlight {
+        background: linear-gradient(135deg, rgba(0,212,255,0.15) 0%, rgba(123,44,191,0.15) 100%);
+        font-weight: 700;
+        color: #00d4ff;
+    }
+
+    .tokenomics {
+        margin-bottom: 80px;
+    }
+
+    .token-grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 20px;
+    }
+
+    .token-card {
+        background: rgba(22, 27, 34, 0.7);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(0, 212, 255, 0.12);
+        border-radius: 16px;
+        padding: 28px 20px;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+
+    .token-card:hover {
+        border-color: rgba(0,212,255,0.35);
+        box-shadow: 0 0 30px rgba(0,212,255,0.15);
+    }
+
+    .token-percent {
+        font-size: 2.2rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #00d4ff 0%, #7b2cbf 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .token-amount {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #c9d1d9;
+        margin: 12px 0 6px;
+        font-family: 'Courier New', monospace;
+    }
+
+    .token-label {
+        color: #8b949e;
+        font-size: 0.85rem;
+    }
+
+    .roadmap-preview {
+        margin-bottom: 80px;
+    }
+
+    .roadmap-timeline {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 24px;
+    }
+
+    .roadmap-phase {
+        background: rgba(22, 27, 34, 0.7);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(0, 212, 255, 0.12);
+        border-radius: 20px;
+        padding: 28px;
+        position: relative;
+        transition: all 0.3s ease;
+    }
+
+    .roadmap-phase:hover {
+        border-color: rgba(0,212,255,0.35);
+        box-shadow: 0 0 30px rgba(0,212,255,0.1);
+    }
+
+    .roadmap-phase::after {
+        content: '→';
+        position: absolute;
+        right: -18px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 1.4rem;
+        color: rgba(0,212,255,0.5);
+    }
+
+    .roadmap-phase:last-child::after {
+        display: none;
+    }
+
+    .phase-number {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        background: linear-gradient(135deg, #00d4ff 0%, #7b2cbf 100%);
+        color: white;
+        border-radius: 50%;
+        font-weight: 700;
+        margin-bottom: 16px;
+        font-size: 0.9rem;
+    }
+
+    .roadmap-phase h3 {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #c9d1d9;
+        margin-bottom: 14px;
+    }
+
+    .roadmap-phase ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .roadmap-phase li {
+        padding: 6px 0;
+        color: #8b949e;
+        font-size: 0.85rem;
+    }
+
+    .roadmap-phase li::before {
+        content: '▸ ';
+        color: rgba(0,212,255,0.6);
+    }
+
+    .cta-section {
+        text-align: center;
+        padding: 70px;
+        background: linear-gradient(180deg, rgba(0,212,255,0.06) 0%, rgba(123,44,191,0.06) 100%);
+        border: 1px solid rgba(0, 212, 255, 0.15);
+        border-radius: 24px;
+    }
+
+    .cta-section h2 {
+        font-size: 2rem;
+        font-weight: 800;
+        margin-bottom: 16px;
+        background: linear-gradient(135deg, #00d4ff 0%, #e040fb 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .cta-section p {
+        color: #8b949e;
+        font-size: 1.05rem;
+        margin-bottom: 32px;
+        max-width: 550px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    @media (max-width: 900px) {
+        .hero h1 { font-size: 3rem; }
+        .stats { grid-template-columns: repeat(2, 1fr); }
+        .token-grid { grid-template-columns: repeat(3, 1fr); }
+        .roadmap-timeline { grid-template-columns: 1fr; }
+        .roadmap-phase::after { display: none; }
+    }
+
+    @media (max-width: 600px) {
+        .token-grid { grid-template-columns: repeat(2, 1fr); }
+        .comparison-table { font-size: 0.85rem; }
+    }
+</style>
+
+<div class="aib2-home">
+    <!-- Hero Section -->
+    <section class="hero glass-card glow-border">
+        <div class="hero-content">
+            <span class="version">AIB 2.0 Mainnet</span>
+            <div class="pi-symbol">π</div>
+            <h1>AI Blockchain</h1>
+            <p class="supply">Total Supply: 3,141,592,653 AIB</p>
+            <p class="tagline">The Next Generation Decentralized AI Infrastructure</p>
+            <div class="cta-buttons">
+                <a href="/en/quickstart" class="btn btn-primary">Get Started</a>
+                <a href="/en/about" class="btn btn-secondary">Learn More</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats -->
+    <section class="stats">
+        <div class="stat-item glass-card">
+            <div class="stat-value">30s</div>
+            <div class="stat-label">Block Time</div>
+        </div>
+        <div class="stat-item glass-card">
+            <div class="stat-value">1MB</div>
+            <div class="stat-label">Block Size</div>
+        </div>
+        <div class="stat-item glass-card">
+            <div class="stat-value">50</div>
+            <div class="stat-label">Block Reward (AIB)</div>
+        </div>
+        <div class="stat-item glass-card">
+            <div class="stat-value">1000</div>
+            <div class="stat-label">Min Stake (AIB)</div>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <h2 class="section-title">Why AIB 2.0?</h2>
+    <p class="section-subtitle">Built from the ground up for the AI revolution</p>
+
+    <section class="features">
+        <div class="feature-card">
+            <div class="feature-icon">⚡</div>
+            <h3>High Performance</h3>
+            <p>30-second block time with Layer 2 state channels for millisecond-level transactions. Perfect for AI agent payments.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">🤖</div>
+            <h3>AI Native</h3>
+            <p>Built for AI agents and ML workloads. ZKML integration enables verifiable AI inference on-chain.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">🔐</div>
+            <h3>Proof of AI Work</h3>
+            <p>Unique consensus mechanism that rewards useful AI computation. Fair, sustainable, and secure.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">🌐</div>
+            <h3>EVM Compatible</h3>
+            <p>Fully compatible with Ethereum. Deploy existing Solidity contracts with minimal changes.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">💎</div>
+            <h3>Fair Launch</h3>
+            <p>No VC allocation, no pre-mining, no ICO. 100% community distributed. Your keys, your coins.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">🔗</div>
+            <h3>Cross-Chain</h3>
+            <p>Bridges to Ethereum and other major chains. Seamless asset transfer and interoperability.</p>
+        </div>
+    </section>
+
+    <!-- Comparison -->
+    <section class="comparison glass-card">
+        <h2 class="section-title" style="margin-bottom: 36px;">How We Compare</h2>
+        <table class="comparison-table">
+            <thead>
+                <tr>
+                    <th>Feature</th>
+                    <th>AIB 2.0</th>
+                    <th>Ethereum</th>
+                    <th>Solana</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Block Time</td>
+                    <td class="highlight">30s</td>
+                    <td>12s</td>
+                    <td>400ms</td>
+                </tr>
+                <tr>
+                    <td>Consensus</td>
+                    <td class="highlight">PoAIW</td>
+                    <td>PoS</td>
+                    <td>PoH</td>
+                </tr>
+                <tr>
+                    <td>AI Integration</td>
+                    <td class="highlight">Native ZKML</td>
+                    <td>None</td>
+                    <td>None</td>
+                </tr>
+                <tr>
+                    <td>State Channels</td>
+                    <td class="highlight">Built-in</td>
+                    <td>External</td>
+                    <td>None</td>
+                </tr>
+                <tr>
+                    <td>Total Supply</td>
+                    <td class="highlight">3.14B (fixed)</td>
+                    <td>Unlimited</td>
+                    <td>Unlimited</td>
+                </tr>
+                <tr>
+                    <td>Launch Type</td>
+                    <td class="highlight">Fair</td>
+                    <td>ICO</td>
+                    <td>ICO</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- Tokenomics -->
+    <section class="tokenomics">
+        <h2 class="section-title">Tokenomics</h2>
+        <p class="section-subtitle">Fair and transparent distribution</p>
+
+        <div class="token-grid">
+            <div class="token-card">
+                <div class="token-percent">40%</div>
+                <div class="token-amount">1,256,637,061</div>
+                <div class="token-label">Staking Rewards</div>
+            </div>
+            <div class="token-card">
+                <div class="token-percent">30%</div>
+                <div class="token-amount">942,477,795</div>
+                <div class="token-label">Ecosystem</div>
+            </div>
+            <div class="token-card">
+                <div class="token-percent">15%</div>
+                <div class="token-amount">471,238,897</div>
+                <div class="token-label">Team</div>
+            </div>
+            <div class="token-card">
+                <div class="token-percent">10%</div>
+                <div class="token-amount">314,159,265</div>
+                <div class="token-label">Community</div>
+            </div>
+            <div class="token-card">
+                <div class="token-percent">5%</div>
+                <div class="token-amount">157,079,635</div>
+                <div class="token-label">Airdrop Pool</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Roadmap Preview -->
+    <section class="roadmap-preview">
+        <h2 class="section-title">Roadmap</h2>
+        <p class="section-subtitle">Our journey to revolutionize AI blockchain</p>
+
+        <div class="roadmap-timeline">
+            <div class="roadmap-phase">
+                <span class="phase-number">1</span>
+                <h3>Phase 1: Foundation</h3>
+                <ul>
+                    <li>Mainnet Launch</li>
+                    <li>Core Protocol</li>
+                    <li>Wallet SDK</li>
+                </ul>
+            </div>
+            <div class="roadmap-phase">
+                <span class="phase-number">2</span>
+                <h3>Phase 2: Scale</h3>
+                <ul>
+                    <li>L2 Channels</li>
+                    <li>ZK-Rollup</li>
+                    <li>Cross-chain</li>
+                </ul>
+            </div>
+            <div class="roadmap-phase">
+                <span class="phase-number">3</span>
+                <h3>Phase 3: Intelligence</h3>
+                <ul>
+                    <li>ZKML Integration</li>
+                    <li>AI Agent Kit</li>
+                    <li>Oracle Network</li>
+                </ul>
+            </div>
+            <div class="roadmap-phase">
+                <span class="phase-number">4</span>
+                <h3>Phase 4: Ecosystem</h3>
+                <ul>
+                    <li>DeFi Suite</li>
+                    <li>NFT Marketplace</li>
+                    <li>DAO Governance</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta-section">
+        <h2>Join the Revolution</h2>
+        <p>Be part of the future of decentralized AI infrastructure. Run a node, build a dApp, or simply hold AIB.</p>
+        <div class="cta-buttons">
+            <a href="/en/team" class="btn btn-primary">Meet the Team</a>
+            <a href="/en/history" class="btn btn-secondary">View History</a>
+        </div>
+    </section>
+</div>
+{{end}}

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Конституция AIB 2.0 - Народная Децентрализованная ИИ</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #000; font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif; color: #fff; }
+        .particles { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; overflow: hidden; }
+        .particle { position: absolute; width: 4px; height: 4px; background: rgba(0, 212, 255, 0.6); border-radius: 50%; animation: float 15s infinite; }
+        .particle:nth-child(2) { left: 20%; animation-delay: -2s; background: rgba(123, 44, 191, 0.6); }
+        .particle:nth-child(3) { left: 40%; animation-delay: -4s; }
+        .particle:nth-child(4) { left: 60%; animation-delay: -6s; background: rgba(123, 44, 191, 0.6); }
+        .particle:nth-child(5) { left: 80%; animation-delay: -8s; }
+        @keyframes float { 0% { transform: translateY(100vh) scale(0); opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { transform: translateY(-100vh) scale(1); opacity: 0; } }
+        .content { position: relative; z-index: 2; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 60px 24px 80px; }
+        .back-link { align-self: flex-start; display: inline-flex; align-items: center; gap: 8px; color: rgba(255,255,255,0.6); text-decoration: none; font-size: 14px; margin-bottom: 40px; }
+        .back-link:hover { color: #00d4ff; }
+        .hero { text-align: center; margin-bottom: 48px; max-width: 860px; }
+        .scale-icon { font-size: 72px; margin-bottom: 16px; display: block; filter: drop-shadow(0 0 30px rgba(0, 212, 255, 0.5)); animation: iconFloat 4s ease-in-out infinite; }
+        @keyframes iconFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        .title { font-size: 56px; font-weight: 700; letter-spacing: -2px; margin-bottom: 12px; background: linear-gradient(135deg, #fff 0%, #00d4ff 50%, #7b2cbf 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .subtitle { font-size: 20px; color: rgba(255,255,255,0.7); font-weight: 300; font-style: italic; line-height: 1.5; margin-bottom: 20px; }
+        .ratified-badge { display: inline-flex; align-items: center; gap: 10px; padding: 10px 24px; background: linear-gradient(135deg, rgba(0, 212, 255, 0.15), rgba(123, 44, 191, 0.15)); border: 1px solid rgba(0, 212, 255, 0.35); border-radius: 50px; font-size: 14px; color: #00d4ff; animation: badgeGlow 2s ease-in-out infinite; }
+        @keyframes badgeGlow { 0%, 100% { box-shadow: 0 0 20px rgba(0, 212, 255, 0.2); } 50% { box-shadow: 0 0 40px rgba(0, 212, 255, 0.4); } }
+        .ratified-badge .dot { width: 8px; height: 8px; background: #00ff88; border-radius: 50%; animation: dotPulse 1.5s ease-in-out infinite; }
+        @keyframes dotPulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.5); opacity: 0.7; } }
+        .doc-container { max-width: 860px; width: 100%; display: flex; flex-direction: column; gap: 32px; }
+        .section-card { background: linear-gradient(145deg, rgba(30, 30, 32, 0.9), rgba(20, 20, 22, 0.95)); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 24px; padding: 36px 40px; position: relative; overflow: hidden; }
+        .section-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #00d4ff, #7b2cbf); }
+        .section-card:hover { border-color: rgba(0, 212, 255, 0.25); }
+        .section-header { display: flex; align-items: center; gap: 14px; margin-bottom: 28px; }
+        .section-num { font-size: 12px; font-weight: 700; color: #00d4ff; letter-spacing: 2px; text-transform: uppercase; background: rgba(0, 212, 255, 0.1); border: 1px solid rgba(0, 212, 255, 0.3); padding: 4px 10px; border-radius: 6px; }
+        .section-title { font-size: 22px; font-weight: 600; color: #fff; }
+        .preamble-text { font-size: 16px; line-height: 1.9; color: rgba(255,255,255,0.8); text-align: center; font-style: italic; }
+        .principles-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+        .principle-item { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 20px 22px; transition: all 0.3s; }
+        .principle-item:hover { background: rgba(0, 212, 255, 0.07); border-color: rgba(0, 212, 255, 0.25); transform: translateY(-2px); }
+        .principle-num { font-size: 11px; font-weight: 700; color: #7b2cbf; letter-spacing: 1px; margin-bottom: 6px; }
+        .principle-name { font-size: 15px; font-weight: 600; color: #00d4ff; margin-bottom: 8px; }
+        .principle-desc { font-size: 13px; color: rgba(255,255,255,0.65); line-height: 1.6; }
+        .gov-table { width: 100%; border-collapse: collapse; }
+        .gov-table tr { border-bottom: 1px solid rgba(255,255,255,0.07); }
+        .gov-table tr:last-child { border-bottom: none; }
+        .gov-table tr:hover { background: rgba(0, 212, 255, 0.05); }
+        .gov-table td { padding: 14px 12px; font-size: 15px; vertical-align: middle; }
+        .gov-table td:first-child { color: rgba(255,255,255,0.6); width: 52%; }
+        .gov-table td:last-child { color: #fff; font-weight: 600; font-size: 16px; }
+        .gov-value-highlight { color: #00d4ff; }
+        .gov-value-purple { color: #a855f7; }
+        .amendment-notice { display: flex; align-items: flex-start; gap: 16px; background: rgba(123, 44, 191, 0.1); border: 1px solid rgba(123, 44, 191, 0.3); border-radius: 14px; padding: 20px 24px; }
+        .amendment-icon { font-size: 24px; flex-shrink: 0; margin-top: 2px; }
+        .amendment-text { font-size: 14px; color: rgba(255,255,255,0.75); line-height: 1.7; }
+        .amendment-text strong { color: #fff; display: block; margin-bottom: 4px; font-size: 15px; }
+        .closing-card { background: linear-gradient(135deg, rgba(123, 44, 191, 0.15), rgba(0, 212, 255, 0.15)); border: 1px solid rgba(123, 44, 191, 0.35); border-radius: 24px; padding: 36px 40px; text-align: center; }
+        .closing-quote { font-size: 22px; font-weight: 300; font-style: italic; color: rgba(255,255,255,0.9); line-height: 1.6; margin-bottom: 20px; }
+        .closing-quote span { background: linear-gradient(135deg, #00d4ff, #7b2cbf); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 700; font-style: normal; }
+        .closing-meta { font-size: 13px; color: rgba(255,255,255,0.45); }
+        .btn-group { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; margin-top: 8px; }
+        .btn { display: inline-flex; align-items: center; gap: 8px; padding: 14px 30px; border-radius: 50px; font-size: 15px; font-weight: 600; text-decoration: none; transition: all 0.3s; }
+        .btn-primary { background: linear-gradient(135deg, #00d4ff, #7b2cbf); color: #fff; box-shadow: 0 4px 20px rgba(0, 212, 255, 0.3); }
+        .btn-secondary { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.85); border: 1px solid rgba(255,255,255,0.15); }
+        .btn:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 15px 40px rgba(0, 212, 255, 0.35); }
+        .language-section { margin-top: 60px; text-align: center; max-width: 860px; width: 100%; }
+        .language-title { font-size: 13px; color: rgba(255,255,255,0.45); margin-bottom: 18px; letter-spacing: 1.5px; text-transform: uppercase; }
+        .language-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+        .lang-btn { display: inline-flex; align-items: center; padding: 10px 18px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 50px; color: rgba(255,255,255,0.75); text-decoration: none; font-size: 13px; transition: all 0.3s; }
+        .lang-btn:hover { background: rgba(0, 212, 255, 0.12); border-color: rgba(0, 212, 255, 0.4); color: #fff; transform: translateY(-2px); }
+        .lang-btn.active { background: linear-gradient(135deg, rgba(0, 212, 255, 0.25), rgba(123, 44, 191, 0.25)); border-color: rgba(0, 212, 255, 0.5); color: #fff; }
+        .footer-note { margin-top: 40px; color: rgba(255,255,255,0.35); font-size: 13px; text-align: center; }
+        @media (max-width: 768px) { .title { font-size: 36px; } .principles-grid { grid-template-columns: 1fr; } .section-card { padding: 24px 20px; } .closing-card { padding: 28px 20px; } .closing-quote { font-size: 18px; } }
+    </style>
+</head>
+<body>
+    <div class="particles">
+        <div class="particle"></div><div class="particle"></div><div class="particle"></div><div class="particle"></div>
+        <div class="particle"></div><div class="particle"></div><div class="particle"></div><div class="particle"></div>
+    </div>
+    <div class="overlay"></div>
+    <div class="content">
+        <a href="/ru/" class="back-link">← Назад к AIB 2.0</a>
+        <div class="hero">
+            <span class="scale-icon">⚖</span>
+            <h1 class="title">Конституция AIB 2.0</h1>
+            <p class="subtitle">"Народная Децентрализованная ИИ, народом, для народа"</p>
+            <div class="ratified-badge">
+                <span class="dot"></span>
+                <span>День Пи принят — 14 марта 2026</span>
+            </div>
+        </div>
+        <div class="doc-container">
+            <!-- Preamble -->
+            <div class="section-card">
+                <div class="section-header">
+                    <span class="section-num">Преамбула</span>
+                </div>
+                <p class="preamble-text">
+                    Мы, участники сети AIB 2.0 — строители, валидаторы, разработчики и сообщества со всего мира — устанавливаем настоящую Конституцию для обеспечения права каждого на доступ, участие и получение выгоды от децентрализованного ИИ. Этот документ является высшим законом протокола AIB. Все решения, обновления и действия сети должны соответствовать его принципам.
+                </p>
+            </div>
+            <!-- Core Principles -->
+            <div class="section-card">
+                <div class="section-header">
+                    <span class="section-num">Статья 1</span>
+                    <span class="section-title">Фундаментальные Принципы</span>
+                </div>
+                <div class="principles-grid">
+                    <div class="principle-item">
+                        <div class="principle-num">Принцип 01</div>
+                        <div class="principle-name">Суверенитет ИИ</div>
+                        <div class="principle-desc">Каждый имеет право на доступ и контроль над ИИ. Ни одна организация не может монополизировать доступ к ИИ или ограничивать участие.</div>
+                    </div>
+                    <div class="principle-item">
+                        <div class="principle-num">Принцип 02</div>
+                        <div class="principle-name">Децентрализация</div>
+                        <div class="principle-desc">Ни одна организация не должна контролировать сеть. Власть всегда распределена между всеми участниками.</div>
+                    </div>
+                    <div class="principle-item">
+                        <div class="principle-num">Принцип 03</div>
+                        <div class="principle-name">Прозрачность</div>
+                        <div class="principle-desc">Все решения протокола должны быть публично верифицируемы. Код, управление и записи являются публичными по умолчанию.</div>
+                    </div>
+                    <div class="principle-item">
+                        <div class="principle-num">Принцип 04</div>
+                        <div class="principle-name">Конфиденциальность</div>
+                        <div class="principle-desc">Данные пользователя и взаимодействие с ИИ являются конфиденциальными по умолчанию. Раскрытие требует явного согласия пользователя.</div>
+                    </div>
+                    <div class="principle-item">
+                        <div class="principle-num">Принцип 05</div>
+                        <div class="principle-name">Общественное Управление</div>
+                        <div class="principle-desc">Изменения протокола требуют консенсуса сообщества. Ни одно обновление не может быть навязано без одобрения в цепочке.</div>
+                    </div>
+                    <div class="principle-item">
+                        <div class="principle-num">Принцип 06</div>
+                        <div class="principle-name">Выравнивание ИИ</div>
+                        <div class="principle-desc">Системы ИИ в протоколе должны служить человеческим интересам. Безопасность, справедливость и подотчетность не подлежат обсуждению.</div>
+                    </div>
+                    <div class="principle-item">
+                        <div class="principle-num">Принцип 07</div>
+                        <div class="principle-name">Открытые Инновации</div>
+                        <div class="principle-desc">Протокол имеет открытый исходный код и не требует разрешений. Каждый может свободно создавать, форкать или вносить вклад.</div>
+                    </div>
+                    <div class="principle-item">
+                        <div class="principle-num">Принцип 08</div>
+                        <div class="principle-name">Экономическая Справедливость</div>
+                        <div class="principle-desc">Распределение токенов служит сообществу. Ни одна группа не должна извлекать непропорциональную ценность из сети.</div>
+                    </div>
+                    <div class="principle-item">
+                        <div class="principle-num">Принцип 09</div>
+                        <div class="principle-name">Интероперабельность</div>
+                        <div class="principle-desc">Протокол сотрудничает с другими цепочками и системами. Открытое кросс-чейн сотрудничество является основной ценностью.</div>
+                    </div>
+                    <div class="principle-item">
+                        <div class="principle-num">Принцип 10</div>
+                        <div class="principle-name">Эволюция</div>
+                        <div class="principle-desc">Конституция может быть изменена через голосование сообщества. Протокол предназначен для роста и адаптации со временем.</div>
+                    </div>
+                </div>
+            </div>
+            <!-- Governance -->
+            <div class="section-card">
+                <div class="section-header">
+                    <span class="section-num">第二条</span>
+                    <span class="section-title">Параметры Управления</span>
+                </div>
+                <table class="gov-table">
+                    <tbody>
+                        <tr><td>Порог предложения</td><td class="gov-value-highlight">1,000 AIB в стейкинге</td></tr>
+                        <tr><td>Цикл голосования</td><td class="gov-value-highlight">7 дней</td></tr>
+                        <tr><td>Требование кворума</td><td class="gov-value-highlight">33% токенов в стейкинге</td></tr>
+                        <tr><td>Стандартный порог одобрения</td><td class="gov-value-highlight">66% За</td></tr>
+                        <tr><td>Конституционная поправка</td><td class="gov-value-purple">75% За + 50% кворум</td></tr>
+                    </tbody>
+                </table>
+                <div class="amendment-notice" style="margin-top: 24px;">
+                    <span class="amendment-icon">⚠</span>
+                    <div class="amendment-text">
+                        <strong>Процедура Поправки</strong>
+                        Любая поправка к настоящей Конституции требует абсолютного большинства в 75% голос и участиов Зая не менее 50% токенов в стейкинге. Конституционные предложения должны быть открыты для полного 7-дневного цикла голосования и не могут быть закрыты досрочно. Поправки вступают в силу после обязательного 14-дневного периода реализации, чтобы участники сети могли адаптироваться.
+                    </div>
+                </div>
+            </div>
+            <!-- Closing -->
+            <div class="closing-card">
+                <p class="closing-quote">
+                    "Сеть AIB не принадлежит<span>никому</span> —<br>
+                    поэтому она принадлежит<span>всем</span>."
+                </p>
+                <div class="btn-group">
+                    <a href="/ru/quickstart" class="btn btn-primary">Участвовать в управлении →</a>
+                    <a href="/ru/genesis" class="btn btn-secondary">Посмотреть экономику токенов</a>
+                </div>
+                <p class="closing-meta" style="margin-top: 24px;">
+                    Конституция AIB 2.0 &bull; Действует с 14 марта 2026 (День Пи) &bull; ChainID: aib-mainnet-1
+                </p>
+            </div>
+        </div>
+        <!-- Language Selector -->
+        <div class="language-section">
+            <div class="language-title">选择语言 / Select Language</div>
+            <div class="language-grid">
+                <a href="/constitution" class="lang-btn">English</a>
+                <a href="/zh/constitution" class="lang-btn">简体中文</a>
+                <a href="/zh-tw/constitution" class="lang-btn">繁體中文</a>
+                <a href="/fr/constitution" class="lang-btn">Français</a>
+                <a href="/ja/constitution" class="lang-btn">日本語</a>
+                <a href="/ms/constitution" class="lang-btn">Bahasa Melayu</a>
+                <a href="/th/constitution" class="lang-btn">ไทย</a>
+                <a href="/es/constitution" class="lang-btn">Español</a>
+                <a href="/de/constitution" class="lang-btn">Deutsch</a>
+                <a href="/ru/constitution" class="lang-btn active">Русский</a>
+            </div>
+        </div>
+        <div class="footer-note">
+            Работает на AI Proof of Work &bull; Общее предложение: 3,141,592,653 AIB &bull; Время блока: 30 секунд
+        </div>
+    </div>
+</body>
+</html>

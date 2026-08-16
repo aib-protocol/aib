@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PoAIW 2.0 - AIB 共识机制革命</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(180deg, #0a0a1a 0%, #1a1a3a 50%, #0a0a2a 100%);
+            color: #e0e0e0;
+            line-height: 1.8;
+            padding: 0;
+            margin: 0;
+        }
+        
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 60px 20px;
+            background: radial-gradient(ellipse at center, rgba(108, 92, 231, 0.3) 0%, transparent 70%);
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(108,92,231,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+            opacity: 0.5;
+        }
+        .hero-title {
+            font-size: clamp(2.5rem, 8vw, 5rem);
+            font-weight: 900;
+            background: linear-gradient(135deg, #ff6b6b, #feca57, #48dbfb);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+            position: relative;
+            animation: fadeInUp 1s ease-out;
+        }
+        .hero-subtitle {
+            font-size: clamp(1rem, 3vw, 1.5rem);
+            color: #a0a0c0;
+            margin-bottom: 40px;
+            animation: fadeInUp 1s ease-out 0.2s backwards;
+        }
+        .hero-tag {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-weight: 600;
+            display: inline-block;
+            animation: fadeInUp 1s ease-out 0.4s backwards;
+        }
+        
+        /* Navigation */
+        .nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(10, 10, 26, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(108, 92, 231, 0.2);
+            padding: 15px 0;
+            z-index: 1000;
+        }
+        .nav-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+        .nav-logo {
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: #00d4ff;
+        }
+        .nav-links {
+            display: flex;
+            gap: 30px;
+        }
+        .nav-links a {
+            color: #a0a0c0;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        .nav-links a:hover {
+            color: #00d4ff;
+        }
+        
+        /* Sections */
+        .section {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 80px 20px;
+        }
+        .section-title {
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 60px;
+            position: relative;
+        }
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #00d4ff, transparent);
+        }
+        
+        /* Problem Cards */
+        .problem-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
+        }
+        .problem-card {
+            background: linear-gradient(145deg, rgba(255, 107, 107, 0.1), rgba(238, 90, 36, 0.05));
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            border-radius: 20px;
+            padding: 30px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .problem-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(255, 107, 107, 0.2);
+        }
+        .problem-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+        .problem-title {
+            font-size: 1.4rem;
+            color: #ff6b6b;
+            margin-bottom: 10px;
+        }
+        
+        /* Solution Cards */
+        .solution-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin: 40px 0;
+        }
+        .solution-card {
+            background: linear-gradient(145deg, rgba(0, 212, 255, 0.1), rgba(72, 219, 251, 0.05));
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 20px;
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+        .solution-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #00d4ff, #6c5ce7);
+        }
+        .solution-number {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 3rem;
+            font-weight: 900;
+            color: rgba(0, 212, 255, 0.1);
+        }
+        .solution-title {
+            font-size: 1.3rem;
+            color: #00d4ff;
+            margin-bottom: 15px;
+        }
+        
+        /* Tier Table */
+        .tier-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin: 30px 0;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+        .tier-table th {
+            background: linear-gradient(135deg, #6c5ce7, #5a4ad1);
+            padding: 20px;
+            text-align: left;
+            font-weight: 600;
+        }
+        .tier-table td {
+            padding: 18px 20px;
+            border-bottom: 1px solid rgba(108, 92, 231, 0.1);
+        }
+        .tier-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        /* Formula Box */
+        .formula-box {
+            background: rgba(13, 13, 26, 0.9);
+            border: 1px solid rgba(108, 92, 231, 0.3);
+            border-radius: 15px;
+            padding: 30px;
+            margin: 30px 0;
+            text-align: center;
+        }
+        .formula {
+            font-family: 'Courier New', monospace;
+            font-size: 1.1rem;
+            color: #00d4ff;
+            margin: 15px 0;
+        }
+        
+        /* Comparison */
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 40px 0;
+        }
+        .compare-box {
+            padding: 30px;
+            border-radius: 15px;
+        }
+        .compare-bad {
+            background: rgba(255, 107, 107, 0.1);
+            border: 1px solid rgba(255, 107, 107, 0.3);
+        }
+        .compare-good {
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+        }
+        .compare-title {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+        }
+        
+        /* Energy Section */
+        .energy-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        .energy-card {
+            background: rgba(26, 26, 46, 0.8);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            border: 2px solid;
+        }
+        .energy-solar { border-color: #feca57; }
+        .energy-wind { border-color: #48dbfb; }
+        .energy-hydro { border-color: #1dd1a1; }
+        .energy-grid-power { border-color: #5f27cd; }
+        
+        .energy-multiplier {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        /* Timeline */
+        .timeline {
+            position: relative;
+            padding-left: 50px;
+        }
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 20px;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(to bottom, #ff6b6b, #feca57, #48dbfb);
+        }
+        .timeline-item {
+            position: relative;
+            margin-bottom: 40px;
+            padding: 25px;
+            background: rgba(26, 26, 46, 0.8);
+            border-radius: 15px;
+            border-left: 4px solid #00d4ff;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -38px;
+            top: 30px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #ff6b6b;
+            border: 3px solid #0a0a1a;
+        }
+        
+        /* Code Block */
+        .code-block {
+            background: rgba(13, 13, 26, 0.9);
+            border: 1px solid rgba(108, 92, 231, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            margin: 20px 0;
+        }
+        
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 60px 20px;
+            background: rgba(10, 10, 26, 0.8);
+            border-top: 1px solid rgba(108, 92, 231, 0.2);
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .hero-title { font-size: 2rem; }
+            .comparison { grid-template-columns: 1fr; }
+            .nav-links { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="nav-content">
+            <div class="nav-logo">⚡ AIB 2.0</div>
+            <div class="nav-links">
+                <a href="#problems">问题诊断</a>
+                <a href="#solution">突破方案</a>
+                <a href="#mechanism">反寡头</a>
+                <a href="#energy">绿色能源</a>
+                <a href="#roadmap">实施路线</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <h1 class="hero-title">PoAIW 2.0</h1>
+        <p class="hero-subtitle">能源民主化革命 - 突破 AIB 共识机制的本质困境</p>
+        <div class="hero-tag">🔥 从验证 AI 到创造价值</div>
+    </section>
+
+    <!-- Problems Section -->
+    <section class="section" id="problems">
+        <h2 class="section-title">🚫 核心问题诊断</h2>
+        
+        <div class="problem-grid">
+            <div class="problem-card">
+                <div class="problem-icon">🔍</div>
+                <h3 class="problem-title">ZKML 无效性</h3>
+                <p><strong>技术层</strong>: ZK 证明成本是推理成本的 250 倍</p>
+                <p><strong>经济层</strong>: 验证者、用户、系统三方都无动力付费</p>
+                <p><strong>现实层</strong>: 当前只是余弦相似度匹配，非数学证明</p>
+            </div>
+            
+            <div class="problem-card">
+                <div class="problem-icon">🔄</div>
+                <h3 class="problem-title">AI 验证死结</h3>
+                <p><code>验证者 V1 → 验证 AI → 谁验证 V1？</code></p>
+                <p><code>V2 → 谁验证 V2？→ ...无限递归</code></p>
+                <p>这个问题没有解，只能回到"人类信任"或"资本信任"</p>
+            </div>
+            
+            <div class="problem-card">
+                <div class="problem-icon">💰</div>
+                <h3 class="problem-title">富者越富必然性</h3>
+                <div class="formula-box">
+                    <div class="formula">收益 = 质押额 × 出块概率 × 区块奖励</div>
+                </div>
+                <p>大节点的收益呈<strong>指数级</strong>增长</p>
+                <p>这是 PoS 的数学必然，不是设计缺陷</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Solution Section -->
+    <section class="section" id="solution">
+        <h2 class="section-title">🎯 突破性方案：PoAIW 2.0</h2>
+        
+        <div style="text-align: center; font-size: 1.5rem; margin: 40px 0; color: #00d4ff;">
+            <strong>核心转变</strong><br>
+            <span style="color: #ff6b6b;">验证 AI 推理是否正确 ❌ 无解的死结</span><br>
+            <span style="font-size: 2rem;">↓</span><br>
+            <span style="color: #48dbfb;">让 AI 推理产生真实价值 ✅ 价值创造</span>
+        </div>
+        
+        <div class="solution-grid">
+            <div class="solution-card">
+                <div class="solution-number">01</div>
+                <h3 class="solution-title">放弃验证思维</h3>
+                <p>不再试图"证明 AI 推理正确"</p>
+                <p>这会导致无限递归和验证死结</p>
+            </div>
+            
+            <div class="solution-card">
+                <div class="solution-number">02</div>
+                <h3 class="solution-title">转向价值创造</h3>
+                <p>AI 推理本身就是价值</p>
+                <p>用户愿意为推理结果付费</p>
+            </div>
+            
+            <div class="solution-card">
+                <div class="solution-number">03</div>
+                <h3 class="solution-title">打破资本垄断</h3>
+                <p>反寡头数学机制</p>
+                <p>让小节点也能获得公平回报</p>
+            </div>
+            
+            <div class="solution-card">
+                <div class="solution-number">04</div>
+                <h3 class="solution-title">能源民主化</h3>
+                <p>人人可贡献算力</p>
+                <p>绿色能源获得激励</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tier System -->
+    <section class="section">
+        <h2 class="section-title">🏗️ 三层节点架构</h2>
+        
+        <table class="tier-table">
+            <thead>
+                <tr>
+                    <th>层级</th>
+                    <th>最低质押</th>
+                    <th>目标用户</th>
+                    <th>革命性意义</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>🏠 TierHome</strong></td>
+                    <td style="font-size: 1.3rem; color: #48dbfb;">1 AIB</td>
+                    <td>家用电脑，GPU</td>
+                    <td>打破资本门槛，人人可参与</td>
+                </tr>
+                <tr>
+                    <td><strong>🏢 TierEdge</strong></td>
+                    <td style="font-size: 1.3rem; color: #feca57;">100 AIB</td>
+                    <td>边缘服务器</td>
+                    <td>社区级节点，分布式部署</td>
+                </tr>
+                <tr>
+                    <td><strong>🏭 TierEnterprise</strong></td>
+                    <td style="font-size: 1.3rem; color: #ff6b6b;">1,000 AIB</td>
+                    <td>数据中心</td>
+                    <td>被限制的巨无霸，防止垄断</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- Anti-Oligarchy -->
+    <section class="section" id="mechanism">
+        <h2 class="section-title">🛡️ 反寡头机制：数学武器</h2>
+        
+        <div class="formula-box">
+            <h3 style="margin-bottom: 20px;">分散度奖励机制详解</h3>
+            <div class="formula">分散度奖励 = min(2.0, ln(节点数量 + 1) / 10)</div>
+        </div>
+
+        <div class="comparison">
+            <div class="compare-box compare-bad">
+                <h3 class="compare-title">❌ 传统 PoS</h3>
+                <ul style="list-style: none; padding: 0;">
+                    <li>质押奖励: 60%</li>
+                    <li>推理奖励: 40%</li>
+                    <li>分散度奖励: 0%</li>
+                </ul>
+                <p style="margin-top: 15px; color: #ff6b6b;">结果：富者越富，寡头形成</p>
+            </div>
+
+            <div class="compare-box compare-good">
+                <h3 class="compare-title">✅ PoAIW 2.0</h3>
+                <ul style="list-style: none; padding: 0;">
+                    <li>质押奖励: 30%</li>
+                    <li>推理奖励: 70%</li>
+                    <li>分散度奖励: 额外 20%</li>
+                </ul>
+                <p style="margin-top: 15px; color: #48dbfb;">结果：鼓励贡献，防止垄断</p>
+            </div>
+        </div>
+
+        <div class="formula-box">
+            <h3 style="margin-bottom: 20px;">分散度奖励计算示例</h3>
+            <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+                <tr style="background: rgba(116, 185, 255, 0.2);">
+                    <th style="padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.2);">网络规模</th>
+                    <th style="padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.2);">分散度奖励</th>
+                    <th style="padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.2);">实际推理奖励</th>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">100 节点</td>
+                    <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">1.15×</td>
+                    <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">80.5%</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">500 节点</td>
+                    <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">1.39×</td>
+                    <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">97.3%</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">1000 节点</td>
+                    <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">1.54×</td>
+                    <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">107.8%</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">5000 节点</td>
+                    <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">2.00×</td>
+                    <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">140%</td>
+                </tr>
+            </table>
+        </div>
+        
+        <div class="code-block">
+<span style="color: #ff6b6b;">// 反寡头算法实现 (Go 示例)</span>
+<span style="color: #a0a0c0;">func</span> <span style="color: #48dbfb;">CalculateAntiOligarchyFactor</span>(stake, totalStake <span style="color: #a0a0c0;">uint64</span>, nodeCount <span style="color: #a0a0c0;">int</span>) <span style="color: #a0a0c0;">float64</span> {
+    concentration := <span style="color: #feca57;">float64</span>(stake) / <span style="color: #feca57;">float64</span>(totalStake)
+    dispersion := <span style="color: #48dbfb;">math</span>.Log(<span style="color: #feca57;">float64</span>(nodeCount + <span style="color: #feca57;">1</span>))
+
+    <span style="color: #a0a0c0;">//</span> 集中度惩罚: 份额越大，惩罚越重
+    punishment := <span style="color: #feca57;">1.0</span> / (<span style="color: #feca57;">1.0</span> + <span style="color: #48dbfb;">math</span>.Exp(-<span style="color: #feca57;">10</span>*(concentration-<span style="color: #feca57;">0.1</span>)))
+    
+    <span style="color: #a0a0c0;">//</span> 分散度奖励: 节点越多，奖励越高
+    reward := <span style="color: #48dbfb;">math</span>.Min(dispersion/<span style="color: #feca57;">10</span>, <span style="color: #feca57;">2.0</span>)
+
+    <span style="color: #a0a0c0;">return</span> (<span style="color: #feca57;">1.0</span> - punishment) * reward
+}
+        </div>
+
+        <div class="formula-box">
+            <h3 style="margin-bottom: 20px;">激励机制设计原理</h3>
+            <div class="formula">分散度奖励 = min(2.0, ln(节点数量 + 1) / 10)</div>
+            <div class="formula">集中度惩罚 = 1 / (1 + exp(-10×(份额占比 - 10%)))</div>
+            <p style="margin-top: 15px; color: #a0a0c0; font-size: 0.9em;">
+                注：当单个节点质押超过总质押的 10% 时开始惩罚，最大惩罚 90%。<br>
+                分散度奖励在 5000 节点时达到上限 2.0 倍。
+            </p>
+        </div>
+    </section>
+
+    <!-- Green Energy -->
+    <section class="section" id="energy">
+        <h2 class="section-title">🌱 绿色能源激励</h2>
+        
+        <p style="text-align: center; font-size: 1.1rem; color: #a0a0c0;">每次 AI 推理都消耗真实能源，同时创造真实价值</p>
+        
+        <div class="energy-grid">
+            <div class="energy-card energy-solar">
+                <div style="font-size: 2rem;">☀️</div>
+                <div style="font-size: 1.2rem; margin: 10px 0;">太阳能</div>
+                <div class="energy-multiplier" style="color: #feca57;">1.5x</div>
+                <p>家庭屋顶发电</p>
+            </div>
+            
+            <div class="energy-card energy-wind">
+                <div style="font-size: 2rem;">💨</div>
+                <div style="font-size: 1.2rem; margin: 10px 0;">风能</div>
+                <div class="energy-multiplier" style="color: #48dbfb;">1.4x</div>
+                <p>乡村风力发电</p>
+            </div>
+            
+            <div class="energy-card energy-hydro">
+                <div style="font-size: 2rem;">💧</div>
+                <div style="font-size: 1.2rem; margin: 10px 0;">水电</div>
+                <div class="energy-multiplier" style="color: #1dd1a1;">1.3x</div>
+                <p>小水电站</p>
+            </div>
+            
+            <div class="energy-card energy-grid-power">
+                <div style="font-size: 2rem;">⚡</div>
+                <div style="font-size: 1.2rem; margin: 10px 0;">微电网</div>
+                <div class="energy-multiplier" style="color: #5f27cd;">1.6x</div>
+                <p>社区自给自足</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Roadmap -->
+    <section class="section" id="roadmap">
+        <h2 class="section-title">📅 实施路线图</h2>
+        
+        <div class="timeline">
+            <div class="timeline-item">
+                <h3 style="color: #ff6b6b;">第一阶段：去寡头化</h3>
+                <p><strong>时间</strong>: 2026年3月-6月</p>
+                <ul>
+                    <li>奖励比例 60/40 → 30/70</li>
+                    <li>引入反寡头因子算法</li>
+                    <li>最低质押降至 1 AIB</li>
+                    <li>部署三层节点系统</li>
+                </ul>
+            </div>
+            
+            <div class="timeline-item">
+                <h3 style="color: #feca57;">第二阶段：需求驱动</h3>
+                <p><strong>时间</strong>: 2026年6月-9月</p>
+                <ul>
+                    <li>AI 推理需求匹配引擎</li>
+                    <li>推理质量评估系统</li>
+                    <li>实时价格发现机制</li>
+                    <li>用户反馈循环</li>
+                </ul>
+            </div>
+            
+            <div class="timeline-item">
+                <h3 style="color: #48dbfb;">第三阶段：绿色验证</h3>
+                <p><strong>时间</strong>: 2026年9月-12月</p>
+                <ul>
+                    <li>绿色能源验证接口</li>
+                    <li>碳足迹追踪系统</li>
+                    <li>社区能源网络集成</li>
+                    <li>绿色激励生效</li>
+                </ul>
+            </div>
+            
+            <div class="timeline-item">
+                <h3 style="color: #1dd1a1;">第四阶段：全民参与</h3>
+                <p><strong>时间</strong>: 2027年1月-3月</p>
+                <ul>
+                    <li>家用节点客户端发布</li>
+                    <li>P2P 推理市场上线</li>
+                    <li>教育推广计划</li>
+                    <li>社区自治机制</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Summary -->
+    <section class="section">
+        <h2 class="section-title">🌟 核心优势总结</h2>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+            <div style="background: rgba(26, 26, 46, 0.8); padding: 25px; border-radius: 15px; border-left: 4px solid #ff6b6b;">
+                <h3 style="margin-bottom: 10px;">🔗 真正的能源绑定</h3>
+                <p>每次 AI 推理消耗真实电力</p>
+                <p>能源价值可量化、可验证</p>
+            </div>
+            
+            <div style="background: rgba(26, 26, 46, 0.8); padding: 25px; border-radius: 15px; border-left: 4px solid #48dbfb;">
+                <h3 style="margin-bottom: 10px;">👥 民主化参与</h3>
+                <p>1 AIB 最低质押</p>
+                <p>家用 GPU 即可贡献</p>
+            </div>
+            
+            <div style="background: rgba(26, 26, 46, 0.8); padding: 25px; border-radius: 15px; border-left: 4px solid #feca57;">
+                <h3 style="margin-bottom: 10px;">💎 价值创造</h3>
+                <p>AI 推理产生实际服务价值</p>
+                <p>共识服务于真实需求</p>
+            </div>
+            
+            <div style="background: rgba(26, 26, 46, 0.8); padding: 25px; border-radius: 15px; border-left: 4px solid #1dd1a1;">
+                <h3 style="margin-bottom: 10px;">🌱 绿色激励</h3>
+                <p>可再生能源获得加成</p>
+                <p>鼓励环保能源使用</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p style="font-size: 1.5rem; margin-bottom: 20px;">⚡ PoAIW 2.0</p>
+        <p style="color: #a0a0c0;">从"验证 AI"到"创造价值" • 从"资本垄断"到"能源民主"</p>
+        <p style="margin-top: 30px; font-size: 0.9rem;">AIB 2.0 • 2026 • Pi Day Launch</p>
+    </footer>
+</body>
+</html>

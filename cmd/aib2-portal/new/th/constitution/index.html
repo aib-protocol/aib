@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>รัฐธรรมนูญ AIB 2.0 - AI ประชาชนแบบกระจายศูนย์</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #000; font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif; color: #fff; }
+        .particles { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; overflow: hidden; }
+        .particle { position: absolute; width: 4px; height: 4px; background: rgba(0, 212, 255, 0.6); border-radius: 50%; animation: float 15s infinite; }
+        .particle:nth-child(2) { left: 20%; animation-delay: -2s; background: rgba(123, 44, 191, 0.6); }
+        .particle:nth-child(3) { left: 40%; animation-delay: -4s; }
+        .particle:nth-child(4) { left: 60%; animation-delay: -6s; background: rgba(123, 44, 191, 0.6); }
+        .particle:nth-child(5) { left: 80%; animation-delay: -8s; }
+        @keyframes float { 0% { transform: translateY(100vh) scale(0); opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { transform: translateY(-100vh) scale(1); opacity: 0; } }
+        .content { position: relative; z-index: 2; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 60px 24px 80px; }
+        .back-link { align-self: flex-start; display: inline-flex; align-items: center; gap: 8px; color: rgba(255,255,255,0.6); text-decoration: none; font-size: 14px; margin-bottom: 40px; }
+        .back-link:hover { color: #00d4ff; }
+        .hero { text-align: center; margin-bottom: 48px; max-width: 860px; }
+        .scale-icon { font-size: 72px; margin-bottom: 16px; display: block; filter: drop-shadow(0 0 30px rgba(0, 212, 255, 0.5)); animation: iconFloat 4s ease-in-out infinite; }
+        @keyframes iconFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        .title { font-size: 56px; font-weight: 700; letter-spacing: -2px; margin-bottom: 12px; background: linear-gradient(135deg, #fff 0%, #00d4ff 50%, #7b2cbf 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .subtitle { font-size: 20px; color: rgba(255,255,255,0.7); font-weight: 300; font-style: italic; line-height: 1.5; margin-bottom: 20px; }
+        .ratified-badge { display: inline-flex; align-items: center; gap: 10px; padding: 10px 24px; background: linear-gradient(135deg, rgba(0, 212, 255, 0.15), rgba(123, 44, 191, 0.15)); border: 1px solid rgba(0, 212, 255, 0.35); border-radius: 50px; font-size: 14px; color: #00d4ff; animation: badgeGlow 2s ease-in-out infinite; }
+        @keyframes badgeGlow { 0%, 100% { box-shadow: 0 0 20px rgba(0, 212, 255, 0.2); } 50% { box-shadow: 0 0 40px rgba(0, 212, 255, 0.4); } }
+        .ratified-badge .dot { width: 8px; height: 8px; background: #00ff88; border-radius: 50%; animation: dotPulse 1.5s ease-in-out infinite; }
+        @keyframes dotPulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.5); opacity: 0.7; } }
+        .doc-container { max-width: 860px; width: 100%; display: flex; flex-direction: column; gap: 32px; }
+        .section-card { background: linear-gradient(145deg, rgba(30, 30, 32, 0.9), rgba(20, 20, 22, 0.95)); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 24px; padding: 36px 40px; position: relative; overflow: hidden; }
+        .section-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #00d4ff, #7b2cbf); }
+        .section-card:hover { border-color: rgba(0, 212, 255, 0.25); }
+        .section-header { display: flex; align-items: center; gap: 14px; margin-bottom: 28px; }
+        .section-num { font-size: 12px; font-weight: 700; color: #00d4ff; letter-spacing: 2px; text-transform: uppercase; background: rgba(0, 212, 255, 0.1); border: 1px solid rgba(0, 212, 255, 0.3); padding: 4px 10px; border-radius: 6px; }
+        .section-title { font-size: 22px; font-weight: 600; color: #fff; }
+        .preamble-text { font-size: 16px; line-height: 1.9; color: rgba(255,255,255,0.8); text-align: center; font-style: italic; }
+        .principles-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+        .principle-item { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 20px 22px; transition: all 0.3s; }
+        .principle-item:hover { background: rgba(0, 212, 255, 0.07); border-color: rgba(0, 212, 255, 0.25); transform: translateY(-2px); }
+        .principle-num { font-size: 11px; font-weight: 700; color: #7b2cbf; letter-spacing: 1px; margin-bottom: 6px; }
+        .principle-name { font-size: 15px; font-weight: 600; color: #00d4ff; margin-bottom: 8px; }
+        .principle-desc { font-size: 13px; color: rgba(255,255,255,0.65); line-height: 1.6; }
+        .gov-table { width: 100%; border-collapse: collapse; }
+        .gov-table tr { border-bottom: 1px solid rgba(255,255,255,0.07); }
+        .gov-table tr:last-child { border-bottom: none; }
+        .gov-table tr:hover { background: rgba(0, 212, 255, 0.05); }
+        .gov-table td { padding: 14px 12px; font-size: 15px; vertical-align: middle; }
+        .gov-table td:first-child { color: rgba(255,255,255,0.6); width: 52%; }
+        .gov-table td:last-child { color: #fff; font-weight: 600; font-size: 16px; }
+        .gov-value-highlight { color: #00d4ff; }
+        .gov-value-purple { color: #a855f7; }
+        .amendment-notice { display: flex; align-items: flex-start; gap: 16px; background: rgba(123, 44, 191, 0.1); border: 1px solid rgba(123, 44, 191, 0.3); border-radius: 14px; padding: 20px 24px; }
+        .amendment-icon { font-size: 24px; flex-shrink: 0; margin-top: 2px; }
+        .amendment-text { font-size: 14px; color: rgba(255,255,255,0.75); line-height: 1.7; }
+        .amendment-text strong { color: #fff; display: block; margin-bottom: 4px; font-size: 15px; }
+        .closing-card { background: linear-gradient(135deg, rgba(123, 44, 191, 0.15), rgba(0, 212, 255, 0.15)); border: 1px solid rgba(123, 44, 191, 0.35); border-radius: 24px; padding: 36px 40px; text-align: center; }
+        .closing-quote { font-size: 22px; font-weight: 300; font-style: italic; color: rgba(255,255,255,0.9); line-height: 1.6; margin-bottom: 20px; }
+        .closing-quote span { background: linear-gradient(135deg, #00d4ff, #7b2cbf); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 700; font-style: normal; }
+        .closing-meta { font-size: 13px; color: rgba(255,255,255,0.45); }
+        .btn-group { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; margin-top: 8px; }
+        .btn { display: inline-flex; align-items: center; gap: 8px; padding: 14px 30px; border-radius: 50px; font-size: 15px; font-weight: 600; text-decoration: none; transition: all 0.3s; }
+        .btn-primary { background: linear-gradient(135deg, #00d4ff, #7b2cbf); color: #fff; box-shadow: 0 4px 20px rgba(0, 212, 255, 0.3); }
+        .btn-secondary { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.85); border: 1px solid rgba(255,255,255,0.15); }
+        .btn:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 15px 40px rgba(0, 212, 255, 0.35); }
+        .language-section { margin-top: 60px; text-align: center; max-width: 860px; width: 100%; }
+        .language-title { font-size: 13px; color: rgba(255,255,255,0.45); margin-bottom: 18px; letter-spacing: 1.5px; text-transform: uppercase; }
+        .language-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+        .lang-btn { display: inline-flex; align-items: center; padding: 10px 18px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 50px; color: rgba(255,255,255,0.75); text-decoration: none; font-size: 13px; transition: all 0.3s; }
+        .lang-btn:hover { background: rgba(0, 212, 255, 0.12); border-color: rgba(0, 212, 255, 0.4); color: #fff; transform: translateY(-2px); }
+        .lang-btn.active { background: linear-gradient(135deg, rgba(0, 212, 255, 0.25), rgba(123, 44, 191, 0.25)); border-color: rgba(0, 212, 255, 0.5); color: #fff; }
+        .footer-note { margin-top: 40px; color: rgba(255,255,255,0.35); font-size: 13px; text-align: center; }
+        @media (max-width: 768px) { .title { font-size: 36px; } .principles-grid { grid-template-columns: 1fr; } .section-card { padding: 24px 20px; } .closing-card { padding: 28px 20px; } .closing-quote { font-size: 18px; } }
+    </style>
+</head>
+<body>
+    <div class="particles">
+        <div class="particle"></div><div class="particle"></div><div class="particle"></div><div class="particle"></div>
+        <div class="particle"></div><div class="particle"></div><div class="particle"></div><div class="particle"></div>
+    </div>
+    <div class="overlay"></div>
+    <div class="content">
+        <a href="/th/" class="back-link">← กลับสู่ AIB 2.0</a>
+        <div class="hero">
+            <span class="scale-icon">⚖</span>
+            <h1 class="title">รัฐธรรมนูญ AIB 2.0</h1>
+            <p class="subtitle">"AI ประชาชนแบบกระจายศูนย์ โดยประชาชน เพื่อประชาชน"</p>
+            <div class="ratified-badge">
+                <span class="dot"></span>
+                <span>Pi Day อนุมัติ — 14 มีนาคม 2026</span>
+            </div>
+        </div>
+        <div class="doc-container">
+            <!-- Preamble -->
+            <div class="section-card">
+                <div class="section-header">
+                    <span class="section-num">คำปรารภ</span>
+                </div>
+                <p class="preamble-text">
+                    พวกเรา ผู้เข้าร่วมเครือข่าย AIB 2.0 — ผู้สร้าง ผู้ตรวจสอบ นักพัฒนา และชุมชนจากทั่วโลก — จัดตั้งรัฐธรรมนูญนี้ขึ้นเพื่อรับประกันสิทธิของทุกคนในการเข้าถึง มีส่วนร่วม และได้รับประโยชน์จาก AI แบบกระจายศูนย์ เอกสารนี้คือกฎหมายสูงสุดของโปรโตคอล AIB การตัดสินใจ การอัปเดต และการดำเนินการทั้งหมดของเครือข่ายต้องเป็นไปตามหลักการของมัน
+                </p>
+            </div>
+            <!-- Core Principles -->
+            <div class="section-card">
+                <div class="section-header">
+                    <span class="section-num">第一条</span>
+                    <span class="section-title">หลักการพื้นฐาน</span>
+                </div>
+                <div class="principles-grid">
+                    <div class="principle-item">
+                        <div class="principle-num">หลักการ 01</div>
+                        <div class="principle-name">อธิปไตยของ AI</div>
+                        <div class="principle-desc">ทุกคนมีสิทธิ์เข้าถึงและควบคุม AI ไม่มีหน่วยงานใดสามารถผูกขาดการเข้าถึง AI หรือจำกัดการมีส่วนร่วมได้</div>
+                    </div>
+                    <div class="principle-item">
+                        <div class="principle-num">หลักการ 02</div>
+                        <div class="principle-name">การกระจายศูนย์</div>
+                        <div class="principle-desc">ไม่มีหน่วยงานเดียวควรควบคุมเครือข่าย อำนาจจะกระจายอยู่เสมอระหว่างผู้เข้าร่วมทั้งหมด</div>
+                    </div>
+                    <div class="principle-item">
+                        <div class="principle-num">หลักการ 03</div>
+                        <div class="principle-name">ความโปร่งใส</div>
+                        <div class="principle-desc">การตัดสินใจโปรโตคอลทั้งหมดต้องตรวจสอบได้แบบสาธารณะ โค้ด การกำกับดูแล และบันทึกเป็นสาธารณะโดยค่าเริ่มต้น</div>
+                    </div>
+                    <div class="principle-item">
+                        <div class="principle-num">หลักการ 04</div>
+                        <div class="principle-name">ความเป็นส่วนตัว</div>
+                        <div class="principle-desc">ข้อมูลผู้ใช้และปฏิสัมพันธ์ AI เป็นความลับโดยค่าเริ่มต้น การเปิดเผยต้องได้รับความยินยอมอย่างชัดเจนจากผู้ใช้</div>
+                    </div>
+                    <div class="principle-item">
+                        <div class="principle-num">หลักการ 05</div>
+                        <div class="principle-name">การกำกับดูแลชุมชน</div>
+                        <div class="principle-desc">การเปลี่ยนแปลงโปรโตคอลต้องได้รับความยินยอมจากชุมชน ไม่มีการอัปเกรดใดถูกบังคับได้โดยไม่ผ่านการอนุมัติบนเครือข่าย</div>
+                    </div>
+                    <div class="principle-item">
+                        <div class="principle-num">หลักการ 06</div>
+                        <div class="principle-name">การจัดตำแหน่ง AI</div>
+                        <div class="principle-desc">ระบบ AI ในโปรโตคอลต้องรับใช้ผลประโยชน์ของมนุษย์ ความปลอดภัย ความเสมอภาค และความรับผิดชอบไม่สามารถต่อรองได้</div>
+                    </div>
+                    <div class="principle-item">
+                        <div class="principle-num">หลักการ 07</div>
+                        <div class="principle-name">นวัตกรรมเปิด</div>
+                        <div class="principle-desc">โปรโตคอลเป็นโอเพนซอร์สและไม่ต้องขออนุญาต ทุกคนสามารถสร้าง ฟอร์ก หรือมีส่วนร่วมได้อย่างอิสระ</div>
+                    </div>
+                    <div class="principle-item">
+                        <div class="principle-num">หลักการ 08</div>
+                        <div class="principle-name">ความเสมอภาคทางเศรษฐกิจ</div>
+                        <div class="principle-desc">การจัดสรรโทเค็นให้บริการชุมชน ไม่มีกลุ่มใดสามารถดึงค่าที่ไม่สมส่วนจากเครือข่ายได้</div>
+                    </div>
+                    <div class="principle-item">
+                        <div class="principle-num">หลักการ 09</div>
+                        <div class="principle-name">การทำงานร่วมกัน</div>
+                        <div class="principle-desc">โปรโตคอลทำงานร่วมกับเครือข่ายและระบบอื่น การทำงานร่วมกันข้ามเครือข่ายแบบเปิดเป็นคุณค่าหลัก</div>
+                    </div>
+                    <div class="principle-item">
+                        <div class="principle-num">หลักการ 10</div>
+                        <div class="principle-name">วิวัฒนาการ</div>
+                        <div class="principle-desc">รัฐธรรมนูญสามารถแก้ไขได้ผ่านการลงคะแนนเสียงของชุมชน โปรโตคอลออกแบบมาเพื่อเติบโตและปรับตัวตามกาลเวลา</div>
+                    </div>
+                </div>
+            </div>
+            <!-- Governance -->
+            <div class="section-card">
+                <div class="section-header">
+                    <span class="section-num">第二条</span>
+                    <span class="section-title">พารามิเตอร์การกำกับดูแล</span>
+                </div>
+                <table class="gov-table">
+                    <tbody>
+                        <tr><td>เกณฑ์ข้อเสนอ</td><td class="gov-value-highlight">1,000 AIB สเตค</td></tr>
+                        <tr><td>รอบการลงคะแนน</td><td class="gov-value-highlight">7 วัน</td></tr>
+                        <tr><td>ข้อกำหนด Quorum</td><td class="gov-value-highlight">33% โทเค็นสเตค</td></tr>
+                        <tr><td>เกณฑ์อนุมัติมาตรฐาน</td><td class="gov-value-highlight">66% เห็นด้วย</td></tr>
+                        <tr><td>แก้ไขรัฐธรรมนูญ</td><td class="gov-value-purple">75% เห็นด้วย + 50% Quorum</td></tr>
+                    </tbody>
+                </table>
+                <div class="amendment-notice" style="margin-top: 24px;">
+                    <span class="amendment-icon">⚠</span>
+                    <div class="amendment-text">
+                        <strong>ขั้นตอนการแก้ไข</strong>
+                        การแก้ไขรัฐธรรมนูญนี้ต้องการเสียงข้างมากสมบูรณ์ 75% และการมีส่วนร่วมของโทเค็นสเตคอย่างน้อย 50% ข้อเสนอรัฐธรรมนูญต้องเปิดให้ลงคะแนนเต็มรอบ 7 วันและไม่สามารถปิดก่อนกำหนด การแก้ไขมีผลบังคับใช้หลังจากระยะเวลาบังคับใช้ 14 วันเพื่อให้ผู้เข้าร่วมเครือข่ายปรับตัว
+                    </div>
+                </div>
+            </div>
+            <!-- Closing -->
+            <div class="closing-card">
+                <p class="closing-quote">
+                    "เครือข่าย AIB ไม่เป็นของ<span>ใครเลย</span> —<br>
+                    ดังนั้นมันเป็นของ<span>ทุกคน</span>."
+                </p>
+                <div class="btn-group">
+                    <a href="/th/quickstart" class="btn btn-primary">เข้าร่วมการกำกับดูแล →</a>
+                    <a href="/th/genesis" class="btn btn-secondary">ดูเศรษฐกิจโทเค็น</a>
+                </div>
+                <p class="closing-meta" style="margin-top: 24px;">
+                    รัฐธรรมนูญ AIB 2.0 &bull; มีผลบังคับใช้ 14 มีนาคม 2026 (Pi Day) &bull; ChainID: aib-mainnet-1
+                </p>
+            </div>
+        </div>
+        <!-- Language Selector -->
+        <div class="language-section">
+            <div class="language-title">选择语言 / Select Language</div>
+            <div class="language-grid">
+                <a href="/constitution" class="lang-btn">English</a>
+                <a href="/zh/constitution" class="lang-btn">简体中文</a>
+                <a href="/zh-tw/constitution" class="lang-btn">繁體中文</a>
+                <a href="/fr/constitution" class="lang-btn">Français</a>
+                <a href="/ja/constitution" class="lang-btn">日本語</a>
+                <a href="/ms/constitution" class="lang-btn">Bahasa Melayu</a>
+                <a href="/th/constitution" class="lang-btn active">ไทย</a>
+                <a href="/es/constitution" class="lang-btn">Español</a>
+                <a href="/de/constitution" class="lang-btn">Deutsch</a>
+                <a href="/ru/constitution" class="lang-btn">Русский</a>
+            </div>
+        </div>
+        <div class="footer-note">
+            ขับเคลื่อนด้วย AI Proof of Work &bull; จำนวนเต็ม: 3,141,592,653 AIB &bull; เวลาบล็อก: 30 วินาที
+        </div>
+    </div>
+</body>
+</html>

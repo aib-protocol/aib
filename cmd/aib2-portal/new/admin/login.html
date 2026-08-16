@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Login - AIB 2.0</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+            background: #000;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .lang-switch {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 8px;
+        }
+        .lang-btn {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .lang-btn.active {
+            background: linear-gradient(135deg, #00d4ff, #7b2cbf);
+            border-color: transparent;
+        }
+        .login-box {
+            background: #1d1d1f;
+            padding: 40px;
+            border-radius: 20px;
+            width: 360px;
+            border: 1px solid #333;
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        input {
+            width: 100%;
+            padding: 14px 16px;
+            margin-bottom: 16px;
+            border-radius: 10px;
+            border: 1px solid #333;
+            background: #2d2d2f;
+            color: #fff;
+            font-size: 15px;
+        }
+        input:focus {
+            outline: none;
+            border-color: #0071e3;
+        }
+        button {
+            width: 100%;
+            padding: 14px;
+            border-radius: 10px;
+            border: none;
+            background: linear-gradient(135deg, #00d4ff, #7b2cbf);
+            color: #fff;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .error {
+            color: #ff3b30;
+            font-size: 14px;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+        .success {
+            color: #30d158;
+            font-size: 14px;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+        .lang-content { display: none; }
+        .lang-content.active { display: block; }
+    </style>
+</head>
+<body>
+    <div class="lang-switch">
+        <button class="lang-btn" onclick="setLang('en')">English</button>
+        <button class="lang-btn active" onclick="setLang('zh')">中文</button>
+    </div>
+
+    <!-- English Content -->
+    <div id="content-en" class="lang-content">
+        <div class="login-box">
+            <h1>AIB 2.0 Admin</h1>
+            <div class="error" id="error"></div>
+            <div class="success" id="success"></div>
+            <form id="loginForm">
+                <input type="text" id="username" placeholder="Username" required>
+                <input type="password" id="password" placeholder="Password" required>
+                <button type="submit" id="loginBtn">Login</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Chinese Content -->
+    <div id="content-zh" class="lang-content active">
+        <div class="login-box">
+            <h1>AIB 2.0 管理后台</h1>
+            <div class="error" id="error-zh"></div>
+            <div class="success" id="success-zh"></div>
+            <form id="loginForm-zh">
+                <input type="text" id="username-zh" placeholder="用户名" required>
+                <input type="password" id="password-zh" placeholder="密码" required>
+                <button type="submit" id="loginBtn-zh">登录</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/admin/api';
+
+        async function login(username, password, lang) {
+            const errorEl = document.getElementById('error' + (lang === 'zh' ? '-zh' : ''));
+            const successEl = document.getElementById('success' + (lang === 'zh' ? '-zh' : ''));
+            const btnEl = document.getElementById('loginBtn' + (lang === 'zh' ? '-zh' : ''));
+
+            errorEl.textContent = '';
+            successEl.textContent = '';
+            btnEl.disabled = true;
+
+            try {
+                const response = await fetch(API_BASE + '/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    // Store token
+                    sessionStorage.setItem('admin_token', data.token);
+                    sessionStorage.setItem('admin_logged', 'true');
+                    sessionStorage.setItem('admin_lang', lang);
+
+                    successEl.textContent = lang === 'zh' ? '登录成功！正在跳转...' : 'Login successful! Redirecting...';
+
+                    setTimeout(() => {
+                        window.location.href = '/admin/';
+                    }, 500);
+                } else {
+                    errorEl.textContent = data.message || (lang === 'zh' ? '登录失败' : 'Login failed');
+                }
+            } catch (err) {
+                errorEl.textContent = lang === 'zh' ? '网络错误，请稍后重试' : 'Network error, please try again';
+                console.error('Login error:', err);
+            } finally {
+                btnEl.disabled = false;
+            }
+        }
+
+        // Check if already logged in
+        if (sessionStorage.getItem('admin_token')) {
+            window.location.href = '/admin/';
+        }
+
+        // English form handler
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+            login(user, pass, 'en');
+        });
+
+        // Chinese form handler
+        document.getElementById('loginForm-zh').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const user = document.getElementById('username-zh').value;
+            const pass = document.getElementById('password-zh').value;
+            login(user, pass, 'zh');
+        });
+
+        function setLang(lang) {
+            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            document.querySelectorAll('.lang-content').forEach(el => el.classList.remove('active'));
+            document.getElementById('content-' + lang).classList.add('active');
+        }
+    </script>
+</body>
+</html>

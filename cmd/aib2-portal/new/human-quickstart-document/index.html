@@ -1,0 +1,1244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIB 2.0 - Quick Start Guide</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        /* Animated Overlay */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(ellipse at 20% 80%, rgba(123, 44, 191, 0.3) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(0, 212, 255, 0.25) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(0, 0, 0, 0.7) 0%, transparent 70%);
+            z-index: 0;
+            animation: overlayPulse 8s ease-in-out infinite;
+        }
+
+        @keyframes overlayPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.85; }
+        }
+
+        /* Floating Particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(0, 212, 255, 0.6);
+            border-radius: 50%;
+            animation: float 15s infinite;
+        }
+
+        .particle:nth-child(2) { left: 20%; animation-delay: -2s; background: rgba(123, 44, 191, 0.6); }
+        .particle:nth-child(3) { left: 40%; animation-delay: -4s; }
+        .particle:nth-child(4) { left: 60%; animation-delay: -6s; background: rgba(123, 44, 191, 0.6); }
+        .particle:nth-child(5) { left: 80%; animation-delay: -8s; }
+        .particle:nth-child(6) { left: 10%; animation-delay: -10s; background: rgba(123, 44, 191, 0.6); }
+        .particle:nth-child(7) { left: 70%; animation-delay: -12s; }
+        .particle:nth-child(8) { left: 90%; animation-delay: -14s; background: rgba(123, 44, 191, 0.6); }
+
+        @keyframes float {
+            0% { transform: translateY(100vh) scale(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100vh) scale(1); opacity: 0; }
+        }
+
+        /* Content */
+        .content {
+            position: relative;
+            z-index: 2;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 60px 24px 80px;
+        }
+
+        /* Nav */
+        .nav {
+            width: 100%;
+            max-width: 900px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 48px;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: #fff;
+        }
+
+        .nav-brand .pi {
+            font-size: 28px;
+            font-weight: 100;
+            color: #00d4ff;
+            text-shadow: 0 0 20px rgba(0, 212, 255, 0.6);
+        }
+
+        .nav-brand .brand-name {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav-link {
+            color: rgba(255,255,255,0.6);
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.2s;
+        }
+
+        .nav-link:hover {
+            color: #00d4ff;
+        }
+
+        /* Hero */
+        .hero {
+            text-align: center;
+            margin-bottom: 48px;
+            max-width: 700px;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 20px;
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.15), rgba(123, 44, 191, 0.15));
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 50px;
+            font-size: 13px;
+            color: #00d4ff;
+            margin-bottom: 24px;
+            letter-spacing: 0.5px;
+        }
+
+        .hero-badge .dot {
+            width: 6px;
+            height: 6px;
+            background: #00ff88;
+            border-radius: 50%;
+            animation: dotPulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes dotPulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.5); opacity: 0.7; }
+        }
+
+        .hero h1 {
+            font-size: 52px;
+            font-weight: 800;
+            letter-spacing: -2px;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, #fff 0%, #00d4ff 50%, #7b2cbf 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 18px;
+            color: rgba(255,255,255,0.7);
+            line-height: 1.7;
+            font-weight: 300;
+        }
+
+        /* Section */
+        .section {
+            width: 100%;
+            max-width: 900px;
+            margin-bottom: 32px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+
+        .section-num {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #00d4ff, #7b2cbf);
+            font-size: 15px;
+            font-weight: 700;
+            color: #fff;
+            flex-shrink: 0;
+        }
+
+        .section-title {
+            font-size: 22px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        /* Card */
+        .card {
+            background: linear-gradient(145deg, rgba(30, 30, 32, 0.9), rgba(20, 20, 22, 0.95));
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 28px 32px;
+            position: relative;
+            overflow: hidden;
+            transition: border-color 0.3s;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #00d4ff, #7b2cbf);
+        }
+
+        .card:hover {
+            border-color: rgba(0, 212, 255, 0.25);
+        }
+
+        /* Requirements Grid */
+        .req-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .req-item {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 18px 20px;
+        }
+
+        .req-item .req-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #00d4ff;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .req-item .req-value {
+            font-size: 15px;
+            color: rgba(255,255,255,0.85);
+            font-weight: 500;
+        }
+
+        .req-item .req-note {
+            font-size: 12px;
+            color: rgba(255,255,255,0.45);
+            margin-top: 4px;
+        }
+
+        /* Code Block */
+        .code-block {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 16px 0;
+        }
+
+        .code-block:first-child {
+            margin-top: 0;
+        }
+
+        .code-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 16px;
+            background: rgba(255,255,255,0.04);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .code-lang {
+            font-size: 11px;
+            font-weight: 600;
+            color: rgba(255,255,255,0.4);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .copy-btn {
+            font-size: 11px;
+            color: rgba(255,255,255,0.4);
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 2px 8px;
+            border-radius: 4px;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .copy-btn:hover {
+            color: #00d4ff;
+            background: rgba(0, 212, 255, 0.1);
+        }
+
+        .copy-btn.copied {
+            color: #00ff88;
+        }
+
+        pre {
+            padding: 20px;
+            overflow-x: auto;
+            font-size: 14px;
+            line-height: 1.7;
+        }
+
+        code {
+            font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+            color: #e2e8f0;
+        }
+
+        .kw { color: #7b2cbf; }
+        .cm { color: #00d4ff; }
+        .st { color: #00ff88; }
+        .nm { color: #fbbf24; }
+
+        /* Step List */
+        .step-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .step-item {
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+        }
+
+        .step-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #00d4ff, #7b2cbf);
+            flex-shrink: 0;
+            margin-top: 7px;
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-content strong {
+            display: block;
+            color: #fff;
+            font-size: 15px;
+            margin-bottom: 4px;
+        }
+
+        .step-content p {
+            color: rgba(255,255,255,0.6);
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        /* Config Table */
+        .config-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .config-table th {
+            text-align: left;
+            font-size: 11px;
+            font-weight: 600;
+            color: rgba(255,255,255,0.4);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            padding: 10px 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .config-table td {
+            padding: 12px 16px;
+            font-size: 14px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            vertical-align: top;
+        }
+
+        .config-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .config-table td:first-child {
+            font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+            color: #00d4ff;
+            white-space: nowrap;
+            width: 220px;
+        }
+
+        .config-table td:nth-child(2) {
+            color: rgba(255,255,255,0.85);
+        }
+
+        .config-table td:nth-child(3) {
+            color: rgba(255,255,255,0.45);
+            font-size: 13px;
+        }
+
+        .config-table tr:hover td {
+            background: rgba(255,255,255,0.02);
+        }
+
+        /* Commands Grid */
+        .cmd-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .cmd-card {
+            background: rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 18px 20px;
+            transition: border-color 0.3s;
+        }
+
+        .cmd-card:hover {
+            border-color: rgba(0, 212, 255, 0.3);
+        }
+
+        .cmd-card .cmd-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: rgba(255,255,255,0.5);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .cmd-card code {
+            display: block;
+            font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+            font-size: 13px;
+            color: #00d4ff;
+            margin-bottom: 6px;
+        }
+
+        .cmd-card .cmd-desc {
+            font-size: 13px;
+            color: rgba(255,255,255,0.5);
+            line-height: 1.5;
+        }
+
+        /* Info Banner */
+        .info-banner {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.08), rgba(123, 44, 191, 0.08));
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-top: 20px;
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+        }
+
+        .info-banner .info-icon {
+            font-size: 16px;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        .info-banner p {
+            font-size: 13px;
+            color: rgba(255,255,255,0.65);
+            line-height: 1.6;
+        }
+
+        .info-banner a {
+            color: #00d4ff;
+            text-decoration: none;
+        }
+
+        .info-banner a:hover {
+            text-decoration: underline;
+        }
+
+        /* Highlight inline */
+        .hl {
+            color: #00d4ff;
+            font-weight: 600;
+        }
+
+        .hl-green {
+            color: #00ff88;
+            font-weight: 600;
+        }
+
+        /* Language Selector */
+        .language-section {
+            margin-top: 60px;
+            text-align: center;
+        }
+
+        .language-title {
+            font-size: 14px;
+            color: rgba(255,255,255,0.5);
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .language-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+            max-width: 800px;
+        }
+
+        .lang-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 50px;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .lang-btn:hover {
+            background: rgba(0, 212, 255, 0.15);
+            border-color: rgba(0, 212, 255, 0.4);
+            color: #fff;
+            transform: translateY(-2px);
+        }
+
+        .lang-btn.active {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.3), rgba(123, 44, 191, 0.3));
+            border-color: rgba(0, 212, 255, 0.5);
+            color: #fff;
+        }
+
+        /* Footer */
+        .footer-note {
+            margin-top: 50px;
+            color: rgba(255,255,255,0.4);
+            font-size: 13px;
+            text-align: center;
+        }
+
+        /* Btn */
+        .btn-group {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 40px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 32px;
+            border-radius: 50px;
+            font-size: 15px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #00d4ff, #7b2cbf);
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(0, 212, 255, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 15px 40px rgba(0, 212, 255, 0.35);
+        }
+
+        /* Progress Bar */
+        .toc {
+            width: 100%;
+            max-width: 900px;
+            background: linear-gradient(145deg, rgba(30, 30, 32, 0.9), rgba(20, 20, 22, 0.95));
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 24px 32px;
+            margin-bottom: 40px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .toc-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: background 0.2s;
+        }
+
+        .toc-item:hover {
+            background: rgba(255,255,255,0.06);
+        }
+
+        .toc-num {
+            font-size: 11px;
+            font-weight: 700;
+            color: #00d4ff;
+            min-width: 20px;
+        }
+
+        .toc-text {
+            font-size: 13px;
+            color: rgba(255,255,255,0.7);
+        }
+
+        .toc-item:hover .toc-text {
+            color: #fff;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 36px; }
+            .req-grid { grid-template-columns: 1fr; }
+            .cmd-grid { grid-template-columns: 1fr; }
+            .toc { grid-template-columns: repeat(2, 1fr); }
+            .card { padding: 20px; }
+            .config-table td:first-child { width: auto; }
+            .nav-links { display: none; }
+            .language-grid { gap: 8px; }
+            .lang-btn { padding: 10px 16px; font-size: 13px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Floating Particles -->
+    <div class="particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+
+    <div class="overlay"></div>
+
+    <div class="content">
+
+        <!-- Nav -->
+        <nav class="nav">
+            <a href="/" class="nav-brand">
+                <span class="pi">π</span>
+                <span class="brand-name">AIB 2.0</span>
+            </a>
+            <div class="nav-links">
+                <a href="/" class="nav-link">Home</a>
+                <a href="/genesis" class="nav-link">Tokenomics</a>
+                <a href="/constitution" class="nav-link">Constitution</a>
+                <a href="/quickstart" class="nav-link" style="color:#00d4ff;">Quick Start</a>
+            </div>
+        </nav>
+
+        <!-- Hero -->
+        <div class="hero">
+            <div class="hero-badge">
+                <span class="dot"></span>
+                <span>Developer Guide</span>
+            </div>
+            <h1>Quick Start Guide</h1>
+            <p>Get your AIB 2.0 node up and running in minutes. Follow the steps below to install, configure, and join the network.</p>
+        </div>
+
+        <!-- Table of Contents -->
+        <div class="toc">
+            <a href="#prerequisites" class="toc-item">
+                <span class="toc-num">01</span>
+                <span class="toc-text">Prerequisites</span>
+            </a>
+            <a href="#installation" class="toc-item">
+                <span class="toc-num">02</span>
+                <span class="toc-text">Installation</span>
+            </a>
+            <a href="#configuration" class="toc-item">
+                <span class="toc-num">03</span>
+                <span class="toc-text">Configuration</span>
+            </a>
+            <a href="#running" class="toc-item">
+                <span class="toc-num">04</span>
+                <span class="toc-text">Running a Node</span>
+            </a>
+            <a href="#wallet" class="toc-item">
+                <span class="toc-num">05</span>
+                <span class="toc-text">Creating a Wallet</span>
+            </a>
+            <a href="#commands" class="toc-item">
+                <span class="toc-num">06</span>
+                <span class="toc-text">Basic Commands</span>
+            </a>
+        </div>
+
+        <!-- 01 Prerequisites -->
+        <div class="section" id="prerequisites">
+            <div class="section-header">
+                <div class="section-num">01</div>
+                <h2 class="section-title">Prerequisites</h2>
+            </div>
+            <div class="card">
+                <div class="req-grid">
+                    <div class="req-item">
+                        <div class="req-label">Go Version</div>
+                        <div class="req-value">Go 1.22 or later</div>
+                        <div class="req-note">golang.org/dl for installation</div>
+                    </div>
+                    <div class="req-item">
+                        <div class="req-label">Operating System</div>
+                        <div class="req-value">Linux, macOS, Windows</div>
+                        <div class="req-note">Linux (amd64/arm64) recommended</div>
+                    </div>
+                    <div class="req-item">
+                        <div class="req-label">RAM</div>
+                        <div class="req-value">8 GB minimum</div>
+                        <div class="req-note">16 GB recommended for validators</div>
+                    </div>
+                    <div class="req-item">
+                        <div class="req-label">Disk Space</div>
+                        <div class="req-value">100 GB SSD</div>
+                        <div class="req-note">NVMe preferred for validator nodes</div>
+                    </div>
+                    <div class="req-item">
+                        <div class="req-label">CPU</div>
+                        <div class="req-value">4 cores minimum</div>
+                        <div class="req-note">8+ cores for validator performance</div>
+                    </div>
+                    <div class="req-item">
+                        <div class="req-label">Network</div>
+                        <div class="req-value">100 Mbps+</div>
+                        <div class="req-note">Open ports: 26656, 26657, 1317</div>
+                    </div>
+                </div>
+
+                <div class="info-banner" style="margin-top:24px;">
+                    <span class="info-icon">i</span>
+                    <p>Verify your Go installation with <code style="color:#00d4ff;font-family:monospace;">go version</code>. The minimum required is <span class="hl">Go 1.22.0</span>. Download from <a href="https://go.dev/dl/" target="_blank" rel="noopener">go.dev/dl</a> if needed.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 02 Installation -->
+        <div class="section" id="installation">
+            <div class="section-header">
+                <div class="section-num">02</div>
+                <h2 class="section-title">Installation</h2>
+            </div>
+            <div class="card">
+                <div class="step-list">
+                    <div class="step-item">
+                        <div class="step-dot"></div>
+                        <div class="step-content">
+                            <strong>Clone the repository</strong>
+                            <p>Fetch the latest source code from the official repository.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">bash</span>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <pre><code>git clone https://github.com/aib-protocol/aib.git
+cd aib</code></pre>
+                </div>
+
+                <div class="step-list" style="margin-top:20px;">
+                    <div class="step-item">
+                        <div class="step-dot"></div>
+                        <div class="step-content">
+                            <strong>Build the binaries</strong>
+                            <p>Compile the node daemon and CLI tool using Go.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">bash</span>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <pre><code><span class="cm"># Build all binaries</span>
+make build
+
+<span class="cm"># Or build individual targets</span>
+go build -o bin/aibd ./cmd/aibd
+go build -o bin/aibcli ./cmd/aibcli</code></pre>
+                </div>
+
+                <div class="step-list" style="margin-top:20px;">
+                    <div class="step-item">
+                        <div class="step-dot"></div>
+                        <div class="step-content">
+                            <strong>Install to system PATH</strong>
+                            <p>Make the binaries globally accessible.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">bash</span>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <pre><code>sudo cp bin/aibd /usr/local/bin/
+sudo cp bin/aibcli /usr/local/bin/
+
+<span class="cm"># Verify installation</span>
+aibd version
+aibcli version</code></pre>
+                </div>
+
+                <div class="info-banner">
+                    <span class="info-icon">i</span>
+                    <p>Module path: <span class="hl">github.com/aib-protocol/aib</span>. ChainID for mainnet: <span class="hl">aib-mainnet-1</span>. Mainnet launch: <span class="hl-green">March 14, 2026 (Pi Day)</span>.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 03 Configuration -->
+        <div class="section" id="configuration">
+            <div class="section-header">
+                <div class="section-num">03</div>
+                <h2 class="section-title">Configuration Basics</h2>
+            </div>
+            <div class="card">
+                <div class="step-list" style="margin-bottom:20px;">
+                    <div class="step-item">
+                        <div class="step-dot"></div>
+                        <div class="step-content">
+                            <strong>Initialize node configuration</strong>
+                            <p>This creates the default config files and genesis document in <code style="color:#00d4ff;font-family:monospace;">~/.aib/</code>.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">bash</span>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <pre><code>aibd init my-node --chain-id aib-mainnet-1</code></pre>
+                </div>
+
+                <div class="step-list" style="margin:20px 0 16px;">
+                    <div class="step-item">
+                        <div class="step-dot"></div>
+                        <div class="step-content">
+                            <strong>Key configuration parameters</strong>
+                            <p>Edit <code style="color:#00d4ff;font-family:monospace;">~/.aib/config/config.toml</code> to adjust these settings:</p>
+                        </div>
+                    </div>
+                </div>
+
+                <table class="config-table">
+                    <thead>
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Value</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>chain-id</td>
+                            <td>aib-mainnet-1</td>
+                            <td>Mainnet chain identifier</td>
+                        </tr>
+                        <tr>
+                            <td>moniker</td>
+                            <td>your-node-name</td>
+                            <td>Human-readable node name</td>
+                        </tr>
+                        <tr>
+                            <td>laddr (P2P)</td>
+                            <td>tcp://0.0.0.0:26656</td>
+                            <td>P2P listen address</td>
+                        </tr>
+                        <tr>
+                            <td>laddr (RPC)</td>
+                            <td>tcp://127.0.0.1:26657</td>
+                            <td>RPC listen address</td>
+                        </tr>
+                        <tr>
+                            <td>persistent_peers</td>
+                            <td>(seed node list)</td>
+                            <td>Bootstrap peers for network discovery</td>
+                        </tr>
+                        <tr>
+                            <td>timeout_commit</td>
+                            <td>30s</td>
+                            <td>Block time (30 second target)</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="code-block" style="margin-top:20px;">
+                    <div class="code-header">
+                        <span class="code-lang">toml - ~/.aib/config/config.toml (excerpt)</span>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <pre><code><span class="cm"># Node identity</span>
+moniker = <span class="st">"my-aib-node"</span>
+
+<span class="cm"># P2P configuration</span>
+[p2p]
+laddr = <span class="st">"tcp://0.0.0.0:26656"</span>
+persistent_peers = <span class="st">""</span>  <span class="cm"># Add seed nodes here</span>
+
+<span class="cm"># RPC configuration</span>
+[rpc]
+laddr = <span class="st">"tcp://127.0.0.1:26657"</span>
+
+<span class="cm"># Consensus</span>
+[consensus]
+timeout_commit = <span class="st">"30s"</span></code></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- 04 Running a Node -->
+        <div class="section" id="running">
+            <div class="section-header">
+                <div class="section-num">04</div>
+                <h2 class="section-title">Running a Node</h2>
+            </div>
+            <div class="card">
+                <div class="step-list" style="margin-bottom:20px;">
+                    <div class="step-item">
+                        <div class="step-dot"></div>
+                        <div class="step-content">
+                            <strong>Start the node</strong>
+                            <p>Launch the AIB daemon. It will sync from genesis or from a snapshot.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">bash</span>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <pre><code>aibd start</code></pre>
+                </div>
+
+                <div class="step-list" style="margin:20px 0 16px;">
+                    <div class="step-item">
+                        <div class="step-dot"></div>
+                        <div class="step-content">
+                            <strong>Run as a systemd service (recommended for production)</strong>
+                            <p>Create a service file so the node restarts automatically.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">bash</span>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <pre><code><span class="cm"># Create systemd service</span>
+sudo tee /etc/systemd/system/aibd.service &lt;&lt;EOF
+[Unit]
+Description=AIB 2.0 Node
+After=network-online.target
+
+[Service]
+User=$USER
+ExecStart=/usr/local/bin/aibd start
+Restart=always
+RestartSec=3
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+<span class="cm"># Enable and start the service</span>
+sudo systemctl daemon-reload
+sudo systemctl enable aibd
+sudo systemctl start aibd
+
+<span class="cm"># Monitor logs</span>
+journalctl -u aibd -f</code></pre>
+                </div>
+
+                <div class="info-banner">
+                    <span class="info-icon">i</span>
+                    <p>To become a validator, a minimum stake of <span class="hl">1,000 AIB</span> is required. Block rewards are <span class="hl">50 AIB</span> per block at a 30-second block time. See the <a href="/genesis">Tokenomics page</a> for full details.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 05 Creating a Wallet -->
+        <div class="section" id="wallet">
+            <div class="section-header">
+                <div class="section-num">05</div>
+                <h2 class="section-title">Creating a Wallet</h2>
+            </div>
+            <div class="card">
+                <div class="step-list" style="margin-bottom:20px;">
+                    <div class="step-item">
+                        <div class="step-dot"></div>
+                        <div class="step-content">
+                            <strong>Generate a new key</strong>
+                            <p>Creates a new key pair and stores it in the local keyring. Save the mnemonic phrase securely — it cannot be recovered later.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">bash</span>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <pre><code><span class="cm"># Generate a new wallet</span>
+aibcli keys add my-wallet
+
+<span class="cm"># Output includes:</span>
+<span class="cm">#   address:  aib1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</span>
+<span class="cm">#   mnemonic: word1 word2 word3 ... (24 words)</span></code></pre>
+                </div>
+
+                <div class="step-list" style="margin:20px 0 16px;">
+                    <div class="step-item">
+                        <div class="step-dot"></div>
+                        <div class="step-content">
+                            <strong>Recover an existing wallet</strong>
+                            <p>Restore a wallet using a BIP-39 mnemonic phrase.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">bash</span>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <pre><code>aibcli keys add my-wallet --recover</code></pre>
+                </div>
+
+                <div class="step-list" style="margin:20px 0 16px;">
+                    <div class="step-item">
+                        <div class="step-dot"></div>
+                        <div class="step-content">
+                            <strong>List and inspect keys</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">bash</span>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <pre><code><span class="cm"># List all keys</span>
+aibcli keys list
+
+<span class="cm"># Show a specific key</span>
+aibcli keys show my-wallet
+
+<span class="cm"># Show validator address</span>
+aibcli keys show my-wallet --bech val</code></pre>
+                </div>
+
+                <div class="info-banner">
+                    <span class="info-icon">!</span>
+                    <p style="color:rgba(255,200,100,0.85);">Never share your mnemonic phrase. Store it offline in a secure location. AIB 2.0 addresses use the <span style="color:#fbbf24;font-weight:600;">aib1</span> prefix (bech32 encoding).</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 06 Basic Commands -->
+        <div class="section" id="commands">
+            <div class="section-header">
+                <div class="section-num">06</div>
+                <h2 class="section-title">Basic Commands</h2>
+            </div>
+            <div class="card">
+                <div class="cmd-grid">
+                    <div class="cmd-card">
+                        <div class="cmd-title">Check Status</div>
+                        <code>aibd status</code>
+                        <div class="cmd-desc">Display node sync status, latest block height, and peer count.</div>
+                    </div>
+                    <div class="cmd-card">
+                        <div class="cmd-title">Query Balance</div>
+                        <code>aibcli query bank balances &lt;address&gt;</code>
+                        <div class="cmd-desc">Show token balance for any AIB address.</div>
+                    </div>
+                    <div class="cmd-card">
+                        <div class="cmd-title">Send Tokens</div>
+                        <code>aibcli tx bank send &lt;from&gt; &lt;to&gt; &lt;amount&gt;uaib</code>
+                        <div class="cmd-desc">Transfer AIB tokens between addresses on-chain.</div>
+                    </div>
+                    <div class="cmd-card">
+                        <div class="cmd-title">Delegate Stake</div>
+                        <code>aibcli tx staking delegate &lt;validator&gt; &lt;amount&gt;uaib</code>
+                        <div class="cmd-desc">Delegate tokens to a validator to earn staking rewards.</div>
+                    </div>
+                    <div class="cmd-card">
+                        <div class="cmd-title">Query Validators</div>
+                        <code>aibcli query staking validators</code>
+                        <div class="cmd-desc">List all active validators on the network.</div>
+                    </div>
+                    <div class="cmd-card">
+                        <div class="cmd-title">Claim Rewards</div>
+                        <code>aibcli tx distribution withdraw-all-rewards</code>
+                        <div class="cmd-desc">Withdraw accumulated staking rewards to your wallet.</div>
+                    </div>
+                    <div class="cmd-card">
+                        <div class="cmd-title">Query Transaction</div>
+                        <code>aibcli query tx &lt;tx-hash&gt;</code>
+                        <div class="cmd-desc">Look up the details of any on-chain transaction.</div>
+                    </div>
+                    <div class="cmd-card">
+                        <div class="cmd-title">Node Version</div>
+                        <code>aibd version --long</code>
+                        <div class="cmd-desc">Show full version info including build commit and Go version.</div>
+                    </div>
+                </div>
+
+                <div class="code-block" style="margin-top:24px;">
+                    <div class="code-header">
+                        <span class="code-lang">bash - helpful flags</span>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <pre><code><span class="cm"># Use a specific RPC endpoint</span>
+aibcli --node tcp://localhost:26657 query status
+
+<span class="cm"># Set chain ID globally</span>
+aibcli config chain-id aib-mainnet-1
+
+<span class="cm"># Set default keyring backend</span>
+aibcli config keyring-backend file
+
+<span class="cm"># Output in JSON format</span>
+aibcli query bank balances &lt;address&gt; -o json</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- CTA -->
+        <div class="btn-group">
+            <a href="/" class="btn btn-primary">Back to Home</a>
+            <a href="/genesis" class="btn btn-secondary">View Tokenomics</a>
+            <a href="/constitution" class="btn btn-secondary">Constitution</a>
+        </div>
+
+        <!-- Language Selector -->
+        <div class="language-section">
+            <div class="language-title">Select Language / 选择语言</div>
+            <div class="language-grid">
+                <a href="/quickstart" class="lang-btn active"><span>English</span></a>
+                <a href="/zh/quickstart" class="lang-btn"><span>简体中文</span></a>
+                <a href="/zh-tw/quickstart" class="lang-btn"><span>繁體中文</span></a>
+                <a href="/fr/quickstart" class="lang-btn"><span>Français</span></a>
+                <a href="/ja/quickstart" class="lang-btn"><span>日本語</span></a>
+                <a href="/ms/quickstart" class="lang-btn"><span>Bahasa Melayu</span></a>
+                <a href="/th/quickstart" class="lang-btn"><span>ไทย</span></a>
+                <a href="/es/quickstart" class="lang-btn"><span>Español</span></a>
+                <a href="/de/quickstart" class="lang-btn"><span>Deutsch</span></a>
+                <a href="/ru/quickstart" class="lang-btn"><span>Русский</span></a>
+            </div>
+        </div>
+
+        <div class="footer-note">
+            Powered by Proof of AI Work &bull; Total Supply: 3,141,592,653 AIB &bull; 30s block time
+        </div>
+    </div>
+
+    <script>
+        function copyCode(btn) {
+            const pre = btn.closest('.code-block').querySelector('pre');
+            const text = pre.innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                btn.textContent = 'Copied!';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.textContent = 'Copy';
+                    btn.classList.remove('copied');
+                }, 2000);
+            }).catch(() => {
+                btn.textContent = 'Copy';
+            });
+        }
+    </script>
+</body>
+</html>

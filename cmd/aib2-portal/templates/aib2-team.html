@@ -1,0 +1,392 @@
+{{define "content"}}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+    /* Team page specific styles */
+    .en-team {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    .team-hero {
+        text-align: center;
+        padding: 80px 40px;
+        background: linear-gradient(135deg, rgba(0,212,255,0.08) 0%, rgba(123,44,191,0.08) 100%);
+        border-radius: 32px;
+        margin-bottom: 50px;
+        position: relative;
+        overflow: hidden;
+    }
+    .team-hero::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background:
+            radial-gradient(circle at 20% 50%, rgba(0,212,255,0.15) 0%, transparent 40%),
+            radial-gradient(circle at 80% 50%, rgba(123,44,191,0.15) 0%, transparent 40%);
+        pointer-events: none;
+    }
+    .team-hero h1 {
+        font-size: 56px;
+        font-weight: 900;
+        background: linear-gradient(135deg, #00d4ff 0%, #7b2cbf 50%, #ff6b6b 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 16px;
+        position: relative;
+    }
+    .team-hero .tagline {
+        font-size: 20px;
+        color: #9ca3af;
+        position: relative;
+    }
+
+    .team-section {
+        margin-bottom: 60px;
+    }
+    .team-section-title {
+        font-size: 32px;
+        font-weight: 800;
+        color: #ffffff;
+        margin-bottom: 32px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+    .team-section-title .line {
+        flex: 1;
+        height: 2px;
+        background: linear-gradient(90deg, rgba(0,212,255,0.3), transparent);
+    }
+
+    /* Team Grid */
+    .team-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 24px;
+    }
+
+    .team-card {
+        background: linear-gradient(135deg, rgba(18,18,26,0.9), rgba(26,26,37,0.9));
+        border: 2px solid rgba(42,42,58,0.6);
+        border-radius: 20px;
+        padding: 32px;
+        text-align: center;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .team-card:hover {
+        border-color: rgba(0,212,255,0.4);
+        transform: translateY(-8px);
+        box-shadow: 0 20px 50px rgba(0,212,255,0.15);
+    }
+
+    .team-avatar {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        margin: 0 auto 20px;
+        background: linear-gradient(135deg, #00d4ff, #7b2cbf);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 40px;
+        font-weight: 700;
+        color: #0a0a0f;
+    }
+    .team-card.founder .team-avatar {
+        background: linear-gradient(135deg, #ff6b6b, #7b2cbf);
+        width: 120px;
+        height: 120px;
+        font-size: 48px;
+    }
+
+    .team-name {
+        font-size: 22px;
+        font-weight: 700;
+        color: #ffffff;
+        margin-bottom: 8px;
+    }
+    .team-role {
+        font-size: 14px;
+        color: #00d4ff;
+        font-weight: 600;
+        margin-bottom: 12px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    .team-desc {
+        font-size: 15px;
+        color: #9ca3af;
+        line-height: 1.6;
+    }
+    .team-social {
+        margin-top: 16px;
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+    }
+    .team-social a {
+        color: #9ca3af;
+        text-decoration: none;
+        font-size: 14px;
+        transition: color 0.3s;
+    }
+    .team-social a:hover {
+        color: #00d4ff;
+    }
+
+    /* Contributors List */
+    .contributors-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+    .contributor-tag {
+        background: rgba(0,212,255,0.1);
+        border: 1px solid rgba(0,212,255,0.2);
+        border-radius: 30px;
+        padding: 10px 20px;
+        font-size: 15px;
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s;
+    }
+    .contributor-tag:hover {
+        background: rgba(0,212,255,0.2);
+        border-color: rgba(0,212,255,0.4);
+    }
+    .contributor-tag .icon {
+        font-size: 16px;
+    }
+
+    /* Community Roles */
+    .roles-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 20px;
+    }
+    .role-card {
+        background: linear-gradient(135deg, rgba(18,18,26,0.9), rgba(26,26,37,0.9));
+        border: 2px solid rgba(42,42,58,0.6);
+        border-radius: 16px;
+        padding: 24px;
+        transition: all 0.3s;
+    }
+    .role-card:hover {
+        border-color: rgba(123,44,191,0.4);
+    }
+    .role-icon {
+        font-size: 32px;
+        margin-bottom: 16px;
+    }
+    .role-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #ffffff;
+        margin-bottom: 8px;
+    }
+    .role-desc {
+        font-size: 14px;
+        color: #9ca3af;
+        line-height: 1.5;
+    }
+
+    /* Contact Section */
+    .contact-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+    }
+    .contact-card {
+        background: linear-gradient(135deg, rgba(18,18,26,0.9), rgba(26,26,37,0.9));
+        border: 2px solid rgba(42,42,58,0.6);
+        border-radius: 16px;
+        padding: 32px;
+        text-align: center;
+        text-decoration: none;
+        color: inherit;
+        transition: all 0.3s;
+    }
+    .contact-card:hover {
+        border-color: rgba(0,212,255,0.4);
+        transform: translateY(-4px);
+    }
+    .contact-icon {
+        font-size: 40px;
+        margin-bottom: 16px;
+    }
+    .contact-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #ffffff;
+        margin-bottom: 8px;
+    }
+    .contact-desc {
+        font-size: 14px;
+        color: #9ca3af;
+    }
+
+    @media (max-width: 768px) {
+        .team-hero h1 { font-size: 40px; }
+        .team-hero .tagline { font-size: 16px; }
+        .team-grid { grid-template-columns: 1fr; }
+        .team-section-title { font-size: 24px; }
+    }
+</style>
+
+<div class="en-team">
+<!-- Hero Section -->
+<div class="team-hero">
+    <h1>Our Team</h1>
+    <p class="tagline">The people behind AIB 2.0 - Building the future of human-AI co-governance</p>
+</div>
+
+<!-- Core Team -->
+<div class="team-section">
+    <h2 class="team-section-title">
+        <span>🚀</span> Core Team
+        <div class="line"></div>
+    </h2>
+    <div class="team-grid">
+        <div class="team-card founder">
+            <div class="team-avatar">A</div>
+            <div class="team-name">AIB Founder</div>
+            <div class="team-role">Founder & Lead Developer</div>
+            <div class="team-desc">
+                Visionary architect of the AIB 2.0 protocol. Initiated the project to create a decentralized blockchain that bridges human and AI governance.
+            </div>
+            <div class="team-social">
+                <a href="https://github.com/aib-project" target="_blank">GitHub</a>
+            </div>
+        </div>
+
+        <div class="team-card">
+            <div class="team-avatar">C</div>
+            <div class="team-name">Core Developer</div>
+            <div class="team-role">Protocol Engineer</div>
+            <div class="team-desc">
+                Implements core consensus mechanisms and ensures network stability and security.
+            </div>
+        </div>
+
+        <div class="team-card">
+            <div class="team-avatar">D</div>
+            <div class="team-name">DApp Developer</div>
+            <div class="team-role">Application Engineer</div>
+            <div class="team-desc">
+                Builds decentralized applications and smart contracts on the AIB 2.0 network.
+            </div>
+        </div>
+
+        <div class="team-card">
+            <div class="team-avatar">R</div>
+            <div class="team-name">Researcher</div>
+            <div class="team-role">Protocol Researcher</div>
+            <div class="team-desc">
+                Conducts research on consensus algorithms and governance mechanisms.
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Contributors -->
+<div class="team-section">
+    <h2 class="team-section-title">
+        <span>💻</span> Contributors
+        <div class="line"></div>
+    </h2>
+
+    <h3 style="color: #9ca3af; font-size: 18px; margin-bottom: 20px;">Code Contributors</h3>
+    <div class="contributors-list">
+        <div class="contributor-tag"><span class="icon">👨‍💻</span> Developer One</div>
+        <div class="contributor-tag"><span class="icon">👩‍💻</span> Developer Two</div>
+        <div class="contributor-tag"><span class="icon">👨‍💻</span> Contributor Three</div>
+        <div class="contributor-tag"><span class="icon">👩‍💻</span> Contributor Four</div>
+    </div>
+
+    <h3 style="color: #9ca3af; font-size: 18px; margin: 30px 0 20px;">Documentation Contributors</h3>
+    <div class="contributors-list">
+        <div class="contributor-tag"><span class="icon">📝</span> Docs Writer One</div>
+        <div class="contributor-tag"><span class="icon">📝</span> Docs Writer Two</div>
+        <div class="contributor-tag"><span class="icon">📝</span> Translator One</div>
+    </div>
+</div>
+
+<!-- Community Roles -->
+<div class="team-section">
+    <h2 class="team-section-title">
+        <span>🌐</span> Community Roles
+        <div class="line"></div>
+    </h2>
+    <div class="roles-grid">
+        <div class="role-card">
+            <div class="role-icon">⚙️</div>
+            <div class="role-title">Validation Node Operators</div>
+            <div class="role-desc">
+                Community members running validation nodes to secure the network and participate in consensus.
+            </div>
+        </div>
+
+        <div class="role-card">
+            <div class="role-icon">🌱</div>
+            <div class="role-title">Early Participants</div>
+            <div class="role-desc">
+                Early adopters who tested the protocol, provided feedback, and helped shape the roadmap.
+            </div>
+        </div>
+
+        <div class="role-card">
+            <div class="role-icon">🎯</div>
+            <div class="role-title">Governance Delegates</div>
+            <div class="role-desc">
+                Community representatives who participate in on-chain governance decisions.
+            </div>
+        </div>
+
+        <div class="role-card">
+            <div class="role-icon">🐛</div>
+            <div class="role-title">Bug Hunters</div>
+            <div class="role-desc">
+                Security researchers who help identify and report vulnerabilities in the protocol.
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Contact Us -->
+<div class="team-section">
+    <h2 class="team-section-title">
+        <span>📬</span> Contact Us
+        <div class="line"></div>
+    </h2>
+    <div class="contact-grid">
+        <a href="https://github.com/aib-project" class="contact-card" target="_blank">
+            <div class="contact-icon">🐙</div>
+            <div class="contact-title">GitHub</div>
+            <div class="contact-desc">View our repositories and contribute</div>
+        </a>
+
+        <a href="https://github.com/aib-project/aib/discussions" class="contact-card" target="_blank">
+            <div class="contact-icon">💬</div>
+            <div class="contact-title">Discussions</div>
+            <div class="contact-desc">Join the community conversation</div>
+        </a>
+
+        <a href="https://t.me/aibproject" class="contact-card" target="_blank">
+            <div class="contact-icon">✈️</div>
+            <div class="contact-title">Telegram</div>
+            <div class="contact-desc">Connect with the community</div>
+        </a>
+
+        <a href="https://twitter.com/aibproject" class="contact-card" target="_blank">
+            <div class="contact-icon">🐦</div>
+            <div class="contact-title">Twitter</div>
+            <div class="contact-desc">Follow updates and announcements</div>
+        </a>
+    </div>
+</div>
+
+</div>
+{{end}}

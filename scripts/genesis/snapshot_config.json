@@ -1,0 +1,11 @@
+{
+  "input_file": "aib1_accounts.csv",
+  "output_file": "aib1_snapshot_result.json",
+  "snapshot_id": "aib1-bridge-snapshot-2025",
+  "snapshot_time": "2025-12-31T23:59:59Z",
+  "claim_deadline": "2027-12-31T23:59:59Z",
+  "network": "aib1-mainnet",
+  "min_claim_amount": "100",
+  "hash_algorithm": "sha256",
+  "tree_type": "standard"
+}

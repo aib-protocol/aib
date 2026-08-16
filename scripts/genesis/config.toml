@@ -1,0 +1,205 @@
+# AIB Mainnet Node Configuration
+# Mainnet Genesis Configuration Template
+
+# Node Configuration
+[node]
+  # Node moniker (human-readable name)
+  moniker = "aib-mainnet-validator"
+  # Node type: validator, full, light
+  node_type = "validator"
+  # External address for P2P connections
+  external_address = ""
+
+# P2P Network Configuration
+[p2p]
+  # P2P listen address
+  listen_address = "0.0.0.0:26656"
+  # External P2P address (advertised to peers)
+  external_address = ""
+  # Seed nodes for bootstrapping
+  seeds = []
+  # Persistent peers
+  persistent_peers = []
+  # Maximum number of peers
+  max_num_peers = 50
+  # Minimum number of peers
+  min_num_peers = 5
+  # Peer exchange
+  pex = true
+  # Seed mode (act as seed node)
+  seed_mode = false
+  # Private peer IDs (hidden from peer exchange)
+  private_peer_ids = []
+
+# RPC Configuration
+[rpc]
+  # RPC listen address
+  laddr = "tcp://0.0.0.0:26657"
+  # CORS allowed origins
+  cors_allowed_origins = ["*"]
+  # CORS allowed methods
+  cors_allowed_methods = ["HEAD", "GET", "POST"]
+  # CORS allowed headers
+  cors_allowed_headers = ["Origin", "Accept", "Content-Type", "X-Requested-With", "X-Server-Time"]
+  # Maximum open connections
+  max_open_connections = 1000
+  # Enable unsafe CORS (development only, set to false for mainnet)
+  unsafe_cors = false
+  # Maximum body size in bytes
+  max_body_bytes = 1000000
+  # Maximum header bytes
+  max_header_bytes = 1048576
+
+# API Configuration
+[api]
+  # API listen address
+  address = "tcp://0.0.0.0:1317"
+  # Swagger enabled
+  swagger = false
+  # Enable REST API
+  enabled = true
+  # Maximum open connections
+  max_open_connections = 1000
+
+# Consensus Configuration
+[consensus]
+  # Consensus timeout
+  timeout_precommit = "1s"
+  timeout_precommit_delta = "500ms"
+  timeout_prevote = "1s"
+  timeout_prevote_delta = "500ms"
+  timeout_propose = "3s"
+  timeout_propose_delta = "500ms"
+  # Block time
+  block_time = "30s"
+  # Empty blocks
+  create_empty_blocks = true
+  # Empty blocks interval
+  create_empty_blocks_interval = "30s"
+  # Peer gossip
+  peer_gossip_sleep_duration = "100ms"
+  # Peer query momentum
+  peer_query_maj23_sleep_duration = "2s"
+
+# Mempool Configuration
+[mempool]
+  # Mempool size
+  size = 5000
+  # Mempool cache size
+  cache_size = 10000
+  # Broadcast
+  broadcast = true
+  # WAL path
+  wal_dir = "data/mempool.wal"
+  # Recheck
+  recheck = true
+  # Recheck timeout
+  recheck_timeout = "0ms"
+
+# State Sync Configuration
+[statesync]
+  # Enable state sync
+  enable = false
+  # RPC servers
+  rpc_servers = []
+  # Trust height
+  trust_height = 0
+  # Trust hash
+  trust_hash = ""
+  # Trust period
+  trust_period = "168h"
+  # Discovery time
+  discovery_time = "15s"
+  # Chunk timeout
+  chunk_fetch_timeout = "10s"
+  # Chunk request timeout
+  chunk_request_timeout = "10s"
+  # Chunk size
+  chunk_size = 10
+
+# Storage Configuration
+[storage]
+  # Database backend
+  db_backend = "goleveldb"
+  # Database directory
+  db_dir = "data"
+  # Cache size
+  cache_size = 10000
+
+# Logging Configuration
+[logging]
+  # Log level: debug, info, warn, error, fatal, panic
+  log_level = "info"
+  # Log format: json, plain
+  log_format = "json"
+  # Log output
+  log_output = ["stdout"]
+  # Log file (optional)
+  # log_file = "logs/aib-node.log"
+  # Log file max size
+  # log_file_max_size = 100
+  # Log file max backups
+  # log_file_max_backups = 10
+  # Log file max age
+  # log_file_max_age = 30
+
+# Instrumentation Configuration
+[instrumentation]
+  # Prometheus listen address
+  prometheus_listen_addr = ":26660"
+  # Maximum open connections
+  max_open_connections = 3
+  # Enable namespace labels
+  namespace_prometheus_labels = true
+
+# Indexing Configuration
+[indexing]
+  # Index all transactions
+  index_all_transactions = true
+  # Index tags
+  index_tags = ["tx.height", "tx.hash", "message.sender", "transfer.recipient"]
+
+# Telemetry Configuration
+[telemetry]
+  # Enable telemetry
+  enabled = true
+  # Global telemetry labels
+  global_labels = [["chain_id", "aib-mainnet-1"], ["moniker", "aib-mainnet-validator"]]
+  # Metrics endpoint
+  metrics_endpoint = "https://telemetry.aib.network/metrics"
+  # Report interval
+  report_interval = "60s"
+
+# Genesis Configuration
+[genesis]
+  # Genesis file path
+  genesis_file = "genesis.json"
+  # Chain ID
+  chain_id = "aib-mainnet-1"
+
+# TLS Configuration (for mainnet)
+[tls]
+  # Enable TLS for RPC
+  enabled = false
+  # Certificate path
+  cert_path = ""
+  # Key path
+  key_path = ""
+  # CA path
+  ca_path = ""
+
+# Fast Sync Configuration
+[fastsync]
+  # Fast sync version
+  version = "v0"
+
+# Pruning Configuration
+[pruning]
+  # Sync strategy (sync, full, fast)
+  strategy = "sync"
+  # Keep recent
+  keep_recent = 100
+  # Keep every
+  keep_every = 500
+  # Interval
+  interval = 1000

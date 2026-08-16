@@ -1,0 +1,41 @@
+[Unit]
+Description=AIB 2.0 Mainnet Node
+Documentation=https://docs.aib.network
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=temple
+WorkingDirectory=.
+ExecStart=./bin/aib-node \
+  --config ./config/config.toml \
+  --data-dir ./data \
+  --api-port 51200 \
+  --p2p-port 26656 \
+  --moniker "aib-mainnet-validator"
+Restart=on-failure
+RestartSec=10
+TimeoutStopSec=60
+TimeoutStartSec=60
+LimitNOFILE=65535
+LimitNPROC=4096
+
+# 环境变量
+Environment="HOME=~/aib"
+Environment="PORT=51200"
+Environment="LOG_LEVEL=info"
+
+# 安全配置
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=./data ./logs
+PrivateTmp=true
+
+# 日志配置
+StandardOutput=append:./logs/mainnet.log
+StandardError=append:./logs/mainnet.error.log
+
+[Install]
+WantedBy=multi-user.target

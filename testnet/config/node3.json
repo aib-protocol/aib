@@ -1,0 +1,9 @@
+{
+  "node_id": "testnet-node-3",
+  "ollama_url": "http://localhost:11434",
+  "model": "llama2",
+  "stake_amount": 1000.0,
+  "listen_addr": "127.0.0.1:51212",
+  "data_dir": "./data/node3",
+  "log_level": "info"
+}

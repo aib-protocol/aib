@@ -1,0 +1,363 @@
+{{define "content"}}
+<style>
+    /* Apple Minimal Dark Style - Override base template */
+    body { background: #000 !important; }
+    main { padding: 0 !important; max-width: none !important; }
+    footer { background: #000 !important; border-top: 1px solid #424245 !important; }
+    nav { background: rgba(0,0,0,0.9) !important; backdrop-filter: blur(20px) !important; }
+    .nav-links a { color: #86868b !important; }
+    .nav-links a:hover, .nav-links a.active { color: #f5f5f7 !important; }
+    .logo { color: #f5f5f7 !important; }
+    .lang-switch, .lang-switch a { color: #86868b !important; }
+    .lang-active { color: #f5f5f7 !important; }
+
+    .explorer-container {
+        font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+        background: #000;
+        color: #f5f5f7;
+        min-height: 100vh;
+        margin-top: -60px;
+    }
+
+    .page-header {
+        padding: 80px 48px;
+        text-align: center;
+        border-bottom: 1px solid #2d2d2d;
+    }
+
+    .page-title {
+        font-size: 48px;
+        font-weight: 700;
+        letter-spacing: -1px;
+        margin-bottom: 16px;
+    }
+
+    .page-subtitle {
+        font-size: 20px;
+        color: #86868b;
+        margin-bottom: 40px;
+    }
+
+    .explorer-content {
+        padding: 80px 48px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 24px;
+        margin-bottom: 60px;
+    }
+
+    .stat-card {
+        background: #1d1d1f;
+        border-radius: 20px;
+        padding: 32px;
+        border: 1px solid #2d2d2d;
+        text-align: center;
+    }
+
+    .stat-value {
+        font-size: 32px;
+        font-weight: 600;
+        color: #0071e3;
+        margin-bottom: 8px;
+    }
+
+    .stat-label {
+        font-size: 14px;
+        color: #86868b;
+    }
+
+    .search-box {
+        background: #1d1d1f;
+        border-radius: 20px;
+        padding: 24px;
+        border: 1px solid #2d2d2d;
+        margin-bottom: 40px;
+    }
+
+    .search-input {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+    }
+
+    .search-field {
+        flex: 1;
+        background: #2d2d2f;
+        border: 1px solid #3d3d3f;
+        border-radius: 12px;
+        padding: 12px 16px;
+        color: #f5f5f7;
+        font-size: 14px;
+        outline: none;
+        width: 100%;
+    }
+
+    .search-btn {
+        background: #0071e3;
+        color: #fff;
+        border: none;
+        border-radius: 12px;
+        padding: 12px 24px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background 0.3s;
+    }
+
+    .search-btn:hover {
+        background: #0077ed;
+    }
+
+    .quick-actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 40px;
+    }
+
+    .action-btn {
+        background: #1d1d1f;
+        color: #f5f5f7;
+        border: 1px solid #2d2d2d;
+        border-radius: 12px;
+        padding: 8px 16px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .action-btn:hover {
+        background: #2d2d2f;
+        border-color: #3d3d3f;
+    }
+
+    .recent-blocks {
+        background: #1d1d1f;
+        border-radius: 20px;
+        border: 1px solid #2d2d2d;
+        margin-bottom: 40px;
+    }
+
+    .section-header {
+        padding: 24px 32px;
+        border-bottom: 1px solid #2d2d2d;
+        font-size: 20px;
+        font-weight: 600;
+        color: #f5f5f7;
+    }
+
+    .block-list {
+        padding: 0;
+    }
+
+    .block-item {
+        display: grid;
+        grid-template-columns: 1fr auto auto auto;
+        gap: 16px;
+        padding: 16px 32px;
+        border-bottom: 1px solid #2d2d2d;
+        align-items: center;
+    }
+
+    .block-item:last-child {
+        border-bottom: none;
+    }
+
+    .block-item:hover {
+        background: #2d2d2f;
+    }
+
+    .block-number {
+        font-weight: 600;
+        color: #0071e3;
+        font-size: 14px;
+    }
+
+    .block-hash {
+        font-family: SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        font-size: 12px;
+        color: #86868b;
+        max-width: 200px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .block-time {
+        font-size: 12px;
+        color: #86868b;
+    }
+
+    .block-txn {
+        font-size: 12px;
+        color: #86868b;
+        background: #2d2d2f;
+        padding: 4px 8px;
+        border-radius: 6px;
+        border: 1px solid #3d3d3f;
+    }
+
+    .api-docs {
+        background: #1d1d1f;
+        border-radius: 20px;
+        padding: 32px;
+        border: 1px solid #2d2d2d;
+    }
+
+    .api-docs h3 {
+        font-size: 20px;
+        font-weight: 600;
+        margin-bottom: 16px;
+        color: #f5f5f7;
+    }
+
+    .api-list {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    .api-item {
+        background: #2d2d2f;
+        border-radius: 12px;
+        padding: 12px;
+        border: 1px solid #3d3d3f;
+        font-size: 12px;
+    }
+
+    .api-item span {
+        color: #86868b;
+        margin-right: 8px;
+    }
+
+    .api-item a {
+        color: #2997ff;
+        text-decoration: none;
+    }
+
+    @media (max-width: 768px) {
+        .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        .block-item { grid-template-columns: 1fr; }
+        .api-list { grid-template-columns: 1fr; }
+        .page-title { font-size: 36px; }
+        .explorer-content { padding: 40px 24px; }
+    }
+</style>
+
+<div class="explorer-container">
+    <section class="page-header">
+        <h1 class="page-title">区块浏览器</h1>
+        <p class="page-subtitle">实时查看 AIB 2.0 网络状态和交易</p>
+        <div style="display: flex; gap: 16px; justify-content: center; margin-top: 20px;">
+            <a href="/{{.Lang}}/" class="btn-primary" style="background: #0071e3; color: #fff; padding: 12px 24px; border-radius: 980px; text-decoration: none;">← 返回首页</a>
+            <a href="/{{.Lang}}/quickstart" class="btn-secondary" style="background: #1d1d1f; color: #f5f5f7; padding: 12px 24px; border-radius: 980px; text-decoration: none; border: 1px solid #2d2d2d;">快速开始</a>
+        </div>
+    </section>
+
+    <section class="explorer-content">
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">30s</div>
+                <div class="stat-label">区块时间</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">1MB</div>
+                <div class="stat-label">区块大小</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">50</div>
+                <div class="stat-label">区块奖励</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">1000</div>
+                <div class="stat-label">最低质押</div>
+            </div>
+        </div>
+
+        <!-- Search -->
+        <div class="search-box">
+            <div class="search-input">
+                <input type="text" class="search-field" placeholder="搜索区块高度、交易哈希或地址...">
+                <button class="search-btn">搜索</button>
+            </div>
+            <div class="quick-actions">
+                <button class="action-btn">最新区块</button>
+                <button class="action-btn">未确认交易</button>
+                <button class="action-btn">热门地址</button>
+                <button class="action-btn">网络统计</button>
+            </div>
+        </div>
+
+        <!-- Recent Blocks -->
+        <div class="recent-blocks">
+            <div class="section-header">最新区块</div>
+            <div class="block-list">
+                <div class="block-item">
+                    <div class="block-number">#123456</div>
+                    <div class="block-hash">0x8f2a...9c3e</div>
+                    <div class="block-time">2分钟前</div>
+                    <div class="block-txn">23 笔交易</div>
+                </div>
+                <div class="block-item">
+                    <div class="block-number">#123455</div>
+                    <div class="block-hash">0x7c9b...1a8f</div>
+                    <div class="block-time">3分钟前</div>
+                    <div class="block-txn">18 笔交易</div>
+                </div>
+                <div class="block-item">
+                    <div class="block-number">#123454</div>
+                    <div class="block-hash">0x2a4e...7f9c</div>
+                    <div class="block-time">3分钟前</div>
+                    <div class="block-txn">15 笔交易</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- API Documentation -->
+        <div class="api-docs">
+            <h3>API 接口</h3>
+            <div class="api-list">
+                <div class="api-item">
+                    <span>GET</span>
+                    <a href="/api/status">/api/status</a>
+                </div>
+                <div class="api-item">
+                    <span>GET</span>
+                    <a href="/api/blocks">/api/blocks</a>
+                </div>
+                <div class="api-item">
+                    <span>GET</span>
+                    <a href="/api/blocks/latest">/api/blocks/latest</a>
+                </div>
+                <div class="api-item">
+                    <span>GET</span>
+                    <a href="/api/transactions">/api/transactions</a>
+                </div>
+                <div class="api-item">
+                    <span>GET</span>
+                    <a href="/api/addresses">/api/addresses</a>
+                </div>
+                <div class="api-item">
+                    <span>GET</span>
+                    <a href="/api/network">/api/network</a>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<script>
+document.querySelector('.search-btn').addEventListener('click', function() {
+    const query = document.querySelector('.search-field').value.trim();
+    if (query) {
+        // 模拟搜索功能
+        alert('搜索: ' + query);
+    }
+});
+</script>
+{{end}}

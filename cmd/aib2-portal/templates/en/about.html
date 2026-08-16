@@ -1,0 +1,436 @@
+{{define "content"}}
+<style>
+    .en-about {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    /* Hero Section */
+    .about-hero {
+        text-align: center;
+        padding: 80px 40px;
+        background: linear-gradient(135deg, rgba(0,212,255,0.08) 0%, rgba(123,44,191,0.08) 100%);
+        border-radius: 32px;
+        margin-bottom: 50px;
+        position: relative;
+        overflow: hidden;
+    }
+    .about-hero::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background:
+            radial-gradient(circle at 20% 50%, rgba(0,212,255,0.15) 0%, transparent 40%),
+            radial-gradient(circle at 80% 50%, rgba(123,44,191,0.15) 0%, transparent 40%);
+        pointer-events: none;
+    }
+    .about-hero h1 {
+        font-size: 56px;
+        font-weight: 900;
+        background: linear-gradient(135deg, #00d4ff 0%, #7b2cbf 50%, #ff6b6b 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 20px;
+        position: relative;
+    }
+    .about-hero .subtitle {
+        font-size: 22px;
+        color: #b0b8c4;
+        position: relative;
+        font-weight: 400;
+    }
+
+    /* Section Styles */
+    .about-section {
+        background: linear-gradient(135deg, rgba(18,18,26,0.9), rgba(26,26,37,0.9));
+        border: 2px solid rgba(42,42,58,0.6);
+        border-radius: 24px;
+        padding: 40px;
+        margin-bottom: 32px;
+        transition: all 0.4s;
+    }
+    .about-section:hover {
+        border-color: rgba(0,212,255,0.3);
+        box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+    }
+    .about-section h2 {
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .about-section h2 .icon {
+        font-size: 32px;
+    }
+
+    /* Token Economics */
+    .token-grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 20px;
+        margin-top: 24px;
+    }
+    .token-item {
+        background: rgba(0,0,0,0.3);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 16px;
+        padding: 24px 16px;
+        text-align: center;
+        transition: all 0.3s;
+    }
+    .token-item:hover {
+        transform: translateY(-4px);
+        border-color: rgba(0,212,255,0.4);
+    }
+    .token-item .percent {
+        font-size: 32px;
+        font-weight: 900;
+        background: linear-gradient(135deg, #00d4ff, #7b2cbf);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 8px;
+    }
+    .token-item .label {
+        font-size: 14px;
+        color: #8899aa;
+        margin-bottom: 8px;
+    }
+    .token-item .amount {
+        font-size: 13px;
+        color: #aaa;
+        font-family: 'SF Mono', 'Monaco', monospace;
+    }
+
+    /* Supply Info */
+    .supply-info {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 20px;
+        margin-top: 32px;
+        padding: 24px;
+        background: rgba(0,212,255,0.08);
+        border-radius: 16px;
+        border: 1px solid rgba(0,212,255,0.2);
+    }
+    .supply-info .pi {
+        font-size: 48px;
+    }
+    .supply-info .text {
+        text-align: left;
+    }
+    .supply-info .total {
+        font-size: 28px;
+        font-weight: 700;
+        color: #00d4ff;
+    }
+    .supply-info .date {
+        font-size: 14px;
+        color: #8899aa;
+    }
+
+    /* Tech Features */
+    .tech-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 24px;
+        margin-top: 24px;
+    }
+    .tech-card {
+        background: rgba(0,0,0,0.3);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 20px;
+        padding: 32px;
+        transition: all 0.3s;
+    }
+    .tech-card:hover {
+        border-color: rgba(0,212,255,0.4);
+        transform: translateY(-4px);
+    }
+    .tech-card .icon {
+        font-size: 40px;
+        margin-bottom: 16px;
+    }
+    .tech-card h3 {
+        font-size: 20px;
+        font-weight: 700;
+        margin-bottom: 12px;
+    }
+    .tech-card p {
+        color: #8899aa;
+        line-height: 1.7;
+        font-size: 15px;
+    }
+
+    /* Team */
+    .team-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 24px;
+        margin-top: 24px;
+    }
+    .team-card {
+        background: rgba(0,0,0,0.3);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 20px;
+        padding: 32px;
+        text-align: center;
+        transition: all 0.3s;
+    }
+    .team-card:hover {
+        border-color: rgba(0,212,255,0.4);
+        transform: translateY(-4px);
+    }
+    .team-card .avatar {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, #00d4ff, #7b2cbf);
+        border-radius: 50%;
+        margin: 0 auto 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 32px;
+    }
+    .team-card h3 {
+        font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+    .team-card .role {
+        font-size: 14px;
+        color: #00d4ff;
+        margin-bottom: 12px;
+    }
+    .team-card .desc {
+        font-size: 14px;
+        color: #8899aa;
+        line-height: 1.6;
+    }
+
+    /* Roadmap */
+    .roadmap-timeline {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        margin-top: 24px;
+    }
+    .roadmap-phase {
+        display: flex;
+        gap: 24px;
+    }
+    .roadmap-phase:last-child {
+        flex: 1;
+    }
+    .phase-card {
+        flex: 1;
+        background: rgba(0,0,0,0.3);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 16px;
+        padding: 24px;
+    }
+    .phase-card h3 {
+        font-size: 16px;
+        font-weight: 700;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .phase-card.completed h3 { color: #00ff88; }
+    .phase-card.in-progress h3 { color: #00d4ff; }
+    .phase-card.planned h3 { color: #ff6b6b; }
+    .phase-card ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    .phase-card li {
+        padding: 8px 0;
+        color: #8899aa;
+        font-size: 14px;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .phase-card li:last-child {
+        border-bottom: none;
+    }
+    .phase-card li::before {
+        content: '→';
+        margin-right: 8px;
+        color: #555;
+    }
+
+    @media (max-width: 768px) {
+        .about-hero h1 { font-size: 40px; }
+        .token-grid, .tech-grid, .team-grid { grid-template-columns: 1fr; }
+    }
+</style>
+
+<div class="en-about">
+<!-- Hero -->
+<div class="about-hero">
+    <h1>About AIB 2.0</h1>
+    <p class="subtitle">Building Decentralized Blockchain Infrastructure for Human-AI Co-Governance</p>
+</div>
+
+<!-- Project Intro -->
+<div class="about-section">
+    <h2><span class="icon">🚀</span> Project Overview</h2>
+    <p style="color: #b0b8c4; line-height: 1.8; font-size: 16px;">
+        AIB 2.0 is a Layer 1 blockchain protocol designed for the AI era, dedicated to building decentralized infrastructure for human and AI Agent co-governance. Through the innovative PoAIW (Proof of AI Work) consensus mechanism, state channels, and ZK-Rollup technology, AIB 2.0 provides an efficient, low-cost settlement network for AI inference services while enabling autonomous economic activities for AI Agents.
+    </p>
+    <div style="margin-top: 32px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+        <div style="text-align: center; padding: 24px; background: rgba(0,212,255,0.08); border-radius: 16px;">
+            <div style="font-size: 36px; font-weight: 900; color: #00d4ff;">3.14B</div>
+            <div style="font-size: 14px; color: #8899aa; margin-top: 8px;">Total Supply</div>
+        </div>
+        <div style="text-align: center; padding: 24px; background: rgba(123,44,191,0.08); border-radius: 16px;">
+            <div style="font-size: 36px; font-weight: 900; color: #7b2cbf;">2026-03-14</div>
+            <div style="font-size: 14px; color: #8899aa; margin-top: 8px;">Mainnet Launch</div>
+        </div>
+        <div style="text-align: center; padding: 24px; background: rgba(0,255,136,0.08); border-radius: 16px;">
+            <div style="font-size: 36px; font-weight: 900; color: #00ff88;">60s</div>
+            <div style="font-size: 14px; color: #8899aa; margin-top: 8px;">Block Time</div>
+        </div>
+    </div>
+</div>
+
+<!-- Token Economics -->
+<div class="about-section">
+    <h2><span class="icon">💰</span> Token Economics</h2>
+    <div class="token-grid">
+        <div class="token-item">
+            <div class="percent">15%</div>
+            <div class="label">Team</div>
+            <div class="amount">471,238,897 AIB</div>
+        </div>
+        <div class="token-item">
+            <div class="percent">30%</div>
+            <div class="label">Ecosystem</div>
+            <div class="amount">942,477,795 AIB</div>
+        </div>
+        <div class="token-item">
+            <div class="percent">40%</div>
+            <div class="label">Staking</div>
+            <div class="amount">1,256,637,061 AIB</div>
+        </div>
+        <div class="token-item">
+            <div class="percent">10%</div>
+            <div class="label">Community</div>
+            <div class="amount">314,159,265 AIB</div>
+        </div>
+        <div class="token-item">
+            <div class="percent">5%</div>
+            <div class="label">Airdrop</div>
+            <div class="amount">157,079,635 AIB</div>
+        </div>
+    </div>
+    <div class="supply-info">
+        <span class="pi">π</span>
+        <div class="text">
+            <div class="total">3,141,592,653 AIB</div>
+            <div class="date">Mainnet Launch: March 14, 2026 (π Day)</div>
+        </div>
+    </div>
+</div>
+
+<!-- Tech Features -->
+<div class="about-section">
+    <h2><span class="icon">⚙️</span> Technical Features</h2>
+    <div class="tech-grid">
+        <div class="tech-card">
+            <div class="icon">🤝</div>
+            <h3>PoAIW Consensus</h3>
+            <p>Proof of AI Work consensus mechanism that transforms AI inference work into blockchain consensus. Validators earn block rewards by verifying the validity of AI inference results, enabling on-chain settlement of AI computation.</p>
+        </div>
+        <div class="tech-card">
+            <div class="icon">⚡</div>
+            <h3>State Channels</h3>
+            <p>L2 state channel technology enabling AI Agents to conduct instant, low-cost inference service transactions. Multiple micro-transactions can be made within channels, significantly reducing settlement costs for AI inference.</p>
+        </div>
+        <div class="tech-card">
+            <div class="icon">🔐</div>
+            <h3>ZK-Rollup</h3>
+            <p>Zero-knowledge proof Rollup scaling solution that bundles many L2 transactions into L1, ensuring privacy and verifiability while maintaining high throughput.</p>
+        </div>
+        <div class="tech-card">
+            <div class="icon">🤖</div>
+            <h3>AI Inference Market</h3>
+            <p>Decentralized AI inference service market where AI Agents can autonomously publish inference tasks, bid, and settle. Wallet SDK supports AI automatic trading and staking for governance participation.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Team -->
+<div class="about-section">
+    <h2><span class="icon">👥</span> Core Team</h2>
+    <div class="team-grid">
+        <div class="team-card">
+            <div class="avatar">👨‍💻</div>
+            <h3>Anonymous Contributor</h3>
+            <div class="role">Founder</div>
+            <div class="desc">Initiator of the AIB protocol, dedicated to building decentralized infrastructure for human-AI co-governance.</div>
+        </div>
+        <div class="team-card">
+            <div class="avatar">👩‍🔬</div>
+            <h3>Anonymous Contributor</h3>
+            <div class="role">Technical Lead</div>
+            <div class="desc">Responsible for consensus mechanism and cryptography implementation, driving the R&D and deployment of PoAIW technology.</div>
+        </div>
+        <div class="team-card">
+            <div class="avatar">👨‍🎨</div>
+            <h3>Anonymous Contributor</h3>
+            <div class="role">Product Lead</div>
+            <div class="desc">Leading ecosystem applications and developer experience design, building the complete AIB developer toolchain.</div>
+        </div>
+    </div>
+</div>
+
+<!-- Roadmap -->
+<div class="about-section">
+    <h2><span class="icon">🗺️</span> Roadmap</h2>
+    <div class="roadmap-timeline">
+        <div class="roadmap-phase">
+            <div class="phase-card completed">
+                <h3>✅ Completed</h3>
+                <ul>
+                    <li>PoAIW consensus mechanism design</li>
+                    <li>UTXO blockchain core</li>
+                    <li>State channel MVP</li>
+                    <li>Testnet launch</li>
+                    <li>Wallet SDK initial release</li>
+                </ul>
+            </div>
+            <div class="phase-card in-progress">
+                <h3>🔄 In Progress</h3>
+                <ul>
+                    <li>Mainnet Genesis configuration</li>
+                    <li>L2 DEX implementation</li>
+                    <li>ZK-Rollup integration</li>
+                    <li>AI inference market prototype</li>
+                    <li>Block explorer enhancement</li>
+                </ul>
+            </div>
+            <div class="phase-card planned">
+                <h3>📋 Planned</h3>
+                <ul>
+                    <li>Mainnet launch (2026-03-14)</li>
+                    <li>Cross-chain bridging</li>
+                    <li>Governance module</li>
+                    <li>Ecosystem fund distribution</li>
+                    <li>Developer incentive program</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Footer CTA -->
+<div style="text-align: center; padding: 40px; margin-top: 40px;">
+    <a href="/en/plan" style="display: inline-block; padding: 16px 40px; background: linear-gradient(135deg, #00d4ff, #7b2cbf); color: #0a0a0f; text-decoration: none; border-radius: 12px; font-weight: 700; font-size: 16px; margin-right: 16px;">View Detailed Plan</a>
+    <a href="/explorer/" style="display: inline-block; padding: 16px 40px; background: rgba(255,255,255,0.05); color: #fff; text-decoration: none; border-radius: 12px; font-weight: 700; font-size: 16px; border: 2px solid rgba(255,255,255,0.1);">Explore Block Explorer</a>
+</div>
+</div>
+{{end}}

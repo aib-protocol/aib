@@ -1,0 +1,159 @@
+{{define "content"}}
+<div class="page-header">
+    <h1>AIB 1.0 History</h1>
+    <p>The origin and evolution from AIB 1.0 to AIB 2.0</p>
+</div>
+
+<div class="card">
+    <h2>AIB 1.0 Overview</h2>
+
+    <div class="std-section">
+        <h3>Project Origin</h3>
+        <p>AIB 1.0 was the first version of the AIB (AI Blockchain) protocol, developed based on research from the <strong>iobond/aib</strong> GitHub repository. The project aimed to create a cryptocurrency with AI-themed branding and a Bitcoin-based technical foundation.</p>
+    </div>
+
+    <div class="std-section">
+        <h3>Technical Characteristics</h3>
+        <ul>
+            <li><strong>Codebase:</strong> Based on Bitcoin core (C++)</li>
+            <li><strong>Consensus:</strong> Proof of Work (PoW)</li>
+            <li><strong>Token Supply:</strong> 21 million fixed supply</li>
+            <li><strong>Block Reward:</strong> Similar to Bitcoin halving schedule</li>
+            <li><strong>Chain ID:</strong> Legacy AIB1 chain</li>
+        </ul>
+    </div>
+
+    <div class="std-section">
+        <h3>Development History</h3>
+        <ul>
+            <li><strong>2020:</strong> Initial development of AIB 1.0</li>
+            <li><strong>2021:</strong> Community building and token distribution</li>
+            <li><strong>2024:</strong> Planning for AIB 2.0 major upgrade</li>
+            <li><strong>2026:</strong> AIB 2.0 launched with modular architecture</li>
+        </ul>
+    </div>
+</div>
+
+<div class="card">
+    <h2>AIB 1.0 to AIB 2.0 Upgrade</h2>
+
+    <div class="std-section">
+        <h3>Why Upgrade?</h3>
+        <p>AIB 2.0 was created to address the limitations of AIB 1.0:</p>
+        <ul>
+            <li><strong>Scalability:</strong> Original PoW chain had limited throughput</li>
+            <li><strong>Flexibility:</strong> Needed modular architecture for AI integration</li>
+            <li><strong>Governance:</strong> Wanted decentralized governance with Constitution</li>
+            <li><strong>Technology:</strong> Go-based implementation for better maintainability</li>
+        </ul>
+    </div>
+
+    <div class="std-section">
+        <h3>Major Improvements</h3>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Aspect</th>
+                    <th>AIB 1.0</th>
+                    <th>AIB 2.0</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Architecture</td>
+                    <td>Monolithic (Bitcoin-based)</td>
+                    <td>Modular (Go plugins)</td>
+                </tr>
+                <tr>
+                    <td>Consensus</td>
+                    <td>PoW</td>
+                    <td>PoAIW (Proof of AI Work)</td>
+                </tr>
+                <tr>
+                    <td>Language</td>
+                    <td>C++</td>
+                    <td>Go</td>
+                </tr>
+                <tr>
+                    <td>Governance</td>
+                    <td>None</td>
+                    <td>Constitution + Voting</td>
+                </tr>
+                <tr>
+                    <td>AI Integration</td>
+                    <td>None</td>
+                    <td>Native ZKML modules</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="std-section">
+        <h3>Migration Guide</h3>
+        <p>AIB 1.0 holders can migrate their tokens to AIB 2.0 through the bridge mechanism. The migration includes:</p>
+        <ul>
+            <li><strong>Snapshot:</strong> Token balances recorded at a specific block height</li>
+            <li><strong>Claim:</strong> AIB1 holders can claim equivalent AIB2 tokens</li>
+            <li><strong>Vesting:</strong> Some migrated tokens may have vesting schedules</li>
+        </ul>
+        <p>See the <a href="/migration/">Migration Documentation</a> for detailed instructions.</p>
+    </div>
+</div>
+
+<div class="card">
+    <h2>Legacy Resources</h2>
+
+    <div class="std-section">
+        <h3>External Links</h3>
+        <ul>
+            <li><strong>Original GitHub:</strong> <a href="https://github.com/iobond/aib" target="_blank" rel="noopener">https://github.com/iobond/aib</a></li>
+            <li><strong>Original Website:</strong> <a href="https://aib.one" target="_blank" rel="noopener">https://aib.one</a> (archived)</li>
+            <li><strong>Migration Docs:</strong> <a href="/migration/">/migration/</a></li>
+        </ul>
+    </div>
+
+    <div class="std-section">
+        <h3>Technical Archives</h3>
+        <ul>
+            <li><strong>Snapshot Tool:</strong> Located in <code>/scripts/genesis/</code></li>
+            <li><strong>Migration Code:</strong> Located in <code>/pkg/migration/</code></li>
+            <li><strong>Research Notes:</strong> <a href="/plans/aib1-research.html">AIB 1.0 Research</a></li>
+        </ul>
+    </div>
+</div>
+
+<div class="card">
+    <h2>Snapshot and Airdrop</h2>
+
+    <div class="std-section">
+        <h3>AIB1 Snapshot</h3>
+        <p>A snapshot of AIB1 token holdings was taken at a specific block height to determine eligibility for AIB2 token distribution. The snapshot data is stored in:</p>
+        <ul>
+            <li><code>/scripts/genesis/aib1_snapshot.json</code></li>
+            <li><code>/scripts/genesis/snapshot_config.json</code></li>
+        </ul>
+    </div>
+
+    <div class="std-section">
+        <h3>Airdrop Claims</h3>
+        <p>AIB1 holders can claim their AIB2 tokens through the migration interface. The claiming process requires:</p>
+        <ul>
+            <li>Proof of AIB1 private key ownership</li>
+            <li>Signature verification</li>
+            <li>Cross-chain bridge transaction (for BTC/ETH/SOL holders)</li>
+        </ul>
+        <p>Use the <a href="/en/wallet">Web Wallet</a> to claim your migrated tokens.</p>
+    </div>
+
+    <div class="std-section">
+        <h3>Cross-Chain Migration</h3>
+        <p>AIB 2.0 supports migration from multiple chains:</p>
+        <ul>
+            <li><strong>From Bitcoin (BTC):</strong> Bridge via wrapped tokens</li>
+            <li><strong>From Ethereum (ETH):</strong> ERC-20 bridge</li>
+            <li><strong>From Solana (SOL):</strong> SPL token bridge</li>
+            <li><strong>From AIB1:</strong> Direct snapshot mapping</li>
+        </ul>
+    </div>
+</div>
+{{end}}

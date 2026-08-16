@@ -1,0 +1,159 @@
+{{define "content"}}
+<div class="page-header">
+    <h1>AIB 1.0 历史</h1>
+    <p>从 AIB 1.0 到 AIB 2.0 的起源与演进</p>
+</div>
+
+<div class="card">
+    <h2>AIB 1.0 概述</h2>
+
+    <div class="std-section">
+        <h3>项目起源</h3>
+        <p>AIB 1.0 是 AIB（AI 区块链）协议的第一个版本，基于 <strong>iobond/aib</strong> GitHub 仓库的研究开发。该项目旨在创建一个基于比特币技术、具有 AI 主题的加密货币。</p>
+    </div>
+
+    <div class="std-section">
+        <h3>技术特点</h3>
+        <ul>
+            <li><strong>代码库：</strong>基于比特币核心（C++）</li>
+            <li><strong>共识机制：</strong>工作量证明（PoW）</li>
+            <li><strong>代币供应量：</strong>2100 万固定供应</li>
+            <li><strong>区块奖励：</strong>类似比特币减半机制</li>
+            <li><strong>链 ID：</strong>传统 AIB1 链</li>
+        </ul>
+    </div>
+
+    <div class="std-section">
+        <h3>发展历程</h3>
+        <ul>
+            <li><strong>2020 年：</strong>AIB 1.0 初始开发</li>
+            <li><strong>2021 年：</strong>社区建设和代币分发</li>
+            <li><strong>2024 年：</strong>规划 AIB 2.0 重大升级</li>
+            <li><strong>2026 年：</strong>AIB 2.0 启动，采用模块化架构</li>
+        </ul>
+    </div>
+</div>
+
+<div class="card">
+    <h2>AIB 1.0 到 AIB 2.0 升级</h2>
+
+    <div class="std-section">
+        <h3>升级原因</h3>
+        <p>创建 AIB 2.0 是为了解决 AIB 1.0 的局限性：</p>
+        <ul>
+            <li><strong>可扩展性：</strong>原有 PoW 链吞吐量有限</li>
+            <li><strong>灵活性：</strong>需要模块化架构以集成 AI</li>
+            <li><strong>治理：</strong>希望实现宪法约束的去中心化治理</li>
+            <li><strong>技术：</strong>采用 Go 语言实现以提高可维护性</li>
+        </ul>
+    </div>
+
+    <div class="std-section">
+        <h3>主要改进</h3>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>方面</th>
+                    <th>AIB 1.0</th>
+                    <th>AIB 2.0</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>架构</td>
+                    <td>单体式（基于比特币）</td>
+                    <td>模块化（Go 插件）</td>
+                </tr>
+                <tr>
+                    <td>共识</td>
+                    <td>PoW</td>
+                    <td>PoAIW（AI 工作证明）</td>
+                </tr>
+                <tr>
+                    <td>语言</td>
+                    <td>C++</td>
+                    <td>Go</td>
+                </tr>
+                <tr>
+                    <td>治理</td>
+                    <td>无</td>
+                    <td>宪法 + 投票</td>
+                </tr>
+                <tr>
+                    <td>AI 集成</td>
+                    <td>无</td>
+                    <td>原生 ZKML 模块</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="std-section">
+        <h3>迁移指南</h3>
+        <p>AIB 1.0 持有者可以通过桥接机制将代币迁移到 AIB 2.0。迁移包括：</p>
+        <ul>
+            <li><strong>快照：</strong>在特定区块高度记录代币余额</li>
+            <li><strong>认领：</strong>AIB1 持有者可以领取等值的 AIB2 代币</li>
+            <li><strong>归属：</strong>部分迁移代币可能有归属期</li>
+        </ul>
+        <p>查看<a href="/migration/">迁移文档</a>获取详细说明。</p>
+    </div>
+</div>
+
+<div class="card">
+    <h2>保留资源</h2>
+
+    <div class="std-section">
+        <h3>外部链接</h3>
+        <ul>
+            <li><strong>原始 GitHub：</strong><a href="https://github.com/iobond/aib" target="_blank" rel="noopener">https://github.com/iobond/aib</a></li>
+            <li><strong>原始网站：</strong><a href="https://aib.one" target="_blank" rel="noopener">https://aib.one</a>（已归档）</li>
+            <li><strong>迁移文档：</strong><a href="/migration/">/migration/</a></li>
+        </ul>
+    </div>
+
+    <div class="std-section">
+        <h3>技术档案</h3>
+        <ul>
+            <li><strong>快照工具：</strong>位于 <code>/scripts/genesis/</code></li>
+            <li><strong>迁移代码：</strong>位于 <code>/pkg/migration/</code></li>
+            <li><strong>研究笔记：</strong><a href="/plans/aib1-research.html">AIB 1.0 研究</a></li>
+        </ul>
+    </div>
+</div>
+
+<div class="card">
+    <h2>快照和空投</h2>
+
+    <div class="std-section">
+        <h3>AIB1 快照</h3>
+        <p>在特定区块高度对 AIB1 代币持有量进行了快照，以确定 AIB2 代币分发的资格。快照数据存储在：</p>
+        <ul>
+            <li><code>/scripts/genesis/aib1_snapshot.json</code></li>
+            <li><code>/scripts/genesis/snapshot_config.json</code></li>
+        </ul>
+    </div>
+
+    <div class="std-section">
+        <h3>空投认领</h3>
+        <p>AIB1 持有者可以通过迁移界面认领其 AIB2 代币。认领流程需要：</p>
+        <ul>
+            <li>证明 AIB1 私钥所有权</li>
+            <li>签名验证</li>
+            <li>跨链桥接交易（适用于 BTC/ETH/SOL 持有者）</li>
+        </ul>
+        <p>使用<a href="/zh/wallet">网页钱包</a>认领您的迁移代币。</p>
+    </div>
+
+    <div class="std-section">
+        <h3>跨链迁移</h3>
+        <p>AIB 2.0 支持从多条链迁移：</p>
+        <ul>
+            <li><strong>从比特币（BTC）：</strong>通过包装代币桥接</li>
+            <li><strong>从以太坊（ETH）：</strong>ERC-20 桥接</li>
+            <li><strong>从索拉纳（SOL）：</strong>SPL 代币桥接</li>
+            <li><strong>从 AIB1：</strong>直接快照映射</li>
+        </ul>
+    </div>
+</div>
+{{end}}

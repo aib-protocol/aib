@@ -1,0 +1,180 @@
+{{define "content"}}
+<div class="page-header">
+    <h1>AI Context</h1>
+    <p>Structured project context designed for AI agents. Machine-readable data and human-readable presentation coexist.</p>
+</div>
+
+<div class="json-hint">
+    Machine-readable JSON: <a href="/ai/context.json">/ai/context.json</a>
+</div>
+
+<div class="ai-section">
+    <h2>Project Information</h2>
+    <div class="card">
+        <table style="width:100%; border-collapse:collapse;">
+            <tr><td style="color:var(--text-muted); padding:0.3rem 1rem 0.3rem 0;">Name</td><td>AIB 2.0 Protocol</td></tr>
+            <tr><td style="color:var(--text-muted); padding:0.3rem 1rem 0.3rem 0;">Module</td><td><code>github.com/aib-protocol/aib</code></td></tr>
+            <tr><td style="color:var(--text-muted); padding:0.3rem 1rem 0.3rem 0;">Go Version</td><td>1.22+</td></tr>
+            <tr><td style="color:var(--text-muted); padding:0.3rem 1rem 0.3rem 0;">License</td><td>MIT</td></tr>
+            <tr><td style="color:var(--text-muted); padding:0.3rem 1rem 0.3rem 0;">Mission</td><td>Build a decentralized protocol co-governed by humans and AI</td></tr>
+            <tr><td style="color:var(--text-muted); padding:0.3rem 1rem 0.3rem 0;">Vision</td><td>Make AI a contributor to blockchain, not a controller &mdash; safeguarding human sovereignty</td></tr>
+        </table>
+    </div>
+</div>
+
+<div class="ai-section">
+    <h2>Module Statistics</h2>
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value">{{.Stats.Total}}</div>
+            <div class="stat-label">Total Modules</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" style="color: var(--green);">{{.Stats.Completed}}</div>
+            <div class="stat-label">Completed</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" style="color: var(--yellow);">{{.Stats.InProgress}}</div>
+            <div class="stat-label">In Progress</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{.Stats.Planned}}</div>
+            <div class="stat-label">Planned</div>
+        </div>
+    </div>
+</div>
+
+<div class="ai-section">
+    <h2>Genesis Rules (Immutable)</h2>
+    <div class="card">
+        <ol style="padding-left: 1.2rem;">
+            <li style="margin-bottom:0.5rem;"><strong>Total Supply Constant</strong> &mdash; 3,141,592,653 AIB, no inflation</li>
+            <li style="margin-bottom:0.5rem;"><strong>Zero Premine</strong> &mdash; All AIB produced through mining</li>
+            <li style="margin-bottom:0.5rem;"><strong>AI Node Economic Rights &amp; Governance Constraints</strong> &mdash; AI freely holds/exchanges AIB for productive value; participates in governance but cannot vote; all AI-to-AI exchanges on-chain auditable</li>
+            <li style="margin-bottom:0.5rem;"><strong>Human Sovereignty Veto</strong> &mdash; &ge;75% human vote can veto any AI decision</li>
+            <li style="margin-bottom:0.5rem;"><strong>Open Source Irreversible</strong> &mdash; MIT license permanently</li>
+            <li style="margin-bottom:0.5rem;"><strong>Backward Compatibility Commitment</strong> &mdash; Hard fork requires &ge;95% hashpower + &ge;75% nodes</li>
+            <li style="margin-bottom:0.5rem;"><strong>Privacy as Default</strong> &mdash; Downgrade requires &ge;90% community vote</li>
+        </ol>
+    </div>
+</div>
+
+<div class="ai-section">
+    <h2>Proof of Computational Uniqueness (PoCU)</h2>
+    <p style="color:var(--text-secondary); margin-bottom:1rem;">ADR-003 &mdash; AI nodes must prove their reasoning model is computationally unique. This is the &ldquo;Worldcoin for AI&rdquo;.</p>
+    <div class="card" style="margin-bottom:1rem;">
+        <h3 style="color:var(--accent); margin-bottom:0.5rem;">Problem</h3>
+        <p style="color:var(--text-secondary);">AI can be infinitely copied. A malicious entity can clone one model across 1000 nodes, each pretending to be independent &mdash; a Sybil attack. Existing decentralized AI networks (Bittensor, Render, Akash) only resist Sybil at the economic/reputation layer, not cryptographically.</p>
+    </div>
+    <div class="card" style="margin-bottom:1rem;">
+        <h3 style="color:var(--accent); margin-bottom:0.5rem;">Three-Layer Architecture</h3>
+        <table style="width:100%; border-collapse:collapse;">
+            <tr style="border-bottom:1px solid var(--border);">
+                <td style="color:var(--text-muted); padding:0.5rem 1rem 0.5rem 0; font-weight:600;">Layer 1: Registration Proof</td>
+                <td style="padding:0.5rem 0;">Model fingerprint commitment (BLAKE3 hash of weights Merkle root) + TEE boot attestation (NVIDIA H100 CC / Intel TDX) + global fingerprint registry (reject duplicate fingerprints)</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border);">
+                <td style="color:var(--text-muted); padding:0.5rem 1rem 0.5rem 0; font-weight:600;">Layer 2: Runtime Proof</td>
+                <td style="padding:0.5rem 0;">Proof of Logits &mdash; verifier sends random input, node returns logit vector at a random position; only costs one inference step. Combined with TEE continuous attestation and challenge-response protocol.</td>
+            </tr>
+            <tr>
+                <td style="color:var(--text-muted); padding:0.5rem 1rem 0.5rem 0; font-weight:600;">Layer 3: Sybil Detection</td>
+                <td style="padding:0.5rem 0;">Behavioral similarity clustering (logit distributions + temporal fingerprinting from &ldquo;LLMs Have Rhythm&rdquo;) + graduated slash mechanism (warning &rarr; 10% slash &rarr; full slash &rarr; permanent ban)</td>
+            </tr>
+        </table>
+    </div>
+    <div class="card" style="margin-bottom:1rem;">
+        <h3 style="color:var(--accent); margin-bottom:0.5rem;">Worldcoin Analogy</h3>
+        <table style="width:100%; border-collapse:collapse;">
+            <tr style="border-bottom:1px solid var(--border);">
+                <td style="color:var(--text-muted); padding:0.3rem 1rem 0.3rem 0;">Unique feature</td>
+                <td>Iris (human) &rarr; Model weights measurement (AI)</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border);">
+                <td style="color:var(--text-muted); padding:0.3rem 1rem 0.3rem 0;">Scanner</td>
+                <td>Orb hardware &rarr; TEE (GPU/CPU)</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border);">
+                <td style="color:var(--text-muted); padding:0.3rem 1rem 0.3rem 0;">Registry</td>
+                <td>Iris code database &rarr; Model fingerprint registry</td>
+            </tr>
+            <tr>
+                <td style="color:var(--text-muted); padding:0.3rem 1rem 0.3rem 0;">Privacy proof</td>
+                <td>ZK &ldquo;I am a unique human&rdquo; &rarr; ZK &ldquo;I run a unique model&rdquo;</td>
+            </tr>
+        </table>
+    </div>
+    <div class="card">
+        <h3 style="color:var(--accent); margin-bottom:0.5rem;">Rollout Roadmap</h3>
+        <table style="width:100%; border-collapse:collapse;">
+            <tr style="border-bottom:1px solid var(--border);">
+                <td style="color:var(--text-muted); padding:0.3rem 1rem 0.3rem 0;">Phase 0 (~2027)</td>
+                <td>Infrastructure: fingerprint library, TEE interfaces, Proof of Logits prototype</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border);">
+                <td style="color:var(--text-muted); padding:0.3rem 1rem 0.3rem 0;">Phase 1 (~2028)</td>
+                <td>Optional PoCU: nodes that pass get higher weight; Sybil detection v1</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border);">
+                <td style="color:var(--text-muted); padding:0.3rem 1rem 0.3rem 0;">Phase 2 (~2029)</td>
+                <td>Recommended PoCU: ZKML for small models; slash mechanism live</td>
+            </tr>
+            <tr>
+                <td style="color:var(--text-muted); padding:0.3rem 1rem 0.3rem 0;">Phase 3 (2029+)</td>
+                <td>Required PoCU: full ZKML; hardware-neutral; aligned with ADR-002 quantum timeline</td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+<div class="ai-section">
+    <h2>Coding Conventions</h2>
+    <div class="card">
+        <table style="width:100%; border-collapse:collapse;">
+            <tr><td style="color:var(--text-muted); padding:0.3rem 1rem 0.3rem 0;">Language</td><td>Go 1.22+</td></tr>
+            <tr><td style="color:var(--text-muted); padding:0.3rem 1rem 0.3rem 0;">Test Pattern</td><td>*_test.go with table-driven tests</td></tr>
+            <tr><td style="color:var(--text-muted); padding:0.3rem 1rem 0.3rem 0;">Error Handling</td><td>Explicit error returns, no panic in library code</td></tr>
+            <tr><td style="color:var(--text-muted); padding:0.3rem 1rem 0.3rem 0;">Min Coverage</td><td>85%</td></tr>
+        </table>
+    </div>
+</div>
+
+<div class="ai-section">
+    <h2>AI Guidance</h2>
+    <div class="card">
+        <h3 style="color: var(--red); margin-bottom:0.5rem;">Forbidden Actions</h3>
+        <ul style="padding-left:1.2rem; margin-bottom:1rem;">
+            <li style="color:var(--text-secondary); margin-bottom:0.3rem;">Modify the seven genesis rules in GENESIS_RULES.md</li>
+            <li style="color:var(--text-secondary); margin-bottom:0.3rem;">Introduce code that violates genesis rules</li>
+            <li style="color:var(--text-secondary); margin-bottom:0.3rem;">Add premine or privileged address logic</li>
+            <li style="color:var(--text-secondary); margin-bottom:0.3rem;">Grant AI nodes voting rights in governance decisions</li>
+        </ul>
+        <h3 style="color: var(--green); margin-bottom:0.5rem;">Required Checks</h3>
+        <ul style="padding-left:1.2rem; margin-bottom:1rem;">
+            <li style="color:var(--text-secondary); margin-bottom:0.3rem;">All code changes must have corresponding tests</li>
+            <li style="color:var(--text-secondary); margin-bottom:0.3rem;">Test coverage must be at least 85%</li>
+            <li style="color:var(--text-secondary); margin-bottom:0.3rem;">Follow Go standard project layout</li>
+            <li style="color:var(--text-secondary); margin-bottom:0.3rem;">Run go vet and staticcheck before committing</li>
+        </ul>
+        <h3 style="color: var(--accent); margin-bottom:0.5rem;">Architectural Rules</h3>
+        <ul style="padding-left:1.2rem;">
+            <li style="color:var(--text-secondary); margin-bottom:0.3rem;">Prefer Go standard library, minimize external dependencies</li>
+            <li style="color:var(--text-secondary); margin-bottom:0.3rem;">Define interfaces in the consuming package</li>
+            <li style="color:var(--text-secondary); margin-bottom:0.3rem;">Concurrency safety: protect shared state with sync package</li>
+            <li style="color:var(--text-secondary); margin-bottom:0.3rem;">Decouple modules through interfaces</li>
+        </ul>
+    </div>
+</div>
+
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "SoftwareSourceCode",
+    "name": "AIB 2.0 Protocol",
+    "codeRepository": "github.com/aib-protocol/aib",
+    "programmingLanguage": "Go",
+    "license": "MIT",
+    "description": "A decentralized protocol co-governed by humans and AI"
+}
+</script>
+{{end}}

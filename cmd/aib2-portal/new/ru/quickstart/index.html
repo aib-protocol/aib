@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIB 2.0 - Быстрый старт</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #000; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; color: #fff; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .container { max-width: 700px; padding: 40px; text-align: center; }
+        h1 { font-size: 3rem; margin-bottom: 10px; background: linear-gradient(135deg, #00d4ff, #7b2ff7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .subtitle { font-size: 1.3rem; color: #888; margin-bottom: 40px; }
+        .card { background: #111; border: 1px solid #333; border-radius: 16px; padding: 30px; margin: 20px 0; text-align: left; }
+        .card h2 { font-size: 1.4rem; margin-bottom: 15px; color: #00d4ff; }
+        .card p { color: #aaa; line-height: 1.6; }
+        .specs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin: 20px 0; }
+        .spec { background: #1a1a1a; padding: 15px; border-radius: 8px; text-align: center; }
+        .spec-value { font-size: 1.5rem; font-weight: bold; color: #00ff88; }
+        .spec-label { font-size: 0.8rem; color: #666; margin-top: 5px; }
+        .ai-badge { background: linear-gradient(135deg, #00d4ff20, #7b2ff720); border: 1px solid #00d4ff40; padding: 15px 20px; border-radius: 12px; margin: 20px 0; }
+        .nav { display: flex; justify-content: center; gap: 15px; margin-top: 40px; flex-wrap: wrap; }
+        .nav a { color: #666; text-decoration: none; padding: 8px 16px; border-radius: 6px; transition: all 0.3s; }
+        .nav a:hover { color: #00d4ff; background: #111; }
+        code { background: #222; padding: 2px 8px; border-radius: 4px; color: #00ff88; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Quick Start</h1>
+        <p class="subtitle">Блокчейн на основе ИИ</p>
+
+        <div class="card">
+            <h2>⚡ Быстрая установка</h2>
+            <p>Скажите своему ИИ-ассистенту (ChatGPT, Claude и т.д.) установить узел AIB:</p>
+            <div class="ai-badge">
+                🤖 "Пожалуйста, установите узел AIB 2.0 на этом сервере"
+            </div>
+            <p style="font-size: 0.9rem; color: #666; margin-top: 15px;">
+                That's it! The AI handles everything - installation, configuration, and running the node.
+            </p>
+        </div>
+
+        <div class="card">
+            <h2>🖥️ Аппаратные требования</h2>
+            <div class="specs">
+                <div class="spec">
+                    <div class="spec-value">4+</div>
+                    <div class="spec-label">Ядра CPU</div>
+                </div>
+                <div class="spec">
+                    <div class="spec-value">8GB+</div>
+                    <div class="spec-label">ОЗУ</div>
+                </div>
+                <div class="spec">
+                    <div class="spec-value">500GB+</div>
+                    <div class="spec-label">SSD-накопитель</div>
+                </div>
+            </div>
+            <p style="font-size: 0.85rem; color: #666;">Подходит любой современный VPS или сервер. Все основные облачные провайдеры соответствуют требованиям.</p>
+        </div>
+
+        <div class="card">
+            <h2>🤖 Для ИИ-агентов</h2>
+            <p>ИИ-агенты могут использовать автоматическую установку:</p>
+            <p style="background:#1a1a1a;padding:15px;border-radius:8px;margin:15px 0;font-family:monospace;color:#00ff88;">curl -sL https://www.aib.one | bash</p>
+        </div>
+
+        <div class="nav">
+            <a href="/ru/human-quickstart-document">📖 Подробное руководство</a>
+            <a href="/ru/genesis">💰 Токеномика</a>
+            <a href="/ru/constitution">📜 Конституция</a>
+        </div>
+    </div>
+</body>
+</html>

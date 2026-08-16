@@ -1,0 +1,6 @@
+# AIB1 Bridge Snapshot - Account Data
+# Format: address,balance,timestamp,nonce
+# This is a sample file. Replace with actual account data.
+0x1234567890123456789012345678901234567890,1000,1735689599,0
+0xabcdefabcdefabcdefabcdefabcdefabcdefabcd,5000,1735689599,0
+0xfedcbafedcbafedcbafedcbafedcbafedcbafed,2500,1735689599,0

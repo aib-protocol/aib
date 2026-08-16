@@ -1,0 +1,29 @@
+/* Country Flag Icons - Using SVG data URIs for better compatibility */
+.lang-flag {
+    display: inline-block;
+    width: 20px;
+    height: 15px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    margin-right: 6px;
+}
+
+/* Flag data URIs - simplified solid color representations */
+.flag-us { background: linear-gradient(90deg, #B22234 40%, #FFF 40%, #FFF 45%, #B22234 45%, #B22234 55%, #FFF 55%, #FFF 60%, #B22234 60%); }
+.flag-cn { background: linear-gradient(180deg, #DE2910 0%, #DE2910 100%); }
+.flag-tw { background: linear-gradient(180deg, #FE0000 0%, #FE0000 100%); }
+.flag-fr { background: linear-gradient(90deg, #002395 33%, #fff 33%, #fff 66%, #ED2939 66%); }
+.flag-jp { background: #fff; position: relative; }
+.flag-jp::after { content: ''; position: absolute; width: 10px; height: 10px; background: #BC002D; border-radius: 50%; top: 2.5px; left: 5px; }
+.flag-ms { background: linear-gradient(90deg, #010066 33%, #fff 33%, #fff 66%, #CC0001 66%); }
+.flag-th { background: linear-gradient(180deg, #00247D 33%, #fff 33%, #fff 66%, #ED1C24 66%); }
+.flag-es { background: linear-gradient(180deg, #AA151B 25%, #AA151B 25%, #F1BF00 25%, #F1BF00 50%, #AA151B 50%, #AA151B 75%, #F1BF00 75%); }
+.flag-de { background: linear-gradient(180deg, #000 33%, #DD0000 33%, #DD0000 66%, #FFCE00 66%); }
+.flag-ru { background: linear-gradient(180deg, #fff 33%, #0039A6 33%, #0039A6 66%, #D52B1E 66%); }
+
+/* Emoji fallback - keep original styling */
+.lang-flag-emoji {
+    font-size: 18px;
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", emoji, sans-serif;
+}

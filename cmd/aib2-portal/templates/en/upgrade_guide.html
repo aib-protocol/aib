@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PoAIW 2.0 Upgrade Guide - AIB Blockchain</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(180deg, #0a0a1a 0%, #0f0f2a 50%, #1a1a3a 100%);
+            color: #e0e0e0;
+            line-height: 1.8;
+            padding: 0;
+            margin: 0;
+        }
+
+        .container { max-width: 1000px; margin: 0 auto; padding: 40px 20px; }
+
+        h1 {
+            font-size: 3em;
+            text-align: center;
+            background: linear-gradient(135deg, #6c5ce7, #00d4ff, #ffd700);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+            text-shadow: 0 10px 30px rgba(0,212,255,0.2);
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #a0a0c0;
+            font-size: 1.2em;
+            margin-bottom: 50px;
+            font-weight: 400;
+        }
+
+        h2 {
+            color: #6c5ce7;
+            font-size: 2.2em;
+            margin: 60px 0 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(108, 92, 231, 0.3);
+        }
+
+        h3 {
+            color: #74b9ff;
+            font-size: 1.5em;
+            margin: 30px 0 15px;
+        }
+
+        h4 {
+            color: #a29bfe;
+            font-size: 1.2em;
+            margin: 20px 0 10px;
+        }
+
+        p { margin: 15px 0; text-align: justify; }
+
+        .abstract {
+            background: rgba(108, 92, 231, 0.1);
+            border-left: 4px solid #6c5ce7;
+            padding: 25px;
+            margin: 30px 0;
+            border-radius: 8px;
+            font-style: italic;
+        }
+
+        .highlight-box {
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+        }
+
+        .warning-box {
+            background: rgba(231, 76, 60, 0.1);
+            border: 1px solid rgba(231, 76, 60, 0.3);
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+        }
+
+        .success-box {
+            background: rgba(46, 204, 113, 0.1);
+            border: 1px solid rgba(46, 204, 113, 0.3);
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+        }
+
+        .formula {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            margin: 15px 0;
+            text-align: center;
+            overflow-x: auto;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .highlight { color: #ffd700; font-weight: bold; }
+        .success { color: #2ecc71; }
+        .warning { color: #e74c3c; }
+        .info { color: #3498db; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        th {
+            background: rgba(108, 92, 231, 0.3);
+            font-weight: 600;
+        }
+
+        code {
+            background: rgba(0,0,0,0.3);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        pre {
+            background: rgba(0,0,0,0.4);
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            border: 1px solid rgba(255,255,255,0.1);
+            font-family: 'Courier New', monospace;
+            margin: 15px 0;
+        }
+
+        .step {
+            background: rgba(255,255,255,0.03);
+            border-left: 4px solid #74b9ff;
+            padding: 15px 20px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .step-number {
+            background: #74b9ff;
+            color: #0a0a2a;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 0.9em;
+            display: inline-block;
+            margin-right: 10px;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 10px;
+            bottom: 10px;
+            width: 2px;
+            background: rgba(108, 92, 231, 0.5);
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 30px;
+            background: rgba(255,255,255,0.03);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -37px;
+            top: 20px;
+            width: 12px;
+            height: 12px;
+            background: #6c5ce7;
+            border-radius: 50%;
+            border: 3px solid rgba(108, 92, 231, 0.3);
+        }
+
+        .timeline-date {
+            color: #ffd700;
+            font-weight: bold;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(10, 10, 26, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(108, 92, 231, 0.2);
+            padding: 10px 0;
+            z-index: 1000;
+        }
+
+        .nav-content {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-logo {
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: #00d4ff;
+        }
+
+        .toc {
+            background: rgba(116, 185, 255, 0.1);
+            padding: 25px;
+            border-radius: 12px;
+            margin: 30px 0;
+        }
+
+        .toc h3 { margin-top: 0; }
+
+        .toc ul { list-style: none; }
+
+        .toc li { margin: 8px 0; }
+
+        .toc a {
+            color: #74b9ff;
+            text-decoration: none;
+            display: block;
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .toc a:hover { text-decoration: underline; }
+
+        .footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: #a0a0c0;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            margin-top: 60px;
+        }
+
+        .metric {
+            display: inline-block;
+            background: rgba(116, 185, 255, 0.2);
+            padding: 5px 12px;
+            border-radius: 20px;
+            margin: 5px;
+            font-size: 0.9em;
+            border: 1px solid rgba(116, 185, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="nav">
+        <div class="nav-content">
+            <div class="nav-logo">AIB 2.0 - PoAIW Upgrade</div>
+            <div style="color: #a0a0c0; font-size: 0.9em;">Version 2.0 Upgrade Guide</div>
+        </div>
+    </div>
+
+    <div class="container" style="margin-top: 60px;">
+        <h1>PoAIW 2.0 Upgrade Guide</h1>
+        <p class="subtitle">Proof of AI Work Version 2.0 - Complete Node Operator Manual</p>
+
+        <div class="toc">
+            <h3>Table of Contents</h3>
+            <ul>
+                <li><a href="#executive-summary">1. Executive Summary</a></li>
+                <li><a href="#whats-new">2. What's New in PoAIW 2.0</a></li>
+                <li><a href="#version-activation">3. Version 2 Blocks</a></li>
+                <li><a href="#node-upgrade">4. Node Operator Instructions</a></li>
+                <li><a href="#rollback">5. Rollback Procedures</a></li>
+                <li><a href="#governance">6. Governance & Community Voting</a></li>
+                <li><a href="#timeline">7. Upgrade Timeline</a></li>
+                <li><a href="#faq">8. Frequently Asked Questions</a></li>
+            </ul>
+        </div>
+
+        <h2 id="executive-summary">1. Executive Summary</h2>
+
+        <div class="abstract">
+            <h3 style="margin-top: 0; color: #6c5ce7;">Upgrade Overview</h3>
+            <p>The PoAIW 2.0 upgrade represents a <strong>major protocol enhancement</strong> that introduces mathematical verification for AI inference work, eliminates the need for human judges, and implements advanced anti-gaming mechanisms. This upgrade maintains <strong>backward compatibility</strong> while significantly improving security and decentralization.</p>
+        </div>
+
+        <div class="highlight-box">
+            <h4>Key Benefits of Version 2.0</h4>
+            <ul>
+                <li><span class="success">✅ Mathematical Verification</span> - Pure cryptographic proof, no human intervention required</li>
+                <li><span class="success">✅ Enhanced Security</span> - Advanced anti-collusion and anti-gaming mechanisms</li>
+                <li><span class="success">✅ Improved Decentralization</span> - Lower barrier to entry for small nodes</li>
+                <li><span class="success">✅ Backward Compatibility</span> - Seamless transition from Version 1.0</li>
+                <li><span class="success">✅ Better Economics</span> - More equitable reward distribution</li>
+            </ul>
+        </div>
+
+        <h2 id="whats-new">2. What's New in PoAIW 2.0</h2>
+
+        <h3>2.1 Core Protocol Changes</h3>
+
+        <table>
+            <tr>
+                <th>Component</th>
+                <th>Version 1.0</th>
+                <th>Version 2.0</th>
+                <th>Impact</th>
+            </tr>
+            <tr>
+                <td><strong>Verification</strong></td>
+                <td>Human judges + basic math</td>
+                <td>Pure mathematical verification</td>
+                <td>Eliminates centralization risk</td>
+            </tr>
+            <tr>
+                <td><strong>Difficulty</strong></td>
+                <td>Fixed per tier</td>
+                <td>Dynamic + dispersion bonus</td>
+                <td>Encourages decentralization</td>
+            </tr>
+            <tr>
+                <td><strong>Energy Binding</strong></td>
+                <td>Simple energy calculation</td>
+                <td>Multi-factor energy scoring</td>
+                <td>More accurate work measurement</td>
+            </tr>
+            <tr>
+                <td><strong>Anti-Gaming</strong></td>
+                <td>Basic timestamp checks</td>
+                <td>Advanced collusion detection</td>
+                <td>Prevents sophisticated attacks</td>
+            </tr>
+        </table>
+
+        <h3>2.2 Mathematical Verification System</h3>
+
+        <div class="formula">
+            Valid(Block) = PoW_Check AND Stake_Check AND Energy_Check AND Anti_Gaming_Check
+        </div>
+
+        <h4>2.2.1 Enhanced PoW Verification</h4>
+
+        <div class="formula">
+            Hash(ModelID + Input + Output + Nonce + Salt) &lt; Difficulty
+        </div>
+
+        <ul>
+            <li><strong>Salt</strong>: Unique per-block random value preventing cache attacks</li>
+            <li><strong>ModelID</strong>: SHA256 hash of model weights ensuring model integrity</li>
+            <li><strong>Dynamic Difficulty</strong>: Adjusts based on network dispersion</li>
+        </ul>
+
+        <h4>2.2.2 Advanced Energy Scoring</h4>
+
+        <div class="formula">
+            EffectiveEnergy = AI_Power × Green_Bonus × Quality_Factor × Dispersion_Bonus
+        </div>
+
+        <div class="formula">
+            Dispersion_Bonus = 1 + ln(NodeCount + 1) / 10  (max 2.0x)
+        </div>
+
+        <h4>2.2.3 Multi-Factor Quality Assessment</h4>
+
+        <div class="formula">
+            Quality_Factor = (Output_Validity × Consistency_Score × Latency_Factor)^(1/3)
+        </div>
+
+        <h3>2.3 Anti-Gaming Mechanisms</h3>
+
+        <div class="warning-box">
+            <h4>Advanced Collusion Detection</h4>
+            <ul>
+                <li><strong>Pattern Analysis</strong>: Detects coordinated inference patterns</li>
+                <li><strong>Timing Correlation</strong>: Identifies synchronized submissions</li>
+                <li><strong>Model Diversity</strong>: Penalizes identical model usage</li>
+                <li><strong>Geographic Distribution</strong>: Verifies global node participation</li>
+            </ul>
+        </div>
+
+        <h3>2.4 Economic Model Improvements</h3>
+
+        <div class="success-box">
+            <h4>Enhanced Reward Distribution</h4>
+            <ul>
+                <li><strong>Base Rewards</strong>: Maintained for all nodes</li>
+                <li><strong>Dispersion Multipliers</strong>: Up to 2.0x for distributed networks</li>
+                <li><strong>Quality Bonuses</strong>: Performance-based additional rewards</li>
+                <li><strong>Anti-Oligarchy Penalties</strong>: Automatic reduction for large concentrations</li>
+            </ul>
+        </div>
+
+        <h2 id="version-activation">3. Version 2 Blocks</h2>
+
+        <h3>3.1 Block Structure Evolution</h3>
+
+        <pre>
+Block Header (Version 2.0):
+├── Version: uint32 = 2
+├── PrevBlockHash: [32]byte
+├── MerkleRoot: [32]byte
+├── Timestamp: uint64
+├── Height: uint64
+├── Proposer: [32]byte
+├── Signature: []byte
+├── PoAIW Fields:
+│   ├── InferencePoW: []byte (enhanced proof)
+│   ├── ModelID: string (SHA256 hash)
+│   ├── EnergyClaim: uint64 (effective energy)
+│   ├── QualityScore: uint32 (0-1000)
+│   ├── DispersionBonus: uint32 (0-2000)
+│   └── Salt: [32]byte (anti-cache)
+└── VersionFlags: uint64 (feature flags)
+        </pre>
+
+        <h3>3.2 Version Detection and Compatibility</h3>
+
+        <div class="step">
+            <span class="step-number">Step 1</span>
+            <strong>Version Negotiation</strong><br>
+            Nodes announce supported versions during handshake
+        </div>
+
+        <div class="step">
+            <span class="step-number">Step 2</span>
+            <strong>Backward Compatibility</strong><br>
+            Version 2 nodes accept Version 1 blocks
+        </div>
+
+        <div class="step">
+            <span class="step-number">Step 3</span>
+            <strong>Forward Compatibility</strong><br>
+            Version 1 nodes reject Version 2 blocks (graceful degradation)
+        </div>
+
+        <h3>3.3 Migration Strategy</h3>
+
+        <div class="formula">
+            Migration_Phase = {
+                Phase 1: 95%+ Version 2 nodes → Enable Version 2 blocks
+                Phase 2: 100% Version 2 blocks → Full activation
+                Phase 3: Version 1 deprecation → Optional removal
+            }
+        </div>
+
+        <h2 id="node-upgrade">4. Node Operator Instructions</h2>
+
+        <h3>4.1 Pre-Upgrade Checklist</h3>
+
+        <div class="highlight-box">
+            <h4>Required Actions (Complete Before Upgrade)</h4>
+            <ul>
+                <li>✅ <strong>Backup Configuration</strong>: Save all node configurations</li>
+                <li>✅ <strong>Verify Disk Space</strong>: Ensure 20% free space for upgrade process</li>
+                <li>✅ <strong>Update Dependencies</strong>: Install required libraries</li>
+                <li>✅ <strong>Test Environment</strong>: Validate upgrade in staging</li>
+                <li>✅ <strong>Monitor Network</strong>: Track Version 2 adoption rate</li>
+            </ul>
+        </div>
+
+        <h3>4.2 Backup Procedures</h3>
+
+        <div class="step">
+            <span class="step-number">Step 1</span>
+            <strong>Stop Node Services</strong>
+            <pre>sudo systemctl stop aib-node
+sudo systemctl stop aib-validator</pre>
+        </div>
+
+        <div class="step">
+            <span class="step-number">Step 2</span>
+            <strong>Backup Critical Files</strong>
+            <pre># Configuration files
+tar -czf aib-config-backup-$(date +%Y%m%d).tar.gz ~/.aib/config/
+
+# Blockchain data
+tar -czf aib-data-backup-$(date +%Y%m%d).tar.gz ~/.aib/data/
+
+# Key files
+cp -r ~/.aib/keys ~/.aib/keys-backup-$(date +%Y%m%d)</pre>
+        </div>
+
+        <div class="step">
+            <span class="step-number">Step 3</span>
+            <strong>Verify Backup Integrity</strong>
+            <pre># Check archive integrity
+tar -tzf aib-config-backup-$(date +%Y%m%d).tar.gz | head -10
+tar -tzf aib-data-backup-$(date +%Y%m%d).tar.gz | head -10
+
+# Verify checksums
+sha256sum aib-config-backup-*.tar.gz
+sha256sum aib-data-backup-*.tar.gz</pre>
+        </div>
+
+        <h3>4.3 Binary Update Process</h3>
+
+        <div class="step">
+            <span class="step-number">Step 1</span>
+            <strong>Download Version 2.0</strong>
+            <pre># Download from official repository
+wget https://github.com/aib-protocol/aib/releases/download/v2.0.0/aib-v2.0.0-linux-amd64.tar.gz
+
+# Verify signature
+wget https://github.com/aib-protocol/aib/releases/download/v2.0.0/aib-v2.0.0-linux-amd64.tar.gz.asc
+gpg --verify aib-v2.0.0-linux-amd64.tar.gz.asc
+
+# Extract
+tar -xzf aib-v2.0.0-linux-amd64.tar.gz</pre>
+        </div>
+
+        <div class="step">
+            <span class="step-number">Step 2</span>
+            <strong>Replace Binaries</strong>
+            <pre># Backup old binaries
+sudo mv /usr/local/bin/aib-node /usr/local/bin/aib-node-v1.0
+sudo mv /usr/local/bin/aib-validator /usr/local/bin/aib-validator-v1.0
+
+# Install new binaries
+sudo cp aib-v2.0.0-linux-amd64/aib-node /usr/local/bin/
+sudo cp aib-v2.0.0-linux-amd64/aib-validator /usr/local/bin/
+
+# Set permissions
+sudo chmod +x /usr/local/bin/aib-node
+sudo chmod +x /usr/local/bin/aib-validator</pre>
+        </div>
+
+        <div class="step">
+            <span class="step-number">Step 3</span>
+            <strong>Verify Installation</strong>
+            <pre># Check versions
+aib-node --version
+# Expected: aib-node v2.0.0
+
+aib-validator --version
+# Expected: aib-validator v2.0.0
+
+# Verify features
+aib-node --help | grep -A 5 "version"
+aib-validator --help | grep -A 5 "version"</pre>
+        </div>
+
+        <h3>4.4 Configuration Changes</h3>
+
+        <div class="step">
+            <span class="step-number">Step 1</span>
+            <strong>Update Configuration</strong>
+            <pre># Edit config file
+nano ~/.aib/config/config.toml</pre>
+        </div>
+
+        <div class="step">
+            <span class="step-number">Step 2</span>
+            <strong>Add Version 2.0 Settings</strong>
+            <pre>[poaiw]
+# Enable Version 2.0 features
+version = 2
+enable_math_verification = true
+enable_dispersion_bonus = true
+enable_advanced_anti_gaming = true
+
+# Enhanced energy scoring
+green_bonus_enabled = true
+quality_factor_enabled = true
+
+# Security settings
+salt_length = 32
+max_dispersion_bonus = 2.0
+min_quality_score = 0.1</pre>
+        </div>
+
+        <div class="step">
+            <span class="step-number">Step 3</span>
+            <strong>Network Configuration</strong>
+            <pre>[network]
+# Version negotiation
+supported_versions = [1, 2]
+preferred_version = 2
+compatibility_mode = true
+
+# Enhanced security
+enable_collusion_detection = true
+enable_pattern_analysis = true
+geographic_verification = true</pre>
+        </div>
+
+        <h3>4.5 Monitoring and Validation</h3>
+
+        <div class="step">
+            <span class="step-number">Step 1</span>
+            <strong>Start Node with Monitoring</strong>
+            <pre># Start node in debug mode
+aib-node --debug --log-level=info
+
+# Monitor startup
+tail -f ~/.aib/logs/aib-node.log | grep -E "(version|startup|error)"</pre>
+        </div>
+
+        <div class="step">
+            <span class="step-number">Step 2</span>
+            <strong>Verify Version Compatibility</strong>
+            <pre># Check node status
+curl http://localhost:8080/api/v1/status
+
+# Expected response includes:
+# {
+#   "version": "2.0.0",
+#   "supported_versions": [1, 2],
+#   "active_version": 2,
+#   "compatibility_mode": true
+# }</pre>
+        </div>
+
+        <div class="step">
+            <span class="step-number">Step 3</span>
+            <strong>Validate Block Processing</strong>
+            <pre># Monitor block processing
+watch -n 1 'curl -s http://localhost:8080/api/v1/block/latest | jq .version'
+
+# Check for Version 2 blocks
+curl http://localhost:8080/api/v1/blocks?version=2</pre>
+        </div>
+
+        <h2 id="rollback">5. Rollback Procedures</h2>
+
+        <div class="warning-box">
+            <h4>Emergency Rollback Plan</h4>
+            <p><strong>Use this procedure only if critical issues are discovered after upgrade.</strong></p>
+        </div>
+
+        <h3>5.1 Immediate Rollback (Under 1 Hour)</h3>
+
+        <div class="step">
+            <span class="step-number">Step 1</span>
+            <strong>Stop Version 2 Node</strong>
+            <pre>sudo systemctl stop aib-node
+sudo systemctl stop aib-validator</pre>
+        </div>
+
+        <div class="step">
+            <span class="step-number">Step 2</span>
+            <strong>Restore Version 1 Binaries</strong>
+            <pre>sudo mv /usr/local/bin/aib-node-v1.0 /usr/local/bin/aib-node
+sudo mv /usr/local/bin/aib-validator-v1.0 /usr/local/bin/aib-validator</pre>
+        </div>
+
+        <div class="step">
+            <span class="step-number">Step 3</span>
+            <strong>Restore Configuration</strong>
+            <pre># Backup Version 2 config
+cp ~/.aib/config/config.toml ~/.aib/config/config.toml.v2
+
+# Restore Version 1 config
+cp ~/.aib/config-backup/config.toml ~/.aib/config/config.toml</pre>
+        </div>
+
+        <div class="step">
+            <span class="step-number">Step 4</span>
+            <strong>Restart Services</strong>
+            <pre>sudo systemctl start aib-node
+sudo systemctl start aib-validator
+
+# Verify rollback
+aib-node --version
+# Expected: v1.x.x</pre>
+        </div>
+
+        <h3>5.2 Data Rollback (If Needed)</h3>
+
+        <div class="warning-box">
+            <h4>Data Rollback Warning</h4>
+            <p><strong>⚠️ Data rollback will result in loss of transactions processed during Version 2 period.</strong></p>
+            <p><strong>⚠️ Only perform if network consensus requires it.</strong></p>
+        </div>
+
+        <div class="step">
+            <span class="step-number">Step 1</span>
+            <strong>Stop All Services</strong>
+            <pre>sudo systemctl stop aib-node
+sudo systemctl stop aib-validator</pre>
+        </div>
+
+        <div class="step">
+            <span class="step-number">Step 2</span>
+            <strong>Backup Current Data</strong>
+            <pre>tar -czf aib-data-v2-backup-$(date +%Y%m%d).tar.gz ~/.aib/data/</pre>
+        </div>
+
+        <div class="step">
+            <span class="step-number">Step 3</span>
+            <strong>Restore Version 1 Data</strong>
+            <pre>rm -rf ~/.aib/data/*
+tar -xzf aib-data-backup-$(date +%Y%m%d).tar.gz -C ~/.aib/</pre>
+        </div>
+
+        <div class="step">
+            <span class="step-number">Step 4</span>
+            <strong>Start Services</strong>
+            <pre>sudo systemctl start aib-node
+sudo systemctl start aib-validator</pre>
+        </div>
+
+        <h3>5.3 Post-Rollback Verification</h3>
+
+        <div class="step">
+            <span class="step-number">Step 1</span>
+            <strong>Verify Version 1 Operation</strong>
+            <pre>curl http://localhost:8080/api/v1/status | jq .version
+# Expected: "1.x.x"</pre>
+        </div>
+
+        <div class="step">
+            <span class="step-number">Step 2</span>
+            <strong>Check Block Processing</strong>
+            <pre>curl http://localhost:8080/api/v1/block/latest | jq .version
+# Expected: 1</pre>
+        </div>
+
+        <div class="step">
+            <span class="step-number">Step 3</span>
+            <strong>Network Reintegration</strong>
+            <pre># Monitor peer connections
+curl http://localhost:8080/api/v1/peers | jq length
+# Should show active connections</pre>
+        </div>
+
+        <h2 id="governance">6. Governance & Community Voting</h2>
+
+        <h3>6.1 AIP (AIB Improvement Proposal) Template</h3>
+
+        <pre>
+# AIP-XXX: PoAIW 2.0 Protocol Upgrade
+
+## Simple Summary
+Upgrade AIB consensus from Version 1.0 to Version 2.0 with enhanced mathematical verification.
+
+## Abstract
+This proposal upgrades the PoAIW consensus mechanism to Version 2.0, implementing pure mathematical verification, advanced anti-gaming measures, and improved economic incentives.
+
+## Motivation
+Version 1.0 has proven the concept but requires enhancements for:
+- Eliminating human judgment dependencies
+- Preventing sophisticated gaming attacks
+- Improving decentralization incentives
+- Enhancing overall network security
+
+## Specification
+
+### Version 2.0 Features
+1. Mathematical verification system
+2. Dynamic difficulty adjustment
+3. Advanced anti-collusion mechanisms
+4. Enhanced reward distribution
+5. Improved energy scoring
+
+### Implementation Timeline
+- Phase 1: Code audit and testing (2 weeks)
+- Phase 2: Testnet deployment (1 week)
+- Phase 3: Mainnet upgrade (coordinated activation)
+
+### Backward Compatibility
+- Full backward compatibility maintained
+- Graceful degradation for Version 1 nodes
+- Optional migration path
+
+## Rationale
+Mathematical verification eliminates centralization risks while maintaining security. The upgrade preserves all existing functionality while adding critical security enhancements.
+        </pre>
+
+        <h3>6.2 Voting Process</h3>
+
+        <div class="step">
+            <span class="step-number">Step 1</span>
+            <strong>Proposal Submission</strong>
+            <ul>
+                <li>Submit AIP to governance forum</li>
+                <li>Technical review by development team</li>
+                <li>Community discussion period (1 week)</li>
+            </ul>
+        </div>
+
+        <div class="step">
+            <span class="step-number">Step 2</span>
+            <strong>Governance Vote</strong>
+            <ul>
+                <li>Stake-weighted voting</li>
+                <li>Quorum: 40% of total staked AIB</li>
+                <li>Approval threshold: 66% positive votes</li>
+                <li>Voting period: 72 hours</li>
+            </ul>
+        </div>
+
+        <div class="step">
+            <span class="step-number">Step 3</span>
+            <strong>Implementation</strong>
+            <ul>
+                <li>Code freeze after approval</li>
+                <li>Security audit (independent)</li>
+                <li>Testnet deployment</li>
+                <li>Coordinated mainnet upgrade</li>
+            </ul>
+        </div>
+
+        <h3>6.3 Community Participation</h3>
+
+        <div class="success-box">
+            <h4>How to Participate</h4>
+            <ul>
+                <li><strong>Review AIPs</strong>: Read and comment on governance proposals</li>
+                <li><strong>Test Upgrades</strong>: Run testnet versions and report issues</li>
+                <li><strong>Vote on Proposals</strong>: Use staked AIB to vote on upgrades</li>
+                <li><strong>Provide Feedback</strong>: Report bugs and suggest improvements</li>
+            </ul>
+        </div>
+
+        <h2 id="timeline">7. Upgrade Timeline</h2>
+
+        <div class="timeline">
+            <div class="timeline-item">
+                <div class="timeline-date">Week 1</div>
+                <h4>Preparation Phase</h4>
+                <p>Code audit, documentation updates, community education</p>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-date">Week 2</div>
+                <h4>Testnet Deployment</h4>
+                <p>Version 2.0 deployed on testnet, community testing period</p>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-date">Week 3</div>
+                <h4>Governance Vote</h4>
+                <p>AIP voting period, community approval required</p>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-date">Week 4</div>
+                <h4>Mainnet Upgrade</h4>
+                <p>Coordinated upgrade activation across all nodes</p>
+            </div>
+        </div>
+
+        <div class="highlight-box">
+            <h4>Key Dates</h4>
+            <ul>
+                <li><span class="info">Q2 2026</span>: Governance proposal submission</li>
+                <li><span class="info">Q3 2026</span>: Testnet deployment and testing</li>
+                <li><span class="info">Q4 2026</span>: Mainnet upgrade activation</li>
+                <li><span class="info">Q1 2027</span>: Version 1 deprecation (optional)</li>
+            </ul>
+        </div>
+
+        <h2 id="faq">8. Frequently Asked Questions</h2>
+
+        <h3>8.1 General Questions</h3>
+
+        <div class="step">
+            <span class="step-number">Q1</span>
+            <strong>Will the upgrade break my existing node?</strong>
+            <p><span class="success">No</span>. The upgrade is designed for backward compatibility. Your Version 1 node will continue operating, but you'll miss out on enhanced features and potentially lower rewards.</p>
+        </div>
+
+        <div class="step">
+            <span class="step-number">Q2</span>
+            <strong>Do I need to update my staking setup?</strong>
+            <p><span class="success">No</span>. Your staking configuration remains the same. The upgrade only enhances the consensus mechanism and reward calculation.</p>
+        </div>
+
+        <div class="step">
+            <span class="step-number">Q3</span>
+            <strong>Will there be any downtime during the upgrade?</strong>
+            <p><span class="info">Minimal</span>. Short service interruption (5-10 minutes) during the binary update. Plan for maintenance window during low-traffic periods.</p>
+        </div>
+
+        <h3>8.2 Technical Questions</h3>
+
+        <div class="step">
+            <span class="step-number">Q4</span>
+            <strong>What hardware requirements are needed for Version 2.0?</strong>
+            <p>Same requirements as Version 1.0. The mathematical verification system is computationally efficient and doesn't increase hardware demands.</p>
+        </div>
+
+        <div class="step">
+            <span class="step-number">Q5</span>
+            <strong>How does the new verification system work?</strong>
+            <p>Version 2.0 uses pure cryptographic verification:
+            <pre>1. Each inference result is cryptographically signed
+2. Mathematical proofs verify computation integrity
+3. No human judgment or centralized validation needed
+4. All nodes can independently verify results</pre></p>
+        </div>
+
+        <div class="step">
+            <span class="step-number">Q6</span>
+            <strong>What happens if I don't upgrade?</strong>
+            <p>Your node will continue operating on Version 1.0 but will:
+            <ul>
+                <li>Receive lower rewards due to missing dispersion bonuses</li>
+                <li>Have reduced security against advanced attacks</li>
+                <li>Eventually be phased out (timeline TBD by governance)</li>
+            </ul></p>
+        </div>
+
+        <h3>8.3 Economic Questions</h3>
+
+        <div class="step">
+            <span class="step-number">Q7</span>
+            <strong>Will AIB token price be affected?</strong>
+            <p>The upgrade enhances network security and utility, which should positively impact long-term value. Short-term price movements depend on market factors unrelated to the technical upgrade.</p>
+        </div>
+
+        <div class="step">
+            <span class="step-number">Q8</span>
+            <strong>How do rewards change with Version 2.0?</strong>
+            <p>Rewards are enhanced through:
+            <ul>
+                <li><span class="success">Dispersion bonuses</span>: Up to 2.0x for distributed networks</li>
+                <li><span class="success">Quality bonuses</span>: Performance-based additional rewards</li>
+                <li><span class="success">Anti-oligarchy penalties</span>: Reduced rewards for large concentrations</li>
+            </ul></p>
+        </div>
+
+        <div class="step">
+            <span class="step-number">Q9</span>
+            <strong>Is there any risk to my staked tokens during upgrade?</strong>
+            <p><span class="success">No</span>. Your staked tokens remain secure throughout the upgrade process. The consensus change doesn't affect token storage or staking contracts.</p>
+        </div>
+
+        <h3>8.4 Support Questions</h3>
+
+        <div class="step">
+            <span class="step-number">Q10</span>
+            <strong>Where can I get help with the upgrade?</strong>
+            <p>Support channels:
+            <ul>
+                <li>Official documentation: <a href="https://docs.aib.org" style="color: #74b9ff;">docs.aib.org</a></li>
+                <li>Community forum: <a href="https://forum.aib.org" style="color: #74b9ff;">forum.aib.org</a></li>
+                <li>Technical support: <a href="mailto:support@aib.org" style="color: #74b9ff;">support@aib.org</a></li>
+                <li>Live chat: Available during upgrade window</li>
+            </ul></p>
+        </div>
+
+        <div class="footer">
+            <p><strong>PoAIW 2.0 Upgrade Guide</strong></p>
+            <p>© 2026 AIB Protocol | Last Updated: March 2026</p>
+            <p style="margin-top: 10px; font-size: 0.9em;">
+                <span class="metric">PoAIW 2.0</span>
+                <span class="metric">Mathematical Verification</span>
+                <span class="metric">Backward Compatible</span>
+                <span class="metric">Enhanced Security</span>
+            </p>
+            <p style="margin-top: 15px; color: #74b9ff;">
+                For the latest updates, visit: <a href="https://docs.aib.org" style="color: #74b9ff;">docs.aib.org</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

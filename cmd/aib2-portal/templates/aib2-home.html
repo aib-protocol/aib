@@ -1,0 +1,705 @@
+{{define "base"}}<!DOCTYPE html>
+<html lang="{{.Lang}}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.Title}}</title>
+    <link rel="icon" type="image/png" href="/static/favicon.png">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+        /* AIB 2.0 Homepage Styles */
+        .aib2-home {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: #ffffff;
+        }
+
+        /* Hero Section */
+        .hero-section {
+            position: relative;
+            min-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 60px 20px;
+            overflow: hidden;
+            background: linear-gradient(180deg, #0a0a0f 0%, #12121a 100%);
+        }
+
+        .hero-bg {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+        }
+
+        .hero-bg::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background:
+                radial-gradient(ellipse at 20% 20%, rgba(0, 212, 255, 0.12) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(123, 44, 191, 0.12) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(0, 255, 136, 0.06) 0%, transparent 40%);
+            animation: heroGlow 15s ease-in-out infinite;
+        }
+
+        @keyframes heroGlow {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(-5%, -5%) scale(1.1); }
+        }
+
+        .hero-grid {
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 60px 60px;
+            animation: gridMove 20s linear infinite;
+            mask-image: radial-gradient(ellipse at center, black 0%, transparent 70%);
+        }
+
+        @keyframes gridMove {
+            0% { transform: perspective(500px) rotateX(60deg) translateY(0); }
+            100% { transform: perspective(500px) rotateX(60deg) translateY(60px); }
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 900px;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #00d4ff;
+            margin-bottom: 32px;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        .hero-badge::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: #00ff88;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(0, 255, 136, 0.5); }
+            50% { opacity: 0.8; box-shadow: 0 0 0 8px rgba(0, 255, 136, 0); }
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .hero-title {
+            font-size: clamp(48px, 10vw, 96px);
+            font-weight: 900;
+            line-height: 1.1;
+            margin-bottom: 24px;
+            letter-spacing: -3px;
+            animation: fadeInUp 0.8s ease-out 0.2s both;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .hero-title .highlight {
+            background: linear-gradient(135deg, #00d4ff 0%, #7b2cbf 50%, #ff6b6b 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            position: relative;
+        }
+
+        .hero-subtitle {
+            font-size: clamp(18px, 3vw, 28px);
+            color: #9ca3af;
+            font-weight: 400;
+            margin-bottom: 48px;
+            line-height: 1.6;
+            animation: fadeInUp 0.8s ease-out 0.4s both;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            animation: fadeInUp 0.8s ease-out 0.6s both;
+        }
+
+        .btn-hero {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 18px 36px;
+            border-radius: 16px;
+            font-size: 17px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .btn-hero-primary {
+            background: linear-gradient(135deg, #00d4ff, #7b2cbf);
+            color: #0a0a0f;
+            box-shadow: 0 10px 40px rgba(0, 212, 255, 0.3);
+        }
+
+        .btn-hero-primary:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 20px 60px rgba(0, 212, 255, 0.4);
+        }
+
+        .btn-hero-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: #ffffff;
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-hero-secondary:hover {
+            border-color: #00d4ff;
+            color: #00d4ff;
+            background: rgba(0, 212, 255, 0.1);
+            transform: translateY(-4px);
+        }
+
+        /* Stats Section */
+        .stats-section {
+            padding: 80px 20px;
+            background: linear-gradient(180deg, #12121a 0%, #0a0a0f 100%);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, rgba(18, 18, 26, 0.9), rgba(26, 26, 37, 0.9));
+            border: 1px solid rgba(42, 42, 58, 0.6);
+            border-radius: 24px;
+            padding: 40px 32px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s ease;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #00d4ff, #7b2cbf, #ff6b6b);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(0, 212, 255, 0.4);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+        }
+
+        .stat-card:hover::before {
+            opacity: 1;
+        }
+
+        .stat-icon {
+            font-size: 40px;
+            margin-bottom: 20px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .stat-value {
+            font-size: 42px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #00d4ff, #7b2cbf);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-family: 'SF Mono', 'Monaco', monospace;
+        }
+
+        .stat-desc {
+            font-size: 14px;
+            color: #6b7280;
+            margin-top: 12px;
+        }
+
+        /* Features Section */
+        .features-section {
+            padding: 100px 20px;
+            background: #0a0a0f;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .section-title {
+            font-size: clamp(32px, 5vw, 48px);
+            font-weight: 800;
+            margin-bottom: 16px;
+            letter-spacing: -1px;
+        }
+
+        .section-subtitle {
+            font-size: 18px;
+            color: #6b7280;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 28px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .feature-card {
+            background: linear-gradient(135deg, rgba(18, 18, 26, 0.9), rgba(26, 26, 37, 0.9));
+            border: 1px solid rgba(42, 42, 58, 0.6);
+            border-radius: 28px;
+            padding: 40px 32px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #00d4ff, #7b2cbf);
+            transform: scaleX(0);
+            transition: transform 0.4s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            border-color: rgba(0, 212, 255, 0.4);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4);
+        }
+
+        .feature-card:hover::after {
+            transform: scaleX(1);
+        }
+
+        .feature-icon {
+            width: 72px;
+            height: 72px;
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.15), rgba(123, 44, 191, 0.15));
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            margin-bottom: 24px;
+        }
+
+        .feature-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .feature-desc {
+            color: #9ca3af;
+            line-height: 1.8;
+            font-size: 16px;
+        }
+
+        /* Links Section */
+        .links-section {
+            padding: 100px 20px;
+            background: linear-gradient(180deg, #0a0a0f 0%, #12121a 100%);
+        }
+
+        .links-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .link-card {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            background: linear-gradient(135deg, rgba(18, 18, 26, 0.9), rgba(26, 26, 37, 0.9));
+            border: 1px solid rgba(42, 42, 58, 0.6);
+            border-radius: 20px;
+            padding: 32px;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.4s ease;
+        }
+
+        .link-card:hover {
+            border-color: rgba(0, 212, 255, 0.5);
+            transform: translateX(8px);
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.08), rgba(123, 44, 191, 0.08));
+        }
+
+        .link-icon {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(123, 44, 191, 0.2));
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            flex-shrink: 0;
+        }
+
+        .link-content h3 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #ffffff;
+        }
+
+        .link-content p {
+            font-size: 15px;
+            color: #9ca3af;
+            line-height: 1.6;
+        }
+
+        .link-arrow {
+            margin-left: auto;
+            font-size: 24px;
+            color: #4b5563;
+            transition: all 0.3s;
+        }
+
+        .link-card:hover .link-arrow {
+            color: #00d4ff;
+            transform: translateX(4px);
+        }
+
+        /* Footer */
+        .site-footer {
+            padding: 60px 20px;
+            background: #0a0a0f;
+            border-top: 1px solid rgba(42, 42, 58, 0.4);
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .footer-logo {
+            font-size: 28px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #00d4ff, #7b2cbf);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 32px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .footer-links a {
+            color: #9ca3af;
+            text-decoration: none;
+            font-size: 15px;
+            transition: color 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: #00d4ff;
+        }
+
+        .footer-social {
+            display: flex;
+            gap: 16px;
+        }
+
+        .footer-social a {
+            width: 44px;
+            height: 44px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .footer-social a:hover {
+            background: rgba(0, 212, 255, 0.15);
+            border-color: rgba(0, 212, 255, 0.4);
+            transform: translateY(-4px);
+        }
+
+        .footer-copyright {
+            color: #6b7280;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero-section {
+                min-height: 80vh;
+                padding: 40px 16px;
+            }
+
+            .hero-actions {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .btn-hero {
+                width: 100%;
+                max-width: 300px;
+                justify-content: center;
+            }
+
+            .stats-grid, .features-grid, .links-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stat-value {
+                font-size: 32px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-inner">
+            <a class="logo" href="/{{.Lang}}/">AIB 2.0</a>
+            <ul class="nav-links">
+                {{range .NavItems}}
+                <li><a href="/{{$.Lang}}{{.Path}}" {{if eq .ID $.Nav}}class="active"{{end}}>{{.Label}}</a></li>
+                {{end}}
+            </ul>
+            <div class="lang-switch">
+                {{if eq .Lang "en"}}
+                    <span class="lang-active">EN</span>
+                    <a href="/zh{{.PagePath}}">中文</a>
+                {{else}}
+                    <a href="/en{{.PagePath}}">EN</a>
+                    <span class="lang-active">中文</span>
+                {{end}}
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        {{template "content" .}}
+    </main>
+
+    <footer>
+        AIB 2.0 Protocol &mdash; Total Supply: 3,141,592,653 AIB (&pi; &times; 10<sup>9</sup> AIB)
+    </footer>
+</body>
+</html>{{end}}
+
+{{define "content"}}
+<div class="aib2-home">
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="hero-bg">
+            <div class="hero-grid"></div>
+        </div>
+        <div class="hero-content">
+            <div class="hero-badge">
+                <span>Mainnet Launching Soon</span>
+            </div>
+            <h1 class="hero-title">
+                <span class="highlight">AIB 2.0</span><br>
+                AI-Blockchain Ecosystem
+            </h1>
+            <p class="hero-subtitle">
+                下一代区块链协议，为 AI 时代而生<br>
+                <span style="color: #6b7280; font-size: 16px;">Human-AI Co-Governed Decentralized Protocol</span>
+            </p>
+            <div class="hero-actions">
+                <a href="/en/quickstart" class="btn-hero btn-hero-primary">
+                    <span>开始使用</span>
+                    <span style="font-size: 18px;">→</span>
+                </a>
+                <a href="/en/whitepaper" class="btn-hero btn-hero-secondary">
+                    <span>阅读文档</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats-section">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">📊</div>
+                <div class="stat-label">总供应量</div>
+                <div class="stat-value">3.14B</div>
+                <div class="stat-desc">3,141,592,653 AIB</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⏱️</div>
+                <div class="stat-label">区块时间</div>
+                <div class="stat-value">30s</div>
+                <div class="stat-desc">快速确认</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🔒</div>
+                <div class="stat-label">最低质押</div>
+                <div class="stat-value">1000</div>
+                <div class="stat-desc">AIB</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features-section">
+        <div class="section-header">
+            <h2 class="section-title">核心特性</h2>
+            <p class="section-subtitle">构建 AI 与区块链深度融合的下一代基础设施</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">⚖️</div>
+                <h3 class="feature-title">PoAIW 共识</h3>
+                <p class="feature-desc">
+                    Proof of AI Work 共识机制，结合人类与 AI 验证者的混合治理，确保网络公平、安全且高效。
+                </p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <h3 class="feature-title">状态通道支付</h3>
+                <p class="feature-desc">
+                    闪电网络风格的支付通道，支持即时、低费用的 AI 推理支付，支持百万级 TPS。
+                </p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔐</div>
+                <h3 class="feature-title">ZK-Rollup 扩展</h3>
+                <p class="feature-desc">
+                    零知识证明驱动的 Layer 2 扩容方案，在保证安全性的前提下实现高吞吐量。
+                </p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🤖</div>
+                <h3 class="feature-title">AI 推理市场</h3>
+                <p class="feature-desc">
+                    去中心化的 AI 模型推理市场，开发者可以部署模型并获得 AIB 奖励，用户按需付费。
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Links Section -->
+    <section class="links-section">
+        <div class="section-header">
+            <h2 class="section-title">探索 AIB 2.0</h2>
+            <p class="section-subtitle">加入下一代 AI-区块链生态系统</p>
+        </div>
+        <div class="links-grid">
+            <a href="https://testnet.aib.ai" class="link-card" target="_blank">
+                <div class="link-icon">🧪</div>
+                <div class="link-content">
+                    <h3>测试网入口</h3>
+                    <p>体验 AIB 2.0 测试网，参与测试获得奖励</p>
+                </div>
+                <span class="link-arrow">→</span>
+            </a>
+            <a href="/en/whitepaper" class="link-card">
+                <div class="link-icon">📚</div>
+                <div class="link-content">
+                    <h3>文档中心</h3>
+                    <p>完整的技术文档、API 参考和开发指南</p>
+                </div>
+                <span class="link-arrow">→</span>
+            </a>
+            <a href="https://github.com/aib-protocol/aib" class="link-card" target="_blank">
+                <div class="link-icon">💻</div>
+                <div class="link-content">
+                    <h3>GitHub</h3>
+                    <p>查看源代码，参与开源贡献</p>
+                </div>
+                <span class="link-arrow">→</span>
+            </a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="footer-content">
+            <div class="footer-logo">AIB 2.0</div>
+            <div class="footer-links">
+                <a href="/en/whitepaper">白皮书</a>
+                <a href="/en/roadmap">路线图</a>
+                <a href="/en/constitution">宪章</a>
+                <a href="/en/genesis">创世规则</a>
+            </div>
+            <div class="footer-social">
+                <a href="https://github.com/aib-protocol/aib" target="_blank" title="GitHub">GH</a>
+                <a href="https://twitter.com/aib_protocol" target="_blank" title="Twitter">𝕏</a>
+                <a href="https://discord.gg/aib" target="_blank" title="Discord">DC</a>
+            </div>
+            <div class="footer-copyright">
+                &copy; 2026 AIB 2.0 Protocol. All rights reserved.<br>
+                Total Supply: 3,141,592,653 AIB
+            </div>
+        </div>
+    </footer>
+</div>
+{{end}}

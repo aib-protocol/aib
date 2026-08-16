@@ -1,0 +1,108 @@
+# AIB 2.0 Deployment Configuration
+# Copy this file to config.toml and customize
+
+# ========== 节点配置 ==========
+[node]
+  # 节点名称
+  moniker = "aib-mainnet-validator"
+  # 节点类型: validator, full, light
+  node_type = "validator"
+  # 数据目录
+  data_dir = "./data"
+  # 日志级别: debug, info, warn, error
+  log_level = "info"
+
+# ========== API 配置 ==========
+[api]
+  # API 监听地址
+  listen_address = "0.0.0.0:51200"
+  # 启用 API
+  enabled = true
+  # 允许跨域
+  enable_cors = true
+  # API 限流 (请求/秒)
+  rate_limit = 100
+  # 最大请求体大小 (bytes)
+  max_body_size = 1048576
+
+# ========== P2P 配置 ==========
+[p2p]
+  # P2P 监听地址
+  listen_address = "0.0.0.0:26656"
+  # 外部地址 (公网 IP:端口)
+  external_address = ""
+  # 种子节点 (格式: node_id@ip:port)
+  seeds = []
+  # 持久节点
+  persistent_peers = []
+  # 最大连接数
+  max_connections = 100
+  # 最大对等节点数
+  max_peers = 50
+
+# ========== 共识配置 ==========
+[consensus]
+  # 区块时间（秒）
+  block_time = 60
+  # 验证者地址列表
+  validators = []
+  # 最小质押数量
+  min_stake = "1000000"
+  # 解绑时间（秒）
+  unbonding_time = 604800
+  # 提议者奖励比例
+  proposer_reward = 0.01
+
+# ========== 创世配置 ==========
+[genesis]
+  # 链 ID
+  chain_id = "aib-mainnet-1"
+  # Genesis 文件路径
+  genesis_file = "./config/genesis.json"
+
+# ========== 监控配置 ==========
+[telemetry]
+  # 启用遥测
+  enabled = true
+  # Prometheus 端口
+  prometheus_port = 26660
+  # 启用 Pprof
+  pprof_enabled = true
+  # Pprof 端口
+  pprof_port = 26661
+
+# ========== RPC 配置 ==========
+[rpc]
+  # RPC 监听地址
+  listen_address = "0.0.0.0:26657"
+  # 允许 RPC
+  enabled = true
+  # 允许 CORS
+  cors_allowed_origins = ["*"]
+
+# ========== 钱包配置 ==========
+[wallet]
+  # 钱包目录
+  keystore_path = "./data/keystore"
+  # 默认账户
+  default_account = ""
+  # 解锁超时（秒）
+  unlock_timeout = 300
+
+# ========== EVM 配置 ==========
+[evm]
+  # 启用 EVM  enabled = true
+
+  # EVM 链 ID
+  chain_id = 9527
+  # EVM 网络 ID
+  network_id = 9527
+
+# ========== 性能配置 ==========
+[performance]
+  # 缓存大小 (MB)
+  cache_size = 512
+  # 并发处理数
+  concurrent_tx = 100
+  # 区块缓冲大小
+  block_buffer = 10

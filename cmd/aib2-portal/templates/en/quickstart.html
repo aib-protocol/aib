@@ -1,0 +1,358 @@
+{{define "content"}}
+<style>
+    /* Apple Minimal Dark Style - Override base template */
+    body { background: #000 !important; }
+    main { padding: 0 !important; max-width: none !important; }
+    footer { background: #000 !important; border-top: 1px solid #424245 !important; }
+    nav { background: rgba(0,0,0,0.9) !important; backdrop-filter: blur(20px) !important; }
+    .nav-links a { color: #86868b !important; }
+    .nav-links a:hover, .nav-links a.active { color: #f5f5f7 !important; }
+    .logo { color: #f5f5f7 !important; }
+    .lang-switch, .lang-switch a { color: #86868b !important; }
+    .lang-active { color: #f5f5f7 !important; }
+
+    .quickstart-container {
+        font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+        background: #000;
+        color: #f5f5f7;
+        min-height: 100vh;
+        margin-top: -60px;
+    }
+
+    .page-header {
+        padding: 80px 48px;
+        text-align: center;
+        border-bottom: 1px solid #2d2d2d;
+    }
+
+    .page-title {
+        font-size: 48px;
+        font-weight: 700;
+        letter-spacing: -1px;
+        margin-bottom: 16px;
+    }
+
+    .page-subtitle {
+        font-size: 20px;
+        color: #86868b;
+        margin-bottom: 40px;
+    }
+
+    .quickstart-content {
+        padding: 80px 48px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .step-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 32px;
+        margin-bottom: 80px;
+    }
+
+    .step-card {
+        background: #1d1d1f;
+        border-radius: 20px;
+        padding: 32px;
+        text-align: center;
+        border: 1px solid #2d2d2d;
+    }
+
+    .step-number {
+        font-size: 24px;
+        font-weight: 700;
+        color: #0071e3;
+        margin-bottom: 16px;
+    }
+
+    .step-card h3 {
+        font-size: 20px;
+        font-weight: 600;
+        margin-bottom: 12px;
+    }
+
+    .step-card p {
+        color: #86868b;
+        line-height: 1.5;
+    }
+
+    .instructions {
+        background: #1d1d1f;
+        border-radius: 20px;
+        padding: 40px;
+        margin-bottom: 60px;
+        border: 1px solid #2d2d2d;
+    }
+
+    .instruction-title {
+        font-size: 28px;
+        font-weight: 600;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .code-block {
+        background: #2d2d2f;
+        border-radius: 12px;
+        padding: 20px;
+        margin: 16px 0;
+        overflow-x: auto;
+        border: 1px solid #3d3d3f;
+    }
+
+    .code-block pre {
+        margin: 0;
+        font-family: SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        font-size: 14px;
+        color: #d1d5db;
+        line-height: 1.5;
+    }
+
+    .tabs {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 24px;
+    }
+
+    .tab-btn {
+        background: #2d2d2f;
+        border: 1px solid #3d3d3f;
+        color: #86868b;
+        padding: 12px 24px;
+        border-radius: 12px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: all 0.3s;
+    }
+
+    .tab-btn:hover, .tab-btn.active {
+        background: #3d3d3f;
+        color: #f5f5f7;
+        border-color: #4d4d4f;
+    }
+
+    .tab-content {
+        display: none;
+    }
+
+    .tab-content.active {
+        display: block;
+    }
+
+    .step-box {
+        background: #2d2d2f;
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 24px;
+        border: 1px solid #3d3d3f;
+    }
+
+    .step-box h4 {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 12px;
+        color: #f5f5f7;
+    }
+
+    .note-box {
+        background: #2d2d2f;
+        border: 1px solid #3d3d3f;
+        border-left: 4px solid #0071e3;
+        padding: 16px;
+        border-radius: 8px;
+        margin: 16px 0;
+    }
+
+    .support-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 24px;
+        margin-top: 40px;
+    }
+
+    .support-box {
+        background: #1d1d1f;
+        border-radius: 20px;
+        padding: 32px;
+        border: 1px solid #2d2d2d;
+    }
+
+    .support-box h3 {
+        font-size: 20px;
+        font-weight: 600;
+        margin-bottom: 16px;
+    }
+
+    .support-box ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .support-box li {
+        padding: 8px 0;
+        color: #86868b;
+        border-bottom: 1px solid #2d2d2d;
+    }
+
+    .support-box li:last-child {
+        border-bottom: none;
+    }
+
+    .support-box a {
+        color: #2997ff;
+        text-decoration: none;
+    }
+
+    @media (max-width: 768px) {
+        .step-grid { grid-template-columns: 1fr; }
+        .support-grid { grid-template-columns: 1fr; }
+        .page-title { font-size: 36px; }
+        .instructions { padding: 24px; }
+    }
+</style>
+
+<div class="quickstart-container">
+    <section class="page-header">
+        <h1 class="page-title">Get Started</h1>
+        <p class="page-subtitle">Run AIB 2.0 node in minutes</p>
+        <div style="display: flex; gap: 16px; justify-content: center;">
+            <a href="/{{.Lang}}/" class="btn-primary" style="background: #0071e3; color: #fff; padding: 12px 24px; border-radius: 980px; text-decoration: none;">← Home</a>
+        </div>
+    </section>
+
+    <section class="quickstart-content">
+        <!-- Overview -->
+        <div class="step-grid">
+            <div class="step-card">
+                <div class="step-number">1</div>
+                <h3>One Command</h3>
+                <p>Install with a single curl command</p>
+            </div>
+            <div class="step-card">
+                <div class="step-number">2</div>
+                <h3>Run Testnet</h3>
+                <p>Auto sync blocks</p>
+            </div>
+            <div class="step-card">
+                <div class="step-number">3</div>
+                <h3>Create Wallet</h3>
+                <p>Generate address and get test tokens</p>
+            </div>
+        </div>
+
+        <!-- One Command Install -->
+        <div class="instructions">
+            <div class="instruction-title">
+                <span>⚡</span>
+                <span>One Command Install</span>
+            </div>
+
+            <div class="step-box">
+                <h4>Start node instantly (Join Testnet)</h4>
+                <div class="code-block">
+                    <pre><code>curl -sL https://www.aib.one | bash -s testnet</code></pre>
+                </div>
+                <p style="color: #86868b; margin-top: 16px; line-height: 1.6;">
+                    Auto downloads and compiles node, configured for testnet. Visit <strong>http://localhost:8080/health</strong> when done.
+                </p>
+                <div class="note-box" style="margin-top: 12px;">
+                    <strong>Network choice:</strong> testnet (test) or mainnet (launches 2026-03-14)
+                </div>
+            </div>
+
+            <div class="note-box">
+                <strong>Requirement:</strong> Docker installed (docker --version)
+            </div>
+        </div>
+
+        <!-- Other Options -->
+        <div class="instructions">
+            <div class="instruction-title">
+                <span>🐧</span>
+                <span>Other Options</span>
+            </div>
+
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('linux-install')">Binary</button>
+                <button class="tab-btn" onclick="switchTab('linux-docker')">Docker</button>
+            </div>
+
+            <div id="linux-install" class="tab-content active">
+                <div class="step-box">
+                    <h4>Download Binary</h4>
+                    <div class="code-block">
+                        <pre><code>curl -L -o aib2-node https://www.aib.one/aib2-node-linux-amd64
+chmod +x aib2-node</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div id="linux-docker" class="tab-content">
+                <div class="step-box">
+                    <h4>Docker Run</h4>
+                    <div class="code-block">
+                        <pre><code>docker run -d --name aib-node -p 8080:8080 -p 30303:30303 aibprotocol/aib2-node:latest</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Check Status -->
+        <div class="instructions">
+            <div class="instruction-title">
+                <span>🔍</span>
+                <span>Check Status</span>
+            </div>
+
+            <div class="step-box">
+                <h4>Node Status</h4>
+                <div class="code-block">
+                    <pre><code>curl http://localhost:8080/status</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Troubleshooting -->
+        <div class="instructions">
+            <div class="instruction-title">
+                <span>🔧</span>
+                <span>FAQ</span>
+            </div>
+
+            <div class="support-grid">
+                <div class="support-box">
+                    <h3>Port Issues</h3>
+                    <ul>
+                        <li>8080/30303 in use → docker ps to check</li>
+                    </ul>
+                </div>
+
+                <div class="support-box">
+                    <h3>Get Help</h3>
+                    <ul>
+                        <li><a href="/{{.Lang}}/developer">Docs</a></li>
+                        <li>support@aib.one</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<script>
+function switchTab(tabName) {
+    const contents = document.querySelectorAll('.tab-content');
+    contents.forEach(content => content.classList.remove('active'));
+
+    const buttons = document.querySelectorAll('.tab-btn');
+    buttons.forEach(btn => btn.classList.remove('active'));
+
+    document.getElementById(tabName).classList.add('active');
+    event.target.classList.add('active');
+}
+</script>
+{{end}}

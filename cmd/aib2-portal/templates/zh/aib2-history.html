@@ -1,0 +1,412 @@
+{{define "content"}}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700;800;900&display=swap');
+
+    .aib2-history {
+        font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+        max-width: 1200px;
+        margin: 0 auto;
+        background: #0d1117;
+        min-height: 100vh;
+        padding: 40px 20px;
+    }
+
+    .page-header {
+        text-align: center;
+        padding: 80px 40px;
+        background: linear-gradient(135deg, rgba(0,212,255,0.1) 0%, rgba(123,44,191,0.1) 100%);
+        border: 1px solid rgba(0,212,255,0.2);
+        border-radius: 24px;
+        margin-bottom: 60px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: radial-gradient(ellipse at center, rgba(0,212,255,0.05) 0%, transparent 70%);
+        pointer-events: none;
+    }
+
+    .page-header h1 {
+        font-size: 3rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #00d4ff 0%, #e040fb 50%, #7b2cbf 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 16px;
+        position: relative;
+    }
+
+    .page-header p {
+        font-size: 1.25rem;
+        color: #8b949e;
+        max-width: 600px;
+        margin: 0 auto;
+        position: relative;
+    }
+
+    .timeline {
+        position: relative;
+        padding: 20px 0;
+    }
+
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 24px;
+        top: 0;
+        bottom: 0;
+        width: 3px;
+        background: linear-gradient(180deg, #00d4ff 0%, #7b2cbf 50%, #e040fb 100%);
+        border-radius: 2px;
+        box-shadow: 0 0 20px rgba(0,212,255,0.4);
+    }
+
+    .timeline-item {
+        position: relative;
+        padding-left: 80px;
+        margin-bottom: 50px;
+    }
+
+    .timeline-dot {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, #0d1117 0%, rgba(22,27,34,0.9) 100%);
+        border: 3px solid #00d4ff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #00d4ff;
+        font-weight: 700;
+        font-size: 0.85rem;
+        z-index: 2;
+        box-shadow: 0 0 20px rgba(0,212,255,0.5), inset 0 0 15px rgba(0,212,255,0.2);
+    }
+
+    .timeline-item:nth-child(2) .timeline-dot { border-color: #00d4ff; color: #00d4ff; box-shadow: 0 0 20px rgba(0,212,255,0.5); }
+    .timeline-item:nth-child(3) .timeline-dot { border-color: #00d4ff; color: #00d4ff; box-shadow: 0 0 20px rgba(0,212,255,0.5); }
+    .timeline-item:nth-child(4) .timeline-dot { border-color: #7b2cbf; color: #7b2cbf; box-shadow: 0 0 20px rgba(123,44,191,0.5); }
+    .timeline-item:nth-child(5) .timeline-dot { border-color: #7b2cbf; color: #7b2cbf; box-shadow: 0 0 20px rgba(123,44,191,0.5); }
+    .timeline-item:nth-child(6) .timeline-dot { border-color: #e040fb; color: #e040fb; box-shadow: 0 0 20px rgba(224,64,251,0.5); }
+    .timeline-item:nth-child(7) .timeline-dot { border-color: #e040fb; color: #e040fb; box-shadow: 0 0 20px rgba(224,64,251,0.5); }
+
+    .timeline-content {
+        background: rgba(22, 27, 34, 0.8);
+        border: 1px solid rgba(0,212,255,0.15);
+        border-radius: 16px;
+        padding: 32px;
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+    }
+
+    .timeline-content:hover {
+        border-color: rgba(0,212,255,0.4);
+        box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 0 30px rgba(0,212,255,0.1);
+        transform: translateX(4px);
+    }
+
+    .timeline-year {
+        display: inline-block;
+        background: linear-gradient(135deg, rgba(0,212,255,0.2) 0%, rgba(123,44,191,0.2) 100%);
+        border: 1px solid rgba(0,212,255,0.3);
+        color: #00d4ff;
+        padding: 6px 14px;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        margin-bottom: 16px;
+    }
+
+    .timeline-content h3 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #c9d1d9;
+        margin-bottom: 16px;
+    }
+
+    .timeline-content p {
+        color: #8b949e;
+        line-height: 1.7;
+        font-size: 1.05rem;
+    }
+
+    .milestone-list {
+        list-style: none;
+        padding: 0;
+        margin: 20px 0;
+    }
+
+    .milestone-list li {
+        padding: 12px 0;
+        border-bottom: 1px solid rgba(139,148,158,0.2);
+        color: #8b949e;
+        display: flex;
+        align-items: center;
+    }
+
+    .milestone-list li:last-child {
+        border-bottom: none;
+    }
+
+    .milestone-list li::before {
+        content: '>';
+        color: #00d4ff;
+        font-weight: 700;
+        margin-right: 12px;
+        font-size: 1.1rem;
+        text-shadow: 0 0 10px rgba(0,212,255,0.5);
+    }
+
+    .transition-section {
+        background: linear-gradient(135deg, rgba(0,212,255,0.08) 0%, rgba(123,44,191,0.08) 100%);
+        border: 1px solid rgba(224,64,251,0.3);
+        border-radius: 24px;
+        padding: 50px;
+        text-align: center;
+        margin: 60px 0;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .transition-section::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle at center, rgba(224,64,251,0.05) 0%, transparent 50%);
+        animation: pulse 4s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); opacity: 0.5; }
+        50% { transform: scale(1.1); opacity: 0.8; }
+    }
+
+    .transition-section h2 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #c9d1d9;
+        margin-bottom: 20px;
+        position: relative;
+    }
+
+    .transition-section p {
+        color: #8b949e;
+        font-size: 1.1rem;
+        max-width: 700px;
+        margin: 0 auto 30px;
+        line-height: 1.7;
+        position: relative;
+    }
+
+    .upgrade-btn {
+        display: inline-block;
+        background: linear-gradient(135deg, #00d4ff 0%, #7b2cbf 50%, #e040fb 100%);
+        color: white;
+        padding: 16px 40px;
+        border-radius: 12px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        position: relative;
+        border: none;
+        cursor: pointer;
+    }
+
+    .upgrade-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 30px rgba(0,212,255,0.4);
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 24px;
+        margin-bottom: 60px;
+    }
+
+    .stat-card {
+        background: rgba(22, 27, 34, 0.8);
+        border: 1px solid rgba(0,212,255,0.2);
+        border-radius: 16px;
+        padding: 30px;
+        text-align: center;
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+        border-color: rgba(0,212,255,0.5);
+        box-shadow: 0 0 30px rgba(0,212,255,0.15);
+        transform: translateY(-4px);
+    }
+
+    .stat-value {
+        font-size: 2.2rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #00d4ff 0%, #e040fb 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .stat-label {
+        color: #8b949e;
+        font-size: 0.9rem;
+        margin-top: 8px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    @media (max-width: 768px) {
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .timeline::before {
+            left: 12px;
+        }
+
+        .timeline-item {
+            padding-left: 50px;
+        }
+
+        .timeline-dot {
+            width: 28px;
+            height: 28px;
+            font-size: 0.7rem;
+        }
+    }
+</style>
+
+<div class="aib2-history">
+    <section class="page-header">
+        <h1>AIB 1.0 历史回顾</h1>
+        <p>从概念到蓬勃发展的区块链生态系统的旅程</p>
+    </section>
+
+    <section class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value">50万+</div>
+            <div class="stat-label">生产区块</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">5000万+</div>
+            <div class="stat-label">交易笔数</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">1000+</div>
+            <div class="stat-label">活跃节点</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">2+</div>
+            <div class="stat-label">运行年限</div>
+        </div>
+    </section>
+
+    <section class="timeline">
+        <div class="timeline-item">
+            <div class="timeline-dot">01</div>
+            <div class="timeline-content">
+                <span class="timeline-year">2023年 Q4</span>
+                <h3>初心启程</h3>
+                <p>AIB 诞生于创建真正去中心化 AI 基础设施的愿景。创始团队汇集了区块链研究、AI 开发和分布式系统领域的专家。</p>
+                <ul class="milestone-list">
+                    <li>核心团队组建与初期研究</li>
+                    <li>白皮书 v1.0 发布</li>
+                    <li>Proof of AI Work 概念确立</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="timeline-item">
+            <div class="timeline-dot">02</div>
+            <div class="timeline-content">
+                <span class="timeline-year">2024年 Q1</span>
+                <h3>测试网上线</h3>
+                <p>首个测试网启动，早期采用者开始体验 Proof of AI Work 共识机制。首月即有超过 500 个节点加入。</p>
+                <ul class="milestone-list">
+                    <li>测试网创世区块诞生</li>
+                    <li>首批 100 个验证者注册</li>
+                    <li>社区治理框架建立</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="timeline-item">
+            <div class="timeline-dot">03</div>
+            <div class="timeline-content">
+                <span class="timeline-year">2024年 Q2</span>
+                <h3>主网 Alpha</h3>
+                <p>AIB 1.0 Alpha 主网上线，功能有限但运行稳定。网络成功处理了首批 100 万笔交易，正常运行时间达 99.9%。</p>
+                <ul class="milestone-list">
+                    <li>创世主网发布</li>
+                    <li>代币分配完成</li>
+                    <li>初始 DApp 生态系统启动</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="timeline-item">
+            <div class="timeline-dot">04</div>
+            <div class="timeline-content">
+                <span class="timeline-year">2024年 Q3</span>
+                <h3>生态扩张</h3>
+                <p>生态系统快速增长，多个项目在 AIB 上构建。DeFi 协议、NFT 市场和 AI 服务纷纷入驻平台。</p>
+                <ul class="milestone-list">
+                    <li>20+ DApp 上线</li>
+                    <li>Layer 2 扩容研究启动</li>
+                    <li>跨链桥开发开始</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="timeline-item">
+            <div class="timeline-dot">05</div>
+            <div class="timeline-content">
+                <span class="timeline-year">2024年 Q4</span>
+                <h3>AIB 2.0 宣布</h3>
+                <p>社区以压倒性多数投票支持升级到 AIB 2.0，带来 Layer 2 扩容、增强安全性和改进的 AI 能力。</p>
+                <ul class="milestone-list">
+                    <li>治理提案通过</li>
+                    <li>技术规格确定</li>
+                    <li>迁移计划公布</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="timeline-item">
+            <div class="timeline-dot">06</div>
+            <div class="timeline-content">
+                <span class="timeline-year">2025年 Q1</span>
+                <h3>AIB 2.0 启动</h3>
+                <p>下一代 AIB 正式上线，兑现高性能、AI 原生区块链基础设施的承诺。</p>
+                <ul class="milestone-list">
+                    <li>实现 30 秒区块时间</li>
+                    <li>零知识证明集成</li>
+                    <li>完整 EVM 兼容性</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section class="transition-section">
+        <h2>加入下一个篇章</h2>
+        <p>AIB 1.0 奠定了基础。AIB 2.0 构建未来。升级您的节点，成为下一代去中心化 AI 基础设施的一部分。</p>
+        <a href="/aib2/docs" class="upgrade-btn">升级到 AIB 2.0</a>
+    </section>
+</div>
+{{end}}

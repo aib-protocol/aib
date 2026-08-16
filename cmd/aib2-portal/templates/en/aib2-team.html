@@ -1,0 +1,387 @@
+{{define "content"}}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+    .aib2-team {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        max-width: 1200px;
+        margin: 0 auto;
+        background: #0d1117;
+        min-height: 100vh;
+    }
+
+    .page-header {
+        text-align: center;
+        padding: 80px 40px;
+        background:
+            radial-gradient(ellipse at 20% 20%, rgba(0,212,255,0.15) 0%, transparent 50%),
+            radial-gradient(ellipse at 80% 80%, rgba(123,44,191,0.15) 0%, transparent 50%),
+            linear-gradient(135deg, rgba(0,212,255,0.05) 0%, rgba(123,44,191,0.05) 100%);
+        border-radius: 32px;
+        margin-bottom: 60px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background:
+            repeating-linear-gradient(
+                90deg,
+                transparent,
+                transparent 50px,
+                rgba(0,212,255,0.03) 50px,
+                rgba(0,212,255,0.03) 51px
+            );
+        pointer-events: none;
+    }
+
+    .page-header h1 {
+        font-size: 3rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #00d4ff 0%, #e040fb 50%, #7b2cbf 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 16px;
+        text-shadow: 0 0 40px rgba(0,212,255,0.5);
+    }
+
+    .page-header p {
+        font-size: 1.25rem;
+        color: #8b949e;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .section-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #c9d1d9;
+        margin-bottom: 40px;
+        text-align: center;
+        position: relative;
+    }
+
+    .section-title::after {
+        content: '';
+        display: block;
+        width: 60px;
+        height: 3px;
+        background: linear-gradient(90deg, #00d4ff, #7b2cbf);
+        margin: 16px auto 0;
+        border-radius: 2px;
+        box-shadow: 0 0 10px rgba(0,212,255,0.5);
+    }
+
+    .team-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 30px;
+        margin-bottom: 80px;
+    }
+
+    .team-member {
+        background: rgba(22, 27, 34, 0.8);
+        border: 1px solid rgba(0,212,255,0.2);
+        border-radius: 24px;
+        padding: 40px;
+        text-align: center;
+        backdrop-filter: blur(10px);
+        transition: all 0.4s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .team-member::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #00d4ff, #7b2cbf, #e040fb);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .team-member:hover {
+        transform: translateY(-8px);
+        border-color: rgba(0,212,255,0.5);
+        box-shadow:
+            0 20px 40px rgba(0,0,0,0.4),
+            0 0 30px rgba(0,212,255,0.2);
+    }
+
+    .team-member:hover::before {
+        opacity: 1;
+    }
+
+    .avatar {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #00d4ff 0%, #7b2cbf 50%, #e040fb 100%);
+        margin: 0 auto 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        color: #0d1117;
+        font-weight: 800;
+        position: relative;
+        box-shadow:
+            0 0 20px rgba(0,212,255,0.5),
+            0 0 40px rgba(123,44,191,0.3);
+    }
+
+    .avatar::after {
+        content: '';
+        position: absolute;
+        inset: -3px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #00d4ff, #7b2cbf, #e040fb);
+        z-index: -1;
+        opacity: 0.5;
+        filter: blur(10px);
+    }
+
+    .team-member h3 {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #c9d1d9;
+        margin-bottom: 8px;
+    }
+
+    .team-member .role {
+        background: linear-gradient(90deg, rgba(0,212,255,0.2), rgba(123,44,191,0.2));
+        color: #00d4ff;
+        font-weight: 600;
+        font-size: 0.85rem;
+        margin-bottom: 16px;
+        padding: 6px 16px;
+        border-radius: 50px;
+        display: inline-block;
+        border: 1px solid rgba(0,212,255,0.3);
+    }
+
+    .team-member .bio {
+        color: #8b949e;
+        font-size: 0.95rem;
+        line-height: 1.7;
+    }
+
+    .advisors {
+        margin-bottom: 80px;
+    }
+
+    .advisor-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 24px;
+    }
+
+    .advisor-card {
+        background: rgba(22, 27, 34, 0.8);
+        border: 1px solid rgba(123,44,191,0.2);
+        border-radius: 16px;
+        padding: 24px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+    }
+
+    .advisor-card:hover {
+        border-color: rgba(123,44,191,0.5);
+        box-shadow: 0 0 25px rgba(123,44,191,0.2);
+        transform: translateX(5px);
+    }
+
+    .advisor-avatar {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #7b2cbf 0%, #e040fb 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: #0d1117;
+        font-weight: 700;
+        flex-shrink: 0;
+        box-shadow: 0 0 15px rgba(123,44,191,0.4);
+    }
+
+    .advisor-info h4 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #c9d1d9;
+        margin-bottom: 4px;
+    }
+
+    .advisor-info .title {
+        color: #8b949e;
+        font-size: 0.85rem;
+    }
+
+    .contributors {
+        background: rgba(22, 27, 34, 0.6);
+        border: 1px solid rgba(224,64,251,0.2);
+        border-radius: 24px;
+        padding: 40px;
+        backdrop-filter: blur(10px);
+    }
+
+    .contributors h2 {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #c9d1d9;
+        margin-bottom: 16px;
+    }
+
+    .contributors p {
+        color: #8b949e;
+        line-height: 1.7;
+        margin-bottom: 24px;
+    }
+
+    .contributor-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .contributor-tag {
+        background: rgba(0,212,255,0.1);
+        color: #00d4ff;
+        padding: 10px 20px;
+        border-radius: 50px;
+        font-size: 0.9rem;
+        border: 1px solid rgba(0,212,255,0.3);
+        transition: all 0.3s ease;
+    }
+
+    .contributor-tag:hover {
+        background: rgba(0,212,255,0.2);
+        box-shadow: 0 0 15px rgba(0,212,255,0.3);
+        transform: scale(1.05);
+    }
+
+    /* Glow animation */
+    @keyframes glow {
+        0%, 100% { box-shadow: 0 0 20px rgba(0,212,255,0.5), 0 0 40px rgba(123,44,191,0.3); }
+        50% { box-shadow: 0 0 30px rgba(0,212,255,0.7), 0 0 60px rgba(123,44,191,0.5); }
+    }
+
+    .avatar {
+        animation: glow 3s ease-in-out infinite;
+    }
+</style>
+
+<div class="aib2-team">
+    <section class="page-header">
+        <h1>Our Team</h1>
+        <p>Meet the visionaries building the future of decentralized AI</p>
+    </section>
+
+    <section>
+        <h2 class="section-title">Core Team</h2>
+        <div class="team-grid">
+            <div class="team-member">
+                <div class="avatar">SC</div>
+                <h3>Sarah Chen</h3>
+                <div class="role">Founder & CEO</div>
+                <p class="bio">Former Google AI researcher with 15+ years in distributed systems. Visionary leader driving AIB 2.0's mission to democratize AI.</p>
+            </div>
+            <div class="team-member">
+                <div class="avatar">MR</div>
+                <h3>Michael Rodriguez</h3>
+                <div class="role">CTO</div>
+                <p class="bio">Blockchain architect with expertise in consensus mechanisms. Previously led engineering at major Layer 1 protocols.</p>
+            </div>
+            <div class="team-member">
+                <div class="avatar">AK</div>
+                <h3>Alex Kim</h3>
+                <div class="role">Head of Research</div>
+                <p class="bio">PhD in Cryptography from MIT. Published researcher in zero-knowledge proofs and secure multi-party computation.</p>
+            </div>
+            <div class="team-member">
+                <div class="avatar">EW</div>
+                <h3>Emily Watson</h3>
+                <div class="role">Head of Product</div>
+                <p class="bio">Product leader with experience scaling DeFi protocols. Focused on user experience and ecosystem growth.</p>
+            </div>
+            <div class="team-member">
+                <div class="avatar">JL</div>
+                <h3>James Liu</h3>
+                <div class="role">Lead Developer</div>
+                <p class="bio">Full-stack engineer specializing in Go and Rust. Core contributor to several open-source blockchain projects.</p>
+            </div>
+            <div class="team-member">
+                <div class="avatar">LM</div>
+                <h3>Linda Martinez</h3>
+                <div class="role">Head of Community</div>
+                <p class="bio">Community builder with deep roots in crypto. Passionate about governance and decentralized decision-making.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="advisors">
+        <h2 class="section-title">Advisors</h2>
+        <div class="advisor-grid">
+            <div class="advisor-card">
+                <div class="advisor-avatar">DS</div>
+                <div class="advisor-info">
+                    <h4>Dr. David Smith</h4>
+                    <div class="title">AI Research, Stanford</div>
+                </div>
+            </div>
+            <div class="advisor-card">
+                <div class="advisor-avatar">PJ</div>
+                <div class="advisor-info">
+                    <h4>Prof. Peter Jones</h4>
+                    <div class="title">Blockchain, Berkeley</div>
+                </div>
+            </div>
+            <div class="advisor-card">
+                <div class="advisor-avatar">RG</div>
+                <div class="advisor-info">
+                    <h4>Rachel Green</h4>
+                    <div class="title">Crypto Economics</div>
+                </div>
+            </div>
+            <div class="advisor-card">
+                <div class="advisor-avatar">TW</div>
+                <div class="advisor-info">
+                    <h4>Thomas Wang</h4>
+                    <div class="title">Security Expert</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="contributors">
+        <h2>Community Contributors</h2>
+        <p>AIB 2.0 is a community-driven project. We thank all our contributors who have helped make this vision a reality.</p>
+        <div class="contributor-list">
+            <span class="contributor-tag">CryptoKing</span>
+            <span class="contributor-tag">BlockchainDev</span>
+            <span class="contributor-tag">AIResearcher</span>
+            <span class="contributor-tag">TokenHolder</span>
+            <span class="contributor-tag">ValidatorNode</span>
+            <span class="contributor-tag">DAppBuilder</span>
+            <span class="contributor-tag">CommunityMod</span>
+            <span class="contributor-tag">Documentation</span>
+            <span class="contributor-tag">Tester101</span>
+            <span class="contributor-tag">BugHunter</span>
+        </div>
+    </section>
+</div>
+{{end}}

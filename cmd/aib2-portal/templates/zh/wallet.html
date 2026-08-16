@@ -1,0 +1,686 @@
+<!-- AIB 2.0 Web Wallet - 中文版 -->
+{{define "content"}}
+<style>
+    /* AIB 2.0 Web Wallet Styles - Dark Theme */
+    :root {
+        --bg-primary: #0d1117;
+        --bg-secondary: #161b22;
+        --bg-tertiary: #1c2128;
+        --bg-quaternary: #242a33;
+        --text-primary: #c9d1d9;
+        --text-secondary: #8b949e;
+        --text-muted: #484f58;
+        --accent: #58a6ff;
+        --accent-hover: #79c0ff;
+        --accent-dark: #388bfd;
+        --border: #21262d;
+        --success: #3fb950;
+        --warning: #d29922;
+        --danger: #f85149;
+        --purple: #bc8cff;
+        --pink: #ff7b72;
+        --green: #238636;
+        --yellow: #9e6a03;
+
+        /* Wallet specific colors */
+        --wallet-bg: #1a1f26;
+        --panel-bg: #181c22;
+        --card-bg: #1f242d;
+        --input-bg: #242a33;
+        --input-border: #30363d;
+        --button-primary: #238636;
+        --button-primary-hover: #2ea043;
+        --button-secondary: #30363d;
+        --button-secondary-hover: #3e4652;
+    }
+
+    body {
+        background: linear-gradient(135deg, #0d1117 0%, #161b22 100%);
+        color: var(--text-primary);
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, monospace;
+    }
+
+    /* Wallet Container */
+    .wallet-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 40px 24px;
+    }
+
+    .wallet-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 32px;
+        padding-bottom: 24px;
+        border-bottom: 2px solid var(--border);
+    }
+
+    .wallet-title {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .wallet-title h1 {
+        font-size: 32px;
+        font-weight: 800;
+        background: linear-gradient(135deg, #58a6ff, #bc8cff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin: 0;
+    }
+
+    .wallet-badge {
+        background: linear-gradient(135deg, rgba(88,166,255,0.15), rgba(188,140,255,0.15));
+        border: 1px solid var(--accent);
+        color: var(--accent);
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    /* Dashboard Grid */
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: 320px 1fr;
+        gap: 24px;
+        margin-bottom: 32px;
+    }
+
+    /* Sidebar */
+    .wallet-sidebar {
+        background: var(--panel-bg);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 24px;
+        height: fit-content;
+    }
+
+    .wallet-card {
+        background: var(--wallet-bg);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 16px;
+    }
+
+    .wallet-card h3 {
+        margin: 0 0 16px 0;
+        color: var(--text-secondary);
+        font-size: 14px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .address-display {
+        font-family: 'SF Mono', 'Monaco', monospace;
+        font-size: 14px;
+        color: var(--text-muted);
+        background: var(--input-bg);
+        border: 1px solid var(--input-border);
+        border-radius: 8px;
+        padding: 12px;
+        word-break: break-all;
+        position: relative;
+    }
+
+    .address-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 12px;
+    }
+
+    .btn-icon {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border-radius: 8px;
+        border: 1px solid var(--input-border);
+        background: var(--input-bg);
+        color: var(--text-primary);
+        cursor: pointer;
+        font-size: 12px;
+        transition: all 0.2s;
+    }
+
+    .btn-icon:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+        background: rgba(88,166,255,0.1);
+    }
+
+    /* Balance Card */
+    .balance-card {
+        background: linear-gradient(135deg, rgba(35,134,54,0.15), rgba(158,106,3,0.15));
+        border: 1px solid var(--success);
+        border-left: 4px solid var(--success);
+    }
+
+    .balance-value {
+        font-size: 36px;
+        font-weight: 800;
+        color: var(--success);
+        font-family: 'SF Mono', 'Monaco', monospace;
+        margin-bottom: 8px;
+    }
+
+    .balance-label {
+        color: var(--text-secondary);
+        font-size: 14px;
+        margin-bottom: 16px;
+    }
+
+    /* Main Content */
+    .wallet-main {
+        background: var(--panel-bg);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 24px;
+    }
+
+    /* Tabs */
+    .wallet-tabs {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 24px;
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 16px;
+    }
+
+    .tab-btn {
+        padding: 12px 20px;
+        border: 1px solid var(--border);
+        background: var(--wallet-bg);
+        color: var(--text-secondary);
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 14px;
+    }
+
+    .tab-btn:hover {
+        color: var(--text-primary);
+        border-color: var(--accent);
+    }
+
+    .tab-btn.active {
+        background: var(--accent);
+        color: white;
+        border-color: var(--accent);
+    }
+
+    /* Forms */
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        color: var(--text-secondary);
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 12px 16px;
+        border-radius: 10px;
+        border: 1px solid var(--input-border);
+        background: var(--input-bg);
+        color: var(--text-primary);
+        font-size: 14px;
+        font-family: 'SF Mono', 'Monaco', monospace;
+        transition: all 0.2s;
+        box-sizing: border-box;
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(88,166,255,0.1);
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+
+    /* Buttons */
+    .btn {
+        padding: 12px 20px;
+        border-radius: 10px;
+        border: none;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 14px;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, var(--button-primary), var(--button-primary-hover));
+        color: white;
+        border: 1px solid var(--button-primary);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(35,134,54,0.3);
+    }
+
+    .btn-secondary {
+        background: var(--button-secondary);
+        color: var(--text-primary);
+        border: 1px solid var(--input-border);
+    }
+
+    .btn-secondary:hover {
+        background: var(--button-secondary-hover);
+        border-color: var(--border);
+    }
+
+    .btn-danger {
+        background: var(--danger);
+        color: white;
+        border: 1px solid var(--danger);
+    }
+
+    .btn-danger:hover {
+        background: #da3633;
+        transform: translateY(-1px);
+    }
+
+    .btn-group {
+        display: flex;
+        gap: 12px;
+        margin-top: 20px;
+    }
+
+    /* Transaction History */
+    .tx-history {
+        overflow-x: auto;
+        margin-top: 24px;
+    }
+
+    .tx-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 600px;
+    }
+
+    .tx-table th {
+        text-align: left;
+        padding: 12px;
+        color: var(--text-secondary);
+        font-size: 12px;
+        font-weight: 600;
+        border-bottom: 1px solid var(--border);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .tx-table td {
+        padding: 12px;
+        border-bottom: 1px solid var(--border);
+        font-size: 14px;
+        font-family: 'SF Mono', 'Monaco', monospace;
+    }
+
+    .tx-hash {
+        font-size: 12px;
+        color: var(--text-muted);
+        max-width: 120px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .tx-amount {
+        font-weight: 700;
+        color: var(--success);
+    }
+
+    .tx-amount.negative {
+        color: var(--danger);
+    }
+
+    .tx-type {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .tx-type.receive {
+        background: rgba(63,185,80,0.15);
+        color: var(--success);
+        border: 1px solid var(--success);
+    }
+
+    .tx-type.send {
+        background: rgba(248,81,73,0.15);
+        color: var(--danger);
+        border: 1px solid var(--danger);
+    }
+
+    .tx-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        color: var(--success);
+    }
+
+    /* Status Messages */
+    .status-message {
+        padding: 12px 16px;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        margin-bottom: 20px;
+        font-size: 14px;
+        display: none;
+    }
+
+    .status-success {
+        background: rgba(63,185,80,0.15);
+        border-color: var(--success);
+        color: var(--success);
+        display: block;
+    }
+
+    .status-error {
+        background: rgba(248,81,73,0.15);
+        border-color: var(--danger);
+        color: var(--danger);
+        display: block;
+    }
+
+    .status-info {
+        background: rgba(88,166,255,0.15);
+        border-color: var(--accent);
+        color: var(--accent);
+        display: block;
+    }
+
+    /* Private Key Warning */
+    .warning-box {
+        background: rgba(210,153,34,0.15);
+        border: 1px solid var(--warning);
+        color: var(--warning);
+        padding: 16px;
+        border-radius: 12px;
+        margin-bottom: 16px;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    .warning-box strong {
+        color: #fff;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .dashboard-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+
+        .btn-group {
+            flex-direction: column;
+        }
+    }
+</style>
+
+<div class="wallet-container">
+    <!-- Header -->
+    <div class="wallet-header">
+        <div class="wallet-title">
+            <span style="font-size: 36px; color: var(--accent);">💰</span>
+            <div>
+                <h1>AIB 2.0 网页钱包</h1>
+                <span class="wallet-badge">测试网</span>
+            </div>
+        </div>
+        <div class="wallet-actions">
+            <button class="btn-secondary" onclick="clearWallet()">清除钱包</button>
+            <button class="btn-secondary" onclick="exportWallet()">导出</button>
+        </div>
+    </div>
+
+    <!-- Status Messages -->
+    <div id="statusMessage" class="status-message"></div>
+
+    <!-- Dashboard -->
+    <div class="dashboard-grid">
+        <!-- Sidebar -->
+        <div class="wallet-sidebar">
+            <!-- Balance Card -->
+            <div class="wallet-card balance-card">
+                <h3>总余额</h3>
+                <div class="balance-value" id="totalBalance">0.00000000</div>
+                <div class="balance-label">AIB</div>
+                <div style="display: flex; gap: 8px; margin-top: 12px;">
+                    <button class="btn-primary" onclick="refreshBalance()" style="flex: 1;">刷新</button>
+                    <button class="btn-secondary" onclick="connectNode()" style="flex: 1;">连接</button>
+                </div>
+            </div>
+
+            <!-- Address Card -->
+            <div class="wallet-card">
+                <h3>您的地址</h3>
+                <div class="address-display" id="walletAddress">尚未生成</div>
+                <div class="address-actions">
+                    <button class="btn-icon" onclick="copyAddress()">
+                        📋 复制
+                    </button>
+                    <button class="btn-icon" onclick="showQRCode()">
+                        📱 二维码
+                    </button>
+                </div>
+            </div>
+
+            <!-- Private Key Card -->
+            <div class="wallet-card">
+                <h3>私钥</h3>
+                <div class="address-display" id="privateKeyDisplay" style="color: var(--danger);">
+                    出于安全原因隐藏
+                </div>
+                <div class="address-actions">
+                    <button class="btn-icon" onclick="togglePrivateKey()">
+                        👁️ 显示/隐藏
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="wallet-main">
+            <!-- Tabs -->
+            <div class="wallet-tabs">
+                <button class="tab-btn active" onclick="switchTab('create')" id="tab-create">创建钱包</button>
+                <button class="tab-btn" onclick="switchTab('import')" id="tab-import">导入钱包</button>
+                <button class="tab-btn" onclick="switchTab('send')" id="tab-send">发送 AIB</button>
+                <button class="tab-btn" onclick="switchTab('history')" id="tab-history">交易历史</button>
+            </div>
+
+            <!-- Create Wallet Tab -->
+            <div id="tab-content-create" class="tab-content">
+                <div class="warning-box">
+                    <strong>⚠️ 安全警告：</strong> 这是测试网演示钱包。请勿将此钱包的私钥用于主网。请安全保存您的私钥，切勿与他人分享。
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div class="form-group">
+                        <label>钱包名称</label>
+                        <input type="text" id="walletName" class="form-input" placeholder="我的测试钱包">
+                    </div>
+                    <div class="form-group">
+                        <label>加密密码（可选）</label>
+                        <input type="password" id="walletPassword" class="form-input" placeholder="留空表示不加密">
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="createWallet()">生成新钱包</button>
+                    <button class="btn btn-secondary" onclick="generateMnemonic()">生成助记词</button>
+                </div>
+
+                <div id="walletOutput" style="margin-top: 20px; display: none;">
+                    <h3>您的钱包详情</h3>
+                    <div class="form-group">
+                        <label>私钥（32 字节）</label>
+                        <input type="text" id="generatedPrivateKey" class="form-input" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>公钥（32 字节）</label>
+                        <input type="text" id="generatedPublicKey" class="form-input" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>地址（Bech32m 格式）</label>
+                        <input type="text" id="generatedAddress" class="form-input" readonly>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="saveWallet()">保存到浏览器</button>
+                        <button class="btn btn-secondary" onclick="downloadWallet()">下载 JSON</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Import Wallet Tab -->
+            <div id="tab-content-import" class="tab-content" style="display: none;">
+                <div class="warning-box">
+                    <strong>⚠️ 安全警告：</strong> 仅从受信任的来源导入私钥。切勿在不受信任的网站上粘贴您的私钥。
+                </div>
+
+                <div class="form-group">
+                    <label>导入方式</label>
+                    <div style="display: flex; gap: 12px; margin-bottom: 16px;">
+                        <button class="btn-icon" onclick="setImportMethod('private')">🔑 私钥</button>
+                        <button class="btn-icon" onclick="setImportMethod('mnemonic')">📝 助记词</button>
+                    </div>
+                </div>
+
+                <div id="import-private" style="display: block;">
+                    <div class="form-group">
+                        <label>私钥（32 字节十六进制）</label>
+                        <input type="text" id="importPrivateKey" class="form-input" placeholder="例如：a1b2c3d4...">
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="importPrivateKey()">导入私钥</button>
+                    </div>
+                </div>
+
+                <div id="import-mnemonic" style="display: none;">
+                    <div class="form-group">
+                        <label>助记词（12-24 个单词）</label>
+                        <textarea id="importMnemonic" class="form-input" rows="4" placeholder="单词1 单词2 单词3..."></textarea>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="importMnemonic()">从助记词导入</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Send Tab -->
+            <div id="tab-content-send" class="tab-content" style="display: none;">
+                <div class="form-group">
+                    <label>接收地址</label>
+                    <input type="text" id="sendAddress" class="form-input" placeholder="aib1...">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>金额（AIB）</label>
+                        <input type="number" id="sendAmount" class="form-input" placeholder="0.00" step="0.00000001" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>手续费（AIB）</label>
+                        <input type="number" id="sendFee" class="form-input" placeholder="0.0001" step="0.00000001" value="0.0001" min="0">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>网络</label>
+                    <div style="display: flex; gap: 12px;">
+                        <button class="btn-icon" onclick="setNetwork('l1')">⛓️ L1（60秒，较高手续费）</button>
+                        <button class="btn-icon" onclick="setNetwork('l2')">⚡ L2（即时，较低手续费）</button>
+                    </div>
+                    <div style="margin-top: 8px; font-size: 12px; color: var(--text-muted);">
+                        当前：<span id="currentNetwork">L1</span>
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="calculateFee()">计算手续费</button>
+                    <button class="btn btn-primary" onclick="sendTransaction()">发送交易</button>
+                </div>
+            </div>
+
+            <!-- History Tab -->
+            <div id="tab-content-history" class="tab-content" style="display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <div>
+                        <button class="btn-secondary" onclick="loadHistory()">刷新历史</button>
+                        <span style="margin-left: 12px; color: var(--text-secondary); font-size: 12px;">
+                            最后更新：<span id="lastHistoryUpdate">从未</span>
+                        </span>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn-icon" onclick="filterHistory('all')">全部</button>
+                        <button class="btn-icon" onclick="filterHistory('receive')">接收</button>
+                        <button class="btn-icon" onclick="filterHistory('send')">发送</button>
+                    </div>
+                </div>
+
+                <div class="tx-history">
+                    <table class="tx-table">
+                        <thead>
+                            <tr>
+                                <th>类型</th>
+                                <th>哈希</th>
+                                <th>金额</th>
+                                <th>手续费</th>
+                                <th>区块</th>
+                                <th>状态</th>
+                                <th>时间</th>
+                            </tr>
+                        </thead>
+                        <tbody id="txHistoryBody">
+                            <tr>
+                                <td colspan="7" style="text-align: center; color: var(--text-secondary); padding: 40px;">
+                                    暂无交易。请先创建钱包并接收一些 AIB。
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- QR Code Modal -->
+<div id="qrModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center;">
+    <div style="background: var(--panel-bg); border: 1px solid var(--border); border-radius: 16px; padding: 24px; text-align: center;">
+        <h3>您的 AIB 地址二维码</h3>
+        <div id="qrCode" style="margin: 20px 0;"></div>
+        <button class="btn-secondary" onclick="closeQRCode()">关闭</button>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcode.js/lib/qrcode.min.js"></script>
+<script src="/static/js/wallet.js"></script>
+{{end}}

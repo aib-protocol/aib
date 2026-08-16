@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PoAIW 抗刷量攻击机制</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(180deg, #0a0a1a 0%, #1a1a2a 100%);
+            color: #e0e0e0;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        h1 { color: #6c5ce7; margin-bottom: 30px; font-size: 2.5em; }
+        h2 { color: #a29bfe; margin: 40px 0 20px; font-size: 1.8em; }
+        h3 { color: #74b9ff; margin: 25px 0 15px; }
+        .attack-box {
+            background: rgba(231, 76, 60, 0.1);
+            border-left: 4px solid #e74c3c;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        .defense-box {
+            background: rgba(46, 204, 113, 0.1);
+            border-left: 4px solid #2ecc71;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        .formula {
+            background: rgba(108, 92, 231, 0.2);
+            padding: 15px 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            margin: 15px 0;
+            overflow-x: auto;
+        }
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 30px 0;
+        }
+        .card {
+            background: rgba(255,255,255,0.05);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .highlight { color: #ffd700; font-weight: bold; }
+        .warning { color: #e74c3c; }
+        .success { color: #2ecc71; }
+        .metric {
+            display: inline-block;
+            background: rgba(116, 185, 255, 0.2);
+            padding: 5px 12px;
+            border-radius: 20px;
+            margin: 5px;
+            font-size: 0.9em;
+        }
+        code {
+            background: rgba(0,0,0,0.3);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        th { background: rgba(108, 92, 231, 0.3); }
+        tr:hover { background: rgba(255,255,255,0.05); }
+        .layer {
+            background: rgba(255,255,255,0.03);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 3px solid #6c5ce7;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🛡️ PoAIW 抗刷量攻击机制</h1>
+
+        <h2>一、攻击向量分析</h2>
+
+        <div class="comparison">
+            <div class="card attack-box">
+                <h3>⚠️ 攻击方式</h3>
+                <div class="layer"><strong>1. 缓存攻击</strong><br>返回缓存的旧推理结果</div>
+                <div class="layer"><strong>2. 垃圾推理</strong><br>用最小模型/随机输出凑数</div>
+                <div class="layer"><strong>3. 结果合谋</strong><br>多个节点串通互相验证</div>
+                <div class="layer"><strong>4. 女巫攻击</strong><br>创建大量虚假节点</div>
+                <div class="layer"><strong>5. 提前终止</strong><br>推理中途返回结果</div>
+            </div>
+            <div class="card">
+                <h3>💰 攻击动机</h3>
+                <p>推理奖励占区块奖励的 <span class="highlight">70%</span>，攻击者有强烈动机刷取：</p>
+                <div class="formula">
+                    假设: 50 AIB/块, 30秒/块<br>
+                    日区块数: 2,880<br>
+                    日推理奖励: 100,800 AIB ≈ $10,000+
+                </div>
+            </div>
+        </div>
+
+        <h2>二、七层防御体系</h2>
+
+        <h3>Layer 1: 工作量证明 (PoW 基础)</h3>
+        <div class="defense-box">
+            <p><strong>原理：</strong>强制执行实际推理计算，无法伪造</p>
+            <div class="formula">
+                ProofOfWork = Hash(Model+Input+Salt+Nonce) &lt; Difficulty
+            </div>
+            <p>每个推理请求包含随机 Salt，必须用实际推理结果计算 PoW 才能提交</p>
+            <ul>
+                <li><span class="metric">计算成本</span> 预期推理时间 = GPU实际耗时</li>
+                <li><span class="metric">验证成本</span> 复核节点抽样验证</li>
+            </ul>
+        </div>
+
+        <h3>Layer 2: 多重验证交叉验证</h3>
+        <div class="defense-box">
+            <table>
+                <tr>
+                    <th>验证类型</th>
+                    <th>参与节点</th>
+                    <th>奖励/惩罚</th>
+                </tr>
+                <tr>
+                    <td>主验证</td>
+                    <td>3个随机节点 (K=3)</td>
+                    <td>✓ 正确: +3% | ✗ 错误: -10%</td>
+                </tr>
+                <tr>
+                    <td>交叉验证</td>
+                    <td>5个额外节点</td>
+                    <td>✓ 一致: +1% | ✗ 偏差: -5%</td>
+                </tr>
+                <tr>
+                    <td>争议仲裁</td>
+                    <td>21个委员会节点</td>
+                    <td>✓ 举报成功: +50% 惩罚金</td>
+                </tr>
+            </table>
+        </div>
+
+        <h3>Layer 3: 模型质量证明</h3>
+        <div class="defense-box">
+            <p>防止用最小模型/随机输出刷量：</p>
+            <div class="formula">
+                QualityScore = F1_Score × Semantic_Similarity × Model_Size_Weight
+            </div>
+            <table>
+                <tr>
+                    <th>模型规模</th>
+                    <th>质量权重</th>
+                    <th>最低 F1 要求</th>
+                </tr>
+                <tr>
+                    <td>&lt; 1B</td>
+                    <td>0.3×</td>
+                    <td>0.85</td>
+                </tr>
+                <tr>
+                    <td>1B - 7B</td>
+                    <td>0.6×</td>
+                    <td>0.90</td>
+                </tr>
+                <tr>
+                    <td>7B - 70B</td>
+                    <td>1.0×</td>
+                    <td>0.92</td>
+                </tr>
+                <tr>
+                    <td>&gt; 70B</td>
+                    <td>1.3×</td>
+                    <td>0.94</td>
+                </tr>
+            </table>
+            <p class="warning">低于质量阈值的推理 = 0 奖励 + 声誉惩罚</p>
+        </div>
+
+        <h3>Layer 4: 挑战-响应博弈</h3>
+        <div class="defense-box">
+            <p>任何节点可以挑战已提交的推理结果：</p>
+            <div class="formula">
+                挑战成本 = 100 AIB (抵押)<br>
+                挑战成功 = 获得 50% 惩罚金 + 返还抵押<br>
+                挑战失败 = 没收抵押 → 挑战者奖励池
+            </div>
+            <ul>
+                <li><strong>黄金样本集：</strong>10,000+ 已知答案的基准问题</li>
+                <li><strong>随机抽查：</strong>5% 的推理被发送验证请求重算</li>
+                <li><strong>语义一致性：</strong>相同输入必须产生语义相似结果</li>
+            </ul>
+        </div>
+
+        <h3>Layer 5: 声誉系统</h3>
+        <div class="defense-box">
+            <div class="formula">
+                Reputation = Σ(Reward_i × e^(-λ×age_i)) / (1 + Penalty_Count^2)
+            </div>
+            <p>声誉影响奖励权重：</p>
+            <table>
+                <tr>
+                    <th>声誉等级</th>
+                    <th>奖励系数</th>
+                    <th>验证优先级</th>
+                </tr>
+                <tr>
+                    <td>新手 (&lt;100)</td>
+                    <td>0.5×</td>
+                    <td>低</td>
+                </tr>
+                <tr>
+                    <td>信任 (100-500)</td>
+                    <td>1.0×</td>
+                    <td>中</td>
+                </tr>
+                <tr>
+                    <td>优质 (500-1000)</td>
+                    <td>1.3×</td>
+                    <td>高</td>
+                </tr>
+                <tr>
+                    <td>旗舰 (&gt;1000)</td>
+                    <td>1.5×</td>
+                    <td>最高</td>
+                </tr>
+            </table>
+            <p class="warning">单次作弊 = 声誉 -50%，多次 = 永久封禁</p>
+        </div>
+
+        <h3>Layer 6: 经济约束</h3>
+        <div class="defense-box">
+            <div class="formula">
+                净收益 = 推理奖励 - Gas成本 - 质押机会成本 - 预期惩罚
+            </div>
+            <table>
+                <tr>
+                    <th>约束</th>
+                    <th>数值</th>
+                    <th>作用</th>
+                </tr>
+                <tr>
+                    <td>节点最低质押</td>
+                    <td>1,000 AIB</td>
+                    <td>提高女巫成本</td>
+                </tr>
+                <tr>
+                    <td>每次推理 Gas</td>
+                    <td>0.01 AIB</td>
+                    <td>垃圾推理成本</td>
+                </tr>
+                <tr>
+                    <td>错误惩罚倍数</td>
+                    <td>10×</td>
+                    <td>高风险震慑</td>
+                </tr>
+                <tr>
+                    <td>挑战抵押</td>
+                    <td>100 AIB</td>
+                    <td>减少恶意挑战</td>
+                </tr>
+            </table>
+        </div>
+
+        <h3>Layer 7: 速率限制与配额</h3>
+        <div class="defense-box">
+            <p>防止单点刷量：</p>
+            <div class="formula">
+                DailyQuota = Staking_Amount × Base_Rate × Reputation_Multiplier
+            </div>
+            <table>
+                <tr>
+                    <th>质押等级</th>
+                    <th>日推理上限</th>
+                </tr>
+                <tr>
+                    <td>1,000 AIB</td>
+                    <td>1,000 次</td>
+                </tr>
+                <tr>
+                    <td>10,000 AIB</td>
+                    <td>15,000 次</td>
+                </tr>
+                <tr>
+                    <td>100,000 AIB</td>
+                    <td>200,000 次</td>
+                </tr>
+            </table>
+            <p class="warning">超出配额 = 奖励衰减 90%</p>
+        </div>
+
+        <h2>三、攻击成本-收益分析</h2>
+
+        <table>
+            <tr>
+                <th>攻击类型</th>
+                <th>攻击成本</th>
+                <th>预期收益</th>
+                <th>盈利性</th>
+            </tr>
+            <tr>
+                <td>缓存攻击</td>
+                <td>0 AIB</td>
+                <td>-1000 AIB/次 (被捕获)</td>
+                <td class="warning">❌ 亏损</td>
+            </tr>
+            <tr>
+                <td>垃圾推理</td>
+                <td>~50 AIB/GPU天</td>
+                <td>0 AIB (质量不达标)</td>
+                <td class="warning">❌ 亏损</td>
+            </tr>
+            <tr>
+                <td>3节点合谋</td>
+                <td>3000 AIB 质押</td>
+                <td>+500 AIB 后被惩罚</td>
+                <td class="warning">❌ 亏损</td>
+            </tr>
+            <tr>
+                <td>女巫攻击</td>
+                <td>1000 AIB/节点 × 100节点</td>
+                <td>0 (配额限制)</td>
+                <td class="warning">❌ 亏损</td>
+            </tr>
+            <tr>
+                <td>诚实推理</td>
+                <td>~200 AIB/GPU天</td>
+                <td>~300 AIB/天</td>
+                <td class="success">✅ 盈利</td>
+            </tr>
+        </table>
+
+        <h2>四、关键公式总结</h2>
+
+        <div class="formula">
+            最终推理奖励 = Base_Reward × Quality_Score × Reputation_Multiplier<br>
+                            × (1 - Penalty_Rate) × Anti_Gaming_Factor
+        </div>
+
+        <div class="formula">
+            Anti_Gaming_Factor = min(1, Daily_Quota / Actual_Requests)
+        </div>
+
+        <h2>五、实施建议</h2>
+
+        <div class="defense-box">
+            <ol>
+                <li><strong>主网启动：</strong>启用 Layer 1, 2, 6, 7 (基础防御)</li>
+                <li><strong>3个月后：</strong>启用 Layer 3 (模型质量) + Layer 5 (声誉)</li>
+                <li><strong>6个月后：</strong>启用 Layer 4 (挑战系统) + 完整经济模型</li>
+            </ol>
+        </div>
+
+        <h2 style="margin-top: 50px;">结论</h2>
+        <p style="font-size: 1.2em; text-align: center; padding: 20px;">
+            通过 <span class="highlight">七层防御</span>，使攻击成本远超诚实参与收益，<br>
+            确保系统的 <span class="highlight">纳什均衡</span> 是诚实推理。
+        </p>
+    </div>
+</body>
+</html>

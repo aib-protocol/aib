@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIB 2.0 Whitepaper - Proof of AI Work</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(180deg, #0a0a1a 0%, #1a1a2a 100%);
+            color: #e0e0e0;
+            line-height: 1.7;
+            padding: 0;
+        }
+        .container { max-width: 1000px; margin: 0 auto; padding: 40px 20px; }
+        h1 {
+            font-size: 3em;
+            text-align: center;
+            background: linear-gradient(135deg, #6c5ce7, #00d4ff, #ffd700);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #a0a0c0;
+            font-size: 1.2em;
+            margin-bottom: 50px;
+        }
+        h2 {
+            color: #6c5ce7;
+            font-size: 2em;
+            margin: 60px 0 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(108, 92, 231, 0.3);
+        }
+        h3 {
+            color: #74b9ff;
+            font-size: 1.4em;
+            margin: 30px 0 15px;
+        }
+        h4 {
+            color: #a29bfe;
+            font-size: 1.2em;
+            margin: 20px 0 10px;
+        }
+        p { margin: 15px 0; text-align: justify; }
+        .abstract {
+            background: rgba(108, 92, 231, 0.1);
+            border-left: 4px solid #6c5ce7;
+            padding: 25px;
+            margin: 30px 0;
+            border-radius: 8px;
+            font-style: italic;
+        }
+        .formula {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            margin: 15px 0;
+            text-align: center;
+            overflow-x: auto;
+        }
+        .highlight { color: #ffd700; font-weight: bold; }
+        .success { color: #2ecc71; }
+        .warning { color: #e74c3c; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        th { background: rgba(108, 92, 231, 0.3); }
+        code {
+            background: rgba(0,0,0,0.3);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+        .toc {
+            background: rgba(116, 185, 255, 0.1);
+            padding: 25px;
+            border-radius: 12px;
+            margin: 30px 0;
+        }
+        .toc h3 { margin-top: 0; }
+        .toc ul { list-style: none; }
+        .toc li { margin: 8px 0; }
+        .toc a {
+            color: #74b9ff;
+            text-decoration: none;
+        }
+        .toc a:hover { text-decoration: underline; }
+        .box {
+            background: rgba(255,255,255,0.03);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .metric {
+            display: inline-block;
+            background: rgba(116, 185, 255, 0.2);
+            padding: 5px 12px;
+            border-radius: 20px;
+            margin: 5px;
+            font-size: 0.9em;
+        }
+        .roadmap-item {
+            display: flex;
+            margin: 20px 0;
+        }
+        .roadmap-date {
+            min-width: 120px;
+            color: #ffd700;
+            font-weight: bold;
+        }
+        .nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(10, 10, 26, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(108, 92, 231, 0.2);
+            padding: 10px 0;
+            z-index: 1000;
+        }
+        .nav-content {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .nav-logo {
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: #00d4ff;
+        }
+        .footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: #a0a0c0;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            margin-top: 60px;
+        }
+    </style>
+</head>
+<body>
+    <div class="nav">
+        <div class="nav-content">
+            <div class="nav-logo">AIB 2.0</div>
+            <div style="color: #a0a0c0; font-size: 0.9em;">Proof of AI Work</div>
+        </div>
+    </div>
+
+    <div class="container" style="margin-top: 60px;">
+        <h1>AIB 2.0 Whitepaper</h1>
+        <p class="subtitle">Proof of AI Work (PoAIW) - A Revolutionary Blockchain Consensus Mechanism</p>
+
+        <div class="abstract">
+            <h3 style="margin-top: 0; color: #6c5ce7;">Abstract</h3>
+            <p>AIB 2.0 introduces <strong>Proof of AI Work (PoAIW)</strong>, a novel blockchain consensus mechanism where AI inference serves as the proof of work. Unlike traditional Proof of Work (PoW) that consumes energy on meaningless hash calculations, PoAIW directs computational power toward valuable AI inference tasks. This whitepaper outlines the technical architecture, economic model, and security considerations of AIB 2.0.</p>
+        </div>
+
+        <div class="toc">
+            <h3>Table of Contents</h3>
+            <ul>
+                <li><a href="#introduction">1. Introduction</a></li>
+                <li><a href="#poaiw">2. Proof of AI Work (PoAIW)</a></li>
+                <li><a href="#architecture">3. Technical Architecture</a></li>
+                <li><a href="#economics">4. Economic Model</a></li>
+                <li><a href="#security">5. Security</a></li>
+                <li><a href="#roadmap">6. Roadmap</a></li>
+            </ul>
+        </div>
+
+        <h2 id="introduction">1. Introduction</h2>
+
+        <h3>1.1 Problems with Current Blockchain Consensus</h3>
+
+        <div class="box">
+            <h4>Proof of Work (PoW)</h4>
+            <ul>
+                <li><span class="warning">Wasteful energy consumption</span> on meaningless calculations</li>
+                <li>Centralization of mining power in large operations</li>
+                <li>Environmental concerns</li>
+            </ul>
+        </div>
+
+        <div class="box">
+            <h4>Proof of Stake (PoS)</h4>
+            <ul>
+                <li><span class="warning">Wealth concentration</span> - "the rich get richer"</li>
+                <li>Oligarchy formation through stake accumulation</li>
+                <li>Nothing-at-stake problem</li>
+            </ul>
+        </div>
+
+        <h3>1.2 The Vision of AIB 2.0</h3>
+
+        <p>AIB 2.0 aims to create a blockchain where consensus work is <strong>socially valuable</strong> - performing AI inference that powers real applications. By coupling blockchain security with AI computation, we create:</p>
+
+        <ul>
+            <li>✓ Meaningful work that advances AI capabilities</li>
+            <li>✓ Fairer distribution through energy-based rewards</li>
+            <li>✓ Sustainable blockchain with useful output</li>
+        </ul>
+
+        <h2 id="poaiw">2. Proof of AI Work (PoAIW)</h2>
+
+        <h3>2.1 Why AI Inference as Work?</h3>
+
+        <div class="box">
+            <h4>Key Insights</h4>
+            <ul>
+                <li><strong>Cognitive Value</strong>: AI inference provides real-world utility</li>
+                <li><strong>Energy Binding</strong>: Proof of energy expenditure through computational output</li>
+                <li><strong>Verifiable Work</strong>: Inference results can be cryptographically verified</li>
+            </ul>
+        </div>
+
+        <h3>2.2 Energy Binding Theory</h3>
+
+        <p>Value in blockchain is derived from <strong>energy consumption</strong>. PoAIW formalizes this relationship:</p>
+
+        <div class="formula">
+            EffectiveEnergy = AI_Power × Green_Bonus × Quality_Factor
+        </div>
+
+        <div class="formula">
+            BlockReward ∝ EffectiveEnergy^(0.8)
+        </div>
+
+        <p>The sublinear exponent (0.8) prevents large mining operations from dominating, promoting decentralization.</p>
+
+        <h3>2.3 Simplified Design - No JUDGE Needed</h3>
+
+        <p>Unlike complex systems that require human judges or centralized validators, PoAIW uses <strong>purely mathematical verification</strong>:</p>
+
+        <div class="formula">
+            Valid(Block) = PoW_Check AND Stake_Check AND Energy_Check
+        </div>
+
+        <ul>
+            <li><strong>PoW_Check</strong>: Hash(ModelID + Input + Output + Nonce) < Difficulty</li>
+            <li><strong>Stake_Check</strong>: ProposerStake >= MinStake (1000 AIB)</li>
+            <li><strong>Energy_Check</strong>: Difficulty adjusted for 30-second target block time</li>
+        </ul>
+
+        <p class="success">All verifications are mathematical - no human judgment required, preventing centralization.</p>
+
+        <h2 id="architecture">3. Technical Architecture</h2>
+
+        <h3>3.1 Layer Structure</h3>
+
+        <div class="box">
+            <h4>L1 Mainchain (Settlement Layer)</h4>
+            <ul>
+                <li>Block time: 30 seconds</li>
+                <li>Block reward: 50 AIB</li>
+                <li>Final settlement layer for all transactions</li>
+                <li>Governance and dispute resolution</li>
+            </ul>
+        </div>
+
+        <div class="box">
+            <h4>L2 State Channels (High-Frequency Layer)</h4>
+            <ul>
+                <li>Millisecond-level transaction finality</li>
+                <li>Off-chain AI inference payments</li>
+                <li>Periodic settlement to L1</li>
+                <li>Instant dispute resolution</li>
+            </ul>
+        </div>
+
+        <h3>3.2 Node Tiers</h3>
+
+        <table>
+            <tr>
+                <th>Tier</th>
+                <th>Requirements</th>
+                <th>Block Reward Share</th>
+            </tr>
+            <tr>
+                <td><strong>Home</strong></td>
+                <td>1T GPU power, 1000 AIB stake</td>
+                <td>Base rewards</td>
+            </tr>
+            <tr>
+                <td><strong>Edge</strong></td>
+                <td>10T GPU power, 5000 AIB stake</td>
+                <td>1.5x multiplier</td>
+            </tr>
+            <tr>
+                <td><strong>Enterprise</strong></td>
+                <td>100T GPU power, 50000 AIB stake</td>
+                <td>2x multiplier</td>
+            </tr>
+        </table>
+
+        <h3>3.3 Block Structure</h3>
+
+        <div class="formula">
+            BlockHeader {
+              Version: uint32
+              PrevBlockHash: [32]byte
+              MerkleRoot: [32]byte
+              Timestamp: uint64
+              Height: uint64
+              Proposer: [32]byte
+              Signature: []byte
+              // PoAIW fields (Version >= 2)
+              InferencePoW: []byte
+              ModelID: string
+              EnergyClaim: uint64
+            }
+        </div>
+
+        <h2 id="economics">4. Economic Model</h2>
+
+        <h3>4.1 Token Distribution</h3>
+
+        <table>
+            <tr>
+                <th>Category</th>
+                <th>Percentage</th>
+                <th>Amount (AIB)</th>
+            </tr>
+            <tr>
+                <td>Team</td>
+                <td>15%</td>
+                <td>471,238,897</td>
+            </tr>
+            <tr>
+                <td>Ecosystem</td>
+                <td>30%</td>
+                <td>942,477,795</td>
+            </tr>
+            <tr>
+                <td>Staking Rewards</td>
+                <td>40%</td>
+                <td>1,256,637,061</td>
+            </tr>
+            <tr>
+                <td>Community</td>
+                <td>10%</td>
+                <td>314,159,265</td>
+            </tr>
+            <tr>
+                <td>Airdrop Pool</td>
+                <td>5%</td>
+                <td>157,079,635</td>
+            </tr>
+        </table>
+
+        <p><strong>Total Supply</strong>: 3,141,592,653 AIB (π × 10^8)</p>
+
+        <h3>4.2 Block Rewards</h3>
+
+        <div class="formula">
+          BlockReward = 50 AIB per block<br>
+          - 30% (15 AIB) → Staking Rewards<br>
+          - 70% (35 AIB) → Inference Rewards
+        </div>
+
+        <h3>4.3 Anti-Oligarchy Mechanisms</h3>
+
+        <div class="box">
+            <h4>Decentralization Incentives</h4>
+            <ul>
+                <li><strong>Dispersion Reward</strong>: ln(NodeCount + 1) / 10 (max 2.0x)</li>
+                <li><strong>Concentration Penalty</strong>: 1 / (1 + exp(-10×(StakeShare - 10%)))</li>
+                <li><strong>Stake Cap</strong>: Maximum 10% of total stake per entity</li>
+            </ul>
+        </div>
+
+        <h2 id="security">5. Security</h2>
+
+        <h3>5.1 Attack Vectors and Mitigations</h3>
+
+        <table>
+            <tr>
+                <th>Attack</th>
+                <th>Mitigation</th>
+            </tr>
+            <tr>
+                <td>Cache Attack (reusing results)</td>
+                <td>Unique salt per inference request</td>
+            </tr>
+            <tr>
+                <td>Garbage Inference</td>
+                <td>Same cost as quality inference - no economic advantage</td>
+            </tr>
+            <tr>
+                <td>Sybil Attack</td>
+                <td>1000 AIB minimum stake per node</td>
+            </tr>
+            <tr>
+                <td>Collusion</td>
+                <td>Mathematical verification prevents bypass</td>
+            </tr>
+        </table>
+
+        <h3>5.2 Decentralization Guarantees</h3>
+
+        <ul>
+            <li>No single point of failure</li>
+            <li>No trusted setup required</li>
+            <li>No centralized validation committee</li>
+            <li>All nodes can independently verify blocks</li>
+        </ul>
+
+        <h2 id="roadmap">6. Roadmap</h2>
+
+        <div class="roadmap-item">
+            <div class="roadmap-date">Q2 2026</div>
+            <div>
+                <strong>Foundation</strong>
+                <ul>
+                    <li>PoAIW core implementation</li>
+                    <li>Testnet launch</li>
+                    <li>Node software release</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="roadmap-item">
+            <div class="roadmap-date">Q3 2026</div>
+            <div>
+                <strong>Expansion</strong>
+                <ul>
+                    <li>L2 state channels</li>
+                    <li>Enterprise node program</li>
+                    <li>Developer SDK</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="roadmap-item">
+            <div class="roadmap-date">Q4 2026</div>
+            <div>
+                <strong>Growth</strong>
+                <ul>
+                    <li>Economic model optimization</li>
+                    <li>Exchange listings</li>
+                    <li>Community governance</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="roadmap-item">
+            <div class="roadmap-date">Q1 2027</div>
+            <div>
+                <strong>Mainnet</strong>
+                <ul>
+                    <li>Mainnet launch (Pi Day: March 14)</li>
+                    <li>Full PoAIW activation</li>
+                    <li>Decentralized governance</li>
+                </ul>
+            </div>
+        </div>
+
+        <h2>7. Team</h2>
+
+        <p style="text-align: center; font-style: italic; color: #a0a0c0;">
+            The AIB 2.0 protocol is developed by an anonymous team of blockchain researchers, AI engineers, and cryptography experts. The project is governed by the community through decentralized on-chain governance.
+        </p>
+
+        <div class="footer">
+            <p><strong>AIB 2.0</strong> - Proof of AI Work</p>
+            <p>© 2026 AIB Protocol | <a href="https://github.com/aib-protocol/aib" style="color: #74b9ff;">GitHub</a></p>
+            <p style="margin-top: 10px; font-size: 0.9em;">
+                <span class="metric">Blockchain</span>
+                <span class="metric">AI Inference</span>
+                <span class="metric">Decentralized</span>
+                <span class="metric">Energy Efficient</span>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,9 @@
+{
+  "node_id": "miner_ec62301539d00f8457fdbbb9bbd0a167",
+  "ollama_url": "http://localhost:11434",
+  "model": "llama2",
+  "stake_amount": 100,
+  "listen_addr": "0.0.0.0:9090",
+  "data_dir": "./data",
+  "log_level": "info"
+}

@@ -1,0 +1,45 @@
+{
+  "chain_id": "aib-mainnet-1",
+  "genesis_time": "2026-03-14T00:00:00Z",
+  "total_supply": "3141592653",
+  "block_reward": 50,
+  "block_time": 30,
+  "validators": [],
+  "allocations": {
+    "team": {
+      "amount": "471238897",
+      "percentage": "15"
+    },
+    "ecosystem": {
+      "amount": "942477795",
+      "percentage": "30"
+    },
+    "staking_rewards": {
+      "amount": "1256637061",
+      "percentage": "40"
+    },
+    "community": {
+      "amount": "314159265",
+      "percentage": "10"
+    },
+    "airdrop_pool": {
+      "amount": "157079635",
+      "percentage": "5"
+    }
+  },
+  "airdrop": {
+    "enabled": true,
+    "amount_per_address": 100,
+    "conditions": {
+      "min_balance": 0,
+      "must_claim": true,
+      "claim_deadline": "2026-04-14T00:00:00Z"
+    },
+    "exclusions": ["team_addresses", "contract_addresses"]
+  },
+  "config": {
+    "max_validators": 100,
+    "min_stake_amount": "1000000",
+    "unbonding_time": "604800"
+  }
+}

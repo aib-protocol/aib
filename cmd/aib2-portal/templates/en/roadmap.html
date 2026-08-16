@@ -1,0 +1,51 @@
+{{define "content"}}
+<div class="page-header">
+    <h1>Module Roadmap</h1>
+    <p>The AIB 2.0 protocol consists of {{.Stats.Total}} modules, grouped by category with development status.</p>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-value">{{.Stats.Total}}</div>
+        <div class="stat-label">Total Modules</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" style="color: var(--green);">{{.Stats.Completed}}</div>
+        <div class="stat-label">Completed</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" style="color: var(--yellow);">{{.Stats.InProgress}}</div>
+        <div class="stat-label">In Progress</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{.Stats.Planned}}</div>
+        <div class="stat-label">Planned</div>
+    </div>
+</div>
+
+{{$byCat := .ByCategory}}
+{{range .CategoryOrder}}
+{{$modules := index $byCat .}}
+{{if $modules}}
+<div class="module-category">
+    <h2>{{.}}</h2>
+    {{range $modules}}
+    <div class="module-item">
+        <div class="module-header">
+            <span>
+                <span class="module-id">{{.ID}}</span>
+                <span class="module-name">{{.Name}}</span>
+            </span>
+            <span class="tag tag-{{.Status}}">{{.Status}}</span>
+        </div>
+        <div class="module-desc">{{.Description}}</div>
+        <div class="module-meta">
+            {{if .Package}}<span>pkg: <code>{{.Package}}</code></span>{{end}}
+            {{if .Dependencies}}<span>deps: {{range $i, $d := .Dependencies}}{{if $i}}, {{end}}{{$d}}{{end}}</span>{{end}}
+        </div>
+    </div>
+    {{end}}
+</div>
+{{end}}
+{{end}}
+{{end}}

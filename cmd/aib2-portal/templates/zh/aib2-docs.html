@@ -1,0 +1,326 @@
+{{define "content"}}
+<style>
+    /* Apple Minimal Dark Style - Override base template */
+    body { background: #000 !important; }
+    main { padding: 0 !important; max-width: none !important; }
+    footer { background: #000 !important; border-top: 1px solid #424245 !important; }
+    nav { background: rgba(0,0,0,0.9) !important; backdrop-filter: blur(20px) !important; }
+    .nav-links a { color: #86868b !important; }
+    .nav-links a:hover, .nav-links a.active { color: #f5f5f7 !important; }
+    .logo { color: #f5f5f7 !important; }
+    .lang-switch, .lang-switch a { color: #86868b !important; }
+    .lang-active { color: #f5f5f7 !important; }
+
+    .docs-container {
+        font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'PingFang SC', sans-serif;
+        background: #000;
+        color: #f5f5f7;
+        min-height: 100vh;
+        margin-top: -60px;
+    }
+
+    .page-header {
+        padding: 80px 48px;
+        text-align: center;
+        border-bottom: 1px solid #2d2d2d;
+    }
+
+    .page-title {
+        font-size: 48px;
+        font-weight: 700;
+        letter-spacing: -1px;
+        margin-bottom: 16px;
+    }
+
+    .page-subtitle {
+        font-size: 20px;
+        color: #86868b;
+        margin-bottom: 40px;
+    }
+
+    .docs-content {
+        padding: 80px 48px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .quick-links {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 24px;
+        margin-bottom: 60px;
+    }
+
+    .quick-card {
+        background: #1d1d1f;
+        border-radius: 20px;
+        padding: 32px;
+        border: 1px solid #2d2d2d;
+        text-align: center;
+    }
+
+    .quick-card h3 {
+        font-size: 20px;
+        font-weight: 600;
+        margin-bottom: 12px;
+    }
+
+    .quick-card p {
+        color: #86868b;
+        line-height: 1.5;
+        margin-bottom: 20px;
+    }
+
+    .btn-primary {
+        background: #0071e3;
+        color: #fff;
+        padding: 12px 24px;
+        border-radius: 980px;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    .btn-secondary {
+        background: #1d1d1f;
+        color: #f5f5f7;
+        padding: 12px 24px;
+        border-radius: 980px;
+        text-decoration: none;
+        font-size: 14px;
+        border: 1px solid #2d2d2d;
+    }
+
+    .docs-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 24px;
+        margin-bottom: 60px;
+    }
+
+    .docs-card {
+        background: #1d1d1f;
+        border-radius: 20px;
+        padding: 32px;
+        border: 1px solid #2d2d2d;
+    }
+
+    .docs-card h3 {
+        font-size: 20px;
+        font-weight: 600;
+        margin-bottom: 16px;
+        color: #f5f5f7;
+    }
+
+    .docs-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .docs-list li {
+        padding: 8px 0;
+        color: #86868b;
+        border-bottom: 1px solid #2d2d2d;
+    }
+
+    .docs-list li:last-child {
+        border-bottom: none;
+    }
+
+    .docs-list a {
+        color: #2997ff;
+        text-decoration: none;
+    }
+
+    .resources {
+        background: #1d1d1f;
+        border-radius: 20px;
+        padding: 32px;
+        border: 1px solid #2d2d2d;
+        margin-bottom: 60px;
+    }
+
+    .resources h3 {
+        font-size: 20px;
+        font-weight: 600;
+        margin-bottom: 16px;
+        color: #f5f5f7;
+    }
+
+    .resources-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+    }
+
+    .resource-card {
+        background: #2d2d2f;
+        border-radius: 12px;
+        padding: 16px;
+        border: 1px solid #3d3d3f;
+    }
+
+    .resource-card h4 {
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: #f5f5f7;
+    }
+
+    .resource-card p {
+        font-size: 12px;
+        color: #86868b;
+        line-height: 1.4;
+    }
+
+    .testnet-info {
+        background: #1d1d1f;
+        border-radius: 20px;
+        padding: 32px;
+        border: 1px solid #2d2d2d;
+    }
+
+    .testnet-info h3 {
+        font-size: 20px;
+        font-weight: 600;
+        margin-bottom: 16px;
+        color: #f5f5f7;
+    }
+
+    .testnet-specs {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 20px;
+    }
+
+    .spec-item {
+        background: #2d2d2f;
+        border-radius: 12px;
+        padding: 16px;
+        border: 1px solid #3d3d3f;
+        text-align: center;
+    }
+
+    .spec-value {
+        font-size: 18px;
+        font-weight: 600;
+        color: #0071e3;
+        margin-bottom: 4px;
+    }
+
+    .spec-label {
+        font-size: 12px;
+        color: #86868b;
+    }
+
+    @media (max-width: 768px) {
+        .quick-links { grid-template-columns: 1fr; }
+        .docs-grid { grid-template-columns: 1fr; }
+        .resources-grid { grid-template-columns: 1fr; }
+        .testnet-specs { grid-template-columns: repeat(2, 1fr); }
+        .page-title { font-size: 36px; }
+        .docs-content { padding: 40px 24px; }
+    }
+</style>
+
+<div class="docs-container">
+    <section class="page-header">
+        <h1 class="page-title">开发者资源</h1>
+        <p class="page-subtitle">构建基于 AIB 2.0 的去中心化应用</p>
+        <div style="display: flex; gap: 16px; justify-content: center; margin-top: 20px;">
+            <a href="/{{.Lang}}/" class="btn-primary">← 返回首页</a>
+            <a href="/{{.Lang}}/quickstart" class="btn-secondary">快速开始</a>
+        </div>
+    </section>
+
+    <section class="docs-content">
+        <!-- Quick Links -->
+        <div class="quick-links">
+            <div class="quick-card">
+                <h3>开始开发</h3>
+                <p>了解如何使用 AIB 2.0 构建去中心化应用</p>
+                <a href="/{{.Lang}}/quickstart" class="btn-primary">立即开始</a>
+            </div>
+            <div class="quick-card">
+                <h3>节点运营</h3>
+                <p>运行验证节点，参与网络共识</p>
+                <a href="/{{.Lang}}/standards" class="btn-primary">节点指南</a>
+            </div>
+        </div>
+
+        <!-- Documentation -->
+        <div class="docs-grid">
+            <div class="docs-card">
+                <h3>钱包开发</h3>
+                <ul class="docs-list">
+                    <li><a href="/docs/wallet-sdk-spec.md">SDK 规范</a></li>
+                    <li><a href="/docs/security-best-practices.md">安全最佳实践</a></li>
+                    <li><a href="/docs/test-spec.md">测试规范</a></li>
+                    <li><a href="/docs/quickstart.md">快速开始</a></li>
+                </ul>
+            </div>
+
+            <div class="docs-card">
+                <h3>通道支付</h3>
+                <ul class="docs-list">
+                    <li><a href="/docs/channel-payment-spec.md">支付规范</a></li>
+                    <li><a href="/docs/api-reference.md">API 参考</a></li>
+                    <li><a href="/docs/developer-guide.md">开发者指南</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Resources -->
+        <div class="resources">
+            <h3>开发资源</h3>
+            <div class="resources-grid">
+                <div class="resource-card">
+                    <h4>SDK 下载</h4>
+                    <p>官方钱包和应用开发工具包</p>
+                    <a href="/static/sdk/" style="color: #2997ff; text-decoration: none;">下载 SDK →</a>
+                </div>
+                <div class="resource-card">
+                    <h4>GitHub 仓库</h4>
+                    <p>核心协议和工具的源代码</p>
+                    <a href="https://github.com/aib-protocol/aib" style="color: #2997ff; text-decoration: none;">访问 GitHub →</a>
+                </div>
+                <div class="resource-card">
+                    <h4>测试网信息</h4>
+                    <p>测试环境和开发工具</p>
+                    <a href="/explorer/" style="color: #2997ff; text-decoration: none;">查看区块浏览器 →</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Testnet Info -->
+        <div class="testnet-info">
+            <h3>测试网信息</h3>
+            <div class="testnet-specs">
+                <div class="spec-item">
+                    <div class="spec-value">aib-testnet</div>
+                    <div class="spec-label">Chain ID</div>
+                </div>
+                <div class="spec-item">
+                    <div class="spec-value">60s</div>
+                    <div class="spec-label">区块时间</div>
+                </div>
+                <div class="spec-item">
+                    <div class="spec-value">1 MB</div>
+                    <div class="spec-label">区块大小</div>
+                </div>
+                <div class="spec-item">
+                    <div class="spec-value">1000 AIB</div>
+                    <div class="spec-label">最低质押</div>
+                </div>
+            </div>
+            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                <a href="https://github.com/aib-protocol/aib/releases" class="btn-primary">下载节点</a>
+                <a href="https://faucet.testnet.aib.one" class="btn-secondary">测试币水龙头</a>
+                <a href="/explorer/" class="btn-secondary">区块浏览器</a>
+            </div>
+        </div>
+    </section>
+</div>
+{{end}}

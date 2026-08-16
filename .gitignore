@@ -1,0 +1,58 @@
+# Logs
+*.log
+logs/
+
+# Go binaries
+/cmd/aib2d/aib2d
+/cmd/aib2-cli/aib2-cli
+/cmd/aib2-miner/aib2-miner
+/cmd/aib2-portal/aib2-portal
+*.exe
+*.test
+
+# Go coverage
+*.out
+coverage.html
+
+# Go workspace
+go.work
+go.work.sum
+
+# Dependency directories
+vendor/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build
+/build/
+/dist/
+
+# Data
+/data/
+*.db
+*.dat
+
+# Keys and secrets
+*.pem
+*.key
+*.env
+.env*
+
+# Object files (legacy)
+*.o
+*.ko
+*.obj
+*.so
+*.so.*
+*.dylib
+*.a
+*.dll

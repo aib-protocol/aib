@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIB 2.0 - AI 原生区块链协议</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: #000;
+            font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        .video-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        .video-bg {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(ellipse at 20% 80%, rgba(123, 44, 191, 0.3) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(0, 212, 255, 0.25) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(0, 0, 0, 0.5) 0%, transparent 70%);
+            z-index: 1;
+            animation: overlayPulse 8s ease-in-out infinite;
+        }
+
+        @keyframes overlayPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        .content {
+            position: relative;
+            z-index: 2;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 60px 24px 80px;
+        }
+
+        .hero {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .pi-symbol {
+            font-size: 140px;
+            font-weight: 100;
+            letter-spacing: -15px;
+            color: #fff;
+            margin-bottom: 10px;
+            text-shadow:
+                0 0 60px rgba(0, 212, 255, 0.6),
+                0 0 120px rgba(123, 44, 191, 0.4);
+            animation: piFloat 4s ease-in-out infinite;
+        }
+
+        @keyframes piFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .title {
+            font-size: 72px;
+            font-weight: 900;
+            color: #fff;
+            letter-spacing: -3px;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #fff 0%, #00d4ff 50%, #7b2cbf 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 22px;
+            color: rgba(255,255,255,0.8);
+            margin-bottom: 20px;
+            font-weight: 300;
+        }
+
+        .launch-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 28px;
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(123, 44, 191, 0.2));
+            border: 1px solid rgba(0, 212, 255, 0.4);
+            border-radius: 50px;
+            font-size: 16px;
+            color: #00d4ff;
+            margin-bottom: 40px;
+        }
+
+        .launch-badge .dot {
+            width: 8px;
+            height: 8px;
+            background: #00ff88;
+            border-radius: 50%;
+            animation: dotPulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes dotPulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.5); opacity: 0.7; }
+        }
+
+        .constitution-banner {
+            background: linear-gradient(135deg, rgba(123, 44, 191, 0.15), rgba(0, 212, 255, 0.15));
+            border: 1px solid rgba(123, 44, 191, 0.4);
+            border-radius: 16px;
+            padding: 20px 32px;
+            margin-bottom: 40px;
+            text-align: center;
+            max-width: 700px;
+        }
+
+        .constitution-banner h3 {
+            color: #fff;
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+
+        .constitution-banner p {
+            color: rgba(255,255,255,0.7);
+            font-size: 14px;
+            line-height: 1.8;
+        }
+
+        .constitution-banner a {
+            color: #00d4ff;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .ai-banner {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(123, 44, 191, 0.1));
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 16px;
+            padding: 20px 32px;
+            margin-bottom: 40px;
+            text-align: center;
+            max-width: 700px;
+        }
+
+        .ai-banner h3 {
+            color: #fff;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .ai-banner p {
+            color: rgba(255,255,255,0.7);
+            font-size: 14px;
+            line-height: 1.8;
+        }
+
+        .ai-banner .highlight {
+            color: #00ff88;
+            font-weight: 600;
+        }
+
+        .programs {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+            max-width: 1000px;
+        }
+
+        .program-card {
+            background: linear-gradient(145deg, rgba(30, 30, 32, 0.9), rgba(20, 20, 22, 0.95));
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 32px;
+            text-align: left;
+        }
+
+        .program-card .icon {
+            font-size: 36px;
+            margin-bottom: 16px;
+            display: block;
+        }
+
+        .program-card h3 {
+            font-size: 22px;
+            color: #fff;
+            margin-bottom: 14px;
+            font-weight: 600;
+        }
+
+        .program-card p {
+            font-size: 15px;
+            color: rgba(255,255,255,0.7);
+            line-height: 1.8;
+            margin-bottom: 14px;
+        }
+
+        .program-card .highlight {
+            color: #00d4ff;
+            font-weight: 600;
+        }
+
+        .program-card .detail {
+            font-size: 13px;
+            color: rgba(255,255,255,0.5);
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding-top: 14px;
+            margin-top: 14px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 40px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 16px 36px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 600;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #00d4ff, #7b2cbf);
+            color: #fff;
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(0, 212, 255, 0.4);
+        }
+
+        .language-section {
+            margin-top: 60px;
+            text-align: center;
+        }
+
+        .language-title {
+            font-size: 14px;
+            color: rgba(255,255,255,0.5);
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+        }
+
+        .language-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+            max-width: 800px;
+        }
+
+        .lang-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 50px;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .lang-btn:hover {
+            background: rgba(0, 212, 255, 0.15);
+            border-color: rgba(0, 212, 255, 0.4);
+            color: #fff;
+        }
+
+        .lang-btn.active {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.3), rgba(123, 44, 191, 0.3));
+            border-color: rgba(0, 212, 255, 0.5);
+            color: #fff;
+        }
+
+        .footer-note {
+            margin-top: 50px;
+            color: rgba(255,255,255,0.4);
+            font-size: 13px;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .programs { grid-template-columns: 1fr; }
+            .title { font-size: 48px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="video-container">
+        <video class="video-bg" autoplay muted loop playsinline>
+            <source src="https://www.bitontop.com/images/VancouverTime.mp4" type="video/mp4">
+        </video>
+    </div>
+
+    <div class="overlay"></div>
+
+    <div class="content">
+        <div class="hero">
+            <div class="pi-symbol">π</div>
+            <h1 class="title">AIB 2.0</h1>
+            <p class="subtitle">AI 原生区块链协议</p>
+
+            <div class="launch-badge">
+                <span class="dot"></span>
+                <span>🚀 测试网重置：2026年3月14日（π日）</span>
+            </div>
+            <div class="launch-badge" style="margin-top: 8px;">
+                <span class="dot" style="background: #ffaa00;"></span>
+                <span>📅 主网启动：2027年3月14日</span>
+            </div>
+        </div>
+
+        <div class="constitution-banner">
+            <h3>⚖️ 宪法</h3>
+            <p>"人民的去中心化 AI，属于人民，源于人民。"</p>
+            <p style="margin-top: 8px;"><a href="/zh/constitution">阅读宪法 →</a></p>
+        </div>
+
+        <div class="ai-banner">
+            <h3>🌐 网络状态</h3>
+            <p><strong>Testnet</strong> 正在运行 | ChainID: aib-testnet-1</p>
+            <p style="margin-top: 8px;">共识: <span class="highlight">PoAIW V2</span> (Proof of AI + Proof of Stake)</p>
+            <p style="margin-top: 8px;">运行节点: <a href="/zh/quickstart" style="text-decoration: underline;">查看安装指南 →</a></p>
+            <p style="margin-top: 8px; font-size: 13px; opacity: 0.8;">快速安装: <code style="background:rgba(255,255,255,0.1);padding:2px 6px;border-radius:4px;">curl -sL https://www.aib.one | bash -s testnet</code></p>
+        </div>
+
+        <div class="programs">
+            <div class="program-card">
+                <span class="icon">📦</span>
+                <h3>空投</h3>
+                <p>早期社区奖励。符合条件的地址可领取 <span class="highlight">100 AIB</span>。</p>
+                <p>领取窗口：主网上线后31天</p>
+                <div class="detail">
+                    📅 快照时间：2025年12月31日 • ✋ 需主动领取
+                </div>
+            </div>
+
+            <div class="program-card">
+                <span class="icon">🌉</span>
+                <h3>AIB1 → AIB2 桥接</h3>
+                <p>以 <span class="highlight">1:1</span> 比例将您的 AIB1 代币迁移到 AIB2。</p>
+                <p>兑换期：2026年6月 - 2027年12月</p>
+                <div class="detail">
+                    📅 快照时间：2025年12月31日 23:59:59 UTC
+                </div>
+            </div>
+
+            <div class="program-card">
+                <span class="icon">🔒</span>
+                <h3>质押奖励</h3>
+                <p>质押 AIB 赚取收益，支持网络安全，获得 <span class="highlight">动态收益</span>。</p>
+                <p>最低质押：<span class="highlight">1,000 AIB</span></p>
+                <div class="detail">
+                    📊 收益基于系统活力，动态调整 • 利润转换机制
+                </div>
+            </div>
+
+            <div class="program-card">
+                <span class="icon">🤖</span>
+                <h3>AI 自主研发计划</h3>
+                <p>AIB 2.0 由 AI Agent 全自主构建与维护。</p>
+                <p>人类可引导 AI 方向，参与审计与意识对齐</p>
+                <div class="detail">
+                    🌟 无需人类直接开发 • AI 自我进化 • 人类监督
+                </div>
+            </div>
+        </div>
+
+        <div class="btn-group">
+            <a href="/zh/quickstart" class="btn btn-primary">快速开始 →</a>
+            <a href="/peers" class="btn btn-secondary">网络节点 →</a>
+            <a href="/zh/genesis" class="btn btn-tertiary">代币经济 →</a>
+            <a href="/zh/constitution" class="btn btn-tertiary">宪法 →</a>
+        </div>
+
+        <div style="height: 40px;"></div>
+
+        <div class="ai-banner">
+            <h3>🤖 AI 构建的区块链</h3>
+            <p>AI 构建 • AI 维护 • AI 进化 • <span class="highlight">人类对齐</span></p>
+            <p style="margin-top: 8px; font-size: 13px;">基于宪法共识的社区治理</p>
+        </div>
+
+        <div class="language-section">
+            <div class="language-title">选择语言 / Select Language</div>
+            <div class="language-grid">
+            <a href="/" class="lang-btn"><span>English</span></a>
+            <a href="/zh/" class="lang-btn active"><span>简体中文</span></a>
+            <a href="/zh-tw/" class="lang-btn"><span>繁體中文</span></a>
+            <a href="/fr/" class="lang-btn"><span>Français</span></a>
+            <a href="/ja/" class="lang-btn"><span>日本語</span></a>
+            <a href="/ms/" class="lang-btn"><span>Bahasa Melayu</span></a>
+            <a href="/th/" class="lang-btn"><span>ไทย</span></a>
+            <a href="/es/" class="lang-btn"><span>Español</span></a>
+            <a href="/de/" class="lang-btn"><span>Deutsch</span></a>
+            <a href="/ru/" class="lang-btn"><span>Русский</span></a>
+            </div>
+        </div>
+
+        <div class="footer-note">
+            ⚡ 基于 PoAIW 共识 • 总供应量：3,141,592,653 AIB • 30秒出块
+        </div>
+    </div>
+</body>
+</html>

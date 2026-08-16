@@ -1,0 +1,347 @@
+{{define "content"}}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+    .aib2-about {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        max-width: 1200px;
+        margin: 0 auto;
+        background: #0d1117;
+        min-height: 100vh;
+        padding: 40px 20px;
+    }
+
+    .page-header {
+        text-align: center;
+        padding: 80px 40px;
+        background: linear-gradient(135deg, rgba(0,212,255,0.1) 0%, rgba(123,44,191,0.1) 50%, rgba(224,64,251,0.1) 100%);
+        border-radius: 32px;
+        margin-bottom: 60px;
+        border: 1px solid rgba(0,212,255,0.2);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: radial-gradient(circle at 30% 50%, rgba(0,212,255,0.15) 0%, transparent 50%),
+                    radial-gradient(circle at 70% 50%, rgba(224,64,251,0.15) 0%, transparent 50%);
+        pointer-events: none;
+    }
+
+    .page-header h1 {
+        font-size: 3.5rem;
+        font-weight: 900;
+        background: linear-gradient(135deg, #00d4ff 0%, #7b2cbf 50%, #e040fb 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 16px;
+        position: relative;
+        text-shadow: 0 0 40px rgba(0,212,255,0.5);
+    }
+
+    .page-header p {
+        font-size: 1.25rem;
+        color: #8b949e;
+        max-width: 600px;
+        margin: 0 auto;
+        position: relative;
+    }
+
+    .content-section {
+        margin-bottom: 60px;
+    }
+
+    .content-section h2 {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #c9d1d9;
+        margin-bottom: 32px;
+        padding-bottom: 12px;
+        border-bottom: 2px solid rgba(0,212,255,0.3);
+        display: inline-block;
+        position: relative;
+    }
+
+    .content-section h2::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        width: 60px;
+        height: 2px;
+        background: linear-gradient(90deg, #00d4ff, #e040fb);
+    }
+
+    .content-section p {
+        color: #8b949e;
+        line-height: 1.8;
+        font-size: 1.1rem;
+    }
+
+    .vision-mission {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: 32px;
+        margin-bottom: 60px;
+    }
+
+    .vm-card {
+        background: rgba(22, 27, 34, 0.8);
+        backdrop-filter: blur(10px);
+        border-radius: 24px;
+        padding: 40px;
+        border: 1px solid rgba(0,212,255,0.15);
+        position: relative;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .vm-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        border-radius: 24px;
+        padding: 1px;
+        background: linear-gradient(135deg, rgba(0,212,255,0.3), rgba(123,44,191,0.3), rgba(224,64,251,0.3));
+        -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+        opacity: 0;
+        transition: opacity 0.4s ease;
+    }
+
+    .vm-card:hover::before {
+        opacity: 1;
+    }
+
+    .vm-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(0,212,255,0.15);
+    }
+
+    .vm-card h3 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 16px;
+        background: linear-gradient(135deg, #00d4ff, #e040fb);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .vm-card p {
+        color: #8b949e;
+        line-height: 1.7;
+        font-size: 1rem;
+    }
+
+    .values-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 24px;
+    }
+
+    .value-item {
+        background: rgba(22, 27, 34, 0.8);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 32px 24px;
+        text-align: center;
+        border: 1px solid rgba(0,212,255,0.1);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .value-item::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #00d4ff, #7b2cbf, #e040fb);
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.4s ease;
+    }
+
+    .value-item:hover {
+        transform: translateY(-8px);
+        border-color: rgba(0,212,255,0.3);
+        box-shadow: 0 20px 40px rgba(0,212,255,0.1);
+    }
+
+    .value-item:hover::before {
+        transform: scaleX(1);
+    }
+
+    .value-icon {
+        font-size: 2.5rem;
+        margin-bottom: 20px;
+        display: inline-block;
+        filter: drop-shadow(0 0 10px rgba(0,212,255,0.5));
+    }
+
+    .value-item h4 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #c9d1d9;
+        margin-bottom: 12px;
+    }
+
+    .value-item p {
+        color: #8b949e;
+        font-size: 0.95rem;
+        line-height: 1.6;
+    }
+
+    .tech-stack {
+        background: rgba(22, 27, 34, 0.8);
+        backdrop-filter: blur(10px);
+        border-radius: 24px;
+        padding: 40px;
+        border: 1px solid rgba(0,212,255,0.15);
+        position: relative;
+    }
+
+    .tech-stack::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        border-radius: 24px;
+        padding: 1px;
+        background: linear-gradient(135deg, rgba(0,212,255,0.3), rgba(224,64,251,0.3));
+        -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+        pointer-events: none;
+    }
+
+    .tech-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        margin-top: 28px;
+    }
+
+    .tech-tag {
+        background: linear-gradient(135deg, rgba(0,212,255,0.15) 0%, rgba(123,44,191,0.15) 100%);
+        color: #00d4ff;
+        padding: 14px 28px;
+        border-radius: 50px;
+        font-weight: 500;
+        font-size: 0.95rem;
+        border: 1px solid rgba(0,212,255,0.2);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .tech-tag::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(0,212,255,0.2), transparent);
+        transition: left 0.5s ease;
+    }
+
+    .tech-tag:hover {
+        background: linear-gradient(135deg, rgba(0,212,255,0.25) 0%, rgba(123,44,191,0.25) 100%);
+        border-color: rgba(0,212,255,0.5);
+        transform: scale(1.05);
+        box-shadow: 0 0 20px rgba(0,212,255,0.3);
+    }
+
+    .tech-tag:hover::before {
+        left: 100%;
+    }
+
+    @keyframes glow {
+        0%, 100% { box-shadow: 0 0 20px rgba(0,212,255,0.3); }
+        50% { box-shadow: 0 0 30px rgba(224,64,251,0.3); }
+    }
+
+    .page-header {
+        animation: glow 4s ease-in-out infinite;
+    }
+</style>
+
+<div class="aib2-about">
+    <section class="page-header">
+        <h1>About AIB 2.0</h1>
+        <p>Building the future of decentralized AI infrastructure</p>
+    </section>
+
+    <section class="vision-mission">
+        <div class="vm-card">
+            <h3>Our Vision</h3>
+            <p>AIB 2.0 aims to create a decentralized, accessible, and sustainable AI infrastructure that empowers developers, researchers, and users worldwide. We believe in the power of blockchain to ensure fairness, transparency, and inclusivity in the AI era.</p>
+        </div>
+        <div class="vm-card">
+            <h3>Our Mission</h3>
+            <p>To democratize access to AI computing resources through blockchain technology, enabling anyone to participate in and benefit from the AI revolution while maintaining security, privacy, and environmental sustainability.</p>
+        </div>
+    </section>
+
+    <section class="content-section">
+        <h2>Core Values</h2>
+        <div class="values-grid">
+            <div class="value-item">
+                <div class="value-icon">🔓</div>
+                <h4>Transparency</h4>
+                <p>Open source code and public governance ensure complete transparency in all operations.</p>
+            </div>
+            <div class="value-item">
+                <div class="value-icon">🤝</div>
+                <h4>Decentralization</h4>
+                <p>A truly decentralized network controlled by the community, not any single entity.</p>
+            </div>
+            <div class="value-item">
+                <div class="value-icon">🌱</div>
+                <h4>Sustainability</h4>
+                <p>Eco-friendly consensus mechanism that minimizes energy consumption while maximizing security.</p>
+            </div>
+            <div class="value-item">
+                <div class="value-icon">💡</div>
+                <h4>Innovation</h4>
+                <p>Continuous improvement and innovation to stay at the forefront of blockchain and AI technology.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="content-section">
+        <h2>Technology Stack</h2>
+        <div class="tech-stack">
+            <p>AIB 2.0 is built on a modern, scalable architecture designed for the future:</p>
+            <div class="tech-list">
+                <span class="tech-tag">Proof of AI Work</span>
+                <span class="tech-tag">EVM Compatible</span>
+                <span class="tech-tag">Layer 2 Scaling</span>
+                <span class="tech-tag">Zero-Knowledge Proofs</span>
+                <span class="tech-tag">Smart Contracts</span>
+                <span class="tech-tag">Cross-Chain Bridge</span>
+                <span class="tech-tag">Decentralized Oracle</span>
+                <span class="tech-tag">AI Agent Framework</span>
+            </div>
+        </div>
+    </section>
+</div>
+{{end}}

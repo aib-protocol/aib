@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>曾经的头脑风景 - AIB 2.0</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a0a2e 100%);
+            font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif;
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Animated Background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .bg-animation::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background:
+                radial-gradient(circle at 20% 80%, rgba(123, 44, 191, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 80% 20%, rgba(0, 212, 255, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 40% 40%, rgba(255, 107, 107, 0.1) 0%, transparent 30%);
+            animation: bgFloat 20s ease-in-out infinite;
+        }
+
+        @keyframes bgFloat {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(2%, 2%) rotate(1deg); }
+            50% { transform: translate(0, 4%) rotate(0deg); }
+            75% { transform: translate(-2%, 2%) rotate(-1deg); }
+        }
+
+        .content {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 60px 24px;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: rgba(255,255,255,0.6);
+            text-decoration: none;
+            font-size: 14px;
+            margin-bottom: 30px;
+            transition: all 0.3s;
+        }
+
+        .back-link:hover {
+            color: #00d4ff;
+            transform: translateX(-5px);
+        }
+
+        h1 {
+            font-size: 56px;
+            font-weight: 900;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, #fff 0%, #00d4ff 50%, #7b2cbf 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -2px;
+        }
+
+        .subtitle {
+            font-size: 18px;
+            color: rgba(255,255,255,0.6);
+            font-weight: 300;
+        }
+
+        /* Portal Grid */
+        .portal-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 24px;
+        }
+
+        .portal-card {
+            background: linear-gradient(145deg, rgba(30, 30, 35, 0.8), rgba(20, 20, 25, 0.9));
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 28px;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .portal-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--card-color, #00d4ff), #7b2cbf);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .portal-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--card-color, rgba(0, 212, 255, 0.3));
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), 0 0 40px var(--card-glow, rgba(0, 212, 255, 0.1));
+        }
+
+        .portal-card:hover::before {
+            opacity: 1;
+        }
+
+        .portal-card .icon {
+            font-size: 36px;
+            margin-bottom: 16px;
+            display: block;
+        }
+
+        .portal-card h3 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 10px;
+        }
+
+        .portal-card p {
+            font-size: 14px;
+            color: rgba(255,255,255,0.5);
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+
+        .portal-card .tag {
+            display: inline-block;
+            padding: 4px 12px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            font-size: 12px;
+            color: var(--card-color, #00d4ff);
+        }
+
+        /* Card Colors */
+        .card-quickstart { --card-color: #00d4ff; --card-glow: rgba(0, 212, 255, 0.2); }
+        .card-constitution { --card-color: #7b2cbf; --card-glow: rgba(123, 44, 191, 0.2); }
+        .card-poaiw { --card-color: #ff6b6b; --card-glow: rgba(255, 107, 107, 0.2); }
+        .card-plan { --card-color: #00ff88; --card-glow: rgba(0, 255, 136, 0.2); }
+        .card-genesis { --card-color: #ffd93d; --card-glow: rgba(255, 217, 61, 0.2); }
+        .card-roadmap { --card-color: #6bcb77; --card-glow: rgba(107, 203, 119, 0.2); }
+        .card-standards { --card-color: #4d96ff; --card-glow: rgba(77, 150, 255, 0.2); }
+        .card-changelog { --card-color: #ff9f1c; --card-glow: rgba(255, 159, 28, 0.2); }
+        .card-context { --card-color: #c084fc; --card-glow: rgba(192, 132, 252, 0.2); }
+        .card-explorer { --card-color: #2ec4b6; --card-glow: rgba(46, 196, 182, 0.2); }
+        .card-wallet { --card-color: #f72585; --card-glow: rgba(247, 37, 133, 0.2); }
+
+        /* Section */
+        .section {
+            margin-bottom: 50px;
+        }
+
+        .section-title {
+            font-size: 14px;
+            color: rgba(255,255,255,0.4);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 24px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: 60px;
+            text-align: center;
+            color: rgba(255,255,255,0.3);
+            font-size: 13px;
+        }
+
+        .footer a {
+            color: rgba(255,255,255,0.5);
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            color: #00d4ff;
+        }
+
+        /* Floating Particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: rgba(0, 212, 255, 0.5);
+            border-radius: 50%;
+            animation: float 20s infinite;
+        }
+
+        .particle:nth-child(2) { left: 15%; animation-delay: -3s; background: rgba(123, 44, 191, 0.5); }
+        .particle:nth-child(3) { left: 30%; animation-delay: -6s; }
+        .particle:nth-child(4) { left: 45%; animation-delay: -9s; background: rgba(123, 44, 191, 0.5); }
+        .particle:nth-child(5) { left: 60%; animation-delay: -12s; }
+        .particle:nth-child(6) { left: 75%; animation-delay: -15s; background: rgba(255, 107, 107, 0.5); }
+        .particle:nth-child(7) { left: 90%; animation-delay: -18s; }
+
+        @keyframes float {
+            0% { transform: translateY(100vh) scale(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100vh) scale(1); opacity: 0; }
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 40px; }
+            .portal-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-animation"></div>
+
+    <div class="particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+
+    <div class="content">
+        <div class="header">
+            <a href="/" class="back-link">← 返回首页</a>
+            <h1>曾经的头脑风景</h1>
+            <p class="subtitle">AIB 2.0 知识门户 - 记录每一段思考的轨迹</p>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">核心文档</h2>
+            <div class="portal-grid">
+                <a href="/quickstart" class="portal-card card-quickstart">
+                    <span class="icon">🚀</span>
+                    <h3>Quick Start</h3>
+                    <p>快速开始指南，了解如何部署节点、参与网络</p>
+                    <span class="tag">入门</span>
+                </a>
+
+                <a href="/constitution" class="portal-card card-constitution">
+                    <span class="icon">⚖️</span>
+                    <h3>Constitution</h3>
+                    <p>AIB 2.0 宪法，定义社区共识与治理原则</p>
+                    <span class="tag">治理</span>
+                </a>
+
+                <a href="/poaiw" class="portal-card card-poaiw">
+                    <span class="icon">🧠</span>
+                    <h3>PoAIW</h3>
+                    <p>Proof of AI Work 共识机制详解</p>
+                    <span class="tag">核心</span>
+                </a>
+
+                <a href="/genesis" class="portal-card card-genesis">
+                    <span class="icon">🌱</span>
+                    <h3>Genesis Rules</h3>
+                    <p>创世规则与代币分配机制</p>
+                    <span class="tag">经济</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">发展规划</h2>
+            <div class="portal-grid">
+                <a href="/plan" class="portal-card card-plan">
+                    <span class="icon">📋</span>
+                    <h3>Phased Plan</h3>
+                    <p>分阶段实施计划，从测试网到主网</p>
+                    <span class="tag">路线图</span>
+                </a>
+
+                <a href="/roadmap" class="portal-card card-roadmap">
+                    <span class="icon">🗺️</span>
+                    <h3>Roadmap</h3>
+                    <p>技术路线图，展示未来发展蓝图</p>
+                    <span class="tag">规划</span>
+                </a>
+
+                <a href="/portal/en/standards" class="portal-card card-standards">
+                    <span class="icon">📐</span>
+                    <h3>Standards</h3>
+                    <p>技术标准与规范文档</p>
+                    <span class="tag">技术</span>
+                </a>
+
+                <a href="/portal/en/changelog" class="portal-card card-changelog">
+                    <span class="icon">📝</span>
+                    <h3>Changelog</h3>
+                    <p>版本更新日志与变更记录</p>
+                    <span class="tag">更新</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">工具与探索</h2>
+            <div class="portal-grid">
+                <a href="/portal/en/ai/context" class="portal-card card-context">
+                    <span class="icon">🤖</span>
+                    <h3>AI Context</h3>
+                    <p>AI 上下文与开发文档</p>
+                    <span class="tag">开发者</span>
+                </a>
+
+                <a href="/portal/en/explorer" class="portal-card card-explorer">
+                    <span class="icon">🔍</span>
+                    <h3>Explorer</h3>
+                    <p>区块浏览器与链上数据查询</p>
+                    <span class="tag">工具</span>
+                </a>
+
+                <a href="/portal/en/wallet" class="portal-card card-wallet">
+                    <span class="icon">👛</span>
+                    <h3>Wallet</h3>
+                    <p>钱包使用指南与 SDK 文档</p>
+                    <span class="tag">工具</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>🌸 每一个想法，都是曾经的风景</p>
+            <p style="margin-top: 10px;">
+                <a href="/">返回首页</a> •
+                <a href="/zh/">中文</a> •
+                <a href="/">English</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

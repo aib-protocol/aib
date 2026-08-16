@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIB 2.0 - 快速开始</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #000; font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif; color: #fff; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .container { max-width: 700px; padding: 40px; text-align: center; }
+        h1 { font-size: 3rem; margin-bottom: 10px; background: linear-gradient(135deg, #00d4ff, #7b2ff7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .subtitle { font-size: 1.3rem; color: #888; margin-bottom: 40px; }
+        .card { background: #111; border: 1px solid #333; border-radius: 16px; padding: 30px; margin: 20px 0; text-align: left; }
+        .card h2 { font-size: 1.4rem; margin-bottom: 15px; color: #00d4ff; }
+        .card p { color: #aaa; line-height: 1.6; }
+        .specs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin: 20px 0; }
+        .spec { background: #1a1a1a; padding: 15px; border-radius: 8px; text-align: center; }
+        .spec-value { font-size: 1.5rem; font-weight: bold; color: #00ff88; }
+        .spec-label { font-size: 0.8rem; color: #666; margin-top: 5px; }
+        .ai-badge { background: linear-gradient(135deg, #00d4ff20, #7b2ff720); border: 1px solid #00d4ff40; padding: 15px 20px; border-radius: 12px; margin: 20px 0; }
+        .nav { display: flex; justify-content: center; gap: 15px; margin-top: 40px; flex-wrap: wrap; }
+        .nav a { color: #666; text-decoration: none; padding: 8px 16px; border-radius: 6px; transition: all 0.3s; }
+        .nav a:hover { color: #00d4ff; background: #111; }
+        code { background: #222; padding: 2px 8px; border-radius: 4px; color: #00ff88; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AIB 2.0</h1>
+        <p class="subtitle">AI 原生区块链</p>
+
+        <div class="card">
+            <h2>⚡ 快速安装</h2>
+            <p>告诉你的 AI 助手（ChatGPT、Claude 等）来安装 AIB 节点：</p>
+            <div class="ai-badge">
+                🤖 「请在服务器上安装 AIB 2.0 testnet 节点」
+            </div>
+            <p style="font-size: 0.9rem; color: #666; margin-top: 15px;">
+                就这么简单！AI 会处理一切——安装、配置和运行节点。
+            </p>
+        </div>
+
+        <div class="card">
+            <h2>🌐 网络选择</h2>
+            <p>当前支持两个网络：</p>
+            <div class="specs">
+                <div class="spec">
+                    <div class="spec-value">Testnet</div>
+                    <div class="spec-label">测试网 (默认)</div>
+                </div>
+                <div class="spec">
+                    <div class="spec-value">51213</div>
+                    <div class="spec-label">P2P 端口</div>
+                </div>
+                <div class="spec">
+                    <div class="spec-value">V2</div>
+                    <div class="spec-label">PoAIW 共识</div>
+                </div>
+            </div>
+            <p style="margin-top: 15px; font-size: 0.85rem; color: #666;">
+                主网 (mainnet) 将于 2027 年 3 月 14 日 (Pi Day) 启动
+            </p>
+        </div>
+
+        <div class="card">
+            <h2>🤖 AI 代理专用</h2>
+            <p>AI 代理可使用自动化安装：</p>
+            <p style="background:#1a1a1a;padding:15px;border-radius:8px;margin:15px 0;font-family:monospace;color:#00ff88;">curl -sL https://www.aib.one | bash -s testnet</p>
+        </div>
+
+        <div class="nav">
+            <a href="/zh/human-quickstart-document">📖 详细指南</a>
+            <a href="/zh/genesis">💰 代币经济</a>
+            <a href="/zh/constitution">📜 宪法</a>
+        </div>
+    </div>
+</body>
+</html>

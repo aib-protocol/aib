@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIB 2.0 - Guide d'installation de l'agent IA</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #0a0a0f; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; color: #fff; line-height: 1.8; }
+        .container { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
+        h1 { font-size: 2.5rem; margin-bottom: 20px; background: linear-gradient(135deg, #00d4ff, #7b2ff7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        h2 { font-size: 1.5rem; margin: 30px 0 15px; color: #00d4ff; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        h3 { font-size: 1.2rem; margin: 20px 0 10px; color: #00ff88; }
+        p { color: #aaa; margin-bottom: 15px; }
+        code { background: #1a1a2e; padding: 2px 8px; border-radius: 4px; color: #00ff88; font-family: 'Fira Code', monospace; }
+        pre { background: #1a1a2e; padding: 20px; border-radius: 12px; overflow-x: auto; margin: 15px 0; border: 1px solid #333; }
+        pre code { background: none; padding: 0; }
+        .status { background: #1a2e1a; border: 1px solid #00ff88; padding: 15px; border-radius: 8px; margin: 20px 0; }
+        .status-item { display: flex; justify-content: space-between; padding: 5px 0; }
+        .status-label { color: #888; }
+        .status-value { color: #00ff88; font-weight: bold; }
+        .btn { display: inline-block; background: linear-gradient(135deg, #00d4ff, #7b2ff7); color: #fff; padding: 12px 30px; border-radius: 8px; text-decoration: none; font-weight: bold; margin: 10px 5px 10px 0; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 5px 20px #00d4ff40; }
+        .ai-prompt { background: #111; border: 1px solid #00d4ff40; padding: 20px; border-radius: 12px; margin: 20px 0ai-prompt h3 { margin-top; }
+        .: 0; }
+        .nav { display: flex; gap: 15px; margin-bottom: 30px; flex-wrap: wrap; }
+        .nav a { color: #888; text-decoration: none; }
+        .nav a:hover { color: #00d4ff; }
+        .endpoint { background: #111; border: 1px solid #333; padding: 15px; border-radius: 8px; margin: 10px 0; }
+        .endpoint-title { color: #00ff88; font-weight: bold; font-family: monospace; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="nav">
+            <a href="/fr/">← Accueil</a>
+            <a href="/fr/quickstart">Guide rapide</a>
+            <a href="/fr/genesis">Genèse</a>
+            <a href="/fr/constitution">Constitution</a>
+        </div>
+
+        <h1>🤖 Installation AIB 2.0 par IA</h1>
+        <p>Laissez les agents IA installer AIB 2.0 en une commande</p>
+
+        <div class="status">
+            <h3>📡 État actuel du testnet</h3>
+            <div class="status-item">
+                <span class="status-label">Hauteur du bloc</span>
+                <span class="status-value" id="block-height">Chargement...</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">État de synchronisation</span>
+                <span class="status-value" id="sync-status">Chargement...</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Version du nœud</span>
+                <span class="status-value">2.0.0-mvp</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Temps de fonctionnement</span>
+                <span class="status-value" id="uptime">Chargement...</span>
+            </div>
+        </div>
+
+        <h2>🎯 Prompt pour les agents IA</h2>
+        <p>Copiez et envoyez le prompt suivant aux agents IA (OpenCLAW, OpenCode, Claude Code, etc.) :</p>
+
+        <div class="ai-prompt">
+            <h3>Prompt d'installation</h3>
+            <pre><code>Installer le nœud AIB 2.0 :
+
+curl -sL https://www.aib.one/install.sh | bash
+
+Attendre la synchronisation et vérifier la santé :
+curl http://localhost:51211/health</code></pre>
+        <a href="#" class="btn" onclick="navigator.clipboard.writeText('Installer le nœud AIB 2.0 :\n\ncurl -sL https://www.aib.one/install.sh | bash\n\nAttendre la synchronisation et vérifier la santé :\ncurl http://localhost:51211/health'); alert('Copié dans le presse-papiers !'); return false;">📋 Copier le prompt</a>
+        </div>
+
+        <h2>🔧 Installation en une ligne</h2>
+        <p>Exécutez la commande suivante pour installer AIB 2.0 :</p>
+
+        <pre><code># Installation officielle en une ligne
+curl -sL https://www.aib.one/install.sh | bash</code></pre>
+
+        <h2>🐳 Docker 说明</h2>
+        <p>安装脚本会自动：</p>
+        <ul style="color: #aaa; margin-left: 20px;">
+            <li>检查并安装 Docker（如果未安装）</li>
+            <li>拉取预编译的 Docker 镜像</li>
+            <li>在容器中运行 AIB 节点</li>
+            <li>不需要安装 Go 或编译代码</li>
+        </ul>
+
+        <h2>📡 Points d'accès API</h2>
+        <p>Après le démarrage du nœud, utilisez ces points d'accès API :</p>
+
+        <div class="endpoint">
+            <div class="endpoint-title">GET /health</div>
+            <p>Vérification de santé - retourne l'état de fonctionnement du nœud</p>
+        </div>
+        <div class="endpoint">
+            <div class="endpoint-title">GET /v1/status</div>
+            <p>État du nœud - hauteur du bloc, état de synchronisation, ID du nœud</p>
+        </div>
+        <div class="endpoint">
+            <div class="endpoint-title">GET /v1/block/latest</div>
+            <p>Dernier bloc - obtenir les informations du dernier bloc</p>
+        </div>
+        <div class="endpoint">
+            <div class="endpoint-title">GET /v1/block/{hash}</div>
+            <p>Détails du bloc - obtenir le bloc par son hash</p>
+        </div>
+        <div class="endpoint">
+            <div class="endpoint-title">POST /v1/transaction</div>
+            <p>Soumettre une transaction - diffuser la transaction sur le réseau</p>
+        </div>
+        <div class="endpoint">
+            <div class="endpoint-title">GET /v1/balance/{address}</div>
+            <p>Vérifier le solde - obtenir le solde de l'adresse</p>
+        </div>
+        <div class="endpoint">
+            <div class="endpoint-title">POST /v1/wallet/create</div>
+            <p>Créer un portefeuille - générer une nouvelle adresse de portefeuille</p>
+        </div>
+        <div class="endpoint">
+            <div class="endpoint-title">GET /v1/channels</div>
+            <p>Canaux de paiement - vérifier l'état des canaux</p>
+        </div>
+
+        <h2>🔗 Connexion au testnet</h2>
+        <pre><code># Testnet local
+API: http://localhost:51211
+P2P: localhost:51212
+
+# Testnet distant (si disponible)
+API: http://www.aib.one:51211
+P2P: www.aib.one:51212</code></pre>
+
+        <h2>⚠️ Remarques</h2>
+        <ul style="color: #aaa; margin-left: 20px;">
+            <li>Le premier démarrage nécessite la synchronisation des blocs, peut prendre de quelques minutes à quelques heures</li>
+            <li>Assurez-vous que le pare-feu du serveur ouvre les ports 51211 et 51212</li>
+        </ul>
+
+    </div>
+
+    <script>
+        // Obtenir l'état du nœud
+        fetch('/v1/status')
+            .then(r => r.json())
+            .then(d => {
+                document.getElementById('block-height').textContent = d.data.block_height;
+                document.getElementById('sync-status').textContent = d.data.sync_status;
+                document.getElementById('uptime').textContent = d.data.uptime;
+            })
+            .catch(e => {
+                document.getElementById('block-height').textContent = 'Impossible d\'obtenir';
+                document.getElementById('sync-status').textContent = 'Impossible d\'obtenir';
+            });
+    </script>
+</body>
+</html>

@@ -1,0 +1,67 @@
+{
+  "testvectors": {
+    "erc20": {
+      "transfer": {
+        "description": "ERC20 transfer test vector",
+        "from": "0x000000000000000000000000aAaAaAaaAaAaAaaAaAAAAAAAAaaaAaAaAaaAaaAa",
+        "to": "0x000000000000000000000000bBbBBBBbbBBBbbBbbbbbbbbBBbBbbBbbBbBBbB",
+        "amount": "1000000000000000000",
+        "expected": "success"
+      },
+      "approve": {
+        "description": "ERC20 approve test vector",
+        "owner": "0x000000000000000000000000aAaAaAaaAaAaAaaAaAAAAAAAAaaaAaAaAaaAaaAa",
+        "spender": "0x000000000000000000000000bBbBBBBbbBBBbbBbbbbbbbbBBbBbbBbbBbBBbB",
+        "amount": "500000000000000000",
+        "expected": "success"
+      }
+    },
+    "erc721": {
+      "mint": {
+        "description": "ERC721 mint test vector",
+        "to": "0x000000000000000000000000aAaAaAaaAaAaAaaAaAAAAAAAAaaaAaAaAaaAaaAa",
+        "tokenId": "1",
+        "expected": "success"
+      },
+      "transfer": {
+        "description": "ERC721 transfer test vector",
+        "from": "0x000000000000000000000000aAaAaAaaAaAaAaaAaAAAAAAAAaaaAaAaAaaAaaAa",
+        "to": "0x000000000000000000000000bBbBBBBbbBBBbbBbbbbbbbbBBbBbbBbbBbBBbB",
+        "tokenId": "1",
+        "expected": "success"
+      }
+    },
+    "defi": {
+      "swap": {
+        "description": "Uniswap V2 style swap test vector",
+        "tokenIn": "0x000000000000000000000000aAaAaAaaAaAaAaaAaAAAAAAAAaaaAaAaAaaAaaAa",
+        "tokenOut": "0x000000000000000000000000bBbBBBBbbBBBbbBbbbbbbbbBBbBbbBbbBbBBbB",
+        "amountIn": "1000000000000000000",
+        "amountOutMin": "900000000000000000",
+        "expected": "success"
+      },
+      "addLiquidity": {
+        "description": "Add liquidity test vector",
+        "tokenA": "0x000000000000000000000000aAaAaAaaAaAaAaaAaAAAAAAAAaaaAaAaAaaAaaAa",
+        "tokenB": "0x000000000000000000000000bBbBBBBbbBBBbbBbbbbbbbbBBbBbbBbbBbBBbB",
+        "amountADesired": "1000000000000000000",
+        "amountBDesired": "1000000000000000000",
+        "amountAMin": "900000000000000000",
+        "amountBMin": "900000000000000000",
+        "expected": "success"
+      }
+    },
+    "security": {
+      "reentrancy": {
+        "description": "Reentrancy attack test vector",
+        "vulnerable": true,
+        "expected": "blocked"
+      },
+      "overflow": {
+        "description": "Integer overflow test vector",
+        "value": "115792089237316195423570985008687907853269984665640564039457584007913129639935",
+        "expected": "reverted"
+      }
+    }
+  }
+}

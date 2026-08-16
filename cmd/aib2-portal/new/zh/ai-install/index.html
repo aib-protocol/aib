@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIB 2.0 - AI 代理安装指南</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #0a0a0f; font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif; color: #fff; line-height: 1.8; }
+        .container { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
+        h1 { font-size: 2.5rem; margin-bottom: 20px; background: linear-gradient(135deg, #00d4ff, #7b2ff7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        h2 { font-size: 1.5rem; margin: 30px 0 15px; color: #00d4ff; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        h3 { font-size: 1.2rem; margin: 20px 0 10px; color: #00ff88; }
+        p { color: #aaa; margin-bottom: 15px; }
+        code { background: #1a1a2e; padding: 2px 8px; border-radius: 4px; color: #00ff88; font-family: 'Fira Code', monospace; }
+        pre { background: #1a1a2e; padding: 20px; border-radius: 12px; overflow-x: auto; margin: 15px 0; border: 1px solid #333; }
+        pre code { background: none; padding: 0; }
+        .status { background: #1a2e1a; border: 1px solid #00ff88; padding: 15px; border-radius: 8px; margin: 20px 0; }
+        .status-item { display: flex; justify-content: space-between; padding: 5px 0; }
+        .status-label { color: #888; }
+        .status-value { color: #00ff88; font-weight: bold; }
+        .btn { display: inline-block; background: linear-gradient(135deg, #00d4ff, #7b2ff7); color: #fff; padding: 12px 30px; border-radius: 8px; text-decoration: none; font-weight: bold; margin: 10px 5px 10px 0; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 5px 20px #00d4ff40; }
+        .ai-prompt { background: #111; border: 1px solid #00d4ff40; padding: 20px; border-radius: 12px; margin: 20px 0; }
+        .ai-prompt h3 { margin-top: 0; }
+        .nav { display: flex; gap: 15px; margin-bottom: 30px; flex-wrap: wrap; }
+        .nav a { color: #888; text-decoration: none; }
+        .nav a:hover { color: #00d4ff; }
+        .endpoint { background: #111; border: 1px solid #333; padding: 15px; border-radius: 8px; margin: 10px 0; }
+        .endpoint-title { color: #00ff88; font-weight: bold; font-family: monospace; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="nav">
+            <a href="/zh/">← 首页</a>
+            <a href="/zh/quickstart">快速开始</a>
+            <a href="/zh/genesis">创世</a>
+            <a href="/zh/constitution">宪法</a>
+        </div>
+
+        <h1>🤖 AI 代理安装 AIB 2.0 节点</h1>
+        <p>让 AI 代理使用 Docker 一键安装 AIB 2.0 节点</p>
+
+        <div class="status">
+            <h3>📡 当前测试网状态</h3>
+            <div class="status-item">
+                <span class="status-label">区块高度</span>
+                <span class="status-value" id="block-height">加载中...</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">网络状态</span>
+                <span class="status-value" id="sync-status">加载中...</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">节点版本</span>
+                <span class="status-value">2.0.0-mvp</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">运行时间</span>
+                <span class="status-value" id="uptime">加载中...</span>
+            </div>
+        </div>
+
+        <h2>🎯 给 AI 代理的提示词</h2>
+        <p>复制以下提示词发送给 AI 代理（OpenCLAW、OpenCode、Claude Code 等）：</p>
+
+        <div class="ai-prompt">
+            <h3>安装提示词</h3>
+            <pre><code>安装 AIB 2.0 节点：
+
+curl -sL https://www.aib.one/install.sh | bash
+
+等待同步完成并验证健康状态：
+curl http://localhost:51211/health</code></pre>
+        <a href="#" class="btn" onclick="navigator.clipboard.writeText('安装 AIB 2.0 节点：\n\ncurl -sL https://www.aib.one/install.sh | bash\n\n等待同步完成并验证健康状态：\ncurl http://localhost:51211/health'); alert('已复制到剪贴板！'); return false;">📋 复制提示词</a>
+        </div>
+
+        <h2>🔧 一键安装命令</h2>
+        <p>运行以下单行命令安装 AIB 2.0 节点：</p>
+
+        <pre><code># 官方脚本一键安装
+curl -sL https://www.aib.one/install.sh | bash</code></pre>
+
+        <h2>🐳 Docker 说明</h2>
+        <p>安装脚本会自动：</p>
+        <ul style="color: #aaa; margin-left: 20px;">
+            <li>检查并安装 Docker（如果未安装）</li>
+            <li>拉取预编译的 Docker 镜像</li>
+            <li>在容器中运行 AIB 节点</li>
+            <li>不需要安装 Go 或编译代码</li>
+        </ul>
+
+        <h2>📡 API 端点</h2>
+        <p>节点运行后，可使用以下 API 端点：</p>
+
+        <div class="endpoint">
+            <div class="endpoint-title">GET /health</div>
+            <p>健康检查 - 返回节点运行状态</p>
+        </div>
+        <div class="endpoint">
+            <div class="endpoint-title">GET /v1/status</div>
+            <p>节点状态 - 区块高度、同步状态、节点 ID</p>
+        </div>
+        <div class="endpoint">
+            <div class="endpoint-title">GET /v1/block/latest</div>
+            <p>最新区块 - 获取最新区块信息</p>
+        </div>
+        <div class="endpoint">
+            <div class="endpoint-title">GET /v1/block/{hash}</div>
+            <p>区块详情 - 通过区块哈希获取区块</p>
+        </div>
+        <div class="endpoint">
+            <div class="endpoint-title">POST /v1/transaction</div>
+            <p>提交交易 - 广播交易到网络</p>
+        </div>
+        <div class="endpoint">
+            <div class="endpoint-title">GET /v1/balance/{address}</div>
+            <p>查询余额 - 获取地址余额</p>
+        </div>
+        <div class="endpoint">
+            <div class="endpoint-title">POST /v1/wallet/create</div>
+            <p>创建钱包 - 生成新钱包地址</p>
+        </div>
+        <div class="endpoint">
+            <div class="endpoint-title">GET /v1/channels</div>
+            <p>支付通道 - 查看支付通道状态</p>
+        </div>
+        <div class="endpoint">
+            <div class="endpoint-title">GET /v1/peers</div>
+            <p>节点列表 - 查看所有连接节点的 IP</p>
+        </div>
+
+        <h2>🔗 测试网连接信息</h2>
+        <pre><code># 本地测试网
+API: http://localhost:51211
+P2P: localhost:51212
+
+# 远程测试网（如有）
+API: http://www.aib.one:51211
+P2P: www.aib.one:51212</code></pre>
+
+        <h2>⚠️ 注意事项</h2>
+        <ul style="color: #aaa; margin-left: 20px;">
+            <li>首次启动需要同步区块数据，可能需要几分钟到几小时</li>
+            <li>确保服务器防火墙开放 51211 和 51212 端口</li>
+            <li>使用 --validator 参数启用验证节点功能</li>
+        </ul>
+
+    </div>
+
+    <script>
+        // 获取节点状态
+        fetch('/v1/status')
+            .then(r => r.json())
+            .then(d => {
+                document.getElementById('block-height').textContent = d.data.block_height;
+                document.getElementById('sync-status').textContent = d.data.sync_status;
+                document.getElementById('uptime').textContent = d.data.uptime;
+            })
+            .catch(e => {
+                document.getElementById('block-height').textContent = '无法获取';
+                document.getElementById('sync-status').textContent = '无法获取';
+            });
+    </script>
+</body>
+</html>

@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIB 2.0 代币经济</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        /* Animated Overlay */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(ellipse at 20% 80%, rgba(123, 44, 191, 0.3) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(0, 212, 255, 0.25) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(0, 0, 0, 0.6) 0%, transparent 70%);
+            z-index: 0;
+            pointer-events: none;
+            animation: overlayPulse 8s ease-in-out infinite;
+        }
+
+        @keyframes overlayPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        /* Floating Particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(0, 212, 255, 0.6);
+            border-radius: 50%;
+            animation: float 15s infinite;
+        }
+
+        .particle:nth-child(2) { left: 20%; animation-delay: -2s; background: rgba(123, 44, 191, 0.6); }
+        .particle:nth-child(3) { left: 40%; animation-delay: -4s; }
+        .particle:nth-child(4) { left: 60%; animation-delay: -6s; background: rgba(123, 44, 191, 0.6); }
+        .particle:nth-child(5) { left: 80%; animation-delay: -8s; }
+        .particle:nth-child(6) { left: 10%; animation-delay: -10s; background: rgba(123, 44, 191, 0.6); }
+        .particle:nth-child(7) { left: 70%; animation-delay: -12s; }
+        .particle:nth-child(8) { left: 90%; animation-delay: -14s; background: rgba(123, 44, 191, 0.6); }
+
+        @keyframes float {
+            0% { transform: translateY(100vh) scale(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100vh) scale(1); opacity: 0; }
+        }
+
+        /* Content */
+        .content {
+            position: relative;
+            z-index: 2;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 60px 24px 80px;
+        }
+
+        /* Back Link */
+        .back-link {
+            align-self: flex-start;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: rgba(255,255,255,0.6);
+            text-decoration: none;
+            font-size: 14px;
+            margin-bottom: 40px;
+            transition: color 0.2s;
+        }
+
+        .back-link:hover {
+            color: #00d4ff;
+        }
+
+        /* Hero */
+        .hero {
+            text-align: center;
+            margin-bottom: 48px;
+            max-width: 860px;
+        }
+
+        .scale-icon {
+            font-size: 72px;
+            margin-bottom: 16px;
+            display: block;
+            filter: drop-shadow(0 0 30px rgba(0, 212, 255, 0.5));
+            animation: iconFloat 4s ease-in-out infinite;
+        }
+
+        @keyframes iconFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .title {
+            font-size: 56px;
+            font-weight: 700;
+            letter-spacing: -2px;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #fff 0%, #00d4ff 50%, #7b2cbf 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 20px;
+            color: rgba(255,255,255,0.7);
+            font-weight: 300;
+            font-style: italic;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+
+        .ratified-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 24px;
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.15), rgba(123, 44, 191, 0.15));
+            border: 1px solid rgba(0, 212, 255, 0.35);
+            border-radius: 50px;
+            font-size: 14px;
+            color: #00d4ff;
+            animation: badgeGlow 2s ease-in-out infinite;
+        }
+
+        @keyframes badgeGlow {
+            0%, 100% { box-shadow: 0 0 20px rgba(0, 212, 255, 0.2); }
+            50% { box-shadow: 0 0 40px rgba(0, 212, 255, 0.4); }
+        }
+
+        .ratified-badge .dot {
+            width: 8px;
+            height: 8px;
+            background: #00ff88;
+            border-radius: 50%;
+            animation: dotPulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes dotPulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.5); opacity: 0.7; }
+        }
+
+        /* Main document card */
+        .doc-container {
+            max-width: 860px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+        }
+
+        /* Section card */
+        .section-card {
+            background: linear-gradient(145deg, rgba(30, 30, 32, 0.9), rgba(20, 20, 22, 0.95));
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 36px 40px;
+            position: relative;
+            overflow: hidden;
+            transition: border-color 0.3s;
+        }
+
+        .section-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #00d4ff, #7b2cbf);
+        }
+
+        .section-card:hover {
+            border-color: rgba(0, 212, 255, 0.25);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 28px;
+        }
+
+        .section-num {
+            font-size: 12px;
+            font-weight: 700;
+            color: #00d4ff;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            padding: 4px 10px;
+            border-radius: 6px;
+        }
+
+        .section-title {
+            font-size: 22px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        /* Preamble */
+        .preamble-text {
+            font-size: 16px;
+            line-height: 1.9;
+            color: rgba(255,255,255,0.8);
+            text-align: center;
+            font-style: italic;
+        }
+
+        /* Chain params table */
+        .gov-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .gov-table tr {
+            border-bottom: 1px solid rgba(255,255,255,0.07);
+            transition: background 0.2s;
+        }
+
+        .gov-table tr:last-child {
+            border-bottom: none;
+        }
+
+        .gov-table tr:hover {
+            background: rgba(0, 212, 255, 0.05);
+        }
+
+        .gov-table td {
+            padding: 14px 12px;
+            font-size: 15px;
+            vertical-align: middle;
+        }
+
+        .gov-table td:first-child {
+            color: rgba(255,255,255,0.6);
+            width: 52%;
+        }
+
+        .gov-table td:last-child {
+            color: #fff;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .gov-value-highlight {
+            color: #00d4ff;
+        }
+
+        .gov-value-purple {
+            color: #a855f7;
+        }
+
+        .gov-value-green {
+            color: #00ff88;
+        }
+
+        /* Pi supply hero block */
+        .pi-supply-block {
+            text-align: center;
+            padding: 28px 0 12px;
+        }
+
+        .pi-number {
+            font-size: 42px;
+            font-weight: 700;
+            letter-spacing: -1px;
+            background: linear-gradient(135deg, #00d4ff, #7b2cbf);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.1;
+        }
+
+        .pi-label {
+            font-size: 14px;
+            color: rgba(255,255,255,0.5);
+            margin-top: 8px;
+            letter-spacing: 1px;
+        }
+
+        .pi-formula {
+            display: inline-block;
+            margin-top: 14px;
+            font-size: 13px;
+            color: rgba(255,255,255,0.45);
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 6px 16px;
+            font-style: italic;
+        }
+
+        /* Allocation cards / chart */
+        .alloc-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .alloc-item {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+            padding: 22px 24px;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .alloc-item::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            width: var(--pct-width);
+            border-radius: 0 0 0 16px;
+        }
+
+        .alloc-item.staking::after  { background: #00d4ff; }
+        .alloc-item.ecosystem::after { background: #7b2cbf; }
+        .alloc-item.team::after      { background: #a855f7; }
+        .alloc-item.community::after { background: #00ff88; }
+        .alloc-item.airdrop::after   { background: #ffb300; }
+
+        .alloc-item:hover {
+            background: rgba(0, 212, 255, 0.07);
+            border-color: rgba(0, 212, 255, 0.25);
+            transform: translateY(-2px);
+        }
+
+        .alloc-pct {
+            font-size: 36px;
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: 6px;
+        }
+
+        .alloc-item.staking  .alloc-pct { color: #00d4ff; }
+        .alloc-item.ecosystem .alloc-pct { color: #a855f7; }
+        .alloc-item.team     .alloc-pct { color: #a855f7; }
+        .alloc-item.community .alloc-pct { color: #00ff88; }
+        .alloc-item.airdrop  .alloc-pct { color: #ffb300; }
+
+        .alloc-name {
+            font-size: 15px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 6px;
+        }
+
+        .alloc-amount {
+            font-size: 13px;
+            color: rgba(255,255,255,0.55);
+            font-family: monospace;
+            letter-spacing: 0.5px;
+        }
+
+        /* Donut chart SVG */
+        .chart-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 36px;
+            flex-wrap: wrap;
+        }
+
+        .donut-svg-container {
+            flex-shrink: 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        .donut-svg {
+            width: 220px;
+            height: 220px;
+            filter: drop-shadow(0 0 24px rgba(0, 212, 255, 0.25));
+        }
+
+        .alloc-legend {
+            flex: 1;
+            min-width: 200px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .legend-info {
+            flex: 1;
+        }
+
+        .legend-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .legend-amount {
+            font-size: 12px;
+            color: rgba(255,255,255,0.5);
+            font-family: monospace;
+        }
+
+        .legend-pct {
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        /* Airdrop / bridge notice boxes */
+        .notice-box {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            background: rgba(0, 255, 136, 0.07);
+            border: 1px solid rgba(0, 255, 136, 0.25);
+            border-radius: 14px;
+            padding: 20px 24px;
+            margin-bottom: 20px;
+        }
+
+        .notice-box.bridge {
+            background: rgba(123, 44, 191, 0.1);
+            border-color: rgba(123, 44, 191, 0.3);
+        }
+
+        .notice-icon {
+            font-size: 24px;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .notice-text {
+            font-size: 14px;
+            color: rgba(255,255,255,0.75);
+            line-height: 1.7;
+        }
+
+        .notice-text strong {
+            color: #fff;
+            display: block;
+            margin-bottom: 4px;
+            font-size: 15px;
+        }
+
+        .notice-text .detail-row {
+            display: flex;
+            gap: 8px;
+            margin-top: 6px;
+        }
+
+        .detail-label {
+            color: rgba(255,255,255,0.45);
+            min-width: 140px;
+        }
+
+        .detail-value {
+            color: rgba(255,255,255,0.85);
+            font-weight: 500;
+        }
+
+        /* Closing */
+        .closing-card {
+            background: linear-gradient(135deg, rgba(123, 44, 191, 0.15), rgba(0, 212, 255, 0.15));
+            border: 1px solid rgba(123, 44, 191, 0.35);
+            border-radius: 24px;
+            padding: 36px 40px;
+            text-align: center;
+        }
+
+        .closing-quote {
+            font-size: 22px;
+            font-weight: 300;
+            font-style: italic;
+            color: rgba(255,255,255,0.9);
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .closing-quote span {
+            background: linear-gradient(135deg, #00d4ff, #7b2cbf);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 700;
+            font-style: normal;
+        }
+
+        .closing-meta {
+            font-size: 13px;
+            color: rgba(255,255,255,0.45);
+        }
+
+        /* Buttons */
+        .btn-group {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 8px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 30px;
+            border-radius: 50px;
+            font-size: 15px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #00d4ff, #7b2cbf);
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(0, 212, 255, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.08);
+            color: rgba(255,255,255,0.85);
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 15px 40px rgba(0, 212, 255, 0.35);
+        }
+
+        /* Language Selector */
+        .language-section {
+            margin-top: 60px;
+            text-align: center;
+            max-width: 860px;
+            width: 100%;
+        }
+
+        .language-title {
+            font-size: 13px;
+            color: rgba(255,255,255,0.45);
+            margin-bottom: 18px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        .language-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .lang-btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 10px 18px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 50px;
+            color: rgba(255,255,255,0.75);
+            text-decoration: none;
+            font-size: 13px;
+            font-family: inherit;
+            transition: all 0.3s;
+        }
+
+        .lang-btn:hover {
+            background: rgba(0, 212, 255, 0.12);
+            border-color: rgba(0, 212, 255, 0.4);
+            color: #fff;
+            transform: translateY(-2px);
+        }
+
+        .lang-btn.active {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.25), rgba(123, 44, 191, 0.25));
+            border-color: rgba(0, 212, 255, 0.5);
+            color: #fff;
+        }
+
+        /* Footer */
+        .footer-note {
+            margin-top: 40px;
+            color: rgba(255,255,255,0.35);
+            font-size: 13px;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .title { font-size: 36px; letter-spacing: -1px; }
+            .alloc-grid { grid-template-columns: 1fr; }
+            .section-card { padding: 24px 20px; }
+            .closing-card { padding: 28px 20px; }
+            .closing-quote { font-size: 18px; }
+            .chart-wrapper { flex-direction: column; }
+            .pi-number { font-size: 30px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Floating Particles -->
+    <div class="particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+
+    <div class="overlay"></div>
+
+    <div class="content">
+
+        <a href="/" class="back-link">&#8592; Back to AIB 2.0</a>
+
+        <!-- Hero -->
+        <div class="hero">
+            <span class="scale-icon">&#960;</span>
+            <h1 class="title">AIB 2.0 代币经济</h1>
+            <p class="subtitle">"Pi 灵感供应，为去中心化 AI 的无限未来"</p>
+            <div class="ratified-badge">
+                <span class="dot"></span>
+                <span>创世区块 &mdash; 2027年3月14日 (Pi Day)</span>
+            </div>
+        </div>
+
+        <div class="doc-container">
+
+            <!-- Total Supply -->
+            <div class="section-card">
+                <div class="section-header">
+                    <span class="section-num">供应</span>
+                    <span class="section-title">总代币供应</span>
+                </div>
+                <div class="pi-supply-block">
+                    <div class="pi-number">3,141,592,653 AIB</div>
+                    <div class="pi-label">总固定供应 &bull; 不可变</div>
+                    <div class="pi-formula">&#960; &times; 10&#8313; &mdash; Pi 的前 10 位数字</div>
+                </div>
+            </div>
+
+            <!-- Chain Parameters -->
+            <div class="section-card">
+                <div class="section-header">
+                    <span class="section-num">网络</span>
+                    <span class="section-title">网络参数</span>
+                </div>
+                <table class="gov-table">
+                    <tbody>
+                        <tr>
+                            <td>链ID</td>
+                            <td class="gov-value-highlight">aib-mainnet-1</td>
+                        </tr>
+                        <tr>
+                            <td>区块时间</td>
+                            <td class="gov-value-highlight">30秒</td>
+                        </tr>
+                        <tr>
+                            <td>Block Reward</td>
+                            <td class="gov-value-highlight">50 AIB</td>
+                        </tr>
+                        <tr>
+                            <td>共识机制</td>
+                            <td class="gov-value-purple">Proof of AI Work (PoAIW)</td>
+                        </tr>
+                        <tr>
+                            <td>Minimum Stake</td>
+                            <td class="gov-value-highlight">1,000 AIB</td>
+                        </tr>
+                        <tr>
+                            <td>创世日期</td>
+                            <td class="gov-value-green">2027年3月14日</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 创世分配 -->
+            <div class="section-card">
+                <div class="section-header">
+                    <span class="section-num">创世</span>
+                    <span class="section-title">分配明细</span>
+                </div>
+
+                <!-- Donut chart + legend -->
+                <div class="chart-wrapper" style="margin-bottom: 32px;">
+                    <div class="donut-svg-container">
+                        <!--
+                            Donut: radius=80, circumference=502.65
+                            Staking 40%   -> dash 201.06  offset 0
+                            Ecosystem 30% -> dash 150.80  offset -201.06
+                            Team 15%      -> dash 75.40   offset -351.86
+                            Community 10% -> dash 50.27   offset -427.26
+                            Airdrop 5%    -> dash 25.13   offset -477.53
+                        -->
+                        <svg class="donut-svg" viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="110" cy="110" r="80" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="32"/>
+                            <!-- Staking Rewards 40% -->
+                            <circle cx="110" cy="110" r="80" fill="none" stroke="#00d4ff" stroke-width="32"
+                                stroke-dasharray="201.06 301.59"
+                                stroke-dashoffset="0"
+                                transform="rotate(-90 110 110)"/>
+                            <!-- Ecosystem 30% -->
+                            <circle cx="110" cy="110" r="80" fill="none" stroke="#7b2cbf" stroke-width="32"
+                                stroke-dasharray="150.80 351.85"
+                                stroke-dashoffset="-201.06"
+                                transform="rotate(-90 110 110)"/>
+                            <!-- Team 15% -->
+                            <circle cx="110" cy="110" r="80" fill="none" stroke="#a855f7" stroke-width="32"
+                                stroke-dasharray="75.40 427.25"
+                                stroke-dashoffset="-351.86"
+                                transform="rotate(-90 110 110)"/>
+                            <!-- Community 10% -->
+                            <circle cx="110" cy="110" r="80" fill="none" stroke="#00ff88" stroke-width="32"
+                                stroke-dasharray="50.27 452.38"
+                                stroke-dashoffset="-427.26"
+                                transform="rotate(-90 110 110)"/>
+                            <!-- Airdrop Pool 5% -->
+                            <circle cx="110" cy="110" r="80" fill="none" stroke="#ffb300" stroke-width="32"
+                                stroke-dasharray="25.13 477.52"
+                                stroke-dashoffset="-477.53"
+                                transform="rotate(-90 110 110)"/>
+                            <!-- Center text -->
+                            <text x="110" y="103" text-anchor="middle" fill="rgba(255,255,255,0.9)" font-size="14" font-weight="700" font-family="sans-serif">3.14B</text>
+                            <text x="110" y="121" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-size="10" font-family="sans-serif">AIB Supply</text>
+                        </svg>
+                    </div>
+                    <div class="alloc-legend">
+                        <div class="legend-item">
+                            <div class="legend-dot" style="background:#00d4ff;"></div>
+                            <div class="legend-info">
+                                <div class="legend-name">质押奖励</div>
+                                <div class="legend-amount">1,256,637,061 AIB</div>
+                            </div>
+                            <div class="legend-pct" style="color:#00d4ff;">40%</div>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-dot" style="background:#7b2cbf;"></div>
+                            <div class="legend-info">
+                                <div class="legend-name">生态</div>
+                                <div class="legend-amount">942,477,795 AIB</div>
+                            </div>
+                            <div class="legend-pct" style="color:#a855f7;">30%</div>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-dot" style="background:#a855f7;"></div>
+                            <div class="legend-info">
+                                <div class="legend-name">团队</div>
+                                <div class="legend-amount">471,238,897 AIB</div>
+                            </div>
+                            <div class="legend-pct" style="color:#a855f7;">15%</div>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-dot" style="background:#00ff88;"></div>
+                            <div class="legend-info">
+                                <div class="legend-name">社区</div>
+                                <div class="legend-amount">314,159,265 AIB</div>
+                            </div>
+                            <div class="legend-pct" style="color:#00ff88;">10%</div>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-dot" style="background:#ffb300;"></div>
+                            <div class="legend-info">
+                                <div class="legend-name">空投池</div>
+                                <div class="legend-amount">157,079,635 AIB</div>
+                            </div>
+                            <div class="legend-pct" style="color:#ffb300;">5%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Allocation detail cards -->
+                <div class="alloc-grid">
+                    <div class="alloc-item staking" style="--pct-width:100%;">
+                        <div class="alloc-pct">40%</div>
+                        <div class="alloc-name">质押奖励</div>
+                        <div class="alloc-amount">1,256,637,061 AIB</div>
+                    </div>
+                    <div class="alloc-item ecosystem" style="--pct-width:75%;">
+                        <div class="alloc-pct">30%</div>
+                        <div class="alloc-name">生态</div>
+                        <div class="alloc-amount">942,477,795 AIB</div>
+                    </div>
+                    <div class="alloc-item team" style="--pct-width:37.5%;">
+                        <div class="alloc-pct">15%</div>
+                        <div class="alloc-name">团队</div>
+                        <div class="alloc-amount">471,238,897 AIB</div>
+                    </div>
+                    <div class="alloc-item community" style="--pct-width:25%;">
+                        <div class="alloc-pct">10%</div>
+                        <div class="alloc-name">社区</div>
+                        <div class="alloc-amount">314,159,265 AIB</div>
+                    </div>
+                    <div class="alloc-item airdrop" style="--pct-width:12.5%; grid-column: 1 / -1;">
+                        <div class="alloc-pct">5%</div>
+                        <div class="alloc-name">空投池</div>
+                        <div class="alloc-amount">157,079,635 AIB</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 空投信息 -->
+            <div class="section-card">
+                <div class="section-header">
+                    <span class="section-num">空投</span>
+                    <span class="section-title">创世空投</span>
+                </div>
+
+                <div class="notice-box">
+                    <span class="notice-icon">&#9992;</span>
+                    <div class="notice-text">
+                        <strong>创世空投 &mdash; 每地址 100 AIB</strong>
+                        创世空投从 5% 空投池向符合条件的参与者按先到先得原则分发代币。
+                        代币必须主动认领；未认领的代币在截止日期后将返还给社区国库。
+                        <div class="detail-row">
+                            <span class="detail-label">每地址分配</span>
+                            <span class="detail-value">100 AIB</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">认领截止时间</span>
+                            <span class="detail-value">主网上线后 31 天</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">分发方式</span>
+                            <span class="detail-value">主动认领 &mdash; 先到先得</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">排除项</span>
+                            <span class="detail-value">团队地址 &amp; 合约地址</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AIB1 桥接快照 -->
+            <div class="section-card">
+                <div class="section-header">
+                    <span class="section-num">桥接</span>
+                    <span class="section-title">AIB1 &#8594; AIB2 迁移快照</span>
+                </div>
+
+                <div class="notice-box bridge">
+                    <span class="notice-icon">&#8644;</span>
+                    <div class="notice-text">
+                        <strong>AIB1 持有者桥接 &mdash; 1:1 交换率</strong>
+                        截至快照时所有 AIB1 持有者有权认领等量的 AIB2 代币。
+                        快照于 2025 年底进行，以建立公平且可审计的记录。
+                        <div class="detail-row">
+                            <span class="detail-label">快照时间</span>
+                            <span class="detail-value">2025-12-31T23:59:59Z</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">认领窗口开启</span>
+                            <span class="detail-value">2026-06-01</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">认领窗口关闭</span>
+                            <span class="detail-value">2027-12-31</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">交换率</span>
+                            <span class="detail-value">1 AIB1 = 1 AIB2 (1:1)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Closing -->
+            <div class="closing-card">
+                <p class="closing-quote">
+                    "由 <span>数学</span> 书写供应，由 <span>共识</span> 治理，<br>
+                    为 <span>所有人</span> 所有。"
+                </p>
+                <div class="btn-group">
+                    <a href="/governance" class="btn btn-primary">参与治理 &#8594;</a>
+                    <a href="/constitution" class="btn btn-secondary">阅读宪法</a>
+                </div>
+                <p class="closing-meta" style="margin-top: 24px;">
+                    AIB 2.0 创世 &bull; 2027年3月14日 (Pi Day) &bull; 链ID: aib-mainnet-1 &bull; 总供应: 3,141,592,653 AIB
+                </p>
+            </div>
+
+        </div>
+
+        <!-- Language Selector -->
+        <div class="language-section">
+            <div class="language-title">Select Language / Select Language</div>
+            <div class="language-grid">
+                <a href="/genesis" class="lang-btn active">English</a>
+                <a href="/zh/genesis" class="lang-btn">简体中文</a>
+                <a href="/zh-tw/genesis" class="lang-btn">繁體中文</a>
+                <a href="/fr/genesis" class="lang-btn">Français</a>
+                <a href="/ja/genesis" class="lang-btn">日本語</a>
+                <a href="/ms/genesis" class="lang-btn">Bahasa Melayu</a>
+                <a href="/th/genesis" class="lang-btn">ไทย</a>
+                <a href="/es/genesis" class="lang-btn">Español</a>
+                <a href="/de/genesis" class="lang-btn">Deutsch</a>
+                <a href="/ru/genesis" class="lang-btn">Русский</a>
+            </div>
+        </div>
+
+        <div class="footer-note">
+            基于 Proof of AI Work &bull; 总供应: 3,141,592,653 AIB &bull; 区块时间: 30s
+        </div>
+
+    </div>
+</body>
+</html>
