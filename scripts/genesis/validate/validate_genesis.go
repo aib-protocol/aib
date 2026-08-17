@@ -35,10 +35,11 @@ type GenesisConfig struct {
 
 // Allocations represents token allocation details
 type Allocations struct {
-	Team          AllocationAmount `json:"team"`
-	Ecosystem     AllocationAmount `json:"ecosystem"`
+	Team           AllocationAmount `json:"team"`
+	Ecosystem      AllocationAmount `json:"ecosystem"`
 	StakingRewards AllocationAmount `json:"staking_rewards"`
-	Community     AllocationAmount `json:"community"`
+	Community      AllocationAmount `json:"community"`
+	AirdropPool    AllocationAmount `json:"airdrop_pool"`
 }
 
 // AllocationAmount represents individual allocation
@@ -67,7 +68,7 @@ const (
 	ExpectedGenesisTime = "2026-03-14T00:00:00Z"
 	ExpectedTotalSupply = 3141592653
 	ExpectedBlockReward = 50
-	ExpectedBlockTime   = 60
+	ExpectedBlockTime   = 30
 )
 
 func main() {
@@ -225,8 +226,9 @@ func validateGenesis(genesis GenesisConfig, data string, verbose bool) Validatio
 	ecoPct, _ := strconv.Atoi(genesis.Allocations.Ecosystem.Percentage)
 	stakePct, _ := strconv.Atoi(genesis.Allocations.StakingRewards.Percentage)
 	commPct, _ := strconv.Atoi(genesis.Allocations.Community.Percentage)
+	airdropPct, _ := strconv.Atoi(genesis.Allocations.AirdropPool.Percentage)
 
-	totalPct := teamPct + ecoPct + stakePct + commPct
+	totalPct := teamPct + ecoPct + stakePct + commPct + airdropPct
 	if totalPct != 100 {
 		result.Passed = false
 		result.Errors = append(result.Errors,
@@ -251,12 +253,13 @@ func validateGenesis(genesis GenesisConfig, data string, verbose bool) Validatio
 
 	allocList := []allocEntry{
 		{15, genesis.Allocations.Team.Amount, genesis.Allocations.Team.Percentage, "Team", false},
-		{30, genesis.Allocations.Ecosystem.Amount, genesis.Allocations.Ecosystem.Percentage, "Ecosystem", false},
-		{40, genesis.Allocations.StakingRewards.Amount, genesis.Allocations.StakingRewards.Percentage, "Staking Rewards", false},
-		{15, genesis.Allocations.Community.Amount, genesis.Allocations.Community.Percentage, "Community", true},
+		{0, genesis.Allocations.Ecosystem.Amount, genesis.Allocations.Ecosystem.Percentage, "Ecosystem", false},
+		{0, genesis.Allocations.Community.Amount, genesis.Allocations.Community.Percentage, "Community", false},
+		{5, genesis.Allocations.AirdropPool.Amount, genesis.Allocations.AirdropPool.Percentage, "Airdrop Pool", false},
+		{80, genesis.Allocations.StakingRewards.Amount, genesis.Allocations.StakingRewards.Percentage, "Staking Rewards", true},
 	}
 
-	// Calculate the remainder from integer division: community pool absorbs it
+	// Calculate the remainder from integer division: staking pool absorbs it
 	nonRemainderSum := int64(0)
 	for _, alloc := range allocList {
 		if !alloc.isRemainderBin {
@@ -391,8 +394,8 @@ func printResults(result ValidationResult, verbose bool) {
 	// Print mathematical verification
 	if verbose {
 		teamAmt := int64(ExpectedTotalSupply) * 15 / 100
-		ecoAmt := int64(ExpectedTotalSupply) * 30 / 100
-		stakeAmt := int64(ExpectedTotalSupply) * 40 / 100
+		ecoAmt := int64(ExpectedTotalSupply) * 0 / 100
+		stakeAmt := int64(ExpectedTotalSupply) * 80 / 100
 		commAmt := int64(ExpectedTotalSupply) - teamAmt - ecoAmt - stakeAmt
 
 		fmt.Println("\n=================================================")
@@ -400,14 +403,14 @@ func printResults(result ValidationResult, verbose bool) {
 		fmt.Println("=================================================")
 		fmt.Printf("\nExpected Total Supply: %d\n", ExpectedTotalSupply)
 		fmt.Printf("Team (15%%):            %d\n", teamAmt)
-		fmt.Printf("Ecosystem (30%%):       %d\n", ecoAmt)
-		fmt.Printf("Staking Rewards (40%%): %d\n", stakeAmt)
-		fmt.Printf("Community (15%%+rem):   %d (includes %d remainder from integer division)\n",
+		fmt.Printf("Ecosystem (0%%):        %d\n", ecoAmt)
+		fmt.Printf("Staking Rewards (80%%): %d\n", stakeAmt)
+		fmt.Printf("Community (0%%+rem):    %d (includes %d remainder from integer division)\n",
 			commAmt, commAmt-int64(ExpectedTotalSupply)*15/100)
 		fmt.Printf("Sum:                   %d\n", teamAmt+ecoAmt+stakeAmt+commAmt)
 
 		// Verify using float to check for rounding
-		sum := 0.15 + 0.30 + 0.40 + 0.15
+		sum := 0.15 + 0.00 + 0.80 + 0.05
 		fmt.Printf("\nPercentage Sum: %.2f (should be 1.00)\n", sum)
 		fmt.Printf("Math Check: %v\n", math.Abs(sum-1.0) < 0.001)
 	}
