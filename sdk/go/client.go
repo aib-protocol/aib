@@ -37,7 +37,7 @@ func DefaultClientConfig() ClientConfig {
 
 // Client is an API client for interacting with AIB blockchain.
 type Client struct {
-	config    ClientConfig
+	config     ClientConfig
 	httpClient *http.Client
 }
 
@@ -88,11 +88,11 @@ func (c *Client) GetBalance(address string) (*Balance, error) {
 
 // UTXO represents an unspent transaction output.
 type UTXO struct {
-	TxHash    string `json:"tx_hash"`
-	Index     uint32 `json:"index"`
-	Address   string `json:"address"`
-	Amount    uint64 `json:"amount"`
-	AssetID   string `json:"asset_id,omitempty"`
+	TxHash        string `json:"tx_hash"`
+	Index         uint32 `json:"index"`
+	Address       string `json:"address"`
+	Amount        uint64 `json:"amount"`
+	AssetID       string `json:"asset_id,omitempty"`
 	Confirmations uint64 `json:"confirmations"`
 }
 
@@ -120,22 +120,22 @@ func (c *Client) GetUTXOs(address string) ([]UTXO, error) {
 
 // TransactionInfo represents transaction information.
 type TransactionInfo struct {
-	TxHash        string    `json:"tx_hash"`
-	Version       uint32    `json:"version"`
-	LockTime      uint32    `json:"lock_time"`
-	Confirmations uint64    `json:"confirmations"`
-	Timestamp     int64     `json:"timestamp"`
+	TxHash        string         `json:"tx_hash"`
+	Version       uint32         `json:"version"`
+	LockTime      uint32         `json:"lock_time"`
+	Confirmations uint64         `json:"confirmations"`
+	Timestamp     int64          `json:"timestamp"`
 	Inputs        []TXInputInfo  `json:"inputs"`
 	Outputs       []TXOutputInfo `json:"outputs"`
-	Fee           uint64    `json:"fee"`
+	Fee           uint64         `json:"fee"`
 }
 
 // TXInputInfo represents input information in a transaction.
 type TXInputInfo struct {
-	TxHash    string `json:"tx_hash"`
-	Index     uint32 `json:"index"`
-	Address   string `json:"address"`
-	Amount    uint64 `json:"amount"`
+	TxHash  string `json:"tx_hash"`
+	Index   uint32 `json:"index"`
+	Address string `json:"address"`
+	Amount  uint64 `json:"amount"`
 }
 
 // TXOutputInfo represents output information in a transaction.
@@ -241,11 +241,11 @@ func (c *Client) GetTransactionHistory(address string, limit, offset int) ([]Tra
 
 // GetBlockInfo retrieves block information.
 type BlockInfo struct {
-	Hash       string `json:"hash"`
-	Height     uint64 `json:"height"`
-	Timestamp  int64  `json:"timestamp"`
-	TxCount    int    `json:"tx_count"`
-	PrevHash   string `json:"prev_hash"`
+	Hash      string `json:"hash"`
+	Height    uint64 `json:"height"`
+	Timestamp int64  `json:"timestamp"`
+	TxCount   int    `json:"tx_count"`
+	PrevHash  string `json:"prev_hash"`
 }
 
 // GetBlock retrieves block information by height or hash.
@@ -272,10 +272,10 @@ func (c *Client) GetBlock(blockID string) (*BlockInfo, error) {
 
 // GetNetworkInfo retrieves network information.
 type NetworkInfo struct {
-	ChainID        string `json:"chain_id"`
-	Version        string `json:"version"`
-	Height         uint64 `json:"height"`
-	BestBlockHash  string `json:"best_block_hash"`
+	ChainID       string `json:"chain_id"`
+	Version       string `json:"version"`
+	Height        uint64 `json:"height"`
+	BestBlockHash string `json:"best_block_hash"`
 }
 
 // GetNetworkInfo retrieves current network status.

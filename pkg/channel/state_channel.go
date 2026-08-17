@@ -65,22 +65,22 @@ type ChannelState struct {
 
 // DisputeRecord tracks an active or resolved dispute
 type DisputeRecord struct {
-	ChannelID      [32]byte
-	Challenger     interfaces.Address
+	ChannelID       [32]byte
+	Challenger      interfaces.Address
 	ChallengedState interfaces.SignedState
-	ChallengeStart time.Time
-	ChallengeEnd   time.Time
-	Resolved       bool
-	Winner         interfaces.Address
-	Resolution     string
+	ChallengeStart  time.Time
+	ChallengeEnd    time.Time
+	Resolved        bool
+	Winner          interfaces.Address
+	Resolution      string
 }
 
 // Config holds configuration for the channel manager
 type Config struct {
-	ChallengePeriod   time.Duration
-	MinDeposit        uint64
-	MaxChannelValue   uint64
-	MultiSigLocker    interfaces.MultiSigLocker
+	ChallengePeriod time.Duration
+	MinDeposit      uint64
+	MaxChannelValue uint64
+	MultiSigLocker  interfaces.MultiSigLocker
 }
 
 // NewManager creates a new channel manager with the given configuration.
@@ -339,9 +339,9 @@ func (m *Manager) CloseChannel(ctx context.Context, ch *interfaces.Channel, fina
 	// In a real implementation, we'd track the funding UTXO
 	// For now, we simulate the spend operation
 	utxo := &interfaces.UTXO{
-		TxHash: channel.StateHash, // Using state hash as placeholder
-		Index:  0,
-		Value:  oldTotal,
+		TxHash:  channel.StateHash, // Using state hash as placeholder
+		Index:   0,
+		Value:   oldTotal,
 		Address: channel.PartyA, // Placeholder
 	}
 

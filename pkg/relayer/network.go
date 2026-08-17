@@ -49,13 +49,13 @@ type RelayerNetwork interface {
 
 // NetworkStats contains network-wide statistics.
 type NetworkStats struct {
-	TotalRelayers    int       `json:"total_relayers"`
-	ActiveRelayers   int       `json:"active_relayers"`
-	InactiveRelayers int       `json:"inactive_relayers"`
-	SlashedRelayers  int       `json:"slashed_relayers"`
-	TotalStake       string    `json:"total_stake"`
-	TotalTXs         uint64    `json:"total_txs"`
-	PendingDisputes  int       `json:"pending_disputes"`
+	TotalRelayers    int         `json:"total_relayers"`
+	ActiveRelayers   int         `json:"active_relayers"`
+	InactiveRelayers int         `json:"inactive_relayers"`
+	SlashedRelayers  int         `json:"slashed_relayers"`
+	TotalStake       string      `json:"total_stake"`
+	TotalTXs         uint64      `json:"total_txs"`
+	PendingDisputes  int         `json:"pending_disputes"`
 	SupportedChains  []ChainType `json:"supported_chains"`
 }
 
@@ -65,12 +65,12 @@ type NetworkStats struct {
 
 // Network implements the RelayerNetwork interface.
 type Network struct {
-	relayers      map[string]*RelayerNode   // relayerID -> RelayerNode
-	chainIndex    map[ChainType][]string    // chain -> list of relayer IDs
-	disputes      map[string]*Dispute       // disputeID -> Dispute
-	resolutions   map[string]*DisputeResolution // disputeID -> Resolution
-	totalStake    *big.Int                  // Total stake in the network
-	mu            sync.RWMutex
+	relayers    map[string]*RelayerNode       // relayerID -> RelayerNode
+	chainIndex  map[ChainType][]string        // chain -> list of relayer IDs
+	disputes    map[string]*Dispute           // disputeID -> Dispute
+	resolutions map[string]*DisputeResolution // disputeID -> Resolution
+	totalStake  *big.Int                      // Total stake in the network
+	mu          sync.RWMutex
 }
 
 // NewNetwork creates a new relayer network.

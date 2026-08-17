@@ -32,7 +32,7 @@ var (
 
 // Test balances
 var (
-	TestBalance1  = new(big.Int).Mul(big.NewInt(1000), new(big.Int).Exp(big.NewInt(10), big.NewInt(18), nil))
+	TestBalance1 = new(big.Int).Mul(big.NewInt(1000), new(big.Int).Exp(big.NewInt(10), big.NewInt(18), nil))
 	TestBalance2 = new(big.Int).Mul(big.NewInt(500), new(big.Int).Exp(big.NewInt(10), big.NewInt(18), nil))
 )
 
@@ -519,7 +519,7 @@ func TestEVMOpcodes(t *testing.T) {
 	sm.SetBalance(TestAddr1, new(big.Int).Mul(big.NewInt(10), big.NewInt(1e18)))
 
 	testCases := []struct {
-		name   string
+		name    string
 		opcodes []byte
 	}{
 		{"STOP", []byte{0x00}},
@@ -641,7 +641,7 @@ func TestOutOfGas(t *testing.T) {
 		To:       &TestAddr2,
 		Value:    big.NewInt(0),
 		Data:     []byte{0x60, 0x00, 0x60, 0x01, 0x01}, // Some code
-		GasLimit: 100, // Very low
+		GasLimit: 100,                                  // Very low
 		GasPrice: big.NewInt(1),
 		Nonce:    0,
 	}

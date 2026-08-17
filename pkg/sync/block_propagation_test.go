@@ -94,11 +94,11 @@ func TestBroadcastBlock(t *testing.T) {
 
 	// Create and broadcast a block
 	block := &Block{
-		Height:      1,
-		Timestamp:   time.Now().Unix(),
-		TaskID:      "test-task",
-		FinalResult: "success",
-		IsValid:     true,
+		Height:        1,
+		Timestamp:     time.Now().Unix(),
+		TaskID:        "test-task",
+		FinalResult:   "success",
+		IsValid:       true,
 		PrevBlockHash: make([]byte, 32),
 	}
 	block.BlockHash = block.calculateHash()
@@ -129,11 +129,11 @@ func TestReceiveBlock(t *testing.T) {
 
 	// Create a block with genesis
 	genesisBlock := &Block{
-		Height:      0,
-		Timestamp:   time.Now().Unix(),
-		TaskID:      "genesis",
-		FinalResult: "genesis",
-		IsValid:     true,
+		Height:        0,
+		Timestamp:     time.Now().Unix(),
+		TaskID:        "genesis",
+		FinalResult:   "genesis",
+		IsValid:       true,
 		PrevBlockHash: make([]byte, 32),
 	}
 	genesisBlock.BlockHash = genesisBlock.calculateHash()
@@ -142,12 +142,12 @@ func TestReceiveBlock(t *testing.T) {
 
 	// Create a new block
 	block := &Block{
-		Height:         1,
-		Timestamp:      time.Now().Unix(),
-		TaskID:         "test-task",
-		FinalResult:    "success",
-		IsValid:        true,
-		PrevBlockHash:  genesisBlock.Hash(),
+		Height:        1,
+		Timestamp:     time.Now().Unix(),
+		TaskID:        "test-task",
+		FinalResult:   "success",
+		IsValid:       true,
+		PrevBlockHash: genesisBlock.Hash(),
 	}
 	block.BlockHash = block.calculateHash()
 
@@ -180,11 +180,11 @@ func TestReceiveDuplicateBlock(t *testing.T) {
 
 	// Create genesis block
 	genesisBlock := &Block{
-		Height:      0,
-		Timestamp:   time.Now().Unix(),
-		TaskID:      "genesis",
-		FinalResult: "genesis",
-		IsValid:     true,
+		Height:        0,
+		Timestamp:     time.Now().Unix(),
+		TaskID:        "genesis",
+		FinalResult:   "genesis",
+		IsValid:       true,
 		PrevBlockHash: make([]byte, 32),
 	}
 	genesisBlock.BlockHash = genesisBlock.calculateHash()
@@ -192,12 +192,12 @@ func TestReceiveDuplicateBlock(t *testing.T) {
 
 	// Create a block
 	block := &Block{
-		Height:         1,
-		Timestamp:      time.Now().Unix(),
-		TaskID:         "test-task",
-		FinalResult:    "success",
-		IsValid:        true,
-		PrevBlockHash:  genesisBlock.Hash(),
+		Height:        1,
+		Timestamp:     time.Now().Unix(),
+		TaskID:        "test-task",
+		FinalResult:   "success",
+		IsValid:       true,
+		PrevBlockHash: genesisBlock.Hash(),
 	}
 	block.BlockHash = block.calculateHash()
 
@@ -230,11 +230,11 @@ func TestValidateBlock(t *testing.T) {
 
 	// Test valid genesis block
 	genesisBlock := &Block{
-		Height:      0,
-		Timestamp:   time.Now().Unix(),
-		TaskID:      "genesis",
-		FinalResult: "genesis",
-		IsValid:     true,
+		Height:        0,
+		Timestamp:     time.Now().Unix(),
+		TaskID:        "genesis",
+		FinalResult:   "genesis",
+		IsValid:       true,
 		PrevBlockHash: make([]byte, 32),
 	}
 	genesisBlock.BlockHash = genesisBlock.calculateHash()
@@ -245,11 +245,11 @@ func TestValidateBlock(t *testing.T) {
 
 	// Test block with future timestamp
 	futureBlock := &Block{
-		Height:      1,
-		Timestamp:   time.Now().Add(10 * time.Minute).Unix(),
-		TaskID:      "test",
-		FinalResult: "test",
-		IsValid:     true,
+		Height:        1,
+		Timestamp:     time.Now().Add(10 * time.Minute).Unix(),
+		TaskID:        "test",
+		FinalResult:   "test",
+		IsValid:       true,
 		PrevBlockHash: make([]byte, 32),
 	}
 	futureBlock.BlockHash = futureBlock.calculateHash()
@@ -260,11 +260,11 @@ func TestValidateBlock(t *testing.T) {
 
 	// Test block with old timestamp
 	oldBlock := &Block{
-		Height:      1,
-		Timestamp:   time.Now().Add(-48 * time.Hour).Unix(),
-		TaskID:      "test",
-		FinalResult: "test",
-		IsValid:     true,
+		Height:        1,
+		Timestamp:     time.Now().Add(-48 * time.Hour).Unix(),
+		TaskID:        "test",
+		FinalResult:   "test",
+		IsValid:       true,
 		PrevBlockHash: make([]byte, 32),
 	}
 	oldBlock.BlockHash = oldBlock.calculateHash()
@@ -276,9 +276,9 @@ func TestValidateBlock(t *testing.T) {
 
 func TestBlockMessage(t *testing.T) {
 	msg := &BlockMessage{
-		Type:      "block_announce",
+		Type:     "block_announce",
 		FromPeer: "peer1",
-		TTL:       3,
+		TTL:      3,
 	}
 
 	if msg.Type != "block_announce" {
@@ -315,11 +315,11 @@ func TestBlockPropagatorCallback(t *testing.T) {
 
 	// Create genesis block
 	genesisBlock := &Block{
-		Height:      0,
-		Timestamp:   time.Now().Unix(),
-		TaskID:      "genesis",
-		FinalResult: "genesis",
-		IsValid:     true,
+		Height:        0,
+		Timestamp:     time.Now().Unix(),
+		TaskID:        "genesis",
+		FinalResult:   "genesis",
+		IsValid:       true,
 		PrevBlockHash: make([]byte, 32),
 	}
 	genesisBlock.BlockHash = genesisBlock.calculateHash()
@@ -327,12 +327,12 @@ func TestBlockPropagatorCallback(t *testing.T) {
 
 	// Create a block
 	block := &Block{
-		Height:         1,
-		Timestamp:      time.Now().Unix(),
-		TaskID:         "test-task",
-		FinalResult:    "success",
-		IsValid:        true,
-		PrevBlockHash:  genesisBlock.Hash(),
+		Height:        1,
+		Timestamp:     time.Now().Unix(),
+		TaskID:        "test-task",
+		FinalResult:   "success",
+		IsValid:       true,
+		PrevBlockHash: genesisBlock.Hash(),
 	}
 	block.BlockHash = block.calculateHash()
 
@@ -395,9 +395,9 @@ func TestHandleBlockAnnounce(t *testing.T) {
 
 	// Add genesis block
 	genesis := &Block{
-		Height:         0,
-		Timestamp:      time.Now().Unix(),
-		PrevBlockHash:  make([]byte, 32),
+		Height:        0,
+		Timestamp:     time.Now().Unix(),
+		PrevBlockHash: make([]byte, 32),
 	}
 	genesis.BlockHash = genesis.calculateHash()
 	chain.AddBlock(genesis)
@@ -411,9 +411,9 @@ func TestHandleBlockAnnounce(t *testing.T) {
 
 	// Create a block
 	block := &Block{
-		Height:         1,
-		Timestamp:      time.Now().Unix(),
-		PrevBlockHash:  genesis.Hash(),
+		Height:        1,
+		Timestamp:     time.Now().Unix(),
+		PrevBlockHash: genesis.Hash(),
 	}
 	block.BlockHash = block.calculateHash()
 
@@ -470,9 +470,9 @@ func TestHandleBlockAnnounceDuplicate(t *testing.T) {
 
 	// Add genesis block
 	genesis := &Block{
-		Height:         0,
-		Timestamp:      time.Now().Unix(),
-		PrevBlockHash:  make([]byte, 32),
+		Height:        0,
+		Timestamp:     time.Now().Unix(),
+		PrevBlockHash: make([]byte, 32),
 	}
 	genesis.BlockHash = genesis.calculateHash()
 	chain.AddBlock(genesis)
@@ -486,9 +486,9 @@ func TestHandleBlockAnnounceDuplicate(t *testing.T) {
 
 	// Create a block
 	block := &Block{
-		Height:         1,
-		Timestamp:      time.Now().Unix(),
-		PrevBlockHash:  genesis.Hash(),
+		Height:        1,
+		Timestamp:     time.Now().Unix(),
+		PrevBlockHash: genesis.Hash(),
 	}
 	block.BlockHash = block.calculateHash()
 
@@ -519,18 +519,18 @@ func TestHandleBlockRequest(t *testing.T) {
 
 	// Add genesis block
 	genesis := &Block{
-		Height:         0,
-		Timestamp:      time.Now().Unix(),
-		PrevBlockHash:  make([]byte, 32),
+		Height:        0,
+		Timestamp:     time.Now().Unix(),
+		PrevBlockHash: make([]byte, 32),
 	}
 	genesis.BlockHash = genesis.calculateHash()
 	chain.AddBlock(genesis)
 
 	// Add another block
 	block := &Block{
-		Height:         1,
-		Timestamp:      time.Now().Unix(),
-		PrevBlockHash:  genesis.Hash(),
+		Height:        1,
+		Timestamp:     time.Now().Unix(),
+		PrevBlockHash: genesis.Hash(),
 	}
 	block.BlockHash = block.calculateHash()
 	chain.AddBlock(block)
@@ -591,9 +591,9 @@ func TestHandleBlockResponse(t *testing.T) {
 
 	// Add genesis block
 	genesis := &Block{
-		Height:         0,
-		Timestamp:      time.Now().Unix(),
-		PrevBlockHash:  make([]byte, 32),
+		Height:        0,
+		Timestamp:     time.Now().Unix(),
+		PrevBlockHash: make([]byte, 32),
 	}
 	genesis.BlockHash = genesis.calculateHash()
 	chain.AddBlock(genesis)
@@ -607,9 +607,9 @@ func TestHandleBlockResponse(t *testing.T) {
 
 	// Create a block
 	block := &Block{
-		Height:         1,
-		Timestamp:      time.Now().Unix(),
-		PrevBlockHash:  genesis.Hash(),
+		Height:        1,
+		Timestamp:     time.Now().Unix(),
+		PrevBlockHash: genesis.Hash(),
 	}
 	block.BlockHash = block.calculateHash()
 
@@ -671,9 +671,9 @@ func TestRelayBlock(t *testing.T) {
 
 	// Add genesis block
 	genesis := &Block{
-		Height:         0,
-		Timestamp:      time.Now().Unix(),
-		PrevBlockHash:  make([]byte, 32),
+		Height:        0,
+		Timestamp:     time.Now().Unix(),
+		PrevBlockHash: make([]byte, 32),
 	}
 	genesis.BlockHash = genesis.calculateHash()
 	chain.AddBlock(genesis)
@@ -687,9 +687,9 @@ func TestRelayBlock(t *testing.T) {
 
 	// Create a block
 	block := &Block{
-		Height:         1,
-		Timestamp:      time.Now().Unix(),
-		PrevBlockHash:  genesis.Hash(),
+		Height:        1,
+		Timestamp:     time.Now().Unix(),
+		PrevBlockHash: genesis.Hash(),
 	}
 	block.BlockHash = block.calculateHash()
 

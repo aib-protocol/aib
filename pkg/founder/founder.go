@@ -33,50 +33,50 @@ const (
 type FounderStatus string
 
 const (
-	StatusLocked    FounderStatus = "locked"     // Initial lock period
-	StatusVesting   FounderStatus = "vesting"    // Vesting in progress
-	StatusCompleted FounderStatus = "completed"  // All tokens vested
-	StatusClaimed   FounderStatus = "claimed"    // All tokens claimed
+	StatusLocked    FounderStatus = "locked"    // Initial lock period
+	StatusVesting   FounderStatus = "vesting"   // Vesting in progress
+	StatusCompleted FounderStatus = "completed" // All tokens vested
+	StatusClaimed   FounderStatus = "claimed"   // All tokens claimed
 )
 
 // Founder represents a founder with their allocation details.
 type Founder struct {
-	ID           string        `json:"id"`            // Unique identifier
-	Name         string        `json:"name"`          // Display name
-	Address      string        `json:"address"`       // AIB address (Bech32m)
-	AddressBytes [32]byte      `json:"-"`             // Raw address bytes
-	PublicKey    string        `json:"public_key"`    // Hex encoded public key
-	PubKeyBytes  []byte        `json:"-"`             // Raw public key bytes
-	TotalAmount  uint64        `json:"total_amount"`  // Total allocation (3141 AIB)
-	Claimed      uint64        `json:"claimed"`       // Amount already claimed
-	Status       FounderStatus `json:"status"`        // Current status
-	StartTime    time.Time     `json:"start_time"`    // Vesting start time
-	UnlockTime   time.Time     `json:"unlock_time"`   // End of lock period
-	EndTime      time.Time     `json:"end_time"`      // Full vesting completion
-	Metadata     FounderMetadata `json:"metadata"`    // Additional metadata
+	ID           string          `json:"id"`           // Unique identifier
+	Name         string          `json:"name"`         // Display name
+	Address      string          `json:"address"`      // AIB address (Bech32m)
+	AddressBytes [32]byte        `json:"-"`            // Raw address bytes
+	PublicKey    string          `json:"public_key"`   // Hex encoded public key
+	PubKeyBytes  []byte          `json:"-"`            // Raw public key bytes
+	TotalAmount  uint64          `json:"total_amount"` // Total allocation (3141 AIB)
+	Claimed      uint64          `json:"claimed"`      // Amount already claimed
+	Status       FounderStatus   `json:"status"`       // Current status
+	StartTime    time.Time       `json:"start_time"`   // Vesting start time
+	UnlockTime   time.Time       `json:"unlock_time"`  // End of lock period
+	EndTime      time.Time       `json:"end_time"`     // Full vesting completion
+	Metadata     FounderMetadata `json:"metadata"`     // Additional metadata
 }
 
 // FounderMetadata holds additional information about a founder.
 type FounderMetadata struct {
 	Description string    `json:"description,omitempty"`
-	Role        string    `json:"role,omitempty"`        // Role in the project
-	Social      string    `json:"social,omitempty"`      // Social media/handle
+	Role        string    `json:"role,omitempty"`   // Role in the project
+	Social      string    `json:"social,omitempty"` // Social media/handle
 	JoinedAt    time.Time `json:"joined_at,omitempty"`
 }
 
 // VestingInfo contains current vesting information for a founder.
 type VestingInfo struct {
-	FounderID      string        `json:"founder_id"`
-	TotalAmount    uint64        `json:"total_amount"`
-	ClaimedAmount  uint64        `json:"claimed_amount"`
-	VestedAmount   uint64        `json:"vested_amount"`     // Amount currently vested
-	ClaimableAmount uint64       `json:"claimable_amount"`   // Amount available to claim
-	LockedAmount   uint64        `json:"locked_amount"`      // Amount still locked
-	Status         FounderStatus `json:"status"`
-	Progress       float64       `json:"progress"`           // Vesting progress (0-1)
-	NextUnlock     time.Time     `json:"next_unlock"`        // Next vesting unlock time
-	UnlockAmount   uint64        `json:"unlock_amount"`      // Amount to unlock next
-	Schedule       []VestingEntry `json:"schedule"`         // Full vesting schedule
+	FounderID       string         `json:"founder_id"`
+	TotalAmount     uint64         `json:"total_amount"`
+	ClaimedAmount   uint64         `json:"claimed_amount"`
+	VestedAmount    uint64         `json:"vested_amount"`    // Amount currently vested
+	ClaimableAmount uint64         `json:"claimable_amount"` // Amount available to claim
+	LockedAmount    uint64         `json:"locked_amount"`    // Amount still locked
+	Status          FounderStatus  `json:"status"`
+	Progress        float64        `json:"progress"`      // Vesting progress (0-1)
+	NextUnlock      time.Time      `json:"next_unlock"`   // Next vesting unlock time
+	UnlockAmount    uint64         `json:"unlock_amount"` // Amount to unlock next
+	Schedule        []VestingEntry `json:"schedule"`      // Full vesting schedule
 }
 
 // VestingEntry represents a single vesting schedule entry.
@@ -90,7 +90,7 @@ type VestingEntry struct {
 // FounderList represents a list of founders with validation.
 type FounderList struct {
 	Founders []*Founder `json:"founders"`
-	Version  uint64     `json:"version"`       // Config version for updates
+	Version  uint64     `json:"version"` // Config version for updates
 	mu       sync.RWMutex
 }
 
@@ -309,14 +309,14 @@ func (fl *FounderList) FromJSON(data []byte) error {
 
 // MultiSigConfig represents the multi-signature configuration for founder releases.
 type MultiSigConfig struct {
-	RequiredSigs   int      `json:"required_sigs"`   // Number of signatures required
+	RequiredSigs    int      `json:"required_sigs"`    // Number of signatures required
 	SignerAddresses []string `json:"signer_addresses"` // Authorized signer addresses
 }
 
 // DefaultMultiSigConfig returns the default multi-sig configuration (3-of-5).
 func DefaultMultiSigConfig() *MultiSigConfig {
 	return &MultiSigConfig{
-		RequiredSigs:   3,
+		RequiredSigs:    3,
 		SignerAddresses: make([]string, 0, 5),
 	}
 }

@@ -13,7 +13,7 @@ import (
 // Protocol version
 const (
 	ProtocolVersion uint32 = 1
-	MagicBytes      uint32 = 0x41494232 // "AIB2" in hex
+	MagicBytes      uint32 = 0x41494232       // "AIB2" in hex
 	MaxMessageSize         = 10 * 1024 * 1024 // 10 MB max message
 )
 
@@ -68,9 +68,9 @@ func MsgTypeName(t uint8) string {
 
 // MessageHeader is the wire header for all P2P messages.
 type MessageHeader struct {
-	Magic   uint32
-	Type    uint8
-	Length  uint32
+	Magic  uint32
+	Type   uint8
+	Length uint32
 }
 
 const MessageHeaderSize = 9 // 4 + 1 + 4
@@ -153,7 +153,7 @@ type PongMsg struct {
 // GetBlocksMsg requests blocks from a peer.
 type GetBlocksMsg struct {
 	FromHeight uint64 `json:"from_height"`
-	ToHeight   uint64 `json:"to_height"` // 0 = up to peer's best
+	ToHeight   uint64 `json:"to_height"`  // 0 = up to peer's best
 	MaxBlocks  int    `json:"max_blocks"` // max blocks to return (default 500)
 }
 
@@ -165,7 +165,7 @@ type BlockData struct {
 	MerkleRoot    string `json:"merkle_root"`
 	Timestamp     uint64 `json:"timestamp"`
 	Proposer      string `json:"proposer"`
-	Signature     string `json:"signature"`  // ed25519 signature of block hash by proposer
+	Signature     string `json:"signature"` // ed25519 signature of block hash by proposer
 	TxCount       int    `json:"tx_count"`
 	RawBlock      []byte `json:"raw_block"` // full serialized block
 }

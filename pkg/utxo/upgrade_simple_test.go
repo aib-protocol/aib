@@ -155,7 +155,7 @@ func (s *SimpleUpgradeTest) createVersion2Block(height uint64) (*Block, error) {
 		s.Chain[height-1].Hash,
 		height,
 		proposerAddr,
-		nil, // No reputation updates
+		nil,                   // No reputation updates
 		BlockInferenceStats{}, // Empty stats
 	)
 

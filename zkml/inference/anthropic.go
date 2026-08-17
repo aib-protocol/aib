@@ -31,9 +31,9 @@ type AnthropicProvider struct {
 
 // anthropicRequest represents an Anthropic API request
 type anthropicRequest struct {
-	Model     string          `json:"model"`
-	MaxTokens int             `json:"max_tokens"`
-	Messages  []anthropicMsg  `json:"messages"`
+	Model     string         `json:"model"`
+	MaxTokens int            `json:"max_tokens"`
+	Messages  []anthropicMsg `json:"messages"`
 }
 
 // anthropicMsg represents a message in the request

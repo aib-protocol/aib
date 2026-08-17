@@ -548,13 +548,13 @@ func TestBlockHashChainVerification(t *testing.T) {
 	// Add some blocks
 	for i := 0; i < 3; i++ {
 		event := &BlockEvent{
-			TaskID:        "chain-test",
-			FinalResult:   "result",
-			IsValid:       true,
-			AgreementRate: 1.0,
-			NodeResults:   map[string]string{"node": "result"},
+			TaskID:         "chain-test",
+			FinalResult:    "result",
+			IsValid:        true,
+			AgreementRate:  1.0,
+			NodeResults:    map[string]string{"node": "result"},
 			ConsensusNodes: []string{"node"},
-			Timestamp:     time.Now().Unix(),
+			Timestamp:      time.Now().Unix(),
 		}
 
 		if err := bc.AddBlockEvent(event); err != nil {
@@ -676,9 +676,9 @@ func TestConsensusNodesWithDisagreement(t *testing.T) {
 			"node3": "result-b",
 			"node4": "result-b",
 		},
-		ConsensusNodes:     []string{"node1", "node2"},
-		DisagreeingNodes:   []string{"node3", "node4"},
-		Timestamp:          time.Now().Unix(),
+		ConsensusNodes:   []string{"node1", "node2"},
+		DisagreeingNodes: []string{"node3", "node4"},
+		Timestamp:        time.Now().Unix(),
 	}
 
 	if err := bc.AddBlockEvent(event); err != nil {
@@ -727,11 +727,11 @@ func TestEventProcessingOrder(t *testing.T) {
 	events := make([]*BlockEvent, 5)
 	for i := 0; i < 5; i++ {
 		events[i] = &BlockEvent{
-			TaskID:        "task-order",
-			FinalResult:   "result",
-			IsValid:       true,
-			AgreementRate: 1.0,
-			NodeResults:   map[string]string{"node": "result"},
+			TaskID:         "task-order",
+			FinalResult:    "result",
+			IsValid:        true,
+			AgreementRate:  1.0,
+			NodeResults:    map[string]string{"node": "result"},
 			ConsensusNodes: []string{"node"},
 			Timestamp:      time.Now().Unix(),
 		}
@@ -783,33 +783,33 @@ func TestEventProcessingWithDifferentAgreements(t *testing.T) {
 
 	// Event 1: High agreement (should be accepted)
 	event1 := &BlockEvent{
-		TaskID:        "high-agreement",
-		FinalResult:   "result",
-		IsValid:       true,
-		AgreementRate: 0.9,
-		NodeResults:   map[string]string{"node": "result"},
+		TaskID:         "high-agreement",
+		FinalResult:    "result",
+		IsValid:        true,
+		AgreementRate:  0.9,
+		NodeResults:    map[string]string{"node": "result"},
 		ConsensusNodes: []string{"node"},
 		Timestamp:      time.Now().Unix(),
 	}
 
 	// Event 2: Low agreement (should be rejected)
 	event2 := &BlockEvent{
-		TaskID:        "low-agreement",
-		FinalResult:   "result",
-		IsValid:       true,
-		AgreementRate: 0.5,
-		NodeResults:   map[string]string{"node": "result"},
+		TaskID:         "low-agreement",
+		FinalResult:    "result",
+		IsValid:        true,
+		AgreementRate:  0.5,
+		NodeResults:    map[string]string{"node": "result"},
 		ConsensusNodes: []string{"node"},
 		Timestamp:      time.Now().Unix(),
 	}
 
 	// Event 3: Another high agreement (should be accepted)
 	event3 := &BlockEvent{
-		TaskID:        "high-agreement-2",
-		FinalResult:   "result",
-		IsValid:       true,
-		AgreementRate: 1.0,
-		NodeResults:   map[string]string{"node": "result"},
+		TaskID:         "high-agreement-2",
+		FinalResult:    "result",
+		IsValid:        true,
+		AgreementRate:  1.0,
+		NodeResults:    map[string]string{"node": "result"},
 		ConsensusNodes: []string{"node"},
 		Timestamp:      time.Now().Unix(),
 	}
@@ -863,13 +863,13 @@ func TestBlockchainConcurrentBlockAdd(t *testing.T) {
 
 			for j := 0; j < blocksPerGoroutine; j++ {
 				event := &BlockEvent{
-					TaskID:        "concurrent-test",
-					FinalResult:   "result",
-					IsValid:       true,
-					AgreementRate: 1.0,
-					NodeResults:   map[string]string{"node": "result"},
+					TaskID:         "concurrent-test",
+					FinalResult:    "result",
+					IsValid:        true,
+					AgreementRate:  1.0,
+					NodeResults:    map[string]string{"node": "result"},
 					ConsensusNodes: []string{"node"},
-					Timestamp:     time.Now().Unix(),
+					Timestamp:      time.Now().Unix(),
 				}
 
 				if err := bc.AddBlockEvent(event); err == nil {
@@ -928,13 +928,13 @@ func TestBlockchainConcurrentEventSend(t *testing.T) {
 
 			for j := 0; j < 10; j++ {
 				event := &BlockEvent{
-					TaskID:        "concurrent-event",
-					FinalResult:   "result",
-					IsValid:       true,
-					AgreementRate: 1.0,
-					NodeResults:   map[string]string{"node": "result"},
+					TaskID:         "concurrent-event",
+					FinalResult:    "result",
+					IsValid:        true,
+					AgreementRate:  1.0,
+					NodeResults:    map[string]string{"node": "result"},
 					ConsensusNodes: []string{"node"},
-					Timestamp:     time.Now().Unix(),
+					Timestamp:      time.Now().Unix(),
 				}
 
 				bc.SendEvent(event)
@@ -992,13 +992,13 @@ func TestMonitorConcurrentEventHandle(t *testing.T) {
 			defer wg.Done()
 
 			event := &BlockEvent{
-				TaskID:        "concurrent-monitor",
-				FinalResult:   "result",
-				IsValid:       true,
-				AgreementRate: 1.0,
-				NodeResults:   map[string]string{"node": "result"},
+				TaskID:         "concurrent-monitor",
+				FinalResult:    "result",
+				IsValid:        true,
+				AgreementRate:  1.0,
+				NodeResults:    map[string]string{"node": "result"},
 				ConsensusNodes: []string{"node"},
-				Timestamp:     time.Now().Unix(),
+				Timestamp:      time.Now().Unix(),
 			}
 
 			bc.SendEvent(event)
@@ -1088,13 +1088,13 @@ func TestMultipleProducersAndMonitors(t *testing.T) {
 	// Add blocks through different components
 	for i := 0; i < 5; i++ {
 		event := &BlockEvent{
-			TaskID:        "multi-component",
-			FinalResult:   "result",
-			IsValid:       true,
-			AgreementRate: 1.0,
-			NodeResults:   map[string]string{"node": "result"},
+			TaskID:         "multi-component",
+			FinalResult:    "result",
+			IsValid:        true,
+			AgreementRate:  1.0,
+			NodeResults:    map[string]string{"node": "result"},
 			ConsensusNodes: []string{"node"},
-			Timestamp:     time.Now().Unix(),
+			Timestamp:      time.Now().Unix(),
 		}
 
 		bc.SendEvent(event)

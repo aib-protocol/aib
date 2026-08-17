@@ -20,9 +20,9 @@ type PeerManager struct {
 	keepAlivePeriod time.Duration
 
 	// Event handlers
-	onPeerConnected   func(PeerID)
+	onPeerConnected    func(PeerID)
 	onPeerDisconnected func(PeerID)
-	onPeerUpdated     func(PeerID)
+	onPeerUpdated      func(PeerID)
 
 	ctx    context.Context
 	cancel context.CancelFunc
@@ -56,16 +56,16 @@ func (s PeerStatus) String() string {
 
 // ManagedPeer contains information about a managed peer.
 type ManagedPeer struct {
-	ID               PeerID
-	Status           PeerStatus
-	ConnectedAt      time.Time
-	LastSeen         time.Time
-	LastPing         time.Time
-	Latency          time.Duration
-	FailedPings      int
-	SuccessfulPings  int
-	Metadata         map[string]string
-	Streams          map[ProtocolID]*Conn
+	ID              PeerID
+	Status          PeerStatus
+	ConnectedAt     time.Time
+	LastSeen        time.Time
+	LastPing        time.Time
+	Latency         time.Duration
+	FailedPings     int
+	SuccessfulPings int
+	Metadata        map[string]string
+	Streams         map[ProtocolID]*Conn
 }
 
 // PeerManagerConfig holds peer manager configuration.
@@ -164,11 +164,11 @@ func (pm *PeerManager) AddPeer(p PeerID, addrs []string) error {
 	})
 
 	mp := &ManagedPeer{
-		ID:          p,
-		Status:      PeerStatusUnknown,
-		LastSeen:    time.Now(),
-		Metadata:    make(map[string]string),
-		Streams:     make(map[ProtocolID]*Conn),
+		ID:       p,
+		Status:   PeerStatusUnknown,
+		LastSeen: time.Now(),
+		Metadata: make(map[string]string),
+		Streams:  make(map[ProtocolID]*Conn),
 	}
 
 	pm.peers[p] = mp

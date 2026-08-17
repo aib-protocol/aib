@@ -120,10 +120,10 @@ func (bpm *BatchPaymentManager) CreateBatchPayment(requests []PaymentRequest) (*
 	batchID := generateBatchID(requests)
 
 	batch := &BatchPayment{
-		ID:        batchID,
-		Payments:  requests,
-		CreatedAt: uint64(time.Now().Unix()),
-		Status:    BatchPending,
+		ID:          batchID,
+		Payments:    requests,
+		CreatedAt:   uint64(time.Now().Unix()),
+		Status:      BatchPending,
 		TotalAmount: totalAmount,
 	}
 

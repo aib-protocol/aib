@@ -140,9 +140,9 @@ func TestFilterHighAgreement(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			event := &BlockEvent{
-				TaskID:         "test",
-				AgreementRate:  tt.agreementRate,
-				Priority:       PriorityNormal,
+				TaskID:        "test",
+				AgreementRate: tt.agreementRate,
+				Priority:      PriorityNormal,
 			}
 			result := FilterHighAgreement.Match(event)
 			if result != tt.expected {
@@ -168,9 +168,9 @@ func TestFilterLowAgreement(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			event := &BlockEvent{
-				TaskID:         "test",
-				AgreementRate:  tt.agreementRate,
-				Priority:       PriorityNormal,
+				TaskID:        "test",
+				AgreementRate: tt.agreementRate,
+				Priority:      PriorityNormal,
 			}
 			result := FilterLowAgreement.Match(event)
 			if result != tt.expected {
@@ -253,10 +253,10 @@ func TestCompositeFilter_AllMatch(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			event := &BlockEvent{
-				TaskID:         "test",
-				IsValid:        tt.isValid,
-				AgreementRate:  tt.agreementRate,
-				Priority:       PriorityNormal,
+				TaskID:        "test",
+				IsValid:       tt.isValid,
+				AgreementRate: tt.agreementRate,
+				Priority:      PriorityNormal,
 			}
 			result := cf.Match(event)
 			if result != tt.expected {
@@ -300,10 +300,10 @@ func TestOrFilter_AnyMatch(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			event := &BlockEvent{
-				TaskID:         "test",
-				IsValid:        tt.isValid,
-				AgreementRate:  tt.agreementRate,
-				Priority:       PriorityNormal,
+				TaskID:        "test",
+				IsValid:       tt.isValid,
+				AgreementRate: tt.agreementRate,
+				Priority:      PriorityNormal,
 			}
 			result := of.Match(event)
 			if result != tt.expected {
@@ -377,10 +377,10 @@ func TestFilterCombination_Complex(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			event := &BlockEvent{
-				TaskID:         "test",
-				IsValid:        tt.isValid,
-				AgreementRate:  tt.agreementRate,
-				Priority:       PriorityNormal,
+				TaskID:        "test",
+				IsValid:       tt.isValid,
+				AgreementRate: tt.agreementRate,
+				Priority:      PriorityNormal,
 			}
 			result := notFilter.Match(event)
 			if result != tt.expected {
@@ -413,10 +413,10 @@ func TestFilterCombination_OrWithNot(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			event := &BlockEvent{
-				TaskID:         "test",
-				IsValid:        tt.isValid,
-				AgreementRate:  tt.agreementRate,
-				Priority:       tt.priority,
+				TaskID:        "test",
+				IsValid:       tt.isValid,
+				AgreementRate: tt.agreementRate,
+				Priority:      tt.priority,
 			}
 			result := urgentOrOther.Match(event)
 			if result != tt.expected {
@@ -436,10 +436,10 @@ func TestEventBuffer_NewAndAdd(t *testing.T) {
 	}
 
 	event := &BlockEvent{
-		TaskID:         "task1",
-		IsValid:        true,
-		AgreementRate:  0.9,
-		Priority:       PriorityNormal,
+		TaskID:        "task1",
+		IsValid:       true,
+		AgreementRate: 0.9,
+		Priority:      PriorityNormal,
 	}
 
 	if err := buf.Add(event); err != nil {

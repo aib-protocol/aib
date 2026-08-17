@@ -96,7 +96,7 @@ func TestUTXOWalletFlow(t *testing.T) {
 
 	// Create a transaction: sender pays receiver
 	transferAmount := uint64(500000) // 5 AIB
-	fee := uint64(1000)             // 0.00001 AIB
+	fee := uint64(1000)              // 0.00001 AIB
 
 	// Get UTXOs for the transaction
 	utxos, _, err := store.GetUTXOsForAmount(sender.GetAddress(), transferAmount+fee)
@@ -353,10 +353,10 @@ func TestChannelOpenClose(t *testing.T) {
 	}
 
 	cfg := &channel.Config{
-		ChallengePeriod:   1 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:    multiSig,
+		ChallengePeriod: 1 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  multiSig,
 	}
 
 	manager, err := channel.NewManager(cfg)
@@ -463,10 +463,10 @@ func TestChannelDispute(t *testing.T) {
 	signer2, _ := newEd25519Signer()
 
 	cfg := &channel.Config{
-		ChallengePeriod:   1 * time.Second, // Short for testing
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:    multiSig,
+		ChallengePeriod: 1 * time.Second, // Short for testing
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  multiSig,
 	}
 
 	manager, err := channel.NewManager(cfg)

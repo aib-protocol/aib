@@ -103,7 +103,7 @@ func TestModelRegistry_GetPerformance(t *testing.T) {
 
 	// Register and check performance
 	info := &ModelInfo{
-		ModelID:     "model1",
+		ModelID: "model1",
 		Performance: &ModelPerformance{
 			TaskCompletionRate: 0.95,
 			UserSatisfaction:   4.5,

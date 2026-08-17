@@ -65,12 +65,12 @@ type InferenceResponse struct {
 
 // NodeConfig holds configuration for inference node
 type NodeConfig struct {
-	Level        uint8
-	Stake        uint64
-	PrivateKey   ed25519.PrivateKey
-	Models       []string
-	APIEndpoint  string
-	MaxRequests  int
+	Level       uint8
+	Stake       uint64
+	PrivateKey  ed25519.PrivateKey
+	Models      []string
+	APIEndpoint string
+	MaxRequests int
 }
 
 // ErrNodeAlreadyRegistered is returned when node is already registered
@@ -537,7 +537,7 @@ func (n *InferenceNode) GetInfo() map[string]interface{} {
 func randInt(max int) int {
 	b := make([]byte, 4)
 	rand.Read(b)
-	return int(b[0])%max
+	return int(b[0]) % max
 }
 
 func truncateString(s string, maxLen int) string {

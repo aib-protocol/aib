@@ -392,9 +392,9 @@ type UniswapSource struct {
 type uniswapGraphResponse struct {
 	Data struct {
 		Pool *struct {
-			Token0Price  string `json:"token0Price"`
-			Token1Price  string `json:"token1Price"`
-			VolumeUSD    string `json:"volumeUSD"`
+			Token0Price         string `json:"token0Price"`
+			Token1Price         string `json:"token1Price"`
+			VolumeUSD           string `json:"volumeUSD"`
 			TotalValueLockedUSD string `json:"totalValueLockedUSD"`
 		} `json:"pool"`
 	} `json:"data"`
@@ -653,11 +653,11 @@ type CurveSource struct {
 type curvePoolResponse struct {
 	Data struct {
 		PoolData []struct {
-			ID               string  `json:"id"`
-			VirtualPrice     string  `json:"virtualPrice"`
-			TotalLiquidity   string  `json:"totalLiquidity"`
-			USDTotal         float64 `json:"usdTotal"`
-			Coins            []struct {
+			ID             string  `json:"id"`
+			VirtualPrice   string  `json:"virtualPrice"`
+			TotalLiquidity string  `json:"totalLiquidity"`
+			USDTotal       float64 `json:"usdTotal"`
+			Coins          []struct {
 				Address  string  `json:"address"`
 				Symbol   string  `json:"symbol"`
 				USDPrice float64 `json:"usdPrice"`

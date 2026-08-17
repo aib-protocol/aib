@@ -10,39 +10,39 @@ import (
 
 // InferenceRequest represents a request for AI model inference
 type InferenceRequest struct {
-	ModelID      []byte // Model fingerprint or ID
-	Prompt       string // Input prompt
-	MaxTokens    int    // Maximum tokens to generate
-	Temperature  float64 // Sampling temperature
+	ModelID     []byte  // Model fingerprint or ID
+	Prompt      string  // Input prompt
+	MaxTokens   int     // Maximum tokens to generate
+	Temperature float64 // Sampling temperature
 	TopP        float64 // Nucleus sampling parameter
-	RequestID    []byte // Unique request ID
-	Timestamp   int64  // Request timestamp
-	CallbackURL  string // Optional callback URL for async responses
+	RequestID   []byte  // Unique request ID
+	Timestamp   int64   // Request timestamp
+	CallbackURL string  // Optional callback URL for async responses
 }
 
 // InferenceResponse represents the response from an AI inference
 type InferenceResponse struct {
-	RequestID    []byte    // ID of the original request
-	Text         string    // Generated text
-	Logits       *Logits   // Logits from the model
-	TokensUsed   int       // Number of tokens used
-	FinishReason string    // "stop", "length", "error"
-	Timestamp    int64     // Response timestamp
+	RequestID    []byte  // ID of the original request
+	Text         string  // Generated text
+	Logits       *Logits // Logits from the model
+	TokensUsed   int     // Number of tokens used
+	FinishReason string  // "stop", "length", "error"
+	Timestamp    int64   // Response timestamp
 }
 
 // InferenceEngine handles AI model inference and proof generation
 type InferenceEngine struct {
-	modelRegistry *modelRegistry // Registry of available models
+	modelRegistry   *modelRegistry // Registry of available models
 	logitsExtractor *LogitsExtractor
-	generator     *RandomInputGenerator
+	generator       *RandomInputGenerator
 }
 
 // NewInferenceEngine creates a new inference engine
 func NewInferenceEngine() *InferenceEngine {
 	return &InferenceEngine{
-		modelRegistry: newModelRegistry(),
+		modelRegistry:   newModelRegistry(),
 		logitsExtractor: NewLogitsExtractor(),
-		generator: NewRandomInputGenerator(),
+		generator:       NewRandomInputGenerator(),
 	}
 }
 
@@ -70,10 +70,10 @@ func (e *InferenceEngine) Inference(req *InferenceRequest) (*InferenceResponse, 
 	// For now, simulate a response
 	response := &InferenceResponse{
 		RequestID:    req.RequestID,
-		Text:        "Simulated AI response to: " + req.Prompt,
-		TokensUsed:  len(req.Prompt) / 4, // Rough estimate
+		Text:         "Simulated AI response to: " + req.Prompt,
+		TokensUsed:   len(req.Prompt) / 4, // Rough estimate
 		FinishReason: "stop",
-		Timestamp:   time.Now().Unix(),
+		Timestamp:    time.Now().Unix(),
 	}
 
 	// Generate simulated logits
@@ -109,12 +109,12 @@ func (e *InferenceEngine) generateProof(response *InferenceResponse, modelID []b
 	// In production, this would generate actual ZK proofs
 	// For now, create a placeholder proof
 	proof := &Proof{
-		Type:        "placeholder",
-		ModelID:     modelID,
-		PromptHash:  sha256.Sum256([]byte(response.Text)), // Use response text as placeholder for prompt hash
-		OutputHash:  sha256.Sum256([]byte(response.Text)),
-		Timestamp:   time.Now().Unix(),
-		ProofData:   []byte("placeholder_proof_data"),
+		Type:       "placeholder",
+		ModelID:    modelID,
+		PromptHash: sha256.Sum256([]byte(response.Text)), // Use response text as placeholder for prompt hash
+		OutputHash: sha256.Sum256([]byte(response.Text)),
+		Timestamp:  time.Now().Unix(),
+		ProofData:  []byte("placeholder_proof_data"),
 	}
 
 	return proof, nil
@@ -122,12 +122,12 @@ func (e *InferenceEngine) generateProof(response *InferenceResponse, modelID []b
 
 // Proof represents a proof of AI inference
 type Proof struct {
-	Type        string    // Proof type (e.g., "zkml", "placeholder")
-	ModelID     []byte    // Model that generated the output
-	PromptHash  [32]byte // Hash of the input prompt
-	OutputHash  [32]byte // Hash of the output
-	Timestamp   int64     // Proof generation timestamp
-	ProofData   []byte   // Actual proof data (ZK proof, etc.)
+	Type       string   // Proof type (e.g., "zkml", "placeholder")
+	ModelID    []byte   // Model that generated the output
+	PromptHash [32]byte // Hash of the input prompt
+	OutputHash [32]byte // Hash of the output
+	Timestamp  int64    // Proof generation timestamp
+	ProofData  []byte   // Actual proof data (ZK proof, etc.)
 }
 
 // VerifyProof verifies a proof of inference
@@ -177,12 +177,12 @@ func newModelRegistry() *modelRegistry {
 
 // ModelInfo contains information about a registered model
 type ModelInfo struct {
-	ID          string   // Model ID
-	Name        string   // Model name
-	Version     string   // Model version
-	Fingerprint []byte   // Model fingerprint
-	Owner       []byte   // Node that owns this model
-	RegisteredAt int64   // Registration timestamp
+	ID           string // Model ID
+	Name         string // Model name
+	Version      string // Model version
+	Fingerprint  []byte // Model fingerprint
+	Owner        []byte // Node that owns this model
+	RegisteredAt int64  // Registration timestamp
 }
 
 // RegisterModel registers a new model with the engine

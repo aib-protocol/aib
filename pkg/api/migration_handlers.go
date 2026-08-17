@@ -28,10 +28,10 @@ func (s *Server) handleMigrationSnapshot(w http.ResponseWriter, r *http.Request)
 	if hub == nil {
 		// Return default response when no hub is configured
 		writeSuccess(w, AIB1SnapshotResponse{
-			SnapshotRoot:   "0000000000000000000000000000000000000000000000000000000000000000",
-			SnapshotTime:    time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC),
-			ClaimDeadline:  time.Date(2028, 1, 1, 0, 0, 0, 0, time.UTC),
-			ClaimOpen:      true,
+			SnapshotRoot:  "0000000000000000000000000000000000000000000000000000000000000000",
+			SnapshotTime:  time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC),
+			ClaimDeadline: time.Date(2028, 1, 1, 0, 0, 0, 0, time.UTC),
+			ClaimOpen:     true,
 			TotalMigrated: 0,
 		})
 		return
@@ -40,8 +40,8 @@ func (s *Server) handleMigrationSnapshot(w http.ResponseWriter, r *http.Request)
 	status := hub.GetMigrationStatus()
 
 	writeSuccess(w, AIB1SnapshotResponse{
-		SnapshotRoot:   "0000000000000000000000000000000000000000000000000000000000000000", // Snapshot root not exposed via hub
-		SnapshotTime:   status.MigrationWindowStart, // Use migration window start as snapshot time
+		SnapshotRoot:  "0000000000000000000000000000000000000000000000000000000000000000", // Snapshot root not exposed via hub
+		SnapshotTime:  status.MigrationWindowStart,                                        // Use migration window start as snapshot time
 		ClaimDeadline: status.AIB1ClaimDeadline,
 		ClaimOpen:     status.AIB1ClaimOpen,
 		TotalMigrated: status.AIB1TotalMigrated,
@@ -61,7 +61,7 @@ func (s *Server) handleMigrationRates(w http.ResponseWriter, r *http.Request) {
 		// Return default response when no hub is configured
 		writeSuccess(w, MigrationRatesResponse{
 			Timestamp: time.Now().UTC(),
-			AIB1Rate: 100, // 1:1 = 100%
+			AIB1Rate:  100, // 1:1 = 100%
 			ChainRates: map[string]ChainRateInfo{
 				"BTC": {Chain: "BTC", CurrentRate: 5, WindowOpen: false, WindowStart: time.Time{}, WindowEnd: time.Time{}},
 				"ETH": {Chain: "ETH", CurrentRate: 4, WindowOpen: false, WindowStart: time.Time{}, WindowEnd: time.Time{}},
@@ -75,21 +75,21 @@ func (s *Server) handleMigrationRates(w http.ResponseWriter, r *http.Request) {
 
 	chainRates := map[string]ChainRateInfo{
 		"BTC": {
-			Chain:      "BTC",
+			Chain:       "BTC",
 			CurrentRate: status.BTCCurrentRate,
 			WindowOpen:  status.BTCWindowOpen,
 			WindowStart: status.MigrationWindowStart,
 			WindowEnd:   status.MigrationWindowEnd,
 		},
 		"ETH": {
-			Chain:      "ETH",
+			Chain:       "ETH",
 			CurrentRate: status.ETHCurrentRate,
 			WindowOpen:  status.ETHWindowOpen,
 			WindowStart: status.MigrationWindowStart,
 			WindowEnd:   status.MigrationWindowEnd,
 		},
 		"SOL": {
-			Chain:      "SOL",
+			Chain:       "SOL",
 			CurrentRate: status.SOLCurrentRate,
 			WindowOpen:  status.SOLWindowOpen,
 			WindowStart: status.MigrationWindowStart,
@@ -98,8 +98,8 @@ func (s *Server) handleMigrationRates(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeSuccess(w, MigrationRatesResponse{
-		Timestamp: time.Now().UTC(),
-		AIB1Rate:  100, // 1:1 固定汇率
+		Timestamp:  time.Now().UTC(),
+		AIB1Rate:   100, // 1:1 固定汇率
 		ChainRates: chainRates,
 	})
 }
@@ -131,10 +131,10 @@ func (s *Server) handleMigrationStatus(w http.ResponseWriter, r *http.Request) {
 		// Return empty response when no hub is configured
 		writeSuccess(w, UserMigrationInfoAPI{
 			AIB1SnapshotBalance: 0,
-			AIB1Claimed:        false,
-			LockedRewards:      LockedRewardsInfo{},
-			TotalClaimable:     0,
-			TotalLocked:        0,
+			AIB1Claimed:         false,
+			LockedRewards:       LockedRewardsInfo{},
+			TotalClaimable:      0,
+			TotalLocked:         0,
 		})
 		return
 	}
@@ -173,9 +173,9 @@ func (s *Server) handleMigrationClaimable(w http.ResponseWriter, r *http.Request
 	if hub == nil {
 		// Return empty response when no hub is configured
 		writeSuccess(w, ClaimableResponse{
-			Address:          addrStr,
-			TotalClaimable:  0,
-			AIB1Claimable:   0,
+			Address:        addrStr,
+			TotalClaimable: 0,
+			AIB1Claimable:  0,
 			CrossChainClaimable: CrossChainClaimable{
 				BTC: 0,
 				ETH: 0,
@@ -194,9 +194,9 @@ func (s *Server) handleMigrationClaimable(w http.ResponseWriter, r *http.Request
 	}
 
 	writeSuccess(w, ClaimableResponse{
-		Address:          addrStr,
-		TotalClaimable:   info.TotalClaimable + aib1Claimable,
-		AIB1Claimable:   aib1Claimable,
+		Address:        addrStr,
+		TotalClaimable: info.TotalClaimable + aib1Claimable,
+		AIB1Claimable:  aib1Claimable,
 		CrossChainClaimable: CrossChainClaimable{
 			BTC: info.TotalClaimable,
 			ETH: 0,
@@ -530,12 +530,12 @@ func convertVestingReward(r *migration.LockedReward, now time.Time) VestingRewar
 	}
 
 	return VestingRewardInfo{
-		SourceTxID:    hex.EncodeToString(r.SourceTxID[:]),
-		SourceAmount:  r.SourceAmount,
-		TotalReward:   r.TotalReward,
-		Claimed:       r.Claimed,
-		Claimable:     r.Claimable(now),
-		Locked:        r.RemainingLocked(),
+		SourceTxID:      hex.EncodeToString(r.SourceTxID[:]),
+		SourceAmount:    r.SourceAmount,
+		TotalReward:     r.TotalReward,
+		Claimed:         r.Claimed,
+		Claimable:       r.Claimable(now),
+		Locked:          r.RemainingLocked(),
 		VestingSchedule: schedule,
 	}
 }

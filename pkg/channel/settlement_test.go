@@ -17,12 +17,12 @@ import (
 
 // mockMultiSig is a mock implementation of MultiSigLocker for testing
 type mockMultiSig struct {
-	spentOutputs    map[string][]interfaces.TXOutput
-	lockedFunds     map[[32]byte]uint64 // channelID -> locked amount
-	unlockedFunds   map[[32]byte]uint64 // channelID -> unlocked amount
-	mu              sync.Mutex
-	failSpend       bool
-	failCreate      bool
+	spentOutputs  map[string][]interfaces.TXOutput
+	lockedFunds   map[[32]byte]uint64 // channelID -> locked amount
+	unlockedFunds map[[32]byte]uint64 // channelID -> unlocked amount
+	mu            sync.Mutex
+	failSpend     bool
+	failCreate    bool
 }
 
 func newMockMultiSig() *mockMultiSig {
@@ -133,7 +133,7 @@ func TestSettlementManager_NewSettlementManager(t *testing.T) {
 		ChallengePeriod:     24 * time.Hour,
 		ConfirmationDepth:   6,
 		MinSettlementAmount: 1,
-		MultiSigLocker:     mockMultiSig,
+		MultiSigLocker:      mockMultiSig,
 	}
 
 	// This test requires a Manager which requires more setup
@@ -198,12 +198,12 @@ func TestSettlement_Validation(t *testing.T) {
 
 	// Create channel
 	channel := &interfaces.Channel{
-		ID:        [32]byte{1, 2, 3},
-		PartyA:    addrA,
-		PartyB:    addrB,
-		BalanceA:  1000,
-		BalanceB:  500,
-		Sequence:  5,
+		ID:       [32]byte{1, 2, 3},
+		PartyA:   addrA,
+		PartyB:   addrB,
+		BalanceA: 1000,
+		BalanceB: 500,
+		Sequence: 5,
 	}
 
 	// Create signed state
@@ -305,15 +305,15 @@ func TestSettlement_Structure(t *testing.T) {
 	now := time.Now()
 
 	settlement := &Settlement{
-		ID:           [32]byte{1, 2, 3},
-		ChannelID:    [32]byte{4, 5, 6},
-		StateHash:    [32]byte{7, 8, 9},
-		BalanceA:     500,
-		BalanceB:     300,
-		Sequence:     10,
-		Type:         SettlementCooperative,
-		Status:       SettlementPending,
-		Timestamp:    now,
+		ID:          [32]byte{1, 2, 3},
+		ChannelID:   [32]byte{4, 5, 6},
+		StateHash:   [32]byte{7, 8, 9},
+		BalanceA:    500,
+		BalanceB:    300,
+		Sequence:    10,
+		Type:        SettlementCooperative,
+		Status:      SettlementPending,
+		Timestamp:   now,
 		BlockNumber: 100,
 	}
 
@@ -448,12 +448,12 @@ func TestForceClose_Validation(t *testing.T) {
 
 	// Create channel
 	channel := &interfaces.Channel{
-		ID:        [32]byte{1},
-		PartyA:    addrA,
-		PartyB:    addrB,
-		BalanceA:  1000,
-		BalanceB:  1000,
-		Sequence:  5,
+		ID:       [32]byte{1},
+		PartyA:   addrA,
+		PartyB:   addrB,
+		BalanceA: 1000,
+		BalanceB: 1000,
+		Sequence: 5,
 	}
 
 	// Test with only Party A signature
@@ -597,10 +597,10 @@ func TestBatchSettlementResult(t *testing.T) {
 		settlementID := [32]byte{4, 5, 6}
 
 		result := &BatchSettlementResult{
-			ChannelID:     channelID,
+			ChannelID:    channelID,
 			SettlementID: settlementID,
-			Status:        SettlementComplete,
-			Error:         nil,
+			Status:       SettlementComplete,
+			Error:        nil,
 		}
 
 		if result.Status != SettlementComplete {
@@ -671,10 +671,10 @@ func TestSettlementProofVerifier_VerifySettlementProof(t *testing.T) {
 				ID:        [32]byte{1},
 				ChannelID: [32]byte{1},
 			},
-			StateProof:  []byte{},
-			BlockHash:   [32]byte{1},
-			Timestamp:   time.Now(),
-			Signatures:  map[string][]byte{"PartyA": []byte{1}},
+			StateProof: []byte{},
+			BlockHash:  [32]byte{1},
+			Timestamp:  time.Now(),
+			Signatures: map[string][]byte{"PartyA": []byte{1}},
 		}
 
 		err := verifier.VerifySettlementProof(proof)
@@ -694,10 +694,10 @@ func TestSettlementProofVerifier_VerifySettlementProof(t *testing.T) {
 				ID:        [32]byte{1},
 				ChannelID: [32]byte{1},
 			},
-			StateProof:  []byte{1},
-			BlockHash:   [32]byte{}, // zero hash
-			Timestamp:   time.Now(),
-			Signatures:  map[string][]byte{"PartyA": []byte{1}},
+			StateProof: []byte{1},
+			BlockHash:  [32]byte{}, // zero hash
+			Timestamp:  time.Now(),
+			Signatures: map[string][]byte{"PartyA": []byte{1}},
 		}
 
 		err := verifier.VerifySettlementProof(proof)
@@ -717,10 +717,10 @@ func TestSettlementProofVerifier_VerifySettlementProof(t *testing.T) {
 				ID:        [32]byte{1},
 				ChannelID: [32]byte{1},
 			},
-			StateProof:  []byte{1},
-			BlockHash:   [32]byte{1},
-			Timestamp:   time.Time{}, // zero time
-			Signatures:  map[string][]byte{"PartyA": []byte{1}},
+			StateProof: []byte{1},
+			BlockHash:  [32]byte{1},
+			Timestamp:  time.Time{}, // zero time
+			Signatures: map[string][]byte{"PartyA": []byte{1}},
 		}
 
 		err := verifier.VerifySettlementProof(proof)
@@ -740,10 +740,10 @@ func TestSettlementProofVerifier_VerifySettlementProof(t *testing.T) {
 				ID:        [32]byte{1},
 				ChannelID: [32]byte{1},
 			},
-			StateProof:  []byte{1},
-			BlockHash:   [32]byte{1},
-			Timestamp:   time.Now(),
-			Signatures:  map[string][]byte{}, // empty
+			StateProof: []byte{1},
+			BlockHash:  [32]byte{1},
+			Timestamp:  time.Now(),
+			Signatures: map[string][]byte{}, // empty
 		}
 
 		err := verifier.VerifySettlementProof(proof)
@@ -979,12 +979,12 @@ func (m *mockManagerForSettlement) GetChannelState(channelID [32]byte) (*interfa
 		return ch, nil
 	}
 	return &interfaces.Channel{
-		ID:        channelID,
-		PartyA:    interfaces.Address{1},
-		PartyB:    interfaces.Address{2},
-		BalanceA:  1000,
-		BalanceB:  1000,
-		Sequence:  1,
+		ID:       channelID,
+		PartyA:   interfaces.Address{1},
+		PartyB:   interfaces.Address{2},
+		BalanceA: 1000,
+		BalanceB: 1000,
+		Sequence: 1,
 	}, nil
 }
 
@@ -1010,10 +1010,10 @@ func (m *mockManagerForSettlement) FinalizeClose(channelID [32]byte) error {
 
 func TestNewSettlementManager_Success(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:   &MockMultiSigLocker{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLocker{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -1022,7 +1022,7 @@ func TestNewSettlementManager_Success(t *testing.T) {
 		ChallengePeriod:     24 * time.Hour,
 		ConfirmationDepth:   6,
 		MinSettlementAmount: 1,
-		MultiSigLocker:     &mockMultiSig{},
+		MultiSigLocker:      &mockMultiSig{},
 	}
 
 	sm, err := NewSettlementManager(manager, settlementCfg)
@@ -1041,8 +1041,8 @@ func TestNewSettlementManager_Success(t *testing.T) {
 
 func TestNewSettlementManager_NilManager(t *testing.T) {
 	cfg := &SettlementConfig{
-		ChallengePeriod:     24 * time.Hour,
-		MultiSigLocker:     &mockMultiSig{},
+		ChallengePeriod: 24 * time.Hour,
+		MultiSigLocker:  &mockMultiSig{},
 	}
 
 	_, err := NewSettlementManager(nil, cfg)
@@ -1053,10 +1053,10 @@ func TestNewSettlementManager_NilManager(t *testing.T) {
 
 func TestNewSettlementManager_NilConfig(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:   &MockMultiSigLocker{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLocker{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -1071,17 +1071,17 @@ func TestNewSettlementManager_NilConfig(t *testing.T) {
 
 func TestNewSettlementManager_NilMultiSig(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:   &MockMultiSigLocker{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLocker{},
 	}
 
 	manager, _ := NewManager(cfg)
 
 	settlementCfg := &SettlementConfig{
 		ChallengePeriod: 24 * time.Hour,
-		MultiSigLocker: nil,
+		MultiSigLocker:  nil,
 	}
 
 	_, err := NewSettlementManager(manager, settlementCfg)
@@ -1092,17 +1092,17 @@ func TestNewSettlementManager_NilMultiSig(t *testing.T) {
 
 func TestSettlementManager_SetBlockSubmitter(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:   &MockMultiSigLocker{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLocker{},
 	}
 
 	manager, _ := NewManager(cfg)
 
 	sm, _ := NewSettlementManager(manager, &SettlementConfig{
 		ChallengePeriod: 24 * time.Hour,
-		MultiSigLocker: &mockMultiSig{},
+		MultiSigLocker:  &mockMultiSig{},
 	})
 
 	// Set block submitter callback
@@ -1113,17 +1113,17 @@ func TestSettlementManager_SetBlockSubmitter(t *testing.T) {
 
 func TestSettlementManager_SetBlockGetter(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:   &MockMultiSigLocker{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLocker{},
 	}
 
 	manager, _ := NewManager(cfg)
 
 	sm, _ := NewSettlementManager(manager, &SettlementConfig{
 		ChallengePeriod: 24 * time.Hour,
-		MultiSigLocker: &mockMultiSig{},
+		MultiSigLocker:  &mockMultiSig{},
 	})
 
 	// Set block getter callback
@@ -1134,17 +1134,17 @@ func TestSettlementManager_SetBlockGetter(t *testing.T) {
 
 func TestSettlementManager_GetSettlement(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:   &MockMultiSigLocker{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLocker{},
 	}
 
 	manager, _ := NewManager(cfg)
 
 	sm, _ := NewSettlementManager(manager, &SettlementConfig{
 		ChallengePeriod: 24 * time.Hour,
-		MultiSigLocker: &mockMultiSig{},
+		MultiSigLocker:  &mockMultiSig{},
 	})
 
 	channelID := [32]byte{1, 2, 3}
@@ -1186,17 +1186,17 @@ func TestSettlementManager_GetSettlement(t *testing.T) {
 
 func TestSettlementManager_GetSettlementStatus(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:   &MockMultiSigLocker{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLocker{},
 	}
 
 	manager, _ := NewManager(cfg)
 
 	sm, _ := NewSettlementManager(manager, &SettlementConfig{
 		ChallengePeriod: 24 * time.Hour,
-		MultiSigLocker: &mockMultiSig{},
+		MultiSigLocker:  &mockMultiSig{},
 	})
 
 	channelID := [32]byte{1, 2, 3}
@@ -1214,17 +1214,17 @@ func TestSettlementManager_GetSettlementStatus(t *testing.T) {
 
 func TestSettlementManager_CancelSettlement(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:   &MockMultiSigLocker{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLocker{},
 	}
 
 	manager, _ := NewManager(cfg)
 
 	sm, _ := NewSettlementManager(manager, &SettlementConfig{
 		ChallengePeriod: 24 * time.Hour,
-		MultiSigLocker: &mockMultiSig{},
+		MultiSigLocker:  &mockMultiSig{},
 	})
 
 	ctx := context.Background()
@@ -1259,17 +1259,17 @@ func TestSettlementManager_CancelSettlement(t *testing.T) {
 
 func TestSettlementManager_ConfirmSettlement(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:   &MockMultiSigLocker{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLocker{},
 	}
 
 	manager, _ := NewManager(cfg)
 
 	sm, _ := NewSettlementManager(manager, &SettlementConfig{
 		ChallengePeriod: 24 * time.Hour,
-		MultiSigLocker: &mockMultiSig{},
+		MultiSigLocker:  &mockMultiSig{},
 	})
 
 	ctx := context.Background()
@@ -1307,17 +1307,17 @@ func TestSettlementManager_ConfirmSettlement(t *testing.T) {
 
 func TestSettlementManager_GetChallengePeriodRemaining(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:   &MockMultiSigLocker{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLocker{},
 	}
 
 	manager, _ := NewManager(cfg)
 
 	sm, _ := NewSettlementManager(manager, &SettlementConfig{
 		ChallengePeriod: 24 * time.Hour,
-		MultiSigLocker: &mockMultiSig{},
+		MultiSigLocker:  &mockMultiSig{},
 	})
 
 	channelID := [32]byte{99}
@@ -1379,9 +1379,9 @@ func TestDisputeResolution_InitiateAndResolve(t *testing.T) {
 
 	cfg := &Config{
 		ChallengePeriod: 1 * time.Millisecond, // Very short for testing
-		MinDeposit:     1000,
+		MinDeposit:      1000,
 		MaxChannelValue: 1000000,
-		MultiSigLocker: &MockMultiSigLocker{},
+		MultiSigLocker:  &MockMultiSigLocker{},
 	}
 
 	mgr, err := NewManager(cfg)
@@ -1467,9 +1467,9 @@ func TestDisputeResolution_WithPenalty(t *testing.T) {
 
 	cfg := &Config{
 		ChallengePeriod: 1 * time.Millisecond,
-		MinDeposit:     1000,
+		MinDeposit:      1000,
 		MaxChannelValue: 1000000,
-		MultiSigLocker: &MockMultiSigLocker{},
+		MultiSigLocker:  &MockMultiSigLocker{},
 	}
 
 	mgr, _ := NewManager(cfg)
@@ -1513,9 +1513,9 @@ func TestDisputeResolution_CounterEvidence(t *testing.T) {
 
 	cfg := &Config{
 		ChallengePeriod: 24 * time.Hour,
-		MinDeposit:     1000,
+		MinDeposit:      1000,
 		MaxChannelValue: 1000000,
-		MultiSigLocker: &MockMultiSigLocker{},
+		MultiSigLocker:  &MockMultiSigLocker{},
 	}
 
 	mgr, _ := NewManager(cfg)
@@ -1529,11 +1529,11 @@ func TestDisputeResolution_CounterEvidence(t *testing.T) {
 	challengeEvidence := Evidence{
 		ChannelID:   channel.ID,
 		Sequence:    2,
-		BalanceA:   3000,
-		BalanceB:   5000,
-		SigA:       []byte("sig"),
-		Timestamp:  time.Now(),
-		Submitter:  tp.partyA,
+		BalanceA:    3000,
+		BalanceB:    5000,
+		SigA:        []byte("sig"),
+		Timestamp:   time.Now(),
+		Submitter:   tp.partyA,
 		BlockNumber: 100,
 	}
 
@@ -1552,7 +1552,7 @@ func TestDisputeResolution_InvalidChallenge(t *testing.T) {
 
 	cfg := &Config{
 		ChallengePeriod: 1 * time.Millisecond,
-		MinDeposit:     100,
+		MinDeposit:      100,
 		MaxChannelValue: 1_000_000,
 		MultiSigLocker:  &MockMultiSigLocker{},
 	}
@@ -1622,9 +1622,9 @@ func TestChallengePeriod_Timeout(t *testing.T) {
 
 	cfg := &Config{
 		ChallengePeriod: 1 * time.Millisecond,
-		MinDeposit:     1000,
+		MinDeposit:      1000,
 		MaxChannelValue: 1000000,
-		MultiSigLocker: &MockMultiSigLocker{},
+		MultiSigLocker:  &MockMultiSigLocker{},
 	}
 
 	mgr, _ := NewManager(cfg)
@@ -1689,9 +1689,9 @@ func TestChallengePeriod_Extend(t *testing.T) {
 
 	cfg := &Config{
 		ChallengePeriod: 24 * time.Hour,
-		MinDeposit:     1000,
+		MinDeposit:      1000,
 		MaxChannelValue: 1000000,
-		MultiSigLocker: &MockMultiSigLocker{},
+		MultiSigLocker:  &MockMultiSigLocker{},
 	}
 
 	mgr, _ := NewManager(cfg)
@@ -1744,9 +1744,9 @@ func TestChallengePeriod_MultipleForceClose(t *testing.T) {
 
 	cfg := &Config{
 		ChallengePeriod: 24 * time.Hour,
-		MinDeposit:     1000,
+		MinDeposit:      1000,
 		MaxChannelValue: 1000000,
-		MultiSigLocker: &MockMultiSigLocker{},
+		MultiSigLocker:  &MockMultiSigLocker{},
 	}
 
 	mgr, _ := NewManager(cfg)
@@ -1797,9 +1797,9 @@ func TestMultiChannel_ConcurrentOperations(t *testing.T) {
 
 	cfg := &Config{
 		ChallengePeriod: 24 * time.Hour,
-		MinDeposit:     1000,
+		MinDeposit:      1000,
 		MaxChannelValue: 1000000,
-		MultiSigLocker: &MockMultiSigLocker{},
+		MultiSigLocker:  &MockMultiSigLocker{},
 	}
 
 	mgr, _ := NewManager(cfg)
@@ -1867,9 +1867,9 @@ func TestMultiChannel_ConcurrentDisputes(t *testing.T) {
 
 	cfg := &Config{
 		ChallengePeriod: 24 * time.Hour,
-		MinDeposit:     1000,
+		MinDeposit:      1000,
 		MaxChannelValue: 1000000,
-		MultiSigLocker: &MockMultiSigLocker{},
+		MultiSigLocker:  &MockMultiSigLocker{},
 	}
 
 	mgr, _ := NewManager(cfg)
@@ -1933,9 +1933,9 @@ func TestMultiChannel_TransferRaceCondition(t *testing.T) {
 
 	cfg := &Config{
 		ChallengePeriod: 24 * time.Hour,
-		MinDeposit:     1000,
+		MinDeposit:      1000,
 		MaxChannelValue: 1000000,
-		MultiSigLocker: &MockMultiSigLocker{},
+		MultiSigLocker:  &MockMultiSigLocker{},
 	}
 
 	mgr, _ := NewManager(cfg)
@@ -1981,9 +1981,9 @@ func TestFundLock_LockAndUnlock(t *testing.T) {
 	mockMS := newMockMultiSig()
 	cfg := &Config{
 		ChallengePeriod: 24 * time.Hour,
-		MinDeposit:     1000,
+		MinDeposit:      1000,
 		MaxChannelValue: 1000000,
-		MultiSigLocker: mockMS,
+		MultiSigLocker:  mockMS,
 	}
 
 	mgr, _ := NewManager(cfg)
@@ -2031,9 +2031,9 @@ func TestFundLock_ConcurrentLockUnlock(t *testing.T) {
 	mockMS := newMockMultiSig()
 	cfg := &Config{
 		ChallengePeriod: 24 * time.Hour,
-		MinDeposit:     1000,
+		MinDeposit:      1000,
 		MaxChannelValue: 1000000,
-		MultiSigLocker: mockMS,
+		MultiSigLocker:  mockMS,
 	}
 
 	mgr, _ := NewManager(cfg)
@@ -2092,9 +2092,9 @@ func TestFundLock_InvalidUnlock(t *testing.T) {
 	mockMS := newMockMultiSig()
 	cfg := &Config{
 		ChallengePeriod: 24 * time.Hour,
-		MinDeposit:     1000,
+		MinDeposit:      1000,
 		MaxChannelValue: 1000000,
-		MultiSigLocker: mockMS,
+		MultiSigLocker:  mockMS,
 	}
 
 	mgr, _ := NewManager(cfg)
@@ -2138,11 +2138,11 @@ func TestFundLock_InvalidUnlock(t *testing.T) {
 
 	// Test 3: Channel ID mismatch
 	otherChannel := &interfaces.Channel{
-		ID:        [32]byte{99, 99, 99},
-		PartyA:    tp.partyA,
-		PartyB:    tp.partyB,
-		BalanceA:  5000,
-		BalanceB:  3000,
+		ID:       [32]byte{99, 99, 99},
+		PartyA:   tp.partyA,
+		PartyB:   tp.partyB,
+		BalanceA: 5000,
+		BalanceB: 3000,
 	}
 	otherState := interfaces.SignedState{
 		ChannelID: otherChannel.ID,
@@ -2173,9 +2173,9 @@ func TestFundLock_SettlementManager(t *testing.T) {
 
 	mgrCfg := &Config{
 		ChallengePeriod: 24 * time.Hour,
-		MinDeposit:     1000,
+		MinDeposit:      1000,
 		MaxChannelValue: 1000000,
-		MultiSigLocker: mockMS,
+		MultiSigLocker:  mockMS,
 	}
 
 	mgr, err := NewManager(mgrCfg)
@@ -2246,9 +2246,9 @@ func TestFundLock_ForceSettlement(t *testing.T) {
 
 	mgrCfg := &Config{
 		ChallengePeriod: 1 * time.Millisecond,
-		MinDeposit:     1000,
+		MinDeposit:      1000,
 		MaxChannelValue: 1000000,
-		MultiSigLocker: mockMS,
+		MultiSigLocker:  mockMS,
 	}
 
 	mgr, _ := NewManager(mgrCfg)
@@ -2317,9 +2317,9 @@ func TestBoundary_MaxChannelValue(t *testing.T) {
 
 	cfg := &Config{
 		ChallengePeriod: 24 * time.Hour,
-		MinDeposit:     1,
+		MinDeposit:      1,
 		MaxChannelValue: 10000,
-		MultiSigLocker: &MockMultiSigLocker{},
+		MultiSigLocker:  &MockMultiSigLocker{},
 	}
 
 	mgr, _ := NewManager(cfg)
@@ -2345,9 +2345,9 @@ func TestBoundary_MinDeposit(t *testing.T) {
 
 	cfg := &Config{
 		ChallengePeriod: 24 * time.Hour,
-		MinDeposit:     1000,
+		MinDeposit:      1000,
 		MaxChannelValue: 1000000,
-		MultiSigLocker: &MockMultiSigLocker{},
+		MultiSigLocker:  &MockMultiSigLocker{},
 	}
 
 	mgr, _ := NewManager(cfg)
@@ -2373,9 +2373,9 @@ func TestBoundary_ZeroTransfer(t *testing.T) {
 
 	cfg := &Config{
 		ChallengePeriod: 24 * time.Hour,
-		MinDeposit:     1000,
+		MinDeposit:      1000,
 		MaxChannelValue: 1000000,
-		MultiSigLocker: &MockMultiSigLocker{},
+		MultiSigLocker:  &MockMultiSigLocker{},
 	}
 
 	mgr, _ := NewManager(cfg)
@@ -2403,9 +2403,9 @@ func TestBoundary_ExactBalanceTransfer(t *testing.T) {
 
 	cfg := &Config{
 		ChallengePeriod: 24 * time.Hour,
-		MinDeposit:     1000,
+		MinDeposit:      1000,
 		MaxChannelValue: 1000000,
-		MultiSigLocker: &MockMultiSigLocker{},
+		MultiSigLocker:  &MockMultiSigLocker{},
 	}
 
 	mgr, _ := NewManager(cfg)
@@ -2433,9 +2433,9 @@ func TestError_ChannelNotFound(t *testing.T) {
 
 	cfg := &Config{
 		ChallengePeriod: 24 * time.Hour,
-		MinDeposit:     1000,
+		MinDeposit:      1000,
 		MaxChannelValue: 1000000,
-		MultiSigLocker: &MockMultiSigLocker{},
+		MultiSigLocker:  &MockMultiSigLocker{},
 	}
 
 	mgr, _ := NewManager(cfg)
@@ -2473,9 +2473,9 @@ func TestError_InvalidSequence(t *testing.T) {
 
 	cfg := &Config{
 		ChallengePeriod: 24 * time.Hour,
-		MinDeposit:     1000,
+		MinDeposit:      1000,
 		MaxChannelValue: 1000000,
-		MultiSigLocker: &MockMultiSigLocker{},
+		MultiSigLocker:  &MockMultiSigLocker{},
 	}
 
 	mgr, _ := NewManager(cfg)
@@ -2523,9 +2523,9 @@ func TestError_ChannelStateTransition(t *testing.T) {
 
 	cfg := &Config{
 		ChallengePeriod: 24 * time.Hour,
-		MinDeposit:     1000,
+		MinDeposit:      1000,
 		MaxChannelValue: 1000000,
-		MultiSigLocker: &MockMultiSigLocker{},
+		MultiSigLocker:  &MockMultiSigLocker{},
 	}
 
 	mgr, _ := NewManager(cfg)
@@ -2572,9 +2572,9 @@ func TestIntegration_FullChannelLifecycle(t *testing.T) {
 	mockMS := newMockMultiSig()
 	cfg := &Config{
 		ChallengePeriod: 1 * time.Millisecond, // Short for testing
-		MinDeposit:     1000,
+		MinDeposit:      1000,
 		MaxChannelValue: 1000000,
-		MultiSigLocker: mockMS,
+		MultiSigLocker:  mockMS,
 	}
 
 	mgr, _ := NewManager(cfg)
@@ -2602,7 +2602,7 @@ func TestIntegration_FullChannelLifecycle(t *testing.T) {
 
 	// Verify balances after transfers
 	updated, _ := mgr.GetChannelState(channel.ID)
-	expectedA := uint64(7500) // 10000 - 5*500
+	expectedA := uint64(7500)  // 10000 - 5*500
 	expectedB := uint64(12500) // 10000 + 5*500
 	if updated.BalanceA != expectedA || updated.BalanceB != expectedB {
 		t.Errorf("Balances after transfers: expected %d/%d, got %d/%d",
@@ -2660,9 +2660,9 @@ func TestIntegration_SettlementWithChallenge(t *testing.T) {
 
 	mgrCfg := &Config{
 		ChallengePeriod: 1 * time.Millisecond,
-		MinDeposit:     1000,
+		MinDeposit:      1000,
 		MaxChannelValue: 1000000,
-		MultiSigLocker: mockMS,
+		MultiSigLocker:  mockMS,
 	}
 
 	mgr, _ := NewManager(mgrCfg)

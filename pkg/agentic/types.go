@@ -65,29 +65,29 @@ func (t ServiceType) String() string {
 
 // NodeInfo contains detailed information about an AI service node.
 type NodeInfo struct {
-	ID          interfaces.NodeID
-	Address     interfaces.Address
-	PublicKey   ed25519.PublicKey
-	Stake       uint64
-	Models      []string
-	Reputation  float64
-	Status      NodeStatus
-	Services    []ServiceType
-	Endpoint    string
-	LastSeen    time.Time
-	JoinedAt    time.Time
-	Version     string
-	Metadata    map[string]string
+	ID         interfaces.NodeID
+	Address    interfaces.Address
+	PublicKey  ed25519.PublicKey
+	Stake      uint64
+	Models     []string
+	Reputation float64
+	Status     NodeStatus
+	Services   []ServiceType
+	Endpoint   string
+	LastSeen   time.Time
+	JoinedAt   time.Time
+	Version    string
+	Metadata   map[string]string
 }
 
 // StakeInfo contains staking information for a node.
 type StakeInfo struct {
-	NodeID         interfaces.NodeID
-	Amount         uint64
-	LockedUntil    time.Time
-	SlashCount     uint32
-	TotalSlashed   uint64
-	LastSlashTime  *time.Time
+	NodeID        interfaces.NodeID
+	Amount        uint64
+	LockedUntil   time.Time
+	SlashCount    uint32
+	TotalSlashed  uint64
+	LastSlashTime *time.Time
 }
 
 // SlashReason represents the reason for slashing a node.
@@ -142,13 +142,13 @@ type ServiceRequest struct {
 
 // ServiceResponse represents a response from AI service.
 type ServiceResponse struct {
-	RequestID   string
-	NodeID      interfaces.NodeID
-	Response    []byte
-	Cost        uint64
-	Latency     time.Duration
-	Timestamp   time.Time
-	Signature   []byte
+	RequestID string
+	NodeID    interfaces.NodeID
+	Response  []byte
+	Cost      uint64
+	Latency   time.Duration
+	Timestamp time.Time
+	Signature []byte
 }
 
 // ServiceProvider represents a provider of AI services.
@@ -265,15 +265,15 @@ func (f *NodeFilter) Matches(node *NodeInfo) bool {
 
 // Config holds configuration for the agentic service.
 type Config struct {
-	NodeID          interfaces.NodeID
-	PrivateKey      ed25519.PrivateKey
-	PublicKey       ed25519.PublicKey
-	Address         interfaces.Address
-	MinStake        uint64
-	SlashThreshold  uint64
-	ReputationDecay float64
-	MaxNodes        int
-	ServiceTimeout  time.Duration
+	NodeID            interfaces.NodeID
+	PrivateKey        ed25519.PrivateKey
+	PublicKey         ed25519.PublicKey
+	Address           interfaces.Address
+	MinStake          uint64
+	SlashThreshold    uint64
+	ReputationDecay   float64
+	MaxNodes          int
+	ServiceTimeout    time.Duration
 	DiscoveryInterval time.Duration
 	HeartbeatInterval time.Duration
 }

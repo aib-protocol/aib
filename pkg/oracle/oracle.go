@@ -26,7 +26,7 @@ type PriceOracle struct {
 	cacheMisses int64
 
 	// priceHistory 价格历史记录（用于偏差检测）
-	priceHistory map[string][]priceHistoryEntry
+	priceHistory   map[string][]priceHistoryEntry
 	priceHistoryMu sync.RWMutex
 
 	// alertHandler 价格偏差告警处理器

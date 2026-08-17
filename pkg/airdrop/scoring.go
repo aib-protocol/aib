@@ -56,12 +56,12 @@ func DefaultScoringConfig() *ScoringConfig {
 
 // Score 评分结果
 type Score struct {
-	Total       int     `json:"total"`
-	AccountAge  int     `json:"account_age"`
-	Social      int     `json:"social"`
-	Repo        int     `json:"repo"`
-	Contribution int    `json:"contribution"`
-	Bonus       int     `json:"bonus"`
+	Total        int `json:"total"`
+	AccountAge   int `json:"account_age"`
+	Social       int `json:"social"`
+	Repo         int `json:"repo"`
+	Contribution int `json:"contribution"`
+	Bonus        int `json:"bonus"`
 
 	// 细节
 	AccountAgeDays int     `json:"account_age_days"`
@@ -72,9 +72,9 @@ type Score struct {
 
 // Scorer 评分系统
 type Scorer struct {
-	config         *ScoringConfig
-	sybilDetector  *SybilDetector
-	mu             sync.RWMutex
+	config        *ScoringConfig
+	sybilDetector *SybilDetector
+	mu            sync.RWMutex
 }
 
 // NewScorer 创建评分器
@@ -371,52 +371,52 @@ type SybilDetector struct {
 	threshold float64
 
 	// 已见账户特征
-	seenProfiles    map[string]*ProfileFeatures
-	mu              sync.RWMutex
+	seenProfiles map[string]*ProfileFeatures
+	mu           sync.RWMutex
 
 	// 聚类分析
-	clusters        []*Cluster
-	clusterCounter  int
+	clusters       []*Cluster
+	clusterCounter int
 }
 
 // ProfileFeatures 账户特征
 type ProfileFeatures struct {
-	GitHubID      uint64
-	Login         string
-	CreatedAt     time.Time
-	Followers     int
-	Following     int
-	PublicRepos   int
-	BioLength     int
-	HasEmail      bool
-	HasBlog       bool
-	HasLocation   bool
-	HasName       bool
+	GitHubID    uint64
+	Login       string
+	CreatedAt   time.Time
+	Followers   int
+	Following   int
+	PublicRepos int
+	BioLength   int
+	HasEmail    bool
+	HasBlog     bool
+	HasLocation bool
+	HasName     bool
 
 	// 行为特征
 	AvgCommitsPerWeek float64
 	ActiveDays        int
 
 	// 网络特征
-	FollowersMap     map[uint64]bool
-	FollowingMap     map[uint64]bool
+	FollowersMap map[uint64]bool
+	FollowingMap map[uint64]bool
 }
 
 // Cluster 聚类
 type Cluster struct {
-	ID       int
-	Members  []uint64
-	Center   *ProfileFeatures
-	Size     int
-	Created  time.Time
+	ID      int
+	Members []uint64
+	Center  *ProfileFeatures
+	Size    int
+	Created time.Time
 }
 
 // NewSybilDetector 创建女巫检测器
 func NewSybilDetector(threshold float64) *SybilDetector {
 	return &SybilDetector{
-		threshold:     threshold,
-		seenProfiles:  make(map[string]*ProfileFeatures),
-		clusters:      make([]*Cluster, 0),
+		threshold:    threshold,
+		seenProfiles: make(map[string]*ProfileFeatures),
+		clusters:     make([]*Cluster, 0),
 	}
 }
 

@@ -41,9 +41,9 @@ type Network struct {
 	peerID  PeerID
 
 	// Network layer
-	tcpNet     *TCPNetwork
-	listeners  []net.Listener
-	wg         sync.WaitGroup
+	tcpNet    *TCPNetwork
+	listeners []net.Listener
+	wg        sync.WaitGroup
 
 	// Peers and protocols
 	mu           sync.RWMutex
@@ -83,11 +83,11 @@ type MessageHandler func(ctx context.Context, msg *Message, from PeerID) error
 
 // Message represents a P2P message.
 type Message struct {
-	Type      string          `json:"type"`
-	Payload   []byte          `json:"payload"`
-	Timestamp time.Time       `json:"timestamp"`
-	Sender    PeerID          `json:"sender"`
-	Protocol  ProtocolID      `json:"protocol,omitempty"`
+	Type      string     `json:"type"`
+	Payload   []byte     `json:"payload"`
+	Timestamp time.Time  `json:"timestamp"`
+	Sender    PeerID     `json:"sender"`
+	Protocol  ProtocolID `json:"protocol,omitempty"`
 }
 
 // NewNetwork creates a new P2P network instance.

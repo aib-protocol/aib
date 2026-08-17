@@ -159,7 +159,7 @@ func bech32mPolymod(values []byte) int {
 	chk := 1
 	for _, v := range values {
 		top := chk >> 25
-		chk = (chk & 0x1ffffff) << 5 ^ int(v)
+		chk = (chk&0x1ffffff)<<5 ^ int(v)
 		for i := 0; i < 5; i++ {
 			if (top>>i)&1 == 1 {
 				chk ^= generators[i]

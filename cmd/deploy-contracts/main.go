@@ -35,11 +35,11 @@ type Config struct {
 
 // DeploymentRecord 部署记录
 type DeploymentRecord struct {
-	Timestamp   time.Time       `json:"timestamp"`
-	Network     string          `json:"network"`
-	ChainID     int64           `json:"chain_id"`
-	Deployer    string          `json:"deployer"`
-	Contracts   []ContractInfo  `json:"contracts"`
+	Timestamp   time.Time        `json:"timestamp"`
+	Network     string           `json:"network"`
+	ChainID     int64            `json:"chain_id"`
+	Deployer    string           `json:"deployer"`
+	Contracts   []ContractInfo   `json:"contracts"`
 	Validations []ValidationInfo `json:"validations"`
 }
 
@@ -53,9 +53,9 @@ type ContractInfo struct {
 
 // ValidationInfo 验证信息
 type ValidationInfo struct {
-	Name      string `json:"name"`
-	Status    string `json:"status"`
-	Message   string `json:"message"`
+	Name      string    `json:"name"`
+	Status    string    `json:"status"`
+	Message   string    `json:"message"`
 	Timestamp time.Time `json:"timestamp"`
 }
 
@@ -274,20 +274,20 @@ func main() {
 
 // Deployer 部署器
 type Deployer struct {
-	client    *ethclient.Client
+	client     *ethclient.Client
 	privateKey *ecdsa.PrivateKey
-	chainID   *big.Int
-	sender    common.Address
-	config    *Config
+	chainID    *big.Int
+	sender     common.Address
+	config     *Config
 }
 
 func NewDeployer(client *ethclient.Client, privateKey *ecdsa.PrivateKey, chainID *big.Int, cfg *Config) *Deployer {
 	return &Deployer{
-		client:    client,
+		client:     client,
 		privateKey: privateKey,
-		chainID:   chainID,
-		sender:    crypto.PubkeyToAddress(privateKey.PublicKey),
-		config:    cfg,
+		chainID:    chainID,
+		sender:     crypto.PubkeyToAddress(privateKey.PublicKey),
+		config:     cfg,
 	}
 }
 
@@ -454,13 +454,13 @@ func (d *Deployer) loadContractABI(name string) (string, error) {
 
 // Validator 验证器
 type Validator struct {
-	client  *ethclient.Client
+	client   *ethclient.Client
 	deployer *Deployer
 }
 
 func NewValidator(client *ethclient.Client, deployer *Deployer) *Validator {
 	return &Validator{
-		client:  client,
+		client:   client,
 		deployer: deployer,
 	}
 }

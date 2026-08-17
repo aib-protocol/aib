@@ -229,18 +229,18 @@ func (c *EvidenceCollector) Import(data []byte) error {
 
 // SybilDetector detects sybil attacks by analyzing behavior patterns
 type SybilDetector struct {
-	mu              sync.RWMutex
+	mu                  sync.RWMutex
 	similarityThreshold float64
-	nodeProfiles    map[string]*NodeProfile
+	nodeProfiles        map[string]*NodeProfile
 }
 
 // NodeProfile represents behavioral profile of a node
 type NodeProfile struct {
-	NodeID          []byte
-	ResponseTimes   []float64 // Average response times
-	LogitPatterns   []float64 // Logit distribution pattern
+	NodeID            []byte
+	ResponseTimes     []float64 // Average response times
+	LogitPatterns     []float64 // Logit distribution pattern
 	TimingFingerprint []float64 // Timing fingerprint
-	LastUpdated     int64
+	LastUpdated       int64
 }
 
 // NewSybilDetector creates a new sybil detector
@@ -257,11 +257,11 @@ func (d *SybilDetector) UpdateProfile(nodeID []byte, responseTimes, logitPattern
 	defer d.mu.Unlock()
 
 	d.nodeProfiles[string(nodeID)] = &NodeProfile{
-		NodeID:          nodeID,
-		ResponseTimes:   responseTimes,
-		LogitPatterns:   logitPatterns,
+		NodeID:            nodeID,
+		ResponseTimes:     responseTimes,
+		LogitPatterns:     logitPatterns,
 		TimingFingerprint: timingFingerprint,
-		LastUpdated:     time.Now().Unix(),
+		LastUpdated:       time.Now().Unix(),
 	}
 }
 

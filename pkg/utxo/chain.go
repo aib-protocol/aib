@@ -20,15 +20,16 @@ import (
 // ChainState represents the current state of the blockchain.
 // It manages the chain tip, block storage, and provides block query APIs.
 type ChainState struct {
-	db            *bbolt.DB
-	bestHeight    uint64           // Current best block height
-	bestHash      [32]byte         // Current best block hash
-	genesisHash   [32]byte         // Genesis block hash
-	blockIndex    map[uint64][32]byte // height -> block hash
-	blockIndexMu  sync.RWMutex
-	utxoStore     *PersistentUTXOStore
-	mempool       *Mempool
-	consensus     *ConsensusState
+	db           *bbolt.DB
+	bestMu       sync.RWMutex
+	bestHeight   uint64              // Current best block height
+	bestHash     [32]byte            // Current best block hash
+	genesisHash  [32]byte            // Genesis block hash
+	blockIndex   map[uint64][32]byte // height -> block hash
+	blockIndexMu sync.RWMutex
+	utxoStore    *PersistentUTXOStore
+	mempool      *Mempool
+	consensus    *ConsensusState
 }
 
 // ChainBucket names for bbolt
@@ -40,8 +41,8 @@ var (
 
 // Chain metadata keys
 const (
-	MetaBestHeight = "best_height"
-	MetaBestHash   = "best_hash"
+	MetaBestHeight  = "best_height"
+	MetaBestHash    = "best_hash"
 	MetaGenesisHash = "genesis_hash"
 )
 
@@ -202,21 +203,26 @@ func (cs *ChainState) AddBlock(block *Block) error {
 		// Update chain state if this is the new best block
 		// For genesis block (height 0), always update if this is the first block
 		isFirstBlock := len(cs.blockIndex) == 0
-		if block.Header.Height > cs.bestHeight || (block.Header.Height == 0 && isFirstBlock) {
+		cs.bestMu.RLock()
+		currentBest := cs.bestHeight
+		cs.bestMu.RUnlock()
+		if block.Header.Height > currentBest || (block.Header.Height == 0 && isFirstBlock) {
 			// Update best height
+			cs.bestMu.Lock()
 			cs.bestHeight = block.Header.Height
 			cs.bestHash = blockHash
+			cs.bestMu.Unlock()
 			cs.blockIndexMu.Lock()
 			cs.blockIndex[block.Header.Height] = blockHash
 			cs.blockIndexMu.Unlock()
 
 			metaBucket := tx.Bucket(BucketChainMeta)
 			var buf [8]byte
-			binary.BigEndian.PutUint64(buf[:], cs.bestHeight)
+			binary.BigEndian.PutUint64(buf[:], block.Header.Height)
 			if err := metaBucket.Put([]byte(MetaBestHeight), buf[:]); err != nil {
 				return fmt.Errorf("update best height: %w", err)
 			}
-			if err := metaBucket.Put([]byte(MetaBestHash), cs.bestHash[:]); err != nil {
+			if err := metaBucket.Put([]byte(MetaBestHash), blockHash[:]); err != nil {
 				return fmt.Errorf("update best hash: %w", err)
 			}
 		}
@@ -301,7 +307,7 @@ func (cs *ChainState) GetBestBlock() (*Block, error) {
 	if count == 0 {
 		return nil, fmt.Errorf("chain is empty")
 	}
-	return cs.GetBlockByHash(cs.bestHash)
+	return cs.GetBlockByHash(cs.GetBestBlockHash())
 }
 
 // GetBlockCount returns the total number of blocks in the chain.
@@ -314,11 +320,15 @@ func (cs *ChainState) GetBlockCount() uint64 {
 
 // GetBestBlockHeight returns the current best block height.
 func (cs *ChainState) GetBestBlockHeight() uint64 {
+	cs.bestMu.RLock()
+	defer cs.bestMu.RUnlock()
 	return cs.bestHeight
 }
 
 // GetBestBlockHash returns the current best block hash.
 func (cs *ChainState) GetBestBlockHash() [32]byte {
+	cs.bestMu.RLock()
+	defer cs.bestMu.RUnlock()
 	return cs.bestHash
 }
 
@@ -616,10 +626,10 @@ func (cs *ChainState) validateBlockProposer(block *Block) error {
 
 // ChainInfo contains basic chain information.
 type ChainInfo struct {
-	BestBlockHash   string
-	BestBlockHeight uint64
+	BestBlockHash    string
+	BestBlockHeight  uint64
 	GenesisBlockHash string
-	TotalBlocks     uint64
+	TotalBlocks      uint64
 }
 
 // GetChainInfo returns basic chain information.
@@ -634,31 +644,31 @@ func (cs *ChainState) GetChainInfo() *ChainInfo {
 
 // BlockInfo contains detailed block information for API responses.
 type BlockInfo struct {
-	Hash              string
-	Height            uint64
-	Version           uint32
-	PrevBlockHash     string
-	MerkleRoot        string
-	Timestamp         uint64
-	Proposer          string
-	TransactionCount  int
-	BlockReward       uint64
-	Size              int
+	Hash             string
+	Height           uint64
+	Version          uint32
+	PrevBlockHash    string
+	MerkleRoot       string
+	Timestamp        uint64
+	Proposer         string
+	TransactionCount int
+	BlockReward      uint64
+	Size             int
 }
 
 // ToBlockInfo converts a Block to BlockInfo for API response.
 func (cs *ChainState) ToBlockInfo(block *Block) (*BlockInfo, error) {
 	info := &BlockInfo{
-		Hash:              hex.EncodeToString(block.Hash[:]),
-		Height:            block.Header.Height,
-		Version:           block.Header.Version,
-		PrevBlockHash:     hex.EncodeToString(block.Header.PrevBlockHash[:]),
-		MerkleRoot:        hex.EncodeToString(block.Header.MerkleRoot[:]),
-		Timestamp:         block.Header.Timestamp,
-		Proposer:          hex.EncodeToString(block.Header.Proposer[:]),
-		TransactionCount:  len(block.Transactions),
-		BlockReward:       block.GetBlockReward(),
-		Size:              len(block.SerializeBlock()),
+		Hash:             hex.EncodeToString(block.Hash[:]),
+		Height:           block.Header.Height,
+		Version:          block.Header.Version,
+		PrevBlockHash:    hex.EncodeToString(block.Header.PrevBlockHash[:]),
+		MerkleRoot:       hex.EncodeToString(block.Header.MerkleRoot[:]),
+		Timestamp:        block.Header.Timestamp,
+		Proposer:         hex.EncodeToString(block.Header.Proposer[:]),
+		TransactionCount: len(block.Transactions),
+		BlockReward:      block.GetBlockReward(),
+		Size:             len(block.SerializeBlock()),
 	}
 
 	return info, nil
@@ -688,14 +698,14 @@ func (cs *ChainState) GetBlockInfoByHash(hash [32]byte) (*BlockInfo, error) {
 
 // BlockIterator iterates over blocks in the chain.
 type BlockIterator struct {
-	cs           *ChainState
+	cs            *ChainState
 	currentHeight uint64
 }
 
 // NewBlockIterator creates a new block iterator starting from the given height.
 func (cs *ChainState) NewBlockIterator(startHeight uint64) *BlockIterator {
 	return &BlockIterator{
-		cs:           cs,
+		cs:            cs,
 		currentHeight: startHeight,
 	}
 }
@@ -807,27 +817,34 @@ func (cs *ChainState) RollbackChain(targetHeight uint64) error {
 		}
 
 		// Update best height
+		cs.bestMu.Lock()
 		cs.bestHeight = targetHeight
+		cs.bestMu.Unlock()
 
 		// Get new best hash
+		var newBest [32]byte
 		if targetHeight > 0 {
 			var heightKey [8]byte
 			binary.BigEndian.PutUint64(heightKey[:], targetHeight)
 			newBestHash := heightBucket.Get(heightKey[:])
 			if newBestHash != nil && len(newBestHash) == 32 {
-				copy(cs.bestHash[:], newBestHash)
+				copy(newBest[:], newBestHash)
 			}
-		} else {
-			cs.bestHash = [32]byte{}
 		}
+		cs.bestMu.Lock()
+		cs.bestHash = newBest
+		cs.bestMu.Unlock()
 
 		// Save to database
+		cs.bestMu.RLock()
+		bh, bhh := cs.bestHeight, cs.bestHash
+		cs.bestMu.RUnlock()
 		var buf [8]byte
-		binary.BigEndian.PutUint64(buf[:], cs.bestHeight)
+		binary.BigEndian.PutUint64(buf[:], bh)
 		if err := metaBucket.Put([]byte(MetaBestHeight), buf[:]); err != nil {
 			return err
 		}
-		if err := metaBucket.Put([]byte(MetaBestHash), cs.bestHash[:]); err != nil {
+		if err := metaBucket.Put([]byte(MetaBestHash), bhh[:]); err != nil {
 			return err
 		}
 

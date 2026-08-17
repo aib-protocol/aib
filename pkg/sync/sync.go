@@ -61,32 +61,32 @@ type Blockchain interface {
 // Block represents a block in the blockchain (copied from consensus package).
 type Block struct {
 	Height           uint64            `json:"height"`
-	PrevBlockHash   []byte            `json:"prev_block_hash"`
-	Timestamp       int64             `json:"timestamp"`
-	TaskID          string            `json:"task_id"`
-	FinalResult     string            `json:"final_result"`
-	IsValid         bool              `json:"is_valid"`
-	AgreementRate   float64           `json:"agreement_rate"`
-	NodeResults     map[string]string `json:"node_results"`
-	ConsensusNodes  []string          `json:"consensus_nodes"`
-	DisagreeingNodes []string         `json:"disagreeing_nodes"`
-	Metadata        map[string]string `json:"metadata"`
-	BlockHash       []byte            `json:"hash"`
-	Nonce           uint64            `json:"nonce"`
-	Transactions    []*Transaction    `json:"transactions"`
+	PrevBlockHash    []byte            `json:"prev_block_hash"`
+	Timestamp        int64             `json:"timestamp"`
+	TaskID           string            `json:"task_id"`
+	FinalResult      string            `json:"final_result"`
+	IsValid          bool              `json:"is_valid"`
+	AgreementRate    float64           `json:"agreement_rate"`
+	NodeResults      map[string]string `json:"node_results"`
+	ConsensusNodes   []string          `json:"consensus_nodes"`
+	DisagreeingNodes []string          `json:"disagreeing_nodes"`
+	Metadata         map[string]string `json:"metadata"`
+	BlockHash        []byte            `json:"hash"`
+	Nonce            uint64            `json:"nonce"`
+	Transactions     []*Transaction    `json:"transactions"`
 }
 
 // Transaction represents a transaction in the blockchain.
 type Transaction struct {
-	ID        string          `json:"id"`
-	From      string          `json:"from"`
-	To        string          `json:"to"`
-	Amount    uint64          `json:"amount"`
-	Fee       uint64          `json:"fee"`
-	Timestamp int64           `json:"timestamp"`
-	Signature []byte          `json:"signature"`
-	Nonce     uint64          `json:"nonce"`
-	Payload   []byte          `json:"payload"`
+	ID        string `json:"id"`
+	From      string `json:"from"`
+	To        string `json:"to"`
+	Amount    uint64 `json:"amount"`
+	Fee       uint64 `json:"fee"`
+	Timestamp int64  `json:"timestamp"`
+	Signature []byte `json:"signature"`
+	Nonce     uint64 `json:"nonce"`
+	Payload   []byte `json:"payload"`
 }
 
 // Hash returns the transaction hash.
@@ -127,7 +127,7 @@ func (b *Block) calculateHash() []byte {
 
 // SyncStatus represents the current synchronization status.
 type SyncStatus struct {
-	IsSyncing     bool      `json:"is_syncing"`
+	IsSyncing    bool      `json:"is_syncing"`
 	StartBlock   uint64    `json:"start_block"`
 	CurrentBlock uint64    `json:"current_block"`
 	TargetBlock  uint64    `json:"target_block"`
@@ -142,21 +142,21 @@ type SyncStatus struct {
 
 // SyncManager manages block synchronization from peers.
 type SyncManager struct {
-	mu           sync.RWMutex
-	localChain   Blockchain
-	p2p          Network
-	running      bool
-	ctx          context.Context
-	cancel       context.CancelFunc
-	wg           sync.WaitGroup
+	mu         sync.RWMutex
+	localChain Blockchain
+	p2p        Network
+	running    bool
+	ctx        context.Context
+	cancel     context.CancelFunc
+	wg         sync.WaitGroup
 
 	// Configuration
-	syncInterval      time.Duration
-	maxBlocksPerReq   int
-	timeout           time.Duration
+	syncInterval    time.Duration
+	maxBlocksPerReq int
+	timeout         time.Duration
 
 	// Status
-	status         SyncStatus
+	status        SyncStatus
 	lastSyncError error
 
 	// Sync state
@@ -180,17 +180,17 @@ type Network interface {
 
 // Config holds SyncManager configuration.
 type Config struct {
-	SyncInterval      time.Duration
-	MaxBlocksPerReq  int
-	Timeout          time.Duration
-	OnBlockReceived  func(*Block, p2p.PeerID) error
-	OnChainReorg     func([]*Block, []*Block) error
+	SyncInterval    time.Duration
+	MaxBlocksPerReq int
+	Timeout         time.Duration
+	OnBlockReceived func(*Block, p2p.PeerID) error
+	OnChainReorg    func([]*Block, []*Block) error
 }
 
 // DefaultConfig returns default configuration.
 func DefaultConfig() *Config {
 	return &Config{
-		SyncInterval:     DefaultSyncInterval,
+		SyncInterval:    DefaultSyncInterval,
 		MaxBlocksPerReq: DefaultMaxBlocksPerRequest,
 		Timeout:         DefaultTimeout,
 	}
@@ -205,15 +205,15 @@ func NewSyncManager(localChain Blockchain, network Network, cfg *Config) *SyncMa
 	ctx, cancel := context.WithCancel(context.Background())
 
 	return &SyncManager{
-		localChain:       localChain,
-		p2p:              network,
-		ctx:              ctx,
-		cancel:           cancel,
-		syncInterval:     cfg.SyncInterval,
-		maxBlocksPerReq:  cfg.MaxBlocksPerReq,
-		timeout:          cfg.Timeout,
-		onBlockReceived:  cfg.OnBlockReceived,
-		onChainReorg:     cfg.OnChainReorg,
+		localChain:      localChain,
+		p2p:             network,
+		ctx:             ctx,
+		cancel:          cancel,
+		syncInterval:    cfg.SyncInterval,
+		maxBlocksPerReq: cfg.MaxBlocksPerReq,
+		timeout:         cfg.Timeout,
+		onBlockReceived: cfg.OnBlockReceived,
+		onChainReorg:    cfg.OnChainReorg,
 		knownHeights:    make(map[p2p.PeerID]uint64),
 		requestedBlocks: make(map[string]time.Time),
 		pendingRequests: make(map[string]context.CancelFunc),
@@ -402,8 +402,8 @@ func (sm *SyncManager) getLocalChainHeight() (uint64, error) {
 func (sm *SyncManager) requestBlockHeight(peerID p2p.PeerID) uint64 {
 	// Send a getblockcount request
 	req := &SyncMessage{
-		Type:    "getblockcount",
-		Height:  0,
+		Type:     "getblockcount",
+		Height:   0,
 		FromPeer: sm.p2p.PeerID(),
 	}
 
@@ -438,10 +438,10 @@ func (sm *SyncManager) syncBlocksFromPeer(peerID p2p.PeerID, startHeight, endHei
 
 	// Request blocks
 	req := &SyncMessage{
-		Type:    "getblocks",
-		Height:  startHeight,
+		Type:      "getblocks",
+		Height:    startHeight,
 		EndHeight: endHeight,
-		FromPeer: sm.p2p.PeerID(),
+		FromPeer:  sm.p2p.PeerID(),
 	}
 
 	data, err := json.Marshal(req)
@@ -498,8 +498,8 @@ func (sm *SyncManager) handleGetBlocks(ctx context.Context, msg *SyncMessage, fr
 
 	// Serialize blocks
 	response := &SyncMessage{
-		Type:    "blocks",
-		Blocks:  blocks,
+		Type:     "blocks",
+		Blocks:   blocks,
 		FromPeer: sm.p2p.PeerID(),
 	}
 
@@ -616,10 +616,10 @@ func (sm *SyncManager) validateBlock(block *Block) error {
 
 // SyncMessage represents a message in the sync protocol.
 type SyncMessage struct {
-	Type       string   `json:"type"`
-	Height     uint64   `json:"height"`
-	EndHeight  uint64   `json:"end_height,omitempty"`
-	Blocks     []*Block `json:"blocks,omitempty"`
-	BlockHashes []string `json:"block_hashes,omitempty"`
-	FromPeer   p2p.PeerID `json:"from_peer"`
+	Type        string     `json:"type"`
+	Height      uint64     `json:"height"`
+	EndHeight   uint64     `json:"end_height,omitempty"`
+	Blocks      []*Block   `json:"blocks,omitempty"`
+	BlockHashes []string   `json:"block_hashes,omitempty"`
+	FromPeer    p2p.PeerID `json:"from_peer"`
 }

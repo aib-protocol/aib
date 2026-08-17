@@ -12,7 +12,7 @@ import (
 type SyncState int
 
 const (
-	SyncStateIdle       SyncState = iota
+	SyncStateIdle SyncState = iota
 	SyncStateSyncing
 	SyncStateCaughtUp
 )

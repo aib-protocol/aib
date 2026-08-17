@@ -49,20 +49,20 @@ type MigrationHubAPI interface {
 
 // Server HTTP 服务器
 type Server struct {
-	httpServer      *http.Server
-	mux             *http.ServeMux
-	port            int
-	mu              sync.RWMutex
-	startTime       time.Time
-	chain           ChainReader
-	migrationHub    MigrationHubAPI
-	utxoStore       utxoStoreInterface
-	mempool         mempoolInterface
-	consensusState  consensusConfigInterface
-	governance      governanceInterface
-	p2pNetwork      p2pNetworkInterface
-	chainID         string
-	apiKeys         []string // API keys for authentication
+	httpServer     *http.Server
+	mux            *http.ServeMux
+	port           int
+	mu             sync.RWMutex
+	startTime      time.Time
+	chain          ChainReader
+	migrationHub   MigrationHubAPI
+	utxoStore      utxoStoreInterface
+	mempool        mempoolInterface
+	consensusState consensusConfigInterface
+	governance     governanceInterface
+	p2pNetwork     p2pNetworkInterface
+	chainID        string
+	apiKeys        []string // API keys for authentication
 }
 
 // p2pNetworkInterface P2P 网络接口

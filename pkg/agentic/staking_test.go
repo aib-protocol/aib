@@ -264,10 +264,10 @@ func TestStakingManager_CalculateSlashAmount(t *testing.T) {
 		reason   SlashReason
 		expected uint64
 	}{
-		{SlashReasonDowntime, 1000},           // 1% of 100000
-		{SlashReasonInvalidResponse, 5000},    // 5% of 100000
-		{SlashReasonTimeout, 2000},            // 2% of 100000
-		{SlashReasonMalicious, 50000},         // 50% of 100000
+		{SlashReasonDowntime, 1000},            // 1% of 100000
+		{SlashReasonInvalidResponse, 5000},     // 5% of 100000
+		{SlashReasonTimeout, 2000},             // 2% of 100000
+		{SlashReasonMalicious, 50000},          // 50% of 100000
 		{SlashReasonConsensusViolation, 20000}, // 20% of 100000
 	}
 

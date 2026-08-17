@@ -12,7 +12,7 @@ import (
 
 // Registry stores and manages model fingerprints on-chain
 type Registry struct {
-	mu          sync.RWMutex
+	mu           sync.RWMutex
 	fingerprints map[string]*ModelFingerprint // hash -> fingerprint
 	nodeModels   map[string][]string          // nodeID -> []fingerprintHash
 	bannedNodes  map[string]struct{}          // banned node IDs
@@ -244,11 +244,11 @@ func (r *VerificationRequest) IsExpired() bool {
 
 // VerificationResponse represents a node's response to a verification request
 type VerificationResponse struct {
-	RequestHash    []byte // Hash of the original request
-	Response       []byte // The response data (e.g., logits)
-	MerkleProof    [][]byte
-	Timestamp      int64
-	Signature      []byte
+	RequestHash []byte // Hash of the original request
+	Response    []byte // The response data (e.g., logits)
+	MerkleProof [][]byte
+	Timestamp   int64
+	Signature   []byte
 }
 
 // VerifyResponse verifies a verification response

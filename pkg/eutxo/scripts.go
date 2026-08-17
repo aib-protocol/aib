@@ -444,8 +444,8 @@ type MultiSigParams struct {
 
 // TimelockParams represents parameters for time-lock scripts.
 type TimelockParams struct {
-	LockSlot  uint64   `json:"lockSlot"`
-	PublicKey []byte   `json:"publicKey"`
+	LockSlot  uint64 `json:"lockSlot"`
+	PublicKey []byte `json:"publicKey"`
 }
 
 // EscrowParams represents parameters for escrow scripts.

@@ -17,25 +17,25 @@ import (
 type InferenceProviderType string
 
 const (
-	ProviderTypeOpenAI     InferenceProviderType = "openai-compatible"
-	ProviderTypeOllama     InferenceProviderType = "ollama"
-	ProviderTypeAnthropic  InferenceProviderType = "anthropic"
-	ProviderTypeCustom     InferenceProviderType = "custom"
-	ProviderTypePlugin     InferenceProviderType = "plugin"
+	ProviderTypeOpenAI    InferenceProviderType = "openai-compatible"
+	ProviderTypeOllama    InferenceProviderType = "ollama"
+	ProviderTypeAnthropic InferenceProviderType = "anthropic"
+	ProviderTypeCustom    InferenceProviderType = "custom"
+	ProviderTypePlugin    InferenceProviderType = "plugin"
 )
 
 // UnifiedConfig 通用推理提供者配置
 // 支持任何 OpenAI 兼容 API
 type UnifiedConfig struct {
-	Type              InferenceProviderType `json:"type"`                // 提供商类型
-	BaseURL           string                `json:"base_url"`            // API 基础 URL
-	APIKey            string                `json:"api_key"`            // API 密钥
-	Model             string                `json:"model"`              // 模型名称
-	Weight            float64               `json:"weight"`             // 模型权重
-	Timeout           time.Duration         `json:"timeout"`            // 请求超时
-	MaxTokens         int                   `json:"max_tokens"`         // 最大生成 tokens
-	Temperature       float64               `json:"temperature"`        // 温度参数
-	TopP              float64               `json:"top_p"`              // Top-p 采样
+	Type        InferenceProviderType `json:"type"`        // 提供商类型
+	BaseURL     string                `json:"base_url"`    // API 基础 URL
+	APIKey      string                `json:"api_key"`     // API 密钥
+	Model       string                `json:"model"`       // 模型名称
+	Weight      float64               `json:"weight"`      // 模型权重
+	Timeout     time.Duration         `json:"timeout"`     // 请求超时
+	MaxTokens   int                   `json:"max_tokens"`  // 最大生成 tokens
+	Temperature float64               `json:"temperature"` // 温度参数
+	TopP        float64               `json:"top_p"`       // Top-p 采样
 }
 
 // DefaultUnifiedConfig 返回默认配置
@@ -127,13 +127,13 @@ func (p *UnifiedProvider) Infer(ctx context.Context, prompt string) (string, err
 func (p *UnifiedProvider) inferOpenAICompatible(ctx context.Context, prompt string) (string, error) {
 	// OpenAI 格式的请求体
 	requestBody := map[string]interface{}{
-		"model":      p.config.Model,
+		"model": p.config.Model,
 		"messages": []map[string]string{
 			{"role": "user", "content": prompt},
 		},
-		"max_tokens":   p.config.MaxTokens,
-		"temperature":  p.config.Temperature,
-		"top_p":        p.config.TopP,
+		"max_tokens":  p.config.MaxTokens,
+		"temperature": p.config.Temperature,
+		"top_p":       p.config.TopP,
 	}
 
 	body, err := json.Marshal(requestBody)
@@ -197,9 +197,9 @@ func (p *UnifiedProvider) inferOpenAICompatible(ctx context.Context, prompt stri
 func (p *UnifiedProvider) inferOllama(ctx context.Context, prompt string) (string, error) {
 	// Ollama 格式的请求体
 	requestBody := map[string]interface{}{
-		"model":   p.config.Model,
-		"prompt":  prompt,
-		"stream":  false,
+		"model":  p.config.Model,
+		"prompt": prompt,
+		"stream": false,
 	}
 
 	body, err := json.Marshal(requestBody)
@@ -332,13 +332,13 @@ func (p *UnifiedProvider) ModelID() []byte {
 
 // ModelInfo represents information about a registered model
 type ModelInfo struct {
-	ModelID      string                `json:"model_id"`       // 模型唯一标识
-	Name         string                `json:"name"`           // 模型显示名称
-	Type         InferenceProviderType `json:"type"`           // 提供商类型
-	BaseURL      string                `json:"base_url"`       // API base URL
-	Weight       float64               `json:"weight"`         // 权重（1.0 = 基准）
-	Performance  *ModelPerformance     `json:"performance"`    // 性能指标
-	RegisteredAt time.Time             `json:"registered_at"`  // 注册时间
+	ModelID      string                `json:"model_id"`      // 模型唯一标识
+	Name         string                `json:"name"`          // 模型显示名称
+	Type         InferenceProviderType `json:"type"`          // 提供商类型
+	BaseURL      string                `json:"base_url"`      // API base URL
+	Weight       float64               `json:"weight"`        // 权重（1.0 = 基准）
+	Performance  *ModelPerformance     `json:"performance"`   // 性能指标
+	RegisteredAt time.Time             `json:"registered_at"` // 注册时间
 }
 
 // ModelPerformance represents performance metrics for a model
@@ -369,17 +369,17 @@ func (p *UnifiedProvider) GetWeight() float64 {
 	// 性能奖励：完成任务率高、用户满意
 	// 成本惩罚：成本高则权重降低
 	performanceBonus := (perf.TaskCompletionRate-0.85)*0.5 + // 0.85基准完成率
-		(perf.UserSatisfaction-4.0)*0.2          // 4.0基准满意度
+		(perf.UserSatisfaction-4.0)*0.2 // 4.0基准满意度
 
-	costPenalty := (perf.CostPerTask-0.005)*100 // 0.005基准成本
+	costPenalty := (perf.CostPerTask - 0.005) * 100 // 0.005基准成本
 
 	// 应用权重调整
 	adjustedWeight := p.config.Weight * (1 + performanceBonus - costPenalty)
 
 	// 确保权重在合理范围内
 
-	minWeight := 0.1   // 最小权重
-	maxWeight := 3.0   // 最大权重
+	minWeight := 0.1 // 最小权重
+	maxWeight := 3.0 // 最大权重
 	if adjustedWeight < minWeight {
 		return minWeight
 	}
@@ -407,14 +407,14 @@ func (p *UnifiedProvider) WeightedInfer(ctx context.Context, prompt string) (str
 
 // 用于提出权重调整、模型注册/取消等治理操作
 type GovernanceProposal struct {
-	ID          string                 `json:"id"`          // 提案ID
-	Type        GovernanceProposalType `json:"type"`        // 提案类型
-	Title       string                 `json:"title"`       // 提案标题
-	Description string                 `json:"description"` // 详细描述
-	Evidence    map[string]interface{} `json:"evidence"`    // 证据数据
-	Proposer    string                 `json:"proposer"`    // 提案人
-	Deadline    time.Time              `json:"deadline"`   // 投票截止时间
-	Status      GovernanceProposalStatus `json:"status"`    // 提案状态
+	ID          string                   `json:"id"`          // 提案ID
+	Type        GovernanceProposalType   `json:"type"`        // 提案类型
+	Title       string                   `json:"title"`       // 提案标题
+	Description string                   `json:"description"` // 详细描述
+	Evidence    map[string]interface{}   `json:"evidence"`    // 证据数据
+	Proposer    string                   `json:"proposer"`    // 提案人
+	Deadline    time.Time                `json:"deadline"`    // 投票截止时间
+	Status      GovernanceProposalStatus `json:"status"`      // 提案状态
 }
 
 type GovernanceProposalType string
@@ -428,10 +428,10 @@ const (
 type GovernanceProposalStatus string
 
 const (
-	ProposalStatusPending   GovernanceProposalStatus = "pending"
-	ProposalStatusActive    GovernanceProposalStatus = "active"
-	ProposalStatusPassed    GovernanceProposalStatus = "passed"
-	ProposalStatusRejected  GovernanceProposalStatus = "rejected"
+	ProposalStatusPending  GovernanceProposalStatus = "pending"
+	ProposalStatusActive   GovernanceProposalStatus = "active"
+	ProposalStatusPassed   GovernanceProposalStatus = "passed"
+	ProposalStatusRejected GovernanceProposalStatus = "rejected"
 )
 
 // ProposeWeightAdjustment 提出权重调整提案
@@ -449,15 +449,15 @@ func (p *UnifiedProvider) ProposeWeightAdjustment(
 	}
 
 	proposal := &GovernanceProposal{
-		ID:          fmt.Sprintf("weight_%s_%d", modelID, time.Now().Unix()),
-		Type:        ProposalTypeWeightAdjustment,
-		Title:       fmt.Sprintf("Adjust weight for model %s", modelID),
+		ID:    fmt.Sprintf("weight_%s_%d", modelID, time.Now().Unix()),
+		Type:  ProposalTypeWeightAdjustment,
+		Title: fmt.Sprintf("Adjust weight for model %s", modelID),
 		Description: fmt.Sprintf("Proposal to adjust model weight from %.2f to %.2f",
 			currentWeight, proposedWeight),
-		Evidence:    evidence,
-		Proposer:   "anonymous", // 实际应使用节点ID或钱包地址
-		Deadline:   time.Now().Add(7 * 24 * time.Hour), // 7天投票期
-		Status:     ProposalStatusActive,
+		Evidence: evidence,
+		Proposer: "anonymous",                        // 实际应使用节点ID或钱包地址
+		Deadline: time.Now().Add(7 * 24 * time.Hour), // 7天投票期
+		Status:   ProposalStatusActive,
 	}
 
 	// TODO: 提交到链上治理合约
@@ -468,10 +468,10 @@ func (p *UnifiedProvider) ProposeWeightAdjustment(
 
 // 任何持币者可以投票
 type GovernanceVote struct {
-	ProposalID string      `json:"proposal_id"`
-	Voter      string      `json:"voter"`
-	Vote       bool        `json:"vote"`   // true = yes, false = no
-	Timestamp  time.Time   `json:"timestamp"`
+	ProposalID string    `json:"proposal_id"`
+	Voter      string    `json:"voter"`
+	Vote       bool      `json:"vote"` // true = yes, false = no
+	Timestamp  time.Time `json:"timestamp"`
 }
 
 // ExecuteProposal 执行已通过的提案

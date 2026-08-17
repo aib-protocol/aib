@@ -14,35 +14,35 @@ import (
 // Block represents a ZKML verification result block
 type Block struct {
 	Height           uint64            `json:"height"`            // Block height
-	PrevBlockHash   []byte            `json:"prev_block_hash"`  // Previous block hash
-	Timestamp       int64             `json:"timestamp"`        // Block creation timestamp
-	TaskID          string            `json:"task_id"`          // ZKML task ID
-	FinalResult     string            `json:"final_result"`    // Final verification result
-	IsValid         bool              `json:"is_valid"`        // Verification success
-	AgreementRate   float64           `json:"agreement_rate"`  // Node consensus rate
-	NodeResults     map[string]string `json:"node_results"`    // Node results
-	ConsensusNodes  []string          `json:"consensus_nodes"`  // Nodes in consensus
-	DisagreeingNodes []string         `json:"disagreeing_nodes"` // Disagreeing nodes
-	Metadata        map[string]string `json:"metadata"`        // Additional metadata
-	BlockHash       []byte            `json:"hash"`             // Block hash
-	Nonce           uint64            `json:"nonce"`            // Nonce for PoW
+	PrevBlockHash    []byte            `json:"prev_block_hash"`   // Previous block hash
+	Timestamp        int64             `json:"timestamp"`         // Block creation timestamp
+	TaskID           string            `json:"task_id"`           // ZKML task ID
+	FinalResult      string            `json:"final_result"`      // Final verification result
+	IsValid          bool              `json:"is_valid"`          // Verification success
+	AgreementRate    float64           `json:"agreement_rate"`    // Node consensus rate
+	NodeResults      map[string]string `json:"node_results"`      // Node results
+	ConsensusNodes   []string          `json:"consensus_nodes"`   // Nodes in consensus
+	DisagreeingNodes []string          `json:"disagreeing_nodes"` // Disagreeing nodes
+	Metadata         map[string]string `json:"metadata"`          // Additional metadata
+	BlockHash        []byte            `json:"hash"`              // Block hash
+	Nonce            uint64            `json:"nonce"`             // Nonce for PoW
 }
 
 // NewBlock creates a new block from a verification event
 func NewBlock(height uint64, prevHash []byte, event *BlockEvent) *Block {
 	return &Block{
 		Height:           height,
-		PrevBlockHash:   prevHash,
-		Timestamp:       time.Now().Unix(),
-		TaskID:          event.TaskID,
-		FinalResult:     event.FinalResult,
-		IsValid:         event.IsValid,
-		AgreementRate:   event.AgreementRate,
-		NodeResults:     event.NodeResults,
-		ConsensusNodes:  event.ConsensusNodes,
+		PrevBlockHash:    prevHash,
+		Timestamp:        time.Now().Unix(),
+		TaskID:           event.TaskID,
+		FinalResult:      event.FinalResult,
+		IsValid:          event.IsValid,
+		AgreementRate:    event.AgreementRate,
+		NodeResults:      event.NodeResults,
+		ConsensusNodes:   event.ConsensusNodes,
 		DisagreeingNodes: event.DisagreeingNodes,
-		Metadata:        event.Metadata,
-		Nonce:           0,
+		Metadata:         event.Metadata,
+		Nonce:            0,
 	}
 }
 
@@ -113,8 +113,8 @@ func (b *Block) ToJSON() ([]byte, error) {
 // ToDisplayMap returns a map suitable for display
 func (b *Block) ToDisplayMap() map[string]interface{} {
 	result := map[string]interface{}{
-		"height":             b.Height,
-		"hash":               hex.EncodeToString(b.Hash()),
+		"height":            b.Height,
+		"hash":              hex.EncodeToString(b.Hash()),
 		"prev_block_hash":   hex.EncodeToString(b.PrevBlockHash),
 		"timestamp":         time.Unix(b.Timestamp, 0).Format(time.RFC3339),
 		"task_id":           b.TaskID,

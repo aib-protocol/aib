@@ -375,10 +375,10 @@ func BenchmarkBlockAnnounce(b *testing.B) {
 
 				// Create announcement message
 				announce := &BlockMessage{
-					Type:    "block_announce",
-					Block:   block,
+					Type:     "block_announce",
+					Block:    block,
 					FromPeer: net.PeerID(),
-					TTL:     bp.gossipFanout,
+					TTL:      bp.gossipFanout,
 				}
 
 				// Gossip announcement
@@ -419,9 +419,9 @@ func BenchmarkPeerSync(b *testing.B) {
 			chain := newBenchmarkBlockchain()
 
 			cfg := &Config{
-				SyncInterval:     10 * time.Second,
-				MaxBlocksPerReq:  bm.blocksPerReq,
-				Timeout:          30 * time.Second,
+				SyncInterval:    10 * time.Second,
+				MaxBlocksPerReq: bm.blocksPerReq,
+				Timeout:         30 * time.Second,
 			}
 
 			sm := NewSyncManager(chain, net, cfg)
@@ -575,10 +575,10 @@ func BenchmarkGossipFanout(b *testing.B) {
 
 			for i := 0; i < b.N; i++ {
 				announce := &BlockMessage{
-					Type:    "block_announce",
-					Block:   block,
+					Type:     "block_announce",
+					Block:    block,
 					FromPeer: net.PeerID(),
-					TTL:     bm.fanout,
+					TTL:      bm.fanout,
 				}
 
 				if err := bp.gossipBlock(block, announce); err != nil {
@@ -673,10 +673,10 @@ func BenchmarkBlockMessageMarshal(b *testing.B) {
 		b.Run(bm.name, func(b *testing.B) {
 			block := generateBenchmarkBlock(1, bm.txCount)
 			msg := &BlockMessage{
-				Type:    "block_announce",
-				Block:   block,
+				Type:     "block_announce",
+				Block:    block,
 				FromPeer: "test-peer",
-				TTL:     3,
+				TTL:      3,
 			}
 
 			b.ResetTimer()
@@ -707,10 +707,10 @@ func BenchmarkBlockMessageUnmarshal(b *testing.B) {
 		b.Run(bm.name, func(b *testing.B) {
 			block := generateBenchmarkBlock(1, bm.txCount)
 			msg := &BlockMessage{
-				Type:    "block_announce",
-				Block:   block,
+				Type:     "block_announce",
+				Block:    block,
 				FromPeer: "test-peer",
-				TTL:     3,
+				TTL:      3,
 			}
 
 			data, err := json.Marshal(msg)
@@ -740,9 +740,9 @@ func BenchmarkBlockMessageUnmarshal(b *testing.B) {
 // BenchmarkConcurrentBroadcast benchmarks concurrent block broadcasts.
 func BenchmarkConcurrentBroadcast(b *testing.B) {
 	benchmarks := []struct {
-		name      string
+		name       string
 		goroutines int
-		peerCount int
+		peerCount  int
 	}{
 		{"1Goroutine_10Peers", 1, 10},
 		{"4Goroutines_10Peers", 4, 10},

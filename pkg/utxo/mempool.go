@@ -11,16 +11,16 @@ import (
 
 // MempoolEntry represents a transaction in the mempool.
 type MempoolEntry struct {
-	Tx        *Transaction
-	AddedAt   time.Time
-	Fee       uint64
-	FeeRate   float64 // fee per byte
+	Tx      *Transaction
+	AddedAt time.Time
+	Fee     uint64
+	FeeRate float64 // fee per byte
 }
 
 // Mempool holds unconfirmed transactions.
 type Mempool struct {
 	entries    map[[32]byte]*MempoolEntry // txHash -> entry
-	spentUTXOs map[string]bool             // 已使用的UTXO（防双花）
+	spentUTXOs map[string]bool            // 已使用的UTXO（防双花）
 	maxSize    int
 	minFee     uint64
 	mu         sync.RWMutex
@@ -100,10 +100,10 @@ func (m *Mempool) AddTransaction(tx *Transaction, utxoProvider UTXOProvider) err
 
 	// Create entry
 	entry := &MempoolEntry{
-		Tx:        tx,
-		AddedAt:   time.Now(),
-		Fee:       actualFee,
-		FeeRate:   feeRate,
+		Tx:      tx,
+		AddedAt: time.Now(),
+		Fee:     actualFee,
+		FeeRate: feeRate,
 	}
 
 	m.entries[txHash] = entry

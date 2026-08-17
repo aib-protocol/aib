@@ -311,7 +311,7 @@ func createTransferTx(fromKey ed25519.PrivateKey, toPubKey ed25519.PublicKey, am
 	copy(toAddr[:], toHash[:32])
 
 	tx := &Transaction{
-		Version:  2,
+		Version: 2,
 		Inputs: []TXInput{
 			{
 				TxHash:    [32]byte{1},
@@ -405,8 +405,8 @@ func testDIFIIntegration(t *testing.T) {
 
 func createDIFITransaction(t *testing.T, amount uint64) *Transaction {
 	return &Transaction{
-		Version:  2,
-		Inputs:   []TXInput{},
+		Version: 2,
+		Inputs:  []TXInput{},
 		Outputs: []TXOutput{
 			{
 				Value:   amount,
@@ -421,8 +421,8 @@ func createDIFITransaction(t *testing.T, amount uint64) *Transaction {
 
 func createDIFIRequestTransaction(t *testing.T) *Transaction {
 	return &Transaction{
-		Version:  2,
-		Inputs:   []TXInput{},
+		Version: 2,
+		Inputs:  []TXInput{},
 		Outputs: []TXOutput{
 			{
 				Value:   100 * BlockRewardSatoshi,
@@ -437,8 +437,8 @@ func createDIFIRequestTransaction(t *testing.T) *Transaction {
 
 func createDIFIResponseTransaction(t *testing.T) *Transaction {
 	return &Transaction{
-		Version:  2,
-		Inputs:   []TXInput{},
+		Version: 2,
+		Inputs:  []TXInput{},
 		Outputs: []TXOutput{
 			{
 				Value:   50 * BlockRewardSatoshi,
@@ -489,8 +489,8 @@ func testDAOIntegration(t *testing.T) {
 
 func createDAOTransaction(t *testing.T, amount uint64) *Transaction {
 	return &Transaction{
-		Version:  2,
-		Inputs:   []TXInput{},
+		Version: 2,
+		Inputs:  []TXInput{},
 		Outputs: []TXOutput{
 			{
 				Value:   amount,
@@ -505,8 +505,8 @@ func createDAOTransaction(t *testing.T, amount uint64) *Transaction {
 
 func createDAOProposalTransaction(t *testing.T) *Transaction {
 	return &Transaction{
-		Version:  2,
-		Inputs:   []TXInput{},
+		Version: 2,
+		Inputs:  []TXInput{},
 		Outputs: []TXOutput{
 			{
 				Value:   1000 * BlockRewardSatoshi,
@@ -521,8 +521,8 @@ func createDAOProposalTransaction(t *testing.T) *Transaction {
 
 func createDAOVoteTransaction(t *testing.T) *Transaction {
 	return &Transaction{
-		Version:  2,
-		Inputs:   []TXInput{},
+		Version: 2,
+		Inputs:  []TXInput{},
 		Outputs: []TXOutput{
 			{
 				Value:   0,

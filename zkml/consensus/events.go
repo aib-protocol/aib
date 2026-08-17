@@ -7,24 +7,24 @@ import (
 
 // BlockEvent represents an event that triggers block creation
 type BlockEvent struct {
-	TaskID          string            `json:"task_id"`           // ZKML task ID
-	FinalResult    string            `json:"final_result"`    // Final verification result
-	IsValid        bool              `json:"is_valid"`        // Verification success
-	AgreementRate  float64           `json:"agreement_rate"`  // Node consensus rate
-	NodeResults    map[string]string `json:"node_results"`    // Node results
-	ConsensusNodes []string          `json:"consensus_nodes"`  // Nodes in consensus
-	DisagreeingNodes []string        `json:"disagreeing_nodes"` // Disagreeing nodes
-	Metadata       map[string]string `json:"metadata"`        // Additional metadata
-	Timestamp      int64             `json:"timestamp"`        // Event timestamp
-	BlockHeight    uint64            `json:"block_height"`    // Expected block height
-	Priority       EventPriority     `json:"priority"`        // Event priority
+	TaskID           string            `json:"task_id"`           // ZKML task ID
+	FinalResult      string            `json:"final_result"`      // Final verification result
+	IsValid          bool              `json:"is_valid"`          // Verification success
+	AgreementRate    float64           `json:"agreement_rate"`    // Node consensus rate
+	NodeResults      map[string]string `json:"node_results"`      // Node results
+	ConsensusNodes   []string          `json:"consensus_nodes"`   // Nodes in consensus
+	DisagreeingNodes []string          `json:"disagreeing_nodes"` // Disagreeing nodes
+	Metadata         map[string]string `json:"metadata"`          // Additional metadata
+	Timestamp        int64             `json:"timestamp"`         // Event timestamp
+	BlockHeight      uint64            `json:"block_height"`      // Expected block height
+	Priority         EventPriority     `json:"priority"`          // Event priority
 }
 
 // EventPriority represents the priority level of an event
 type EventPriority int
 
 const (
-	PriorityLow    EventPriority = iota
+	PriorityLow EventPriority = iota
 	PriorityNormal
 	PriorityHigh
 	PriorityUrgent
@@ -58,16 +58,16 @@ func NewBlockEvent(
 	metadata map[string]string,
 ) *BlockEvent {
 	return &BlockEvent{
-		TaskID:          taskID,
-		FinalResult:    finalResult,
-		IsValid:        isValid,
-		AgreementRate:  agreementRate,
-		NodeResults:    nodeResults,
-		ConsensusNodes: consensusNodes,
+		TaskID:           taskID,
+		FinalResult:      finalResult,
+		IsValid:          isValid,
+		AgreementRate:    agreementRate,
+		NodeResults:      nodeResults,
+		ConsensusNodes:   consensusNodes,
 		DisagreeingNodes: disagreeingNodes,
-		Metadata:       metadata,
-		Timestamp:      time.Now().Unix(),
-		Priority:       PriorityNormal, // Default priority
+		Metadata:         metadata,
+		Timestamp:        time.Now().Unix(),
+		Priority:         PriorityNormal, // Default priority
 	}
 }
 
@@ -84,16 +84,16 @@ func NewBlockEventWithPriority(
 	priority EventPriority,
 ) *BlockEvent {
 	return &BlockEvent{
-		TaskID:          taskID,
-		FinalResult:    finalResult,
-		IsValid:        isValid,
-		AgreementRate:  agreementRate,
-		NodeResults:    nodeResults,
-		ConsensusNodes: consensusNodes,
+		TaskID:           taskID,
+		FinalResult:      finalResult,
+		IsValid:          isValid,
+		AgreementRate:    agreementRate,
+		NodeResults:      nodeResults,
+		ConsensusNodes:   consensusNodes,
 		DisagreeingNodes: disagreeingNodes,
-		Metadata:       metadata,
-		Timestamp:      time.Now().Unix(),
-		Priority:       priority,
+		Metadata:         metadata,
+		Timestamp:        time.Now().Unix(),
+		Priority:         priority,
 	}
 }
 
@@ -115,19 +115,19 @@ func NewEventChannel(bufferSize int) EventChannel {
 type EventType string
 
 const (
-	EventTaskVerified    EventType = "task_verified"
-	EventBlockProduced   EventType = "block_produced"
-	EventBlockVerified   EventType = "block_verified"
+	EventTaskVerified     EventType = "task_verified"
+	EventBlockProduced    EventType = "block_produced"
+	EventBlockVerified    EventType = "block_verified"
 	EventChainReorganized EventType = "chain_reorganized"
 )
 
 // ConsensusEvent represents a consensus-related event
 type ConsensusEvent struct {
-	Type      EventType     `json:"type"`       // Event type
-	BlockHash []byte        `json:"block_hash"` // Related block hash
-	Height    uint64        `json:"height"`     // Block height
-	Data      interface{}   `json:"data"`       // Event data
-	Timestamp time.Time     `json:"timestamp"`  // Event timestamp
+	Type      EventType   `json:"type"`       // Event type
+	BlockHash []byte      `json:"block_hash"` // Related block hash
+	Height    uint64      `json:"height"`     // Block height
+	Data      interface{} `json:"data"`       // Event data
+	Timestamp time.Time   `json:"timestamp"`  // Event timestamp
 }
 
 // NewConsensusEvent creates a new consensus event

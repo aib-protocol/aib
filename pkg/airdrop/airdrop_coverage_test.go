@@ -394,7 +394,7 @@ func TestScoringCodeContribution(t *testing.T) {
 
 	additionalData := &AdditionalData{
 		PullRequests: 50,
-		Issues:        30,
+		Issues:       30,
 	}
 
 	score := scorer.ScoreUser(userInfo, additionalData)

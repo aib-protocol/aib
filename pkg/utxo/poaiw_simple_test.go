@@ -20,27 +20,27 @@ const (
 // PoAIWTestConfig Simplified PoAIW configuration
 type PoAIWTestConfig struct {
 	TargetBlockTime   time.Duration // 30 seconds
-	MinStake         uint64         // 1000 AIB
-	InitialDifficulty uint64         // Initial PoW difficulty
+	MinStake          uint64        // 1000 AIB
+	InitialDifficulty uint64        // Initial PoW difficulty
 }
 
 // DefaultPoAIWTestConfig returns default test configuration
 func DefaultPoAIWTestConfig() *PoAIWTestConfig {
 	return &PoAIWTestConfig{
 		TargetBlockTime:   30 * time.Second,
-		MinStake:         1000 * AIBUnit, // 1000 AIB in satoshi
+		MinStake:          1000 * AIBUnit, // 1000 AIB in satoshi
 		InitialDifficulty: 1000,           // Initial difficulty
 	}
 }
 
 // SimulatedInferenceResult represents a completed AI inference
 type SimulatedInferenceResult struct {
-	ModelID   string
-	InputHash [32]byte
-	Output    []byte
-	Nonce     uint64
+	ModelID    string
+	InputHash  [32]byte
+	Output     []byte
+	Nonce      uint64
 	EnergyUsed uint64
-	Duration  time.Duration
+	Duration   time.Duration
 }
 
 // VerifyPoW verifies that the inference result meets PoW requirements
@@ -82,11 +82,11 @@ func VerifyBlockTime(blockTime, prevBlockTime time.Time, config *PoAIWTestConfig
 
 // PoAIWBlockSimulator simulates creating a PoAIW block
 type PoAIWBlockSimulator struct {
-	config         *PoAIWTestConfig
-	proposerStake  uint64
-	currentTime    time.Time
-	prevBlockTime  time.Time
-	difficulty     uint64
+	config        *PoAIWTestConfig
+	proposerStake uint64
+	currentTime   time.Time
+	prevBlockTime time.Time
+	difficulty    uint64
 }
 
 // NewPoAIWBlockSimulator creates a new simulator
@@ -195,9 +195,9 @@ func TestSimplifiedPoAIWBasicFunctionality(t *testing.T) {
 			stake    uint64
 			expected bool
 		}{
-			{500 * AIBUnit, false},  // Below minimum
-			{1000 * AIBUnit, true},  // Exactly minimum
-			{5000 * AIBUnit, true},  // Above minimum
+			{500 * AIBUnit, false}, // Below minimum
+			{1000 * AIBUnit, true}, // Exactly minimum
+			{5000 * AIBUnit, true}, // Above minimum
 		}
 
 		for _, tt := range tests {
@@ -235,7 +235,7 @@ func TestSimplifiedPoAIWEconomics(t *testing.T) {
 	t.Log("=== Simplified PoAIW Economics Test ===")
 
 	// Simulate honest node vs attacker
-	honestEnergyCost := uint64(0.001 * float64(AIBUnit)) // Cost per inference
+	honestEnergyCost := uint64(0.001 * float64(AIBUnit))   // Cost per inference
 	attackerEnergyCost := uint64(0.001 * float64(AIBUnit)) // Same cost
 
 	blockReward := uint64(50 * AIBUnit)

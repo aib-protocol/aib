@@ -27,25 +27,25 @@ type ValidationContext struct {
 
 // eUTXOValidator validates eUTXO transactions.
 type eUTXOValidator struct {
-	MinFee          uint64 // Minimum transaction fee
-	MinDatumSize    uint32 // Minimum datum size
-	MaxDatumSize    uint32 // Maximum datum size (0 = no limit)
-	MaxScriptSize   uint32 // Maximum script size (0 = no limit)
-	MaxTxSize       uint32 // Maximum transaction size in bytes
-	MinTxValue      uint64 // Minimum value for a transaction output
-	MaxUTXOPerAddr  int    // Maximum UTXOs per address (0 = no limit)
+	MinFee         uint64 // Minimum transaction fee
+	MinDatumSize   uint32 // Minimum datum size
+	MaxDatumSize   uint32 // Maximum datum size (0 = no limit)
+	MaxScriptSize  uint32 // Maximum script size (0 = no limit)
+	MaxTxSize      uint32 // Maximum transaction size in bytes
+	MinTxValue     uint64 // Minimum value for a transaction output
+	MaxUTXOPerAddr int    // Maximum UTXOs per address (0 = no limit)
 }
 
 // DefaultValidator returns a validator with default parameters.
 func DefaultValidator() *eUTXOValidator {
 	return &eUTXOValidator{
-		MinFee:         1000000,      // 1 ADA minimum fee
-		MinDatumSize:   0,            // No minimum
-		MaxDatumSize:   16384,        // 16KB max datum
-		MaxScriptSize:  16384,        // 16KB max script
-		MaxTxSize:      16384,        // 16KB max transaction
-		MinTxValue:     1000000,      // 1 ADA minimum output
-		MaxUTXOPerAddr: 100,          // Max 100 UTXOs per address
+		MinFee:         1000000, // 1 ADA minimum fee
+		MinDatumSize:   0,       // No minimum
+		MaxDatumSize:   16384,   // 16KB max datum
+		MaxScriptSize:  16384,   // 16KB max script
+		MaxTxSize:      16384,   // 16KB max transaction
+		MinTxValue:     1000000, // 1 ADA minimum output
+		MaxUTXOPerAddr: 100,     // Max 100 UTXOs per address
 	}
 }
 
@@ -152,39 +152,39 @@ func (v *eUTXOValidator) validateInputs(tx *eUTXOTransaction, utxoSet UTXOSet) *
 
 		if !ok {
 			return &ValidationResult{
-				Valid:       false,
-				FailedRule:  "INPUT_NOT_FOUND",
-				InputIndex:  i,
-				Error:       ErrInputNotFound,
+				Valid:      false,
+				FailedRule: "INPUT_NOT_FOUND",
+				InputIndex: i,
+				Error:      ErrInputNotFound,
 			}
 		}
 
 		if utxo.IsSpent {
 			return &ValidationResult{
-				Valid:       false,
-				FailedRule:  "INPUT_SPENT",
-				InputIndex:  i,
-				Error:       ErrInputSpent,
+				Valid:      false,
+				FailedRule: "INPUT_SPENT",
+				InputIndex: i,
+				Error:      ErrInputSpent,
 			}
 		}
 
 		// Verify value matches (prevent value manipulation)
 		if in.Value != utxo.Value {
 			return &ValidationResult{
-				Valid:       false,
-				FailedRule:  "INPUT_VALUE_MISMATCH",
-				InputIndex:  i,
-				Error:       ErrInputValueMismatch,
+				Valid:      false,
+				FailedRule: "INPUT_VALUE_MISMATCH",
+				InputIndex: i,
+				Error:      ErrInputValueMismatch,
 			}
 		}
 
 		// Verify address matches (prevent address spoofing)
 		if !bytes.Equal(in.Address.Hash[:], utxo.Address.Hash[:]) {
 			return &ValidationResult{
-				Valid:       false,
-				FailedRule:  "INPUT_ADDRESS_MISMATCH",
-				InputIndex:  i,
-				Error:       ErrInputAddressMismatch,
+				Valid:      false,
+				FailedRule: "INPUT_ADDRESS_MISMATCH",
+				InputIndex: i,
+				Error:      ErrInputAddressMismatch,
 			}
 		}
 	}
@@ -198,50 +198,50 @@ func (v *eUTXOValidator) validateOutputs(tx *eUTXOTransaction) *ValidationResult
 		// Check output value is positive
 		if out.Value == 0 {
 			return &ValidationResult{
-				Valid:        false,
-				FailedRule:   "ZERO_OUTPUT_VALUE",
-				OutputIndex:  i,
-				Error:        ErrZeroOutputValue,
+				Valid:       false,
+				FailedRule:  "ZERO_OUTPUT_VALUE",
+				OutputIndex: i,
+				Error:       ErrZeroOutputValue,
 			}
 		}
 
 		// Check minimum output value
 		if out.Value < v.MinTxValue && !isZeroValueOutput(out) {
 			return &ValidationResult{
-				Valid:        false,
-				FailedRule:   "OUTPUT_VALUE_TOO_SMALL",
-				OutputIndex:  i,
-				Error:        ErrOutputValueTooSmall,
+				Valid:       false,
+				FailedRule:  "OUTPUT_VALUE_TOO_SMALL",
+				OutputIndex: i,
+				Error:       ErrOutputValueTooSmall,
 			}
 		}
 
 		// Check datum size
 		if v.MaxDatumSize > 0 && len(out.Datum) > int(v.MaxDatumSize) {
 			return &ValidationResult{
-				Valid:        false,
-				FailedRule:   "DATUM_TOO_LARGE",
-				OutputIndex:  i,
-				Error:        ErrDatumTooLarge,
+				Valid:       false,
+				FailedRule:  "DATUM_TOO_LARGE",
+				OutputIndex: i,
+				Error:       ErrDatumTooLarge,
 			}
 		}
 
 		// Check script size
 		if v.MaxScriptSize > 0 && len(out.Script) > int(v.MaxScriptSize) {
 			return &ValidationResult{
-				Valid:        false,
-				FailedRule:   "SCRIPT_TOO_LARGE",
-				OutputIndex:  i,
-				Error:        ErrScriptTooLarge,
+				Valid:       false,
+				FailedRule:  "SCRIPT_TOO_LARGE",
+				OutputIndex: i,
+				Error:       ErrScriptTooLarge,
 			}
 		}
 
 		// Validate address
 		if err := ValidateAddress(out.Address); err != nil {
 			return &ValidationResult{
-				Valid:        false,
-				FailedRule:   "INVALID_OUTPUT_ADDRESS",
-				OutputIndex:  i,
-				Error:        err,
+				Valid:       false,
+				FailedRule:  "INVALID_OUTPUT_ADDRESS",
+				OutputIndex: i,
+				Error:       err,
 			}
 		}
 
@@ -250,10 +250,10 @@ func (v *eUTXOValidator) validateOutputs(tx *eUTXOTransaction) *ValidationResult
 			computedHash := sha256.Sum256(out.Datum)
 			if !bytes.Equal(computedHash[:], out.DatumHash[:]) {
 				return &ValidationResult{
-					Valid:        false,
-					FailedRule:   "DATUM_HASH_MISMATCH",
-					OutputIndex:  i,
-					Error:        ErrDatumHashMismatch,
+					Valid:       false,
+					FailedRule:  "DATUM_HASH_MISMATCH",
+					OutputIndex: i,
+					Error:       ErrDatumHashMismatch,
 				}
 			}
 		}
@@ -263,10 +263,10 @@ func (v *eUTXOValidator) validateOutputs(tx *eUTXOTransaction) *ValidationResult
 			computedHash := sha256.Sum256(out.Script)
 			if !bytes.Equal(computedHash[:], out.ScriptHash[:]) {
 				return &ValidationResult{
-					Valid:        false,
-					FailedRule:   "SCRIPT_HASH_MISMATCH",
-					OutputIndex:  i,
-					Error:        ErrScriptHashMismatch,
+					Valid:       false,
+					FailedRule:  "SCRIPT_HASH_MISMATCH",
+					OutputIndex: i,
+					Error:       ErrScriptHashMismatch,
 				}
 			}
 		}
@@ -343,10 +343,10 @@ func (v *eUTXOValidator) validateScripts(
 			if len(in.Signature) > 0 && len(in.PubKey) > 0 {
 				if !v.verifySignature(in.PubKey, in.Signature, ctx.TxHash[:]) {
 					return &ValidationResult{
-						Valid:       false,
-						FailedRule:  "INVALID_SIGNATURE",
-						InputIndex:  i,
-						Error:       ErrInvalidSignature,
+						Valid:      false,
+						FailedRule: "INVALID_SIGNATURE",
+						InputIndex: i,
+						Error:      ErrInvalidSignature,
 					}
 				}
 			}
@@ -360,10 +360,10 @@ func (v *eUTXOValidator) validateScripts(
 		result := v.executeScript(script, utxo.Datum, in.Redeemer, scriptCtx)
 		if !result.Valid {
 			return &ValidationResult{
-				Valid:       false,
-				FailedRule:  "SCRIPT_VALIDATION_FAILED",
-				InputIndex:  i,
-				Error:       result.Error,
+				Valid:      false,
+				FailedRule: "SCRIPT_VALIDATION_FAILED",
+				InputIndex: i,
+				Error:      result.Error,
 			}
 		}
 
@@ -371,10 +371,10 @@ func (v *eUTXOValidator) validateScripts(
 		if in.Redeemer != nil {
 			if result.ExUnits.Steps > MaxExUnits.Steps || result.ExUnits.Mem > MaxExUnits.Mem {
 				return &ValidationResult{
-					Valid:       false,
-					FailedRule:  "EX_UNITS_EXCEEDED",
-					InputIndex:  i,
-					Error:       ErrExUnitsExceeded,
+					Valid:      false,
+					FailedRule: "EX_UNITS_EXCEEDED",
+					InputIndex: i,
+					Error:      ErrExUnitsExceeded,
 				}
 			}
 		}
@@ -402,19 +402,19 @@ func (v *eUTXOValidator) validateDatums(tx *eUTXOTransaction, utxoSet UTXOSet) *
 		if !isZeroHashUTXO(utxo.DatumHash[:]) {
 			if len(datum) == 0 {
 				return &ValidationResult{
-					Valid:       false,
-					FailedRule:  "DATUM_MISSING",
-					InputIndex:  i,
-					Error:       ErrDatumMissing,
+					Valid:      false,
+					FailedRule: "DATUM_MISSING",
+					InputIndex: i,
+					Error:      ErrDatumMissing,
 				}
 			}
 			computedHash := sha256.Sum256(datum)
 			if !bytes.Equal(computedHash[:], utxo.DatumHash[:]) {
 				return &ValidationResult{
-					Valid:       false,
-					FailedRule:  "DATUM_HASH_MISMATCH",
-					InputIndex:  i,
-					Error:       ErrDatumHashMismatch,
+					Valid:      false,
+					FailedRule: "DATUM_HASH_MISMATCH",
+					InputIndex: i,
+					Error:      ErrDatumHashMismatch,
 				}
 			}
 		}
@@ -477,8 +477,8 @@ func (v *eUTXOValidator) executeScript(
 	// Determine script type from first byte
 	if len(script) == 0 {
 		return &ExecutionResult{
-			Valid:   false,
-			Error:   ErrEmptyScript,
+			Valid: false,
+			Error: ErrEmptyScript,
 		}
 	}
 
@@ -498,8 +498,8 @@ func (v *eUTXOValidator) executeScript(
 	default:
 		// Unknown script type - try to execute as-is
 		return &ExecutionResult{
-			Valid:    true, // Allow unknown scripts (fail-open for extensibility)
-			ExUnits:  ExUnits{Steps: 1000, Mem: 10000},
+			Valid:   true, // Allow unknown scripts (fail-open for extensibility)
+			ExUnits: ExUnits{Steps: 1000, Mem: 10000},
 		}
 	}
 

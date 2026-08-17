@@ -96,15 +96,15 @@ type ChannelManager interface {
 
 // Channel represents a state channel.
 type Channel struct {
-	ID           [32]byte
-	PartyA       Address
-	PartyB       Address
-	BalanceA     uint64
-	BalanceB     uint64
-	Sequence     uint64
-	StateHash    [32]byte
-	CreatedAt    time.Time
-	DisputeEnd   *time.Time // nil if no dispute
+	ID         [32]byte
+	PartyA     Address
+	PartyB     Address
+	BalanceA   uint64
+	BalanceB   uint64
+	Sequence   uint64
+	StateHash  [32]byte
+	CreatedAt  time.Time
+	DisputeEnd *time.Time // nil if no dispute
 }
 
 // SignedState represents a signed channel state.
@@ -147,7 +147,7 @@ type ZKProofBatch struct {
 
 // ChannelOp represents a channel operation in a batch.
 type ChannelOp struct {
-	Type      uint8      // 0=Open, 1=Update, 2=Close, 3=Dispute
+	Type      uint8 // 0=Open, 1=Update, 2=Close, 3=Dispute
 	ChannelID [32]byte
 	Sequence  uint64
 	FinalA    uint64
@@ -175,14 +175,14 @@ type AgenticService interface {
 
 // ChatCompletionRequest represents an OpenAI-compatible request.
 type ChatCompletionRequest struct {
-	Model    string    `json:"model"`
-	Messages []Message `json:"messages"`
-	MaxTokens int      `json:"max_tokens,omitempty"`
-	Temperature float64 `json:"temperature,omitempty"`
+	Model       string    `json:"model"`
+	Messages    []Message `json:"messages"`
+	MaxTokens   int       `json:"max_tokens,omitempty"`
+	Temperature float64   `json:"temperature,omitempty"`
 }
 
 type Message struct {
-	Role    string `json:"role"`    // system, user, assistant
+	Role    string `json:"role"` // system, user, assistant
 	Content string `json:"content"`
 }
 
@@ -213,17 +213,17 @@ type MessagesRequest struct {
 }
 
 type MessagesResponse struct {
-	ID      string   `json:"id"`
-	Model   string   `json:"model"`
-	Content string   `json:"content"`
-	Usage   Usage    `json:"usage"`
+	ID      string `json:"id"`
+	Model   string `json:"model"`
+	Content string `json:"content"`
+	Usage   Usage  `json:"usage"`
 }
 
 type AINode struct {
-	ID       NodeID
-	Address  Address
-	Stake    uint64
-	Models   []string // supported models
+	ID         NodeID
+	Address    Address
+	Stake      uint64
+	Models     []string // supported models
 	Reputation float64
 }
 

@@ -28,13 +28,13 @@ var (
 	subPages = map[string]bool{
 		"quickstart": true, "genesis": true,
 		"constitution": true, "memories": true,
-		"admin": true,
+		"admin":                     true,
 		"human-quickstart-document": true,
-		"ai-install": true,
-		"peers": true,
+		"ai-install":                true,
+		"peers":                     true,
 	}
 	adminPages = map[string]string{
-		"":     "index.html",
+		"":      "index.html",
 		"login": "login.html",
 	}
 )

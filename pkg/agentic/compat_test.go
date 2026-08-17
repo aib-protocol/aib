@@ -107,11 +107,11 @@ func TestAnthropicCompat_Messages(t *testing.T) {
 
 		// Send mock response
 		resp := AnthropicMessagesResponse{
-			ID:      "msg-123",
-			Type:    "message",
-			Role:    "assistant",
-			Content: []AnthropicContentBlock{{Type: "text", Text: "Hello!"}},
-			Model:   "claude-3-opus-20240229",
+			ID:         "msg-123",
+			Type:       "message",
+			Role:       "assistant",
+			Content:    []AnthropicContentBlock{{Type: "text", Text: "Hello!"}},
+			Model:      "claude-3-opus-20240229",
 			StopReason: "end_turn",
 			Usage: AnthropicUsage{
 				InputTokens:  10,
@@ -202,11 +202,11 @@ func TestAnthropicCompat_MessagesStream(t *testing.T) {
 		// Return a non-streaming JSON response (the stream parser will handle it)
 		w.Header().Set("Content-Type", "text/event-stream")
 		resp := AnthropicMessagesResponse{
-			ID:      "msg-stream-1",
-			Type:    "message",
-			Role:    "assistant",
-			Content: []AnthropicContentBlock{{Type: "text", Text: "Hello from stream!"}},
-			Model:   "claude-3-opus-20240229",
+			ID:         "msg-stream-1",
+			Type:       "message",
+			Role:       "assistant",
+			Content:    []AnthropicContentBlock{{Type: "text", Text: "Hello from stream!"}},
+			Model:      "claude-3-opus-20240229",
 			StopReason: "end_turn",
 			Usage: AnthropicUsage{
 				InputTokens:  10,
@@ -250,11 +250,11 @@ func TestAnthropicCompat_CountTokens(t *testing.T) {
 		text     string
 		expected int
 	}{
-		{"Hello", 1},           // 5 chars / 4 = 1
-		{"Hello world!", 3},    // 12 chars / 4 = 3
-		{"", 0},                // 0 chars = 0
-		{"a", 0},               // 1 char / 4 = 0
-		{"abcdefgh", 2},        // 8 chars / 4 = 2
+		{"Hello", 1},        // 5 chars / 4 = 1
+		{"Hello world!", 3}, // 12 chars / 4 = 3
+		{"", 0},             // 0 chars = 0
+		{"a", 0},            // 1 char / 4 = 0
+		{"abcdefgh", 2},     // 8 chars / 4 = 2
 	}
 
 	for _, tt := range tests {

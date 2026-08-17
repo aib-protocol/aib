@@ -109,9 +109,9 @@ func TestSubmitAndGetAverage(t *testing.T) {
 // TestWeightMultiplier 测试评分乘数计算
 func TestWeightMultiplier(t *testing.T) {
 	tests := []struct {
-		score      float64
-		expected   float64
-		desc       string
+		score    float64
+		expected float64
+		desc     string
 	}{
 		{5.0, 1.0, "mid score -> 1.0"},
 		{10.0, 1.5, "max score -> 1.5"},

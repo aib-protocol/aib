@@ -21,9 +21,9 @@ func TestNewTransactionPropagator(t *testing.T) {
 
 	cfg := &TransactionPropagationConfig{
 		PropagationTimeout: 15 * time.Second,
-		MaxPendingTx:      10000,
-		MempoolExpiry:     1 * time.Hour,
-		GossipFanout:      3,
+		MaxPendingTx:       10000,
+		MempoolExpiry:      1 * time.Hour,
+		GossipFanout:       3,
 	}
 
 	tp := NewTransactionPropagator(net, cfg)
@@ -382,10 +382,10 @@ func TestGetMempoolSize(t *testing.T) {
 
 func TestTransactionMessage(t *testing.T) {
 	msg := &TransactionMessage{
-		Type:       "tx_announce",
-		FromPeer:   "peer1",
-		TTL:        3,
-		RequestID:  "req-123",
+		Type:      "tx_announce",
+		FromPeer:  "peer1",
+		TTL:       3,
+		RequestID: "req-123",
 	}
 
 	if msg.Type != "tx_announce" {
@@ -508,11 +508,11 @@ func TestHandleTransactionAnnounce(t *testing.T) {
 	}
 
 	msg := &TransactionMessage{
-		Type:          "tx_announce",
-		Transaction:   tx,
-		FromPeer:      "peer1",
-		TTL:           1,
-		ReceivedFrom:  "",
+		Type:         "tx_announce",
+		Transaction:  tx,
+		FromPeer:     "peer1",
+		TTL:          1,
+		ReceivedFrom: "",
 	}
 
 	err := tp.handleTransactionAnnounce(context.Background(), msg, "peer1")
@@ -542,9 +542,9 @@ func TestHandleTransactionAnnounceNilTransaction(t *testing.T) {
 	defer tp.Stop()
 
 	msg := &TransactionMessage{
-		Type:     "tx_announce",
+		Type:        "tx_announce",
 		Transaction: nil,
-		FromPeer: "peer1",
+		FromPeer:    "peer1",
 	}
 
 	err := tp.handleTransactionAnnounce(context.Background(), msg, "peer1")
@@ -575,11 +575,11 @@ func TestHandleTransactionAnnounceDuplicate(t *testing.T) {
 	}
 
 	msg := &TransactionMessage{
-		Type:          "tx_announce",
-		Transaction:   tx,
-		FromPeer:      "peer1",
-		TTL:           1,
-		ReceivedFrom:  "",
+		Type:         "tx_announce",
+		Transaction:  tx,
+		FromPeer:     "peer1",
+		TTL:          1,
+		ReceivedFrom: "",
 	}
 
 	// First announcement

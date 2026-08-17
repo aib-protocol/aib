@@ -13,26 +13,26 @@ import (
 // MajorityVerifier implements majority vote verification as fallback for ZKML
 type MajorityVerifier struct {
 	mu           sync.RWMutex
-	threshold    float64       // Agreement threshold (default 0.67 = 67%)
-	minNodes     int           // Minimum number of nodes required
-	maxDeviation float64       // Maximum allowed deviation for numeric results
-	history     map[string]*VerificationHistory
+	threshold    float64 // Agreement threshold (default 0.67 = 67%)
+	minNodes     int     // Minimum number of nodes required
+	maxDeviation float64 // Maximum allowed deviation for numeric results
+	history      map[string]*VerificationHistory
 }
 
 // VerificationHistory stores past verification results
 type VerificationHistory struct {
-	mu            sync.RWMutex
-	results       []*HistoricalResult
-	maxHistory    int
+	mu         sync.RWMutex
+	results    []*HistoricalResult
+	maxHistory int
 }
 
 // HistoricalResult stores a single historical verification result
 type HistoricalResult struct {
-	TaskID       string
-	Results      map[string]string
+	TaskID         string
+	Results        map[string]string
 	MajorityResult string
-	AgreementRate float64
-	Timestamp    int64
+	AgreementRate  float64
+	Timestamp      int64
 }
 
 // VerificationResult contains the result of majority verification
@@ -41,16 +41,16 @@ type VerificationResult struct {
 	MajorityResult string
 	AgreementRate  float64
 	NodeResults    map[string]string
-	Disagreeing   []string
+	Disagreeing    []string
 }
 
 // NewMajorityVerifier creates a new majority verifier
 func NewMajorityVerifier() *MajorityVerifier {
 	return &MajorityVerifier{
-		threshold:    0.67,     // 67% threshold
-		minNodes:     5,         // At least 5 nodes (raised from 3 to prevent 2-node collusion)
-		maxDeviation: 0.1,       // 10% deviation for numeric results
-		history:     make(map[string]*VerificationHistory),
+		threshold:    0.67, // 67% threshold
+		minNodes:     5,    // At least 5 nodes (raised from 3 to prevent 2-node collusion)
+		maxDeviation: 0.1,  // 10% deviation for numeric results
+		history:      make(map[string]*VerificationHistory),
 	}
 }
 
@@ -265,10 +265,10 @@ func (v *MajorityVerifier) GetStatistics() *VerifierStatistics {
 
 // VerifierStatistics contains overall verifier statistics
 type VerifierStatistics struct {
-	TotalVerifications     int
+	TotalVerifications      int
 	SuccessfulVerifications int
-	SuccessRate            float64
-	AverageAgreement       float64
+	SuccessRate             float64
+	AverageAgreement        float64
 }
 
 // storeResult stores a verification result in history
@@ -370,8 +370,8 @@ type WeightProvider interface {
 // NewWeightedMajorityVerifier creates a new weighted majority verifier
 func NewWeightedMajorityVerifier(provider WeightProvider) *WeightedMajorityVerifier {
 	return &WeightedMajorityVerifier{
-		verifier:    NewMajorityVerifier(),
-		nodeWeights: make(map[string]float64),
+		verifier:       NewMajorityVerifier(),
+		nodeWeights:    make(map[string]float64),
 		weightProvider: provider,
 	}
 }

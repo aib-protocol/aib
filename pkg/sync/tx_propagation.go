@@ -21,22 +21,22 @@ import (
 
 // TransactionPropagator handles transaction propagation.
 type TransactionPropagator struct {
-	mu            sync.RWMutex
-	running       bool
-	ctx           context.Context
-	cancel        context.CancelFunc
-	wg            sync.WaitGroup
-	p2p           Network
+	mu      sync.RWMutex
+	running bool
+	ctx     context.Context
+	cancel  context.CancelFunc
+	wg      sync.WaitGroup
+	p2p     Network
 
 	// Configuration
 	propagationTimeout time.Duration
-	maxPendingTx      int
-	mempoolExpiry     time.Duration
+	maxPendingTx       int
+	mempoolExpiry      time.Duration
 
 	// Mempool
-	mempool        map[string]*Transaction // tx hash -> transaction
-	pendingTxs     map[string]time.Time    // tx hash -> received time
-	announcedTxs   map[string]time.Time    // tx hash -> announcement time
+	mempool      map[string]*Transaction // tx hash -> transaction
+	pendingTxs   map[string]time.Time    // tx hash -> received time
+	announcedTxs map[string]time.Time    // tx hash -> announcement time
 
 	// Propagation
 	gossipFanout int
@@ -49,20 +49,20 @@ type TransactionPropagator struct {
 // TransactionPropagationConfig holds configuration for transaction propagation.
 type TransactionPropagationConfig struct {
 	PropagationTimeout time.Duration
-	MaxPendingTx      int
-	MempoolExpiry     time.Duration
-	GossipFanout      int
-	OnTxReceived      func(*Transaction, p2p.PeerID) error
-	OnTxValidated     func(*Transaction) error
+	MaxPendingTx       int
+	MempoolExpiry      time.Duration
+	GossipFanout       int
+	OnTxReceived       func(*Transaction, p2p.PeerID) error
+	OnTxValidated      func(*Transaction) error
 }
 
 // DefaultTransactionPropagationConfig returns default configuration.
 func DefaultTransactionPropagationConfig() *TransactionPropagationConfig {
 	return &TransactionPropagationConfig{
 		PropagationTimeout: 15 * time.Second,
-		MaxPendingTx:      10000,
-		MempoolExpiry:     1 * time.Hour,
-		GossipFanout:      GossipFanout,
+		MaxPendingTx:       10000,
+		MempoolExpiry:      1 * time.Hour,
+		GossipFanout:       GossipFanout,
 	}
 }
 
@@ -82,11 +82,11 @@ func NewTransactionPropagator(p2p Network, cfg *TransactionPropagationConfig) *T
 		maxPendingTx:       cfg.MaxPendingTx,
 		mempoolExpiry:      cfg.MempoolExpiry,
 		gossipFanout:       cfg.GossipFanout,
-		mempool:           make(map[string]*Transaction),
-		pendingTxs:        make(map[string]time.Time),
-		announcedTxs:      make(map[string]time.Time),
-		onTxReceived:      cfg.OnTxReceived,
-		onTxValidated:     cfg.OnTxValidated,
+		mempool:            make(map[string]*Transaction),
+		pendingTxs:         make(map[string]time.Time),
+		announcedTxs:       make(map[string]time.Time),
+		onTxReceived:       cfg.OnTxReceived,
+		onTxValidated:      cfg.OnTxValidated,
 	}
 }
 
@@ -172,10 +172,10 @@ func (tp *TransactionPropagator) BroadcastTransaction(tx *Transaction) error {
 
 	// Create transaction announcement message
 	announce := &TransactionMessage{
-		Type:       "tx_announce",
-		Transaction: tx,
-		FromPeer:   tp.p2p.PeerID(),
-		TTL:        tp.gossipFanout,
+		Type:         "tx_announce",
+		Transaction:  tx,
+		FromPeer:     tp.p2p.PeerID(),
+		TTL:          tp.gossipFanout,
 		ReceivedFrom: "",
 	}
 

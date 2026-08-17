@@ -190,8 +190,8 @@ func FuzzCrossLayerCall(f *testing.F) {
 		}
 
 		output := utxo.TXOutput{
-			Value:   value,
-			Script:  scriptData[:min(len(scriptData), 1000)],
+			Value:  value,
+			Script: scriptData[:min(len(scriptData), 1000)],
 		}
 
 		// Test conversion (will fail gracefully)
@@ -292,9 +292,9 @@ func generateNestedCallCode(depth int) []byte {
 	// Simple nested call pattern
 	code.Write([]byte{0x60, 0x00}) // PUSH1 0
 	for i := 0; i < depth; i++ {
-		code.Write([]byte{0x5f})       // PUSH0
-		code.Write([]byte{0x5f})       // PUSH0
-		code.Write([]byte{0xf0})       // CREATE
+		code.Write([]byte{0x5f}) // PUSH0
+		code.Write([]byte{0x5f}) // PUSH0
+		code.Write([]byte{0xf0}) // CREATE
 	}
 	return code.Bytes()
 }

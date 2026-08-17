@@ -24,7 +24,7 @@ func LoggingMiddleware(next http.Handler) http.Handler {
 		// 创建响应包装器来捕获状态码
 		wrapped := &responseWriter{
 			ResponseWriter: w,
-			statusCode:    http.StatusOK,
+			statusCode:     http.StatusOK,
 		}
 
 		// 处理请求
@@ -200,11 +200,11 @@ func RateLimitMiddleware(requestsPerSecond, burst int) func(http.Handler) http.H
 
 // TokenBucket 令牌桶实现
 type TokenBucket struct {
-	mu      sync.Mutex
-	tokens  float64
-	rate    float64
+	mu       sync.Mutex
+	tokens   float64
+	rate     float64
 	capacity int
-	last    time.Time
+	last     time.Time
 }
 
 // NewTokenBucket 创建新的令牌桶

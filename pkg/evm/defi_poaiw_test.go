@@ -17,9 +17,9 @@ import (
 // TestDeFiCompatibilityMatrix creates a compatibility matrix for all DeFi components.
 func TestDeFiCompatibilityMatrix(t *testing.T) {
 	components := []struct {
-		name        string
-		compatible  bool
-		reason      string
+		name       string
+		compatible bool
+		reason     string
 	}{
 		{"ERC20 Transfer", true, "Pure EVM execution, no consensus dependency"},
 		{"ERC20 Approve", true, "Pure EVM execution, no consensus dependency"},
@@ -52,7 +52,7 @@ func TestDexSwapMathIndependence(t *testing.T) {
 		reserveOut  uint64
 		expectedOut uint64
 	}{
-		{"small_swap", 1000, 100000, 100000, 987},   // Correct calculation
+		{"small_swap", 1000, 100000, 100000, 987}, // Correct calculation
 		{"medium_swap", 10000, 100000, 100000, 9066},
 		{"large_swap", 50000, 100000, 100000, 33266},
 	}
@@ -117,7 +117,7 @@ func TestEVMBlockContextFieldsAvailability(t *testing.T) {
 	// EVM BlockContext fields (from go-ethereum)
 	blockContextFields := []struct {
 		name        string
-		available  bool
+		available   bool
 		description string
 	}{
 		{"Coinbase", true, "Block proposer address"},

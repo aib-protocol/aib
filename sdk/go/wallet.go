@@ -157,7 +157,7 @@ func EncodeBech32m(hrp string, data []byte) string {
 
 	// Take 5-bit chunks
 	for i := 0; i < len(data)*8-3; i += 5 {
-		index := (int(data[i/8]) >> (8 - (i%8) - 5) & 0x1F)
+		index := (int(data[i/8]) >> (8 - (i % 8) - 5) & 0x1F)
 		encoded += string(charset[index%32])
 	}
 

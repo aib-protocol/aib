@@ -14,9 +14,9 @@ import (
 type MockProvider struct {
 	mu        sync.RWMutex
 	responses map[string]string // prompt -> response 映射
-	modelID   []byte           // 模拟的模型指纹
-	delay     time.Duration    // 模拟推理延迟
-	failRate  float64          // 模拟失败率 (0-1)
+	modelID   []byte            // 模拟的模型指纹
+	delay     time.Duration     // 模拟推理延迟
+	failRate  float64           // 模拟失败率 (0-1)
 
 	// 统计数据
 	inferCount int // 推理调用次数
@@ -26,8 +26,8 @@ type MockProvider struct {
 type MockConfig struct {
 	Responses map[string]string // 预设的 prompt -> response 映射
 	ModelName string            // 模拟的模型名称（用于生成 modelID）
-	Delay     time.Duration    // 模拟推理延迟
-	FailRate  float64          // 模拟失败率 (0-1)
+	Delay     time.Duration     // 模拟推理延迟
+	FailRate  float64           // 模拟失败率 (0-1)
 }
 
 // NewMockProvider 创建一个新的模拟推理提供者

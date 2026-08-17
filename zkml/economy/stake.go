@@ -11,18 +11,18 @@ import (
 // StakeManager 管理节点质押
 type StakeManager struct {
 	mu       sync.RWMutex
-	stakes   map[string]*StakeInfo  // nodeID -> 质押信息
-	minStake float64                // 最低质押要求
+	stakes   map[string]*StakeInfo // nodeID -> 质押信息
+	minStake float64               // 最低质押要求
 }
 
 // StakeInfo 质押信息
 type StakeInfo struct {
 	NodeID      string      `json:"node_id"`
-	Amount      float64     `json:"amount"`         // 质押金额
-	LockedUntil int64       `json:"locked_until"`   // 锁定截止时间（Unix timestamp）
-	Status      StakeStatus `json:"status"`         // 质押状态
-	SlashTotal  float64     `json:"slash_total"`    // 累计被罚没金额
-	StakeTime   int64       `json:"stake_time"`     // 质押时间
+	Amount      float64     `json:"amount"`       // 质押金额
+	LockedUntil int64       `json:"locked_until"` // 锁定截止时间（Unix timestamp）
+	Status      StakeStatus `json:"status"`       // 质押状态
+	SlashTotal  float64     `json:"slash_total"`  // 累计被罚没金额
+	StakeTime   int64       `json:"stake_time"`   // 质押时间
 }
 
 // StakeStatus 质押状态
@@ -246,7 +246,7 @@ func (sm *StakeManager) Export() ([]byte, error) {
 	defer sm.mu.RUnlock()
 
 	state := struct {
-		MinStake float64                `json:"min_stake"`
+		MinStake float64               `json:"min_stake"`
 		Stakes   map[string]*StakeInfo `json:"stakes"`
 	}{
 		MinStake: sm.minStake,
@@ -271,7 +271,7 @@ func (sm *StakeManager) Export() ([]byte, error) {
 // Import 导入状态
 func (sm *StakeManager) Import(data []byte) error {
 	var state struct {
-		MinStake float64                `json:"min_stake"`
+		MinStake float64               `json:"min_stake"`
 		Stakes   map[string]*StakeInfo `json:"stakes"`
 	}
 

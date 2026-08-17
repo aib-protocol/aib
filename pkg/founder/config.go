@@ -21,17 +21,17 @@ type Config struct {
 
 // FounderConfig represents a founder from the config file.
 type FounderConfig struct {
-	ID          string            `json:"id"`
-	Name        string            `json:"name"`
-	Address     string            `json:"address"`
-	PublicKey   string            `json:"public_key"`
-	TotalAmount uint64            `json:"total_amount"`
-	Claimed     uint64            `json:"claimed"`
-	Status      string            `json:"status"`
-	StartTime   string            `json:"start_time"`
-	UnlockTime  string            `json:"unlock_time"`
-	EndTime     string            `json:"end_time"`
-	Metadata    FounderMetadata   `json:"metadata"`
+	ID          string          `json:"id"`
+	Name        string          `json:"name"`
+	Address     string          `json:"address"`
+	PublicKey   string          `json:"public_key"`
+	TotalAmount uint64          `json:"total_amount"`
+	Claimed     uint64          `json:"claimed"`
+	Status      string          `json:"status"`
+	StartTime   string          `json:"start_time"`
+	UnlockTime  string          `json:"unlock_time"`
+	EndTime     string          `json:"end_time"`
+	Metadata    FounderMetadata `json:"metadata"`
 }
 
 // LoadConfig loads a founder configuration from a file.

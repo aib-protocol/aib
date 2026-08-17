@@ -31,10 +31,10 @@ type Storage interface {
 
 // MemoryStorage implements in-memory storage for blocks
 type MemoryStorage struct {
-	mu       sync.RWMutex
-	blocks   map[uint64]*Block
-	hashMap  map[string]uint64 // hash -> height mapping
-	count    uint64
+	mu      sync.RWMutex
+	blocks  map[uint64]*Block
+	hashMap map[string]uint64 // hash -> height mapping
+	count   uint64
 }
 
 // NewMemoryStorage creates a new in-memory storage

@@ -13,18 +13,18 @@ import (
 
 // DetailedHealthResponse 详细的健康检查响应
 type DetailedHealthResponse struct {
-	Status      string                 `json:"status"`
-	Timestamp   time.Time              `json:"timestamp"`
-	Version     string                 `json:"version"`
-	Uptime      string                 `json:"uptime"`
-	Blockchain  BlockchainHealth       `json:"blockchain"`
-	System      SystemHealth           `json:"system"`
-	API         APIHealth              `json:"api"`
+	Status     string           `json:"status"`
+	Timestamp  time.Time        `json:"timestamp"`
+	Version    string           `json:"version"`
+	Uptime     string           `json:"uptime"`
+	Blockchain BlockchainHealth `json:"blockchain"`
+	System     SystemHealth     `json:"system"`
+	API        APIHealth        `json:"api"`
 }
 
 // BlockchainHealth 区块链健康状态
 type BlockchainHealth struct {
-	Status        string `json:"status"`        // "synced", "syncing", "offline"
+	Status        string `json:"status"` // "synced", "syncing", "offline"
 	ChainID       string `json:"chain_id"`
 	Height        uint64 `json:"height"`
 	BestBlockHash string `json:"best_block_hash"`
@@ -43,9 +43,9 @@ type SystemHealth struct {
 
 // APIHealth API 健康状态
 type APIHealth struct {
-	Status           string `json:"status"`
-	Uptime           string `json:"uptime"`
-	RequestsHandled  uint64 `json:"requests_handled"`
+	Status          string `json:"status"`
+	Uptime          string `json:"uptime"`
+	RequestsHandled uint64 `json:"requests_handled"`
 }
 
 // handleHealthDetailed 处理详细的健康检查请求
@@ -98,13 +98,13 @@ func (s *Server) handleHealthDetailed(w http.ResponseWriter, r *http.Request) {
 
 	// 构建响应
 	response := DetailedHealthResponse{
-		Status:    "healthy",
-		Timestamp: time.Now().UTC(),
-		Version:   "2.0.0-mvp",
-		Uptime:    s.Uptime().String(),
+		Status:     "healthy",
+		Timestamp:  time.Now().UTC(),
+		Version:    "2.0.0-mvp",
+		Uptime:     s.Uptime().String(),
 		Blockchain: chainHealth,
-		System:    systemHealth,
-		API:       apiHealth,
+		System:     systemHealth,
+		API:        apiHealth,
 	}
 
 	writeSuccess(w, response)

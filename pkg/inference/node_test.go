@@ -127,9 +127,9 @@ func TestInferenceNodeRegisterInsufficientStake(t *testing.T) {
 	rand.Read(pubKey[:])
 
 	tests := []struct {
-		level    uint8
-		stake    uint64
-		wantErr  bool
+		level   uint8
+		stake   uint64
+		wantErr bool
 	}{
 		{1, 999999, true},
 		{1, 1000000, false},

@@ -10,11 +10,11 @@ import (
 )
 
 var (
-	ErrInvalidAddress     = errors.New("invalid address")
+	ErrInvalidAddress      = errors.New("invalid address")
 	ErrInsufficientBalance = errors.New("insufficient balance")
-	ErrInvalidUTXO        = errors.New("invalid UTXO")
-	ErrConversionFailed   = errors.New("UTXO to account conversion failed")
-	ErrNonceOverflow      = errors.New("nonce overflow")
+	ErrInvalidUTXO         = errors.New("invalid UTXO")
+	ErrConversionFailed    = errors.New("UTXO to account conversion failed")
+	ErrNonceOverflow       = errors.New("nonce overflow")
 )
 
 // UTXOToAccountConverter handles conversion between UTXO and account-based models
@@ -451,14 +451,14 @@ func (al *AccessList) Contains(addr Address, slot Hash) (bool, bool) {
 
 // Transaction represents an AAL transaction
 type Transaction struct {
-	From        Address
-	To          *Address // nil for contract creation
-	Value       *big.Int
-	Data        []byte
-	GasLimit    uint64
-	GasPrice    *big.Int
-	Nonce       uint64
-	UTXOInputs  []interfaces.TXInput // Associated UTXO inputs for funding
+	From       Address
+	To         *Address // nil for contract creation
+	Value      *big.Int
+	Data       []byte
+	GasLimit   uint64
+	GasPrice   *big.Int
+	Nonce      uint64
+	UTXOInputs []interfaces.TXInput // Associated UTXO inputs for funding
 }
 
 // TransactionResult contains the result of executing a transaction

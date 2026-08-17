@@ -6,7 +6,7 @@
 // - DeFi scenarios (ERC20, ERC721, Uniswap V2, Flashloans, Oracles)
 // - Security (reentrancy, overflow, access control, gas optimization)
 //
-// Test Data
+// # Test Data
 //
 // Test contracts and vectors are stored in /testdata/evm/:
 //   - Interfaces.sol: Solidity interfaces for DeFi contracts
@@ -14,17 +14,19 @@
 //
 // Running Tests
 //
-//   go test -v ./pkg/evm/...
+//	go test -v ./pkg/evm/...
 //
 // With coverage:
-//   go test -v -cover ./pkg/evm/...
-//   go test -v -coverprofile=coverage.out ./pkg/evm/...
-//   go tool cover -html=coverage.out
+//
+//	go test -v -cover ./pkg/evm/...
+//	go test -v -coverprofile=coverage.out ./pkg/evm/...
+//	go tool cover -html=coverage.out
 //
 // Benchmarks:
-//   go test -bench=. ./pkg/evm/...
 //
-// Test Organization
+//	go test -bench=. ./pkg/evm/...
+//
+// # Test Organization
 //
 // Tests are organized by functionality:
 //   - evm_test.go: Core EVM functionality tests

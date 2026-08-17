@@ -17,9 +17,9 @@ import (
 // Datum represents state data attached to an eUTXO.
 // Can be inline (stored with UTXO) or hash-only (stored separately).
 type Datum struct {
-	Data     []byte    // Actual datum data
-	Hash     [32]byte  // SHA256 hash of the datum
-	Inline   bool      // Whether datum is stored inline or as hash
+	Data     []byte        // Actual datum data
+	Hash     [32]byte      // SHA256 hash of the datum
+	Inline   bool          // Whether datum is stored inline or as hash
 	Encoding DatumEncoding // Encoding format
 }
 
@@ -45,18 +45,18 @@ type DatumCBOR struct {
 
 // DatumField represents a field in a CBOR datum.
 type DatumField struct {
-	Value  interface{} // Could be int, string, bytes, or nested DatumField
-	Tag    uint64      // CBOR tag for type information
+	Value interface{} // Could be int, string, bytes, or nested DatumField
+	Tag   uint64      // CBOR tag for type information
 }
 
 // DatumPlutusData represents Plutus Data format.
 type DatumPlutusData struct {
-	Constructor  uint16          // Constructor index
-	Fields       []PlutusValue   // Field values (Plutus types)
-	Bytes        []byte          // Raw bytes for Bytes constructor
-	Int          int64           // Integer value for Int constructor
-	List         []PlutusValue   // List of values
-	Map          []PlutusPair    // Map of key-value pairs
+	Constructor uint16        // Constructor index
+	Fields      []PlutusValue // Field values (Plutus types)
+	Bytes       []byte        // Raw bytes for Bytes constructor
+	Int         int64         // Integer value for Int constructor
+	List        []PlutusValue // List of values
+	Map         []PlutusPair  // Map of key-value pairs
 }
 
 // PlutusValue represents a Plutus Data value.
@@ -480,4 +480,3 @@ const (
 	// MaxPlutusBytes is the maximum size of Plutus bytes
 	MaxPlutusBytes = 4096 // 4KB
 )
-

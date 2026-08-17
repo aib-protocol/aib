@@ -12,19 +12,19 @@ import (
 
 // AllocationManager manages founder token allocations and vesting.
 type AllocationManager struct {
-	founders    *FounderList
-	claims      map[string]*ClaimRecord // founder ID -> claim record
-	multiSig    *MultiSigConfig
+	founders     *FounderList
+	claims       map[string]*ClaimRecord // founder ID -> claim record
+	multiSig     *MultiSigConfig
 	vestingStart time.Time
-	mu          sync.RWMutex
+	mu           sync.RWMutex
 }
 
 // ClaimRecord tracks claimed amounts for each founder.
 type ClaimRecord struct {
-	FounderID     string         `json:"founder_id"`
-	TotalClaimed  uint64         `json:"total_claimed"`
-	ClaimHistory  []ClaimEntry   `json:"claim_history"`
-	LastClaimTime time.Time      `json:"last_claim_time"`
+	FounderID     string       `json:"founder_id"`
+	TotalClaimed  uint64       `json:"total_claimed"`
+	ClaimHistory  []ClaimEntry `json:"claim_history"`
+	LastClaimTime time.Time    `json:"last_claim_time"`
 }
 
 // ClaimEntry represents a single claim transaction.
@@ -64,11 +64,11 @@ func (am *AllocationManager) GetVestingInfo(founderID string) (*VestingInfo, err
 
 	now := time.Now()
 	info := &VestingInfo{
-		FounderID:      founder.ID,
-		TotalAmount:    founder.TotalAmount,
-		ClaimedAmount:  founder.Claimed,
-		Status:         founder.Status,
-		Schedule:       am.calculateVestingSchedule(founder),
+		FounderID:     founder.ID,
+		TotalAmount:   founder.TotalAmount,
+		ClaimedAmount: founder.Claimed,
+		Status:        founder.Status,
+		Schedule:      am.calculateVestingSchedule(founder),
 	}
 
 	// Get claim record
@@ -300,9 +300,9 @@ func (am *AllocationManager) GetAllocationStats() *AllocationStats {
 	defer am.mu.RUnlock()
 
 	stats := &AllocationStats{
-		TotalFounders:   am.founders.Count(),
-		TotalAllocated:  am.founders.TotalAllocated(),
-		VestingStart:    am.vestingStart,
+		TotalFounders:    am.founders.Count(),
+		TotalAllocated:   am.founders.TotalAllocated(),
+		VestingStart:     am.vestingStart,
 		FoundersByStatus: make(map[FounderStatus]int),
 	}
 
@@ -335,13 +335,13 @@ func (am *AllocationManager) GetAllocationStats() *AllocationStats {
 
 // AllocationStats holds allocation statistics.
 type AllocationStats struct {
-	TotalFounders    int                    `json:"total_founders"`
-	TotalAllocated   uint64                 `json:"total_allocated"`
-	TotalVested      uint64                 `json:"total_vested"`
-	TotalClaimed     uint64                 `json:"total_claimed"`
-	TotalLocked      uint64                 `json:"total_locked"`
-	VestingStart     time.Time              `json:"vesting_start"`
-	FoundersByStatus map[FounderStatus]int  `json:"founders_by_status"`
+	TotalFounders    int                   `json:"total_founders"`
+	TotalAllocated   uint64                `json:"total_allocated"`
+	TotalVested      uint64                `json:"total_vested"`
+	TotalClaimed     uint64                `json:"total_claimed"`
+	TotalLocked      uint64                `json:"total_locked"`
+	VestingStart     time.Time             `json:"vesting_start"`
+	FoundersByStatus map[FounderStatus]int `json:"founders_by_status"`
 }
 
 // CreateClaimTransaction creates a transaction for claiming tokens.

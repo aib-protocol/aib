@@ -24,21 +24,21 @@ type Logits struct {
 
 // Challenge represents a random challenge for the AI to respond to
 type Challenge struct {
-	ID          []byte // Unique challenge ID
-	Prompt      string // Input prompt for the model
-	Seed        []byte // Random seed for reproducibility
-	Timestamp   int64  // Challenge creation time
-	Timeout     int64  // Response timeout in seconds
-	LogitCount  int    // Number of logits to return (0 = all)
+	ID         []byte // Unique challenge ID
+	Prompt     string // Input prompt for the model
+	Seed       []byte // Random seed for reproducibility
+	Timestamp  int64  // Challenge creation time
+	Timeout    int64  // Response timeout in seconds
+	LogitCount int    // Number of logits to return (0 = all)
 }
 
 // ChallengeResponse contains the AI's response to a challenge
 type ChallengeResponse struct {
-	ChallengeID []byte    // ID of the original challenge
-	Logits      *Logits   // Generated logits
-	Response    string    // Text response (if applicable)
-	Signature   []byte    // Node signature of the response
-	Timestamp   int64     // Response timestamp
+	ChallengeID []byte  // ID of the original challenge
+	Logits      *Logits // Generated logits
+	Response    string  // Text response (if applicable)
+	Signature   []byte  // Node signature of the response
+	Timestamp   int64   // Response timestamp
 }
 
 // RandomInputGenerator generates random input prompts for challenges
@@ -120,12 +120,12 @@ func (g *RandomInputGenerator) GenerateChallenge(timeoutSeconds int64, logitCoun
 	}
 
 	return &Challenge{
-		ID:          challengeID,
-		Prompt:      prompt,
-		Seed:        seed,
-		Timestamp:   time.Now().Unix(),
-		Timeout:     timeoutSeconds,
-		LogitCount:  logitCount,
+		ID:         challengeID,
+		Prompt:     prompt,
+		Seed:       seed,
+		Timestamp:  time.Now().Unix(),
+		Timeout:    timeoutSeconds,
+		LogitCount: logitCount,
 	}, nil
 }
 

@@ -31,14 +31,14 @@ type PoSConfig struct {
 	EpochDuration   time.Duration // Duration between epochs
 
 	// Transaction fee parameters
-	BaseFeePerByte   uint64 // Minimum fee per byte (in smallest unit)
+	BaseFeePerByte     uint64 // Minimum fee per byte (in smallest unit)
 	PriorityFeePerByte uint64 // Default priority fee per byte
 }
 
 // DefaultPoSConfig returns the default PoS configuration.
 func DefaultPoSConfig() *PoSConfig {
 	return &PoSConfig{
-		EpochLength:     314, // π 相关
+		EpochLength:     314,        // π 相关
 		MinStake:        1000 * 1e8, // 1000 AIB
 		BlockReward:     50 * 1e8,   // 50 AIB
 		MaxValidators:   100,
@@ -46,20 +46,20 @@ func DefaultPoSConfig() *PoSConfig {
 		EpochDuration:   100 * TargetBlockTime, // ~100分钟/epoch
 
 		// Transaction fees: 1 AIB = 1e8 satoshi
-		BaseFeePerByte:    10,    // 10 satoshi per byte (0.1 AIB per KB)
-		PriorityFeePerByte: 20,   // 20 satoshi per byte (0.2 AIB per KB)
+		BaseFeePerByte:     10, // 10 satoshi per byte (0.1 AIB per KB)
+		PriorityFeePerByte: 20, // 20 satoshi per byte (0.2 AIB per KB)
 	}
 }
 
 // Validator represents a PoS validator.
 type Validator struct {
-	Address       [32]byte
-	Stake         uint64
-	JoinedAt      uint64 // Block height when validator joined
-	LastProposed  uint64 // Last block height when this validator proposed
-	TotalRewards  uint64 // Total rewards earned
-	Commission    uint8  // Commission rate (0-100)
-	PublicKey     ed25519.PublicKey
+	Address      [32]byte
+	Stake        uint64
+	JoinedAt     uint64 // Block height when validator joined
+	LastProposed uint64 // Last block height when this validator proposed
+	TotalRewards uint64 // Total rewards earned
+	Commission   uint8  // Commission rate (0-100)
+	PublicKey    ed25519.PublicKey
 }
 
 // IsActive returns true if the validator is active (has sufficient stake).
@@ -79,14 +79,14 @@ type StakeInfo struct {
 
 // ConsensusState holds the current consensus state.
 type ConsensusState struct {
-	config           *PoSConfig
-	validators       map[[32]byte]*Validator
-	stakes           map[[32]byte]*StakeInfo // key: delegator+validator
-	currentEpoch     uint64
-	currentHeight    uint64
-	lastBlockTime    time.Time
-	proposerQueue    [][32]byte // Ordered list of validators for proposing
-	mu               sync.RWMutex
+	config        *PoSConfig
+	validators    map[[32]byte]*Validator
+	stakes        map[[32]byte]*StakeInfo // key: delegator+validator
+	currentEpoch  uint64
+	currentHeight uint64
+	lastBlockTime time.Time
+	proposerQueue [][32]byte // Ordered list of validators for proposing
+	mu            sync.RWMutex
 }
 
 // NewConsensusState creates a new consensus state.
@@ -429,12 +429,12 @@ func (cs *ConsensusState) getTotalStakeLocked() uint64 {
 
 // ProposerVerificationResult contains the result of proposer verification.
 type ProposerVerificationResult struct {
-	Valid              bool
-	Error              string
-	ExpectedProposer   [32]byte
-	Stake              uint64
-	TotalStake         uint64
-	Probability        float64
+	Valid            bool
+	Error            string
+	ExpectedProposer [32]byte
+	Stake            uint64
+	TotalStake       uint64
+	Probability      float64
 }
 
 // CalculateValidatorStateRoot computes the Merkle root of all validator states.

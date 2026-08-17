@@ -25,7 +25,7 @@ var (
 	ErrInvalidAddress      = errors.New("invalid address")
 	ErrInvalidBalance      = errors.New("invalid balance")
 	ErrRecordCountMismatch = errors.New("record count mismatch")
-	ErrValidationFailed   = errors.New("validation failed")
+	ErrValidationFailed    = errors.New("validation failed")
 	ErrFileNotFound        = errors.New("file not found")
 	ErrInvalidJSON         = errors.New("invalid JSON")
 	ErrInvalidCSV          = errors.New("invalid CSV")
@@ -55,18 +55,18 @@ type SnapshotExport struct {
 
 // StatusExport 状态导出格式
 type StatusExport struct {
-	Version                string    `json:"version"`
-	Timestamp             time.Time `json:"timestamp"`
-	AIB1                  AIB1Status `json:"aib1"`
-	CrossChain            CrossChainStatus `json:"cross_chain"`
+	Version    string           `json:"version"`
+	Timestamp  time.Time        `json:"timestamp"`
+	AIB1       AIB1Status       `json:"aib1"`
+	CrossChain CrossChainStatus `json:"cross_chain"`
 }
 
 // AIB1Status AIB1 迁移状态
 type AIB1Status struct {
-	TotalMigrated uint64 `json:"total_migrated"`
-	ClaimOpen     bool   `json:"claim_open"`
+	TotalMigrated uint64    `json:"total_migrated"`
+	ClaimOpen     bool      `json:"claim_open"`
 	ClaimDeadline time.Time `json:"claim_deadline"`
-	TotalAccounts int    `json:"total_accounts"`
+	TotalAccounts int       `json:"total_accounts"`
 }
 
 // CrossChainStatus 跨链迁移状态
@@ -106,11 +106,11 @@ type SOLStatus struct {
 
 // ValidationReport 验证报告
 type ValidationReport struct {
-	Timestamp      time.Time          `json:"timestamp"`
-	TotalRecords   int                `json:"total_records"`
-	ValidRecords   int                `json:"valid_records"`
-	InvalidRecords int                `json:"invalid_records"`
-	Errors         []ValidationError  `json:"errors"`
+	Timestamp      time.Time           `json:"timestamp"`
+	TotalRecords   int                 `json:"total_records"`
+	ValidRecords   int                 `json:"valid_records"`
+	InvalidRecords int                 `json:"invalid_records"`
+	Errors         []ValidationError   `json:"errors"`
 	Warnings       []ValidationWarning `json:"warnings"`
 }
 
@@ -137,18 +137,18 @@ type ValidationWarning struct {
 // MigrationTool 数据迁移工具
 // 提供快照导出、导入、验证功能
 type MigrationTool struct {
-	mu         sync.RWMutex
-	migration  *MigrationHub
-	aib1       *AIB1Migration
-	snapshot   []SnapshotRecord
-	hasher     crypto.Hasher
+	mu        sync.RWMutex
+	migration *MigrationHub
+	aib1      *AIB1Migration
+	snapshot  []SnapshotRecord
+	hasher    crypto.Hasher
 }
 
 // NewMigrationTool 创建新的迁移工具
 func NewMigrationTool(hub *MigrationHub) *MigrationTool {
 	return &MigrationTool{
 		migration: hub,
-		hasher:   crypto.NewSHA256d(),
+		hasher:    crypto.NewSHA256d(),
 	}
 }
 
@@ -235,7 +235,7 @@ func (t *MigrationTool) ExportStatusJSON(w io.Writer) error {
 
 	status := t.migration.GetMigrationStatus()
 	export := StatusExport{
-		Version:  "1.0",
+		Version:   "1.0",
 		Timestamp: time.Now(),
 		AIB1: AIB1Status{
 			TotalMigrated: status.AIB1TotalMigrated,

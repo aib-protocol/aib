@@ -15,16 +15,16 @@ import (
 // ScoreContent 评分内容
 type ScoreContent struct {
 	TargetPubKey [32]byte // 被评分节点公钥
-	Score        float64 // 0.0 - 10.0
-	Reason       string  // "good_response", "bad_response", "timeout", "cheating"
-	Timestamp    uint64  // 评分时间戳
+	Score        float64  // 0.0 - 10.0
+	Reason       string   // "good_response", "bad_response", "timeout", "cheating"
+	Timestamp    uint64   // 评分时间戳
 }
 
 // ReputationScore 评分记录（带签名）
 type ReputationScore struct {
 	Content   ScoreContent // 评分内容
-	Signer    [32]byte    // 评分者公钥
-	Signature []byte      // 评分者签名
+	Signer    [32]byte     // 评分者公钥
+	Signature []byte       // 评分者签名
 }
 
 // ReputationManager 管理评分
@@ -114,10 +114,10 @@ func (rm *ReputationManager) SubmitScore(score *ReputationScore) error {
 
 	// 验证reason有效性
 	validReasons := map[string]bool{
-		"good_response":  true,
-		"bad_response":   true,
-		"timeout":        true,
-		"cheating":       true,
+		"good_response": true,
+		"bad_response":  true,
+		"timeout":       true,
+		"cheating":      true,
 	}
 	if !validReasons[score.Content.Reason] {
 		return fmt.Errorf("invalid reason: %s", score.Content.Reason)

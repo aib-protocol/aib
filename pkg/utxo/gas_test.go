@@ -449,9 +449,9 @@ func TestMempoolFeeRateSorting(t *testing.T) {
 	}
 
 	txSpecs := []txData{
-		{"low-fee", 10000, 9900},   // fee=100, low rate
-		{"high-fee", 10000, 8000},  // fee=2000, high rate
-		{"mid-fee", 10000, 9000},   // fee=1000, mid rate
+		{"low-fee", 10000, 9900},  // fee=100, low rate
+		{"high-fee", 10000, 8000}, // fee=2000, high rate
+		{"mid-fee", 10000, 9000},  // fee=1000, mid rate
 	}
 
 	mempool := NewMempool(100, 0)

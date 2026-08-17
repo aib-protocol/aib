@@ -22,7 +22,7 @@ type BlockHeader struct {
 	Signature     []byte   // Signature of the block proposer
 
 	// VRF (Verifiable Random Function) for proposer selection
-	VRFProof []byte // VRF proof that this proposer was legitimately selected
+	VRFProof []byte   // VRF proof that this proposer was legitimately selected
 	VRFSeed  [32]byte // VRF output used as random seed for next block
 
 	// Validator state (for verification)

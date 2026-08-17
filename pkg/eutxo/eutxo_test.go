@@ -251,9 +251,9 @@ func TestResourceConservation(t *testing.T) {
 	var inTxID [32]byte
 	inTxID[0] = 1
 	tx.AddInput(eTXInput{
-		TxID:  inTxID,
-		Index: 0,
-		Value: 5000000,
+		TxID:    inTxID,
+		Index:   0,
+		Value:   5000000,
 		Address: NewPubKeyAddress([28]byte{0x01}),
 	})
 
@@ -502,7 +502,7 @@ func TestDatumCreation(t *testing.T) {
 
 func TestDatumFromJSON(t *testing.T) {
 	jsonData := map[string]interface{}{
-		"amount": 1000000,
+		"amount":    1000000,
 		"recipient": "abc123",
 	}
 

@@ -78,10 +78,10 @@ func (rr *RefundResult) String() string {
 
 // RefundManager manages refund operations.
 type RefundManager struct {
-	pm         *PaymentManager
-	refunds    map[string]*RefundResult
-	timeFunc   func() time.Time
-	mu         sync.RWMutex
+	pm       *PaymentManager
+	refunds  map[string]*RefundResult
+	timeFunc func() time.Time
+	mu       sync.RWMutex
 }
 
 // NewRefundManager creates a new refund manager.

@@ -33,8 +33,8 @@ func newTestHash(chain ChainType, seed string) Hash {
 
 func TestChainType_String(t *testing.T) {
 	tests := []struct {
-		chain     ChainType
-		expected  string
+		chain    ChainType
+		expected string
 	}{
 		{ChainBTC, "BTC"},
 		{ChainETH, "ETH"},
@@ -419,8 +419,8 @@ func TestMerkleProof_Verify(t *testing.T) {
 	}
 
 	_ = &MerkleProof{
-		TxHash:     txHash,
-		BlockHash:  blockHash,
+		TxHash:      txHash,
+		BlockHash:   blockHash,
 		BlockNumber: 800000,
 		Index:       0,
 		Proof:       proof,
@@ -503,14 +503,14 @@ func TestSwapRequest_ToCrossChainTx(t *testing.T) {
 	recipient := newTestAddress(ChainETH, "recipient")
 
 	req := &SwapRequest{
-		ID:           "req-1",
-		SourceChain:   ChainBTC,
-		DestChain:     ChainETH,
-		Sender:        sender,
-		Recipient:     recipient,
-		Amount:        big.NewInt(100000000),
-		Token:         "BTC",
-		Deadline:      time.Now().Add(24 * time.Hour),
+		ID:          "req-1",
+		SourceChain: ChainBTC,
+		DestChain:   ChainETH,
+		Sender:      sender,
+		Recipient:   recipient,
+		Amount:      big.NewInt(100000000),
+		Token:       "BTC",
+		Deadline:    time.Now().Add(24 * time.Hour),
 	}
 
 	tx := req.ToCrossChainTx("relayer-1")
@@ -574,7 +574,7 @@ func TestGenerateRelayerID(t *testing.T) {
 }
 
 func TestCalculateFee(t *testing.T) {
-	amount := big.NewInt(100000000) // 1 BTC
+	amount := big.NewInt(100000000)  // 1 BTC
 	feeRate := big.NewInt(100000000) // 1% (100000000 / 100000000)
 
 	fee := CalculateFee(amount, feeRate)
@@ -653,10 +653,10 @@ func TestRelayerNode_Register(t *testing.T) {
 
 	req := &RegisterRequest{
 		NodeID:          "node-1",
-		Address:        newTestAddress(ChainAIB, "addr"),
+		Address:         newTestAddress(ChainAIB, "addr"),
 		SupportedChains: []ChainType{ChainBTC, ChainETH},
-		Stake:          big.NewInt(2000000000),
-		FeeRate:        big.NewInt(500),
+		Stake:           big.NewInt(2000000000),
+		FeeRate:         big.NewInt(500),
 	}
 
 	err := node.Register(req)
@@ -684,8 +684,8 @@ func TestRelayerNode_Register_InvalidStake(t *testing.T) {
 		[]ChainType{ChainBTC}, big.NewInt(1000000000), big.NewInt(1000))
 
 	req := &RegisterRequest{
-		Stake:    big.NewInt(0),
-		FeeRate:  big.NewInt(1000),
+		Stake:   big.NewInt(0),
+		FeeRate: big.NewInt(1000),
 	}
 
 	err := node.Register(req)
@@ -699,8 +699,8 @@ func TestRelayerNode_Register_InvalidFeeRate(t *testing.T) {
 		[]ChainType{ChainBTC}, big.NewInt(1000000000), big.NewInt(1000))
 
 	req := &RegisterRequest{
-		Stake:    big.NewInt(1000000000),
-		FeeRate:  big.NewInt(0),
+		Stake:   big.NewInt(1000000000),
+		FeeRate: big.NewInt(0),
 	}
 
 	err := node.Register(req)
@@ -755,8 +755,8 @@ func TestValidateRelayer(t *testing.T) {
 	valid := &RelayerNode{
 		id:              "relayer-1",
 		supportedChains: []ChainType{ChainBTC},
-		stake:          big.NewInt(1000000000),
-		feeRate:        big.NewInt(1000),
+		stake:           big.NewInt(1000000000),
+		feeRate:         big.NewInt(1000),
 	}
 
 	if err := ValidateRelayer(valid); err != nil {
@@ -772,8 +772,8 @@ func TestValidateRelayer(t *testing.T) {
 	emptyID := &RelayerNode{
 		id:              "",
 		supportedChains: []ChainType{ChainBTC},
-		stake:          big.NewInt(1000000000),
-		feeRate:        big.NewInt(1000),
+		stake:           big.NewInt(1000000000),
+		feeRate:         big.NewInt(1000),
 	}
 	if err := ValidateRelayer(emptyID); err == nil {
 		t.Error("empty ID should error")
@@ -783,8 +783,8 @@ func TestValidateRelayer(t *testing.T) {
 	noChains := &RelayerNode{
 		id:              "relayer-1",
 		supportedChains: []ChainType{},
-		stake:          big.NewInt(1000000000),
-		feeRate:        big.NewInt(1000),
+		stake:           big.NewInt(1000000000),
+		feeRate:         big.NewInt(1000),
 	}
 	if err := ValidateRelayer(noChains); err == nil {
 		t.Error("no chains should error")
@@ -813,18 +813,18 @@ func TestCanRelay(t *testing.T) {
 
 func TestSelectBestRelayers(t *testing.T) {
 	relayer1 := &RelayerNode{
-		id:          "r1",
-		reputation:  90,
-		feeRate:     big.NewInt(1000),
-		status:      StatusActive,
+		id:              "r1",
+		reputation:      90,
+		feeRate:         big.NewInt(1000),
+		status:          StatusActive,
 		supportedChains: []ChainType{ChainBTC, ChainETH},
 	}
 
 	relayer2 := &RelayerNode{
-		id:          "r2",
-		reputation:  80,
-		feeRate:     big.NewInt(500),
-		status:      StatusActive,
+		id:              "r2",
+		reputation:      80,
+		feeRate:         big.NewInt(500),
+		status:          StatusActive,
 		supportedChains: []ChainType{ChainBTC, ChainETH},
 	}
 
@@ -840,7 +840,7 @@ func TestSelectBestRelayers_LowReputation(t *testing.T) {
 	// Relayer with reputation below minimum
 	relayer := &RelayerNode{
 		id:              "r1",
-		reputation:     40, // Below MinRelayerReputation (50)
+		reputation:      40, // Below MinRelayerReputation (50)
 		feeRate:         big.NewInt(1000),
 		status:          StatusActive,
 		supportedChains: []ChainType{ChainBTC, ChainETH},
@@ -955,11 +955,11 @@ func TestNetwork_GetNetworkStats(t *testing.T) {
 
 func TestNewDispute(t *testing.T) {
 	dispute := &Dispute{
-		ID:        "dispute-1",
-		TxHash:    "tx-123",
+		ID:       "dispute-1",
+		TxHash:   "tx-123",
 		Reporter: "user1",
-		Reason:    "funds not received",
-		Status:    "pending",
+		Reason:   "funds not received",
+		Status:   "pending",
 	}
 
 	if dispute.ID != "dispute-1" {
@@ -976,11 +976,11 @@ func TestNewDispute(t *testing.T) {
 
 func TestCrossChainTx_Serialize(t *testing.T) {
 	tx := &CrossChainTx{
-		ID:           "tx-1",
-		SourceChain:  ChainBTC,
-		DestChain:    ChainETH,
-		Amount:       big.NewInt(100000000),
-		Status:       TxStatusPending,
+		ID:          "tx-1",
+		SourceChain: ChainBTC,
+		DestChain:   ChainETH,
+		Amount:      big.NewInt(100000000),
+		Status:      TxStatusPending,
 	}
 
 	data, err := tx.Serialize()
@@ -1249,16 +1249,16 @@ func TestNetwork_AssignTask(t *testing.T) {
 	secretHash := sha256.Sum256([]byte("secret"))
 	sender := newTestAddress(ChainBTC, "sender")
 	req := &SwapRequest{
-		ID:           "req-1",
-		SourceChain:  ChainBTC,
-		DestChain:    ChainETH,
-		Sender:       sender,
-		Recipient:    newTestAddress(ChainETH, "recipient"),
-		Amount:       big.NewInt(100000000),
-		Token:        "BTC",
-		RelayerFee:   big.NewInt(1000),
-		Deadline:     time.Now().Add(24 * time.Hour),
-		SecretHash:   secretHash[:],
+		ID:          "req-1",
+		SourceChain: ChainBTC,
+		DestChain:   ChainETH,
+		Sender:      sender,
+		Recipient:   newTestAddress(ChainETH, "recipient"),
+		Amount:      big.NewInt(100000000),
+		Token:       "BTC",
+		RelayerFee:  big.NewInt(1000),
+		Deadline:    time.Now().Add(24 * time.Hour),
+		SecretHash:  secretHash[:],
 	}
 
 	relayer, err := network.AssignTask(req)
@@ -1318,9 +1318,9 @@ func TestNetwork_ReportDispute(t *testing.T) {
 
 	// Report dispute
 	dispute := &Dispute{
-		TxHash:  tx.ID,
+		TxHash:   tx.ID,
 		Reporter: "user1",
-		Reason:  "funds not received",
+		Reason:   "funds not received",
 	}
 
 	err := network.ReportDispute(dispute)
@@ -1372,9 +1372,9 @@ func TestNetwork_ResolveDispute(t *testing.T) {
 
 	// Report dispute
 	dispute := &Dispute{
-		TxHash:  tx.ID,
+		TxHash:   tx.ID,
 		Reporter: "user1",
-		Reason:  "test",
+		Reason:   "test",
 	}
 	network.ReportDispute(dispute)
 
@@ -1423,9 +1423,9 @@ func TestNetwork_ResolveDispute_WithPenalty(t *testing.T) {
 
 	// Report dispute
 	dispute := &Dispute{
-		TxHash:  tx.ID,
+		TxHash:   tx.ID,
 		Reporter: "user1",
-		Reason:  "test",
+		Reason:   "test",
 	}
 	network.ReportDispute(dispute)
 
@@ -1522,9 +1522,9 @@ func TestNetwork_GetDispute(t *testing.T) {
 	network.RegisterRelayer(relayer)
 
 	dispute := &Dispute{
-		TxHash:  tx.ID,
+		TxHash:   tx.ID,
 		Reporter: "user1",
-		Reason:  "test",
+		Reason:   "test",
 	}
 	network.ReportDispute(dispute)
 
@@ -1552,9 +1552,9 @@ func TestNetwork_ListDisputes(t *testing.T) {
 	network.RegisterRelayer(relayer)
 
 	dispute := &Dispute{
-		TxHash:  tx.ID,
+		TxHash:   tx.ID,
 		Reporter: "user1",
-		Reason:  "test",
+		Reason:   "test",
 	}
 	network.ReportDispute(dispute)
 
@@ -1578,9 +1578,9 @@ func TestNetwork_GetResolution(t *testing.T) {
 	network.RegisterRelayer(relayer)
 
 	dispute := &Dispute{
-		TxHash:  tx.ID,
+		TxHash:   tx.ID,
 		Reporter: "user1",
-		Reason:  "test",
+		Reason:   "test",
 	}
 	network.ReportDispute(dispute)
 
@@ -3492,9 +3492,9 @@ func TestNetwork_ResolveDispute_AlreadyResolved(t *testing.T) {
 	network.RegisterRelayer(relayer)
 
 	dispute := &Dispute{
-		TxHash:  tx.ID,
+		TxHash:   tx.ID,
 		Reporter: "user1",
-		Reason:  "test",
+		Reason:   "test",
 	}
 	network.ReportDispute(dispute)
 
@@ -3622,10 +3622,10 @@ func TestRelayerNode_Register_WithNewChains(t *testing.T) {
 
 	req := &RegisterRequest{
 		NodeID:          "node-1",
-		Address:        newTestAddress(ChainAIB, "addr"),
+		Address:         newTestAddress(ChainAIB, "addr"),
 		SupportedChains: []ChainType{ChainBTC, ChainETH, ChainSOL},
-		Stake:          big.NewInt(2000000000),
-		FeeRate:        big.NewInt(500),
+		Stake:           big.NewInt(2000000000),
+		FeeRate:         big.NewInt(500),
 	}
 
 	err := node.Register(req)
@@ -3660,16 +3660,16 @@ func TestCrossChainMessage_Transfer(t *testing.T) {
 	secretHash := sha256.Sum256([]byte("secret"))
 
 	req := &SwapRequest{
-		ID:           "msg-1",
-		SourceChain:  ChainBTC,
-		DestChain:    ChainETH,
-		Sender:       sender,
-		Recipient:    recipient,
-		Amount:       big.NewInt(100000000),
-		Token:        "BTC",
-		RelayerFee:   big.NewInt(1000),
-		Deadline:     time.Now().Add(24 * time.Hour),
-		SecretHash:   secretHash[:],
+		ID:          "msg-1",
+		SourceChain: ChainBTC,
+		DestChain:   ChainETH,
+		Sender:      sender,
+		Recipient:   recipient,
+		Amount:      big.NewInt(100000000),
+		Token:       "BTC",
+		RelayerFee:  big.NewInt(1000),
+		Deadline:    time.Now().Add(24 * time.Hour),
+		SecretHash:  secretHash[:],
 	}
 
 	// Assign task to relayer
@@ -3704,14 +3704,14 @@ func TestCrossChainMessage_SenderRecipientValidation(t *testing.T) {
 
 	// Test valid swap request
 	req := &SwapRequest{
-		ID:           "msg-1",
-		SourceChain:  ChainBTC,
-		DestChain:    ChainETH,
-		Sender:       sender,
-		Recipient:    recipient,
-		Amount:       big.NewInt(100000000),
-		Token:        "BTC",
-		Deadline:     time.Now().Add(24 * time.Hour),
+		ID:          "msg-1",
+		SourceChain: ChainBTC,
+		DestChain:   ChainETH,
+		Sender:      sender,
+		Recipient:   recipient,
+		Amount:      big.NewInt(100000000),
+		Token:       "BTC",
+		Deadline:    time.Now().Add(24 * time.Hour),
 	}
 
 	err := ValidateSwapRequest(req)
@@ -3721,14 +3721,14 @@ func TestCrossChainMessage_SenderRecipientValidation(t *testing.T) {
 
 	// Test empty sender
 	reqNoSender := &SwapRequest{
-		ID:           "msg-2",
-		SourceChain:  ChainBTC,
-		DestChain:    ChainETH,
-		Sender:       Address{Chain: ChainBTC, Data: []byte{}},
-		Recipient:    recipient,
-		Amount:       big.NewInt(100000000),
-		Token:        "BTC",
-		Deadline:     time.Now().Add(24 * time.Hour),
+		ID:          "msg-2",
+		SourceChain: ChainBTC,
+		DestChain:   ChainETH,
+		Sender:      Address{Chain: ChainBTC, Data: []byte{}},
+		Recipient:   recipient,
+		Amount:      big.NewInt(100000000),
+		Token:       "BTC",
+		Deadline:    time.Now().Add(24 * time.Hour),
 	}
 
 	err = ValidateSwapRequest(reqNoSender)
@@ -3738,14 +3738,14 @@ func TestCrossChainMessage_SenderRecipientValidation(t *testing.T) {
 
 	// Test empty recipient
 	reqNoRecipient := &SwapRequest{
-		ID:           "msg-3",
-		SourceChain:  ChainBTC,
-		DestChain:    ChainETH,
-		Sender:       sender,
-		Recipient:    Address{Chain: ChainETH, Data: []byte{}},
-		Amount:       big.NewInt(100000000),
-		Token:        "BTC",
-		Deadline:     time.Now().Add(24 * time.Hour),
+		ID:          "msg-3",
+		SourceChain: ChainBTC,
+		DestChain:   ChainETH,
+		Sender:      sender,
+		Recipient:   Address{Chain: ChainETH, Data: []byte{}},
+		Amount:      big.NewInt(100000000),
+		Token:       "BTC",
+		Deadline:    time.Now().Add(24 * time.Hour),
 	}
 
 	err = ValidateSwapRequest(reqNoRecipient)
@@ -3761,14 +3761,14 @@ func TestCrossChainMessage_ChainValidation(t *testing.T) {
 
 	// Test same source and dest chain (should fail)
 	req := &SwapRequest{
-		ID:           "msg-1",
-		SourceChain:  ChainBTC,
-		DestChain:    ChainBTC,
-		Sender:       sender,
-		Recipient:    recipient,
-		Amount:       big.NewInt(100000000),
-		Token:        "BTC",
-		Deadline:     time.Now().Add(24 * time.Hour),
+		ID:          "msg-1",
+		SourceChain: ChainBTC,
+		DestChain:   ChainBTC,
+		Sender:      sender,
+		Recipient:   recipient,
+		Amount:      big.NewInt(100000000),
+		Token:       "BTC",
+		Deadline:    time.Now().Add(24 * time.Hour),
 	}
 
 	err := ValidateSwapRequest(req)
@@ -3778,14 +3778,14 @@ func TestCrossChainMessage_ChainValidation(t *testing.T) {
 
 	// Test invalid source chain
 	reqInvalidSource := &SwapRequest{
-		ID:           "msg-2",
-		SourceChain:  ChainType("INVALID"),
-		DestChain:    ChainETH,
-		Sender:       sender,
-		Recipient:    recipient,
-		Amount:       big.NewInt(100000000),
-		Token:        "BTC",
-		Deadline:     time.Now().Add(24 * time.Hour),
+		ID:          "msg-2",
+		SourceChain: ChainType("INVALID"),
+		DestChain:   ChainETH,
+		Sender:      sender,
+		Recipient:   recipient,
+		Amount:      big.NewInt(100000000),
+		Token:       "BTC",
+		Deadline:    time.Now().Add(24 * time.Hour),
 	}
 
 	err = ValidateSwapRequest(reqInvalidSource)
@@ -3795,14 +3795,14 @@ func TestCrossChainMessage_ChainValidation(t *testing.T) {
 
 	// Test invalid dest chain
 	reqInvalidDest := &SwapRequest{
-		ID:           "msg-3",
-		SourceChain:  ChainBTC,
-		DestChain:    ChainType("INVALID"),
-		Sender:       sender,
-		Recipient:    recipient,
-		Amount:       big.NewInt(100000000),
-		Token:        "BTC",
-		Deadline:     time.Now().Add(24 * time.Hour),
+		ID:          "msg-3",
+		SourceChain: ChainBTC,
+		DestChain:   ChainType("INVALID"),
+		Sender:      sender,
+		Recipient:   recipient,
+		Amount:      big.NewInt(100000000),
+		Token:       "BTC",
+		Deadline:    time.Now().Add(24 * time.Hour),
 	}
 
 	err = ValidateSwapRequest(reqInvalidDest)
@@ -3821,14 +3821,14 @@ func TestCrossChainMessage_Expiry(t *testing.T) {
 
 	// Test with expired deadline
 	expiredReq := &SwapRequest{
-		ID:           "msg-1",
-		SourceChain:  ChainBTC,
-		DestChain:    ChainETH,
-		Sender:       sender,
-		Recipient:    recipient,
-		Amount:       big.NewInt(100000000),
-		Token:        "BTC",
-		Deadline:     time.Now().Add(-1 * time.Hour), // Already expired
+		ID:          "msg-1",
+		SourceChain: ChainBTC,
+		DestChain:   ChainETH,
+		Sender:      sender,
+		Recipient:   recipient,
+		Amount:      big.NewInt(100000000),
+		Token:       "BTC",
+		Deadline:    time.Now().Add(-1 * time.Hour), // Already expired
 	}
 
 	err := ValidateSwapRequest(expiredReq)
@@ -3838,14 +3838,14 @@ func TestCrossChainMessage_Expiry(t *testing.T) {
 
 	// Test with valid deadline
 	validReq := &SwapRequest{
-		ID:           "msg-2",
-		SourceChain:  ChainBTC,
-		DestChain:    ChainETH,
-		Sender:       sender,
-		Recipient:    recipient,
-		Amount:       big.NewInt(100000000),
-		Token:        "BTC",
-		Deadline:     time.Now().Add(1 * time.Hour),
+		ID:          "msg-2",
+		SourceChain: ChainBTC,
+		DestChain:   ChainETH,
+		Sender:      sender,
+		Recipient:   recipient,
+		Amount:      big.NewInt(100000000),
+		Token:       "BTC",
+		Deadline:    time.Now().Add(1 * time.Hour),
 	}
 
 	err = ValidateSwapRequest(validReq)
@@ -3887,14 +3887,14 @@ func TestCrossChainMessage_Multihop(t *testing.T) {
 	intermediate := newTestAddress(ChainETH, "intermediate")
 
 	_ = &SwapRequest{
-		ID:           "multihop-1",
-		SourceChain:  ChainBTC,
-		DestChain:    ChainETH,
-		Sender:       sender,
-		Recipient:    intermediate,
-		Amount:       big.NewInt(100000000),
-		Token:        "BTC",
-		Deadline:     time.Now().Add(24 * time.Hour),
+		ID:          "multihop-1",
+		SourceChain: ChainBTC,
+		DestChain:   ChainETH,
+		Sender:      sender,
+		Recipient:   intermediate,
+		Amount:      big.NewInt(100000000),
+		Token:       "BTC",
+		Deadline:    time.Now().Add(24 * time.Hour),
 	}
 
 	// Find relayers for BTC -> ETH
@@ -4048,15 +4048,15 @@ func TestConfirmation_StatusTransition(t *testing.T) {
 	recipient := newTestAddress(ChainETH, "recipient")
 
 	req := &SwapRequest{
-		ID:           "msg-1",
-		SourceChain:  ChainBTC,
-		DestChain:    ChainETH,
-		Sender:       sender,
-		Recipient:    recipient,
-		Amount:       big.NewInt(100000000),
-		Token:        "BTC",
-		RelayerFee:   big.NewInt(1000),
-		Deadline:     time.Now().Add(24 * time.Hour),
+		ID:          "msg-1",
+		SourceChain: ChainBTC,
+		DestChain:   ChainETH,
+		Sender:      sender,
+		Recipient:   recipient,
+		Amount:      big.NewInt(100000000),
+		Token:       "BTC",
+		RelayerFee:  big.NewInt(1000),
+		Deadline:    time.Now().Add(24 * time.Hour),
 	}
 
 	tx, err := relayer.CreateSwap(req)
@@ -4092,15 +4092,15 @@ func TestRetry_LockFundsFailure(t *testing.T) {
 
 	// First attempt with zero amount (should fail)
 	req := &SwapRequest{
-		ID:           "msg-1",
-		SourceChain:  ChainBTC,
-		DestChain:    ChainETH,
-		Sender:       sender,
-		Recipient:    recipient,
-		Amount:       big.NewInt(0), // Invalid amount
-		Token:        "BTC",
-		RelayerFee:   big.NewInt(1000),
-		Deadline:     time.Now().Add(24 * time.Hour),
+		ID:          "msg-1",
+		SourceChain: ChainBTC,
+		DestChain:   ChainETH,
+		Sender:      sender,
+		Recipient:   recipient,
+		Amount:      big.NewInt(0), // Invalid amount
+		Token:       "BTC",
+		RelayerFee:  big.NewInt(1000),
+		Deadline:    time.Now().Add(24 * time.Hour),
 	}
 
 	_, err := relayer.CreateSwap(req)
@@ -4129,15 +4129,15 @@ func TestRetry_UnlockFundsFailure(t *testing.T) {
 	recipient := newTestAddress(ChainETH, "recipient")
 
 	req := &SwapRequest{
-		ID:           "msg-1",
-		SourceChain:  ChainBTC,
-		DestChain:    ChainETH,
-		Sender:       sender,
-		Recipient:    recipient,
-		Amount:       big.NewInt(100000000),
-		Token:        "BTC",
-		RelayerFee:   big.NewInt(1000),
-		Deadline:     time.Now().Add(24 * time.Hour),
+		ID:          "msg-1",
+		SourceChain: ChainBTC,
+		DestChain:   ChainETH,
+		Sender:      sender,
+		Recipient:   recipient,
+		Amount:      big.NewInt(100000000),
+		Token:       "BTC",
+		RelayerFee:  big.NewInt(1000),
+		Deadline:    time.Now().Add(24 * time.Hour),
 	}
 
 	tx, err := relayer.CreateSwap(req)
@@ -4194,15 +4194,15 @@ func TestRetry_MaxRetriesExceeded(t *testing.T) {
 	// Multiple failed attempts
 	for i := 0; i < 3; i++ {
 		req := &SwapRequest{
-			ID:           fmt.Sprintf("msg-%d", i),
-			SourceChain:  ChainBTC,
-			DestChain:    ChainETH,
-			Sender:       sender,
-			Recipient:    recipient,
-			Amount:       big.NewInt(0), // Invalid
-			Token:        "BTC",
-			RelayerFee:   big.NewInt(1000),
-			Deadline:     time.Now().Add(24 * time.Hour),
+			ID:          fmt.Sprintf("msg-%d", i),
+			SourceChain: ChainBTC,
+			DestChain:   ChainETH,
+			Sender:      sender,
+			Recipient:   recipient,
+			Amount:      big.NewInt(0), // Invalid
+			Token:       "BTC",
+			RelayerFee:  big.NewInt(1000),
+			Deadline:    time.Now().Add(24 * time.Hour),
 		}
 
 		relayer.CreateSwap(req) // Ignore error for retry test
@@ -4210,15 +4210,15 @@ func TestRetry_MaxRetriesExceeded(t *testing.T) {
 
 	// Now try with valid request
 	req := &SwapRequest{
-		ID:           "msg-valid",
-		SourceChain:  ChainBTC,
-		DestChain:    ChainETH,
-		Sender:       sender,
-		Recipient:    recipient,
-		Amount:       big.NewInt(100000000),
-		Token:        "BTC",
-		RelayerFee:   big.NewInt(1000),
-		Deadline:     time.Now().Add(24 * time.Hour),
+		ID:          "msg-valid",
+		SourceChain: ChainBTC,
+		DestChain:   ChainETH,
+		Sender:      sender,
+		Recipient:   recipient,
+		Amount:      big.NewInt(100000000),
+		Token:       "BTC",
+		RelayerFee:  big.NewInt(1000),
+		Deadline:    time.Now().Add(24 * time.Hour),
 	}
 
 	tx, err := relayer.CreateSwap(req)
@@ -4297,15 +4297,15 @@ func TestRecovery_InvalidProof(t *testing.T) {
 	recipient := newTestAddress(ChainETH, "recipient")
 
 	req := &SwapRequest{
-		ID:           "msg-1",
-		SourceChain:  ChainBTC,
-		DestChain:    ChainETH,
-		Sender:       sender,
-		Recipient:    recipient,
-		Amount:       big.NewInt(100000000),
-		Token:        "BTC",
-		RelayerFee:   big.NewInt(1000),
-		Deadline:     time.Now().Add(24 * time.Hour),
+		ID:          "msg-1",
+		SourceChain: ChainBTC,
+		DestChain:   ChainETH,
+		Sender:      sender,
+		Recipient:   recipient,
+		Amount:      big.NewInt(100000000),
+		Token:       "BTC",
+		RelayerFee:  big.NewInt(1000),
+		Deadline:    time.Now().Add(24 * time.Hour),
 	}
 
 	tx, err := relayer.CreateSwap(req)
@@ -4329,15 +4329,15 @@ func TestRecovery_AdapterNotFound(t *testing.T) {
 	recipient := newTestAddress(ChainETH, "recipient")
 
 	req := &SwapRequest{
-		ID:           "msg-1",
-		SourceChain:  ChainBTC,
-		DestChain:    ChainETH, // ETH not supported by this relayer
-		Sender:       sender,
-		Recipient:    recipient,
-		Amount:       big.NewInt(100000000),
-		Token:        "BTC",
-		RelayerFee:   big.NewInt(1000),
-		Deadline:     time.Now().Add(24 * time.Hour),
+		ID:          "msg-1",
+		SourceChain: ChainBTC,
+		DestChain:   ChainETH, // ETH not supported by this relayer
+		Sender:      sender,
+		Recipient:   recipient,
+		Amount:      big.NewInt(100000000),
+		Token:       "BTC",
+		RelayerFee:  big.NewInt(1000),
+		Deadline:    time.Now().Add(24 * time.Hour),
 	}
 
 	// Should fail because relayer doesn't support ETH
@@ -4359,15 +4359,15 @@ func TestRecovery_RelayerNotActive(t *testing.T) {
 	recipient := newTestAddress(ChainETH, "recipient")
 
 	req := &SwapRequest{
-		ID:           "msg-1",
-		SourceChain:  ChainBTC,
-		DestChain:    ChainETH,
-		Sender:       sender,
-		Recipient:    recipient,
-		Amount:       big.NewInt(100000000),
-		Token:        "BTC",
-		RelayerFee:   big.NewInt(1000),
-		Deadline:     time.Now().Add(24 * time.Hour),
+		ID:          "msg-1",
+		SourceChain: ChainBTC,
+		DestChain:   ChainETH,
+		Sender:      sender,
+		Recipient:   recipient,
+		Amount:      big.NewInt(100000000),
+		Token:       "BTC",
+		RelayerFee:  big.NewInt(1000),
+		Deadline:    time.Now().Add(24 * time.Hour),
 	}
 
 	// Should fail because relayer is inactive
@@ -4398,15 +4398,15 @@ func TestRecovery_InsufficientFunds(t *testing.T) {
 
 	// Test with zero amount
 	req := &SwapRequest{
-		ID:           "msg-1",
-		SourceChain:  ChainBTC,
-		DestChain:    ChainETH,
-		Sender:       sender,
-		Recipient:    recipient,
-		Amount:       big.NewInt(0),
-		Token:        "BTC",
-		RelayerFee:   big.NewInt(1000),
-		Deadline:     time.Now().Add(24 * time.Hour),
+		ID:          "msg-1",
+		SourceChain: ChainBTC,
+		DestChain:   ChainETH,
+		Sender:      sender,
+		Recipient:   recipient,
+		Amount:      big.NewInt(0),
+		Token:       "BTC",
+		RelayerFee:  big.NewInt(1000),
+		Deadline:    time.Now().Add(24 * time.Hour),
 	}
 
 	// Validate should fail

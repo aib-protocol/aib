@@ -9,7 +9,7 @@ import (
 
 type Engine struct {
 	templates map[string]*template.Template // "en:home.html" -> compiled template
-	languages []string // Supported languages
+	languages []string                      // Supported languages
 }
 
 // Core languages with full translations

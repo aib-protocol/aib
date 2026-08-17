@@ -340,10 +340,10 @@ func TestChainState_ValidateBlockTimestamp(t *testing.T) {
 	now := uint64(time.Now().Unix())
 
 	tests := []struct {
-		name          string
-		timestamp     uint64
-		parentTime    uint64
-		expectValid   bool
+		name        string
+		timestamp   uint64
+		parentTime  uint64
+		expectValid bool
 	}{
 		{
 			name:        "valid timestamp",

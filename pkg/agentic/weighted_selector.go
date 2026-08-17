@@ -44,13 +44,13 @@ type SelectorConfig struct {
 	CapacityExponent   float64 `json:"capacity_exponent"`   // δ, default 0.2
 
 	// Minimum requirements
-	MinReputation      float64 `json:"min_reputation"`      // Minimum reputation to be eligible
-	MinStake           uint64  `json:"min_stake"`           // Minimum stake to be eligible
-	MaxSuspicion       float64 `json:"max_suspicion"`       // Maximum suspicion score allowed
+	MinReputation float64 `json:"min_reputation"` // Minimum reputation to be eligible
+	MinStake      uint64  `json:"min_stake"`      // Minimum stake to be eligible
+	MaxSuspicion  float64 `json:"max_suspicion"`  // Maximum suspicion score allowed
 
 	// Fairness parameters
-	FairnessWindow     int     `json:"fairness_window"`     // Consider last N selections
-	FairnessPenalty    float64 `json:"fairness_penalty"`    // Penalty for recent selection
+	FairnessWindow  int     `json:"fairness_window"`  // Consider last N selections
+	FairnessPenalty float64 `json:"fairness_penalty"` // Penalty for recent selection
 
 	// Randomness seed (for deterministic testing)
 	Seed int64 `json:"seed,omitempty"`
@@ -74,13 +74,13 @@ func DefaultSelectorConfig() *SelectorConfig {
 
 // SelectionRecord records a selection event.
 type SelectionRecord struct {
-	NodeID        string    `json:"node_id"`
-	Weight        float64   `json:"weight"`
-	Probability   float64   `json:"probability"`
-	TotalWeight   float64   `json:"total_weight"`
-	Timestamp     time.Time `json:"timestamp"`
-	BlockHeight   uint64    `json:"block_height"`
-	TaskID        string    `json:"task_id,omitempty"`
+	NodeID      string    `json:"node_id"`
+	Weight      float64   `json:"weight"`
+	Probability float64   `json:"probability"`
+	TotalWeight float64   `json:"total_weight"`
+	Timestamp   time.Time `json:"timestamp"`
+	BlockHeight uint64    `json:"block_height"`
+	TaskID      string    `json:"task_id,omitempty"`
 }
 
 // NewWeightedSelector creates a new weighted selector.
@@ -107,17 +107,17 @@ func NewWeightedSelector(
 
 // NodeWeight represents a node's weight for selection.
 type NodeWeight struct {
-	NodeID            string  `json:"node_id"`
-	ReputationScore   float64 `json:"reputation_score"`
-	StakeAmount       uint64  `json:"stake_amount"`
-	HistoricalBlocks  uint64  `json:"historical_blocks"`
-	CapacityScore     float64 `json:"capacity_score"`
-	SuspicionScore    float64 `json:"suspicion_score"`
-	FairnessFactor    float64 `json:"fairness_factor"`
-	RawWeight         float64 `json:"raw_weight"`
-	FinalWeight       float64 `json:"final_weight"`
-	Eligible          bool    `json:"eligible"`
-	IneligibleReason  string  `json:"ineligible_reason,omitempty"`
+	NodeID           string  `json:"node_id"`
+	ReputationScore  float64 `json:"reputation_score"`
+	StakeAmount      uint64  `json:"stake_amount"`
+	HistoricalBlocks uint64  `json:"historical_blocks"`
+	CapacityScore    float64 `json:"capacity_score"`
+	SuspicionScore   float64 `json:"suspicion_score"`
+	FairnessFactor   float64 `json:"fairness_factor"`
+	RawWeight        float64 `json:"raw_weight"`
+	FinalWeight      float64 `json:"final_weight"`
+	Eligible         bool    `json:"eligible"`
+	IneligibleReason string  `json:"ineligible_reason,omitempty"`
 }
 
 // CalculateWeight calculates the selection weight for a node.
@@ -236,14 +236,14 @@ func (ws *WeightedSelector) calculateFairnessFactor(nodeID string) float64 {
 
 // SelectionResult represents the result of a selection.
 type SelectionResult struct {
-	SelectedNode    string        `json:"selected_node"`
-	SelectedWeight  float64       `json:"selected_weight"`
-	Probability     float64       `json:"probability"`
-	TotalWeight     float64       `json:"total_weight"`
-	EligibleNodes   int           `json:"eligible_nodes"`
-	AllWeights      []*NodeWeight `json:"all_weights"`
-	RandomValue     float64       `json:"random_value"`
-	Timestamp       time.Time     `json:"timestamp"`
+	SelectedNode   string        `json:"selected_node"`
+	SelectedWeight float64       `json:"selected_weight"`
+	Probability    float64       `json:"probability"`
+	TotalWeight    float64       `json:"total_weight"`
+	EligibleNodes  int           `json:"eligible_nodes"`
+	AllWeights     []*NodeWeight `json:"all_weights"`
+	RandomValue    float64       `json:"random_value"`
+	Timestamp      time.Time     `json:"timestamp"`
 }
 
 // Select selects a block producer using weighted random selection.
@@ -358,13 +358,13 @@ func (ws *WeightedSelector) secureRandomFloat() float64 {
 
 // SelectionStats represents statistics about selections.
 type SelectionStats struct {
-	TotalSelections      uint64            `json:"total_selections"`
-	UniqueNodes          int               `json:"unique_nodes"`
-	SelectionsByNode     map[string]uint64 `json:"selections_by_node"`
-	FairnessScore        float64           `json:"fairness_score"` // Gini coefficient
-	EntropyScore         float64           `json:"entropy_score"` // Shannon entropy
-	AvgProbability       float64           `json:"avg_probability"`
-	MaxConsecutiveSelects int              `json:"max_consecutive_selects"`
+	TotalSelections       uint64            `json:"total_selections"`
+	UniqueNodes           int               `json:"unique_nodes"`
+	SelectionsByNode      map[string]uint64 `json:"selections_by_node"`
+	FairnessScore         float64           `json:"fairness_score"` // Gini coefficient
+	EntropyScore          float64           `json:"entropy_score"`  // Shannon entropy
+	AvgProbability        float64           `json:"avg_probability"`
+	MaxConsecutiveSelects int               `json:"max_consecutive_selects"`
 }
 
 // GetStats returns statistics about recent selections.

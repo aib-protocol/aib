@@ -48,14 +48,14 @@ func NewErrorResponse(code, message, details string) APIResponse {
 // ============================================================================
 
 const (
-	ErrCodeInvalidRequest  = "INVALID_REQUEST"
-	ErrCodeUnauthorized    = "UNAUTHORIZED"
-	ErrCodeForbidden       = "FORBIDDEN"
-	ErrCodeNotFound        = "NOT_FOUND"
-	ErrCodeConflict        = "CONFLICT"
-	ErrCodeRateLimited     = "RATE_LIMITED"
-	ErrCodeInternalError   = "INTERNAL_ERROR"
-	ErrCodeNotImplemented  = "NOT_IMPLEMENTED"
+	ErrCodeInvalidRequest = "INVALID_REQUEST"
+	ErrCodeUnauthorized   = "UNAUTHORIZED"
+	ErrCodeForbidden      = "FORBIDDEN"
+	ErrCodeNotFound       = "NOT_FOUND"
+	ErrCodeConflict       = "CONFLICT"
+	ErrCodeRateLimited    = "RATE_LIMITED"
+	ErrCodeInternalError  = "INTERNAL_ERROR"
+	ErrCodeNotImplemented = "NOT_IMPLEMENTED"
 )
 
 // ============================================================================
@@ -72,18 +72,18 @@ type HealthResponse struct {
 
 // BalanceResponse 余额查询响应
 type BalanceResponse struct {
-	Address  string     `json:"address"`
-	Balance  uint64     `json:"balance"`
-	UTXOCount int       `json:"utxo_count"`
-	UTXOs    []UTxOInfo `json:"utxos,omitempty"`
+	Address   string     `json:"address"`
+	Balance   uint64     `json:"balance"`
+	UTXOCount int        `json:"utxo_count"`
+	UTXOs     []UTxOInfo `json:"utxos,omitempty"`
 }
 
 // UTxOInfo UTXO 信息
 type UTxOInfo struct {
-	TxHash  string `json:"tx_hash"`
-	Index   uint32 `json:"index"`
-	Value   uint64 `json:"value"`
-	Script  string `json:"script,omitempty"`
+	TxHash string `json:"tx_hash"`
+	Index  uint32 `json:"index"`
+	Value  uint64 `json:"value"`
+	Script string `json:"script,omitempty"`
 }
 
 // TransactionRequest 提交交易请求
@@ -110,13 +110,13 @@ type TransactionResponse struct {
 
 // BlockResponse 区块响应
 type BlockResponse struct {
-	Height     uint64    `json:"height"`
-	Hash       string    `json:"hash"`
-	PrevHash   string    `json:"prev_hash"`
-	Timestamp  time.Time `json:"timestamp"`
-	TxCount    int       `json:"tx_count"`
-	Validator  string    `json:"validator,omitempty"`
-	Size       uint64    `json:"size"`
+	Height    uint64    `json:"height"`
+	Hash      string    `json:"hash"`
+	PrevHash  string    `json:"prev_hash"`
+	Timestamp time.Time `json:"timestamp"`
+	TxCount   int       `json:"tx_count"`
+	Validator string    `json:"validator,omitempty"`
+	Size      uint64    `json:"size"`
 }
 
 // BlockListResponse 区块列表响应
@@ -139,9 +139,9 @@ type OpenChannelRequest struct {
 
 // CloseChannelRequest 关闭通道请求
 type CloseChannelRequest struct {
-	ChannelID string      `json:"channel_id"`
-	SigA      []byte      `json:"sig_a"`
-	SigB      []byte      `json:"sig_b"`
+	ChannelID string `json:"channel_id"`
+	SigA      []byte `json:"sig_a"`
+	SigB      []byte `json:"sig_b"`
 }
 
 // PaymentRequest 通道支付请求
@@ -163,17 +163,17 @@ type UpdateChannelRequest struct {
 
 // ChannelResponse 通道详情响应
 type ChannelResponse struct {
-	ID           string     `json:"id"`
-	PartyA       string     `json:"party_a"`
-	PartyB       string     `json:"party_b"`
-	BalanceA     uint64     `json:"balance_a"`
-	BalanceB     uint64     `json:"balance_b"`
-	Sequence     uint64     `json:"sequence"`
-	StateHash    string     `json:"state_hash"`
-	Status       string     `json:"status"`
-	CreatedAt    time.Time  `json:"created_at"`
-	LastUpdate   time.Time  `json:"last_update,omitempty"`
-	DisputeEnd   *time.Time `json:"dispute_end,omitempty"`
+	ID         string     `json:"id"`
+	PartyA     string     `json:"party_a"`
+	PartyB     string     `json:"party_b"`
+	BalanceA   uint64     `json:"balance_a"`
+	BalanceB   uint64     `json:"balance_b"`
+	Sequence   uint64     `json:"sequence"`
+	StateHash  string     `json:"state_hash"`
+	Status     string     `json:"status"`
+	CreatedAt  time.Time  `json:"created_at"`
+	LastUpdate time.Time  `json:"last_update,omitempty"`
+	DisputeEnd *time.Time `json:"dispute_end,omitempty"`
 }
 
 // ChannelListResponse 通道列表响应
@@ -206,23 +206,23 @@ type InferenceRequest struct {
 
 // InferenceResponse AI 推理响应
 type InferenceResponse struct {
-	Result      string        `json:"result"`
-	ModelID     string        `json:"model_id"`
-	ModelName   string        `json:"model_name"`
-	Duration    int64         `json:"duration_ms"`
-	TokensUsed  int           `json:"tokens_used,omitempty"`
-	Timestamp   time.Time     `json:"timestamp"`
+	Result     string    `json:"result"`
+	ModelID    string    `json:"model_id"`
+	ModelName  string    `json:"model_name"`
+	Duration   int64     `json:"duration_ms"`
+	TokensUsed int       `json:"tokens_used,omitempty"`
+	Timestamp  time.Time `json:"timestamp"`
 }
 
 // ModelInfoResponse 模型信息响应
 type ModelInfoResponse struct {
-	ModelID       string    `json:"model_id"`
-	Name          string    `json:"name"`
-	Type          string    `json:"type"`
-	BaseURL       string    `json:"base_url,omitempty"`
-	Weight        float64   `json:"weight"`
-	Available     bool      `json:"available"`
-	RegisteredAt  time.Time `json:"registered_at"`
+	ModelID      string    `json:"model_id"`
+	Name         string    `json:"name"`
+	Type         string    `json:"type"`
+	BaseURL      string    `json:"base_url,omitempty"`
+	Weight       float64   `json:"weight"`
+	Available    bool      `json:"available"`
+	RegisteredAt time.Time `json:"registered_at"`
 }
 
 // ModelListResponse 模型列表响应
@@ -233,13 +233,13 @@ type ModelListResponse struct {
 
 // AINodeInfoResponse AI 节点信息响应
 type AINodeInfoResponse struct {
-	NodeID      string   `json:"node_id"`
-	Address     string   `json:"address"`
-	Stake       uint64   `json:"stake"`
-	Models      []string `json:"models"`
-	Reputation  float64  `json:"reputation"`
-	Status      string   `json:"status"`
-	LastSeen    time.Time `json:"last_seen"`
+	NodeID     string    `json:"node_id"`
+	Address    string    `json:"address"`
+	Stake      uint64    `json:"stake"`
+	Models     []string  `json:"models"`
+	Reputation float64   `json:"reputation"`
+	Status     string    `json:"status"`
+	LastSeen   time.Time `json:"last_seen"`
 }
 
 // AINodeListResponse AI 节点列表响应
@@ -305,29 +305,29 @@ type Config struct {
 	APIKeys []string `json:"api_keys"`
 
 	// 日志配置
-	EnableRequestLog  bool `json:"enable_request_log"`
-	EnableErrorLog    bool `json:"enable_error_log"`
-	LogRequestBody    bool `json:"log_request_body"`
-	LogResponseBody   bool `json:"log_response_body"`
+	EnableRequestLog bool `json:"enable_request_log"`
+	EnableErrorLog   bool `json:"enable_error_log"`
+	LogRequestBody   bool `json:"log_request_body"`
+	LogResponseBody  bool `json:"log_response_body"`
 }
 
 // DefaultConfig 返回默认配置
 func DefaultConfig() *Config {
 	return &Config{
-		Port:              8080,
-		ReadTimeout:       30 * time.Second,
-		WriteTimeout:      30 * time.Second,
-		IdleTimeout:       120 * time.Second,
-		AllowedOrigins:    []string{"*"},
-		AllowedMethods:    []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowedHeaders:    []string{"Content-Type", "Authorization"},
+		Port:               8080,
+		ReadTimeout:        30 * time.Second,
+		WriteTimeout:       30 * time.Second,
+		IdleTimeout:        120 * time.Second,
+		AllowedOrigins:     []string{"*"},
+		AllowedMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:     []string{"Content-Type", "Authorization"},
 		RateLimitPerSecond: 100,
 		RateLimitBurst:     200,
-		APIKeys:           []string{},
-		EnableRequestLog:  true,
-		EnableErrorLog:    true,
-		LogRequestBody:    false,
-		LogResponseBody:   false,
+		APIKeys:            []string{},
+		EnableRequestLog:   true,
+		EnableErrorLog:     true,
+		LogRequestBody:     false,
+		LogResponseBody:    false,
 	}
 }
 
@@ -351,29 +351,29 @@ type PeerResponse struct {
 // 注意：此类型需要与 pkg/migration/hub.go 中的 MigrationStatus 保持同步
 type MigrationStatus struct {
 	// AIB1
-	AIB1TotalMigrated  uint64    `json:"aib1_total_migrated"`
-	AIB1ClaimOpen      bool      `json:"aib1_claim_open"`
-	AIB1ClaimDeadline  time.Time `json:"aib1_claim_deadline"`
-	AIB1SnapshotRoot   [32]byte  `json:"aib1_snapshot_root"`
-	SnapshotTime       time.Time `json:"snapshot_time"`
+	AIB1TotalMigrated uint64    `json:"aib1_total_migrated"`
+	AIB1ClaimOpen     bool      `json:"aib1_claim_open"`
+	AIB1ClaimDeadline time.Time `json:"aib1_claim_deadline"`
+	AIB1SnapshotRoot  [32]byte  `json:"aib1_snapshot_root"`
+	SnapshotTime      time.Time `json:"snapshot_time"`
 
 	// BTC
 	BTCTotalMigrated uint64 `json:"btc_total_migrated"`
 	BTCTotalRewards  uint64 `json:"btc_total_rewards"`
 	BTCWindowOpen    bool   `json:"btc_window_open"`
-	BTCCurrentRate  uint64 `json:"btc_current_rate"`
+	BTCCurrentRate   uint64 `json:"btc_current_rate"`
 
 	// ETH
 	ETHTotalMigrated uint64 `json:"eth_total_migrated"`
 	ETHTotalRewards  uint64 `json:"eth_total_rewards"`
 	ETHWindowOpen    bool   `json:"eth_window_open"`
-	ETHCurrentRate  uint64 `json:"eth_current_rate"`
+	ETHCurrentRate   uint64 `json:"eth_current_rate"`
 
 	// SOL
 	SOLTotalMigrated uint64 `json:"sol_total_migrated"`
 	SOLTotalRewards  uint64 `json:"sol_total_rewards"`
 	SOLWindowOpen    bool   `json:"sol_window_open"`
-	SOLCurrentRate  uint64 `json:"sol_current_rate"`
+	SOLCurrentRate   uint64 `json:"sol_current_rate"`
 
 	// 时间窗口
 	MigrationWindowStart time.Time `json:"migration_window_start"`
@@ -382,34 +382,34 @@ type MigrationStatus struct {
 
 // AIB1SnapshotResponse AIB1 快照信息响应
 type AIB1SnapshotResponse struct {
-	SnapshotRoot    string    `json:"snapshot_root"`
-	SnapshotTime    time.Time `json:"snapshot_time"`
-	ClaimDeadline  time.Time `json:"claim_deadline"`
-	ClaimOpen       bool      `json:"claim_open"`
-	TotalMigrated   uint64    `json:"total_migrated"`
+	SnapshotRoot  string    `json:"snapshot_root"`
+	SnapshotTime  time.Time `json:"snapshot_time"`
+	ClaimDeadline time.Time `json:"claim_deadline"`
+	ClaimOpen     bool      `json:"claim_open"`
+	TotalMigrated uint64    `json:"total_migrated"`
 }
 
 // MigrationRatesResponse 迁移汇率响应
 type MigrationRatesResponse struct {
-	Timestamp time.Time         `json:"timestamp"`
-	AIB1Rate  uint64            `json:"aib1_rate"` // 1:1 固定
+	Timestamp  time.Time                `json:"timestamp"`
+	AIB1Rate   uint64                   `json:"aib1_rate"` // 1:1 固定
 	ChainRates map[string]ChainRateInfo `json:"chain_rates"`
 }
 
 // ChainRateInfo 链汇率信息
 type ChainRateInfo struct {
-	Chain         string    `json:"chain"`
-	CurrentRate   uint64    `json:"current_rate"`   // 激励比率（百分比）
-	WindowOpen    bool      `json:"window_open"`
-	WindowStart   time.Time `json:"window_start"`
-	WindowEnd     time.Time `json:"window_end"`
+	Chain       string    `json:"chain"`
+	CurrentRate uint64    `json:"current_rate"` // 激励比率（百分比）
+	WindowOpen  bool      `json:"window_open"`
+	WindowStart time.Time `json:"window_start"`
+	WindowEnd   time.Time `json:"window_end"`
 }
 
 // UserMigrationInfoAPI 用户迁移信息 API 响应
 type UserMigrationInfoAPI struct {
 	// AIB1
 	AIB1SnapshotBalance uint64 `json:"aib1_snapshot_balance"`
-	AIB1Claimed        bool   `json:"aib1_claimed"`
+	AIB1Claimed         bool   `json:"aib1_claimed"`
 
 	// 跨链锁定奖励
 	LockedRewards LockedRewardsInfo `json:"locked_rewards"`
@@ -428,12 +428,12 @@ type LockedRewardsInfo struct {
 
 // VestingRewardInfo Vesting 奖励信息
 type VestingRewardInfo struct {
-	SourceTxID    string          `json:"source_tx_id"`
-	SourceAmount  uint64          `json:"source_amount"`
-	TotalReward   uint64          `json:"total_reward"`
-	Claimed       uint64          `json:"claimed"`
-	Claimable     uint64          `json:"claimable"`
-	Locked        uint64          `json:"locked"`
+	SourceTxID      string             `json:"source_tx_id"`
+	SourceAmount    uint64             `json:"source_amount"`
+	TotalReward     uint64             `json:"total_reward"`
+	Claimed         uint64             `json:"claimed"`
+	Claimable       uint64             `json:"claimable"`
+	Locked          uint64             `json:"locked"`
 	VestingSchedule []VestingEntryInfo `json:"vesting_schedule"`
 }
 
@@ -447,9 +447,9 @@ type VestingEntryInfo struct {
 
 // ClaimableResponse 可领取金额响应
 type ClaimableResponse struct {
-	Address       string    `json:"address"`
-	TotalClaimable uint64   `json:"total_claimable"`
-	AIB1Claimable uint64    `json:"aib1_claimable"` // AIB1 待认领（快照余额）
+	Address             string              `json:"address"`
+	TotalClaimable      uint64              `json:"total_claimable"`
+	AIB1Claimable       uint64              `json:"aib1_claimable"` // AIB1 待认领（快照余额）
 	CrossChainClaimable CrossChainClaimable `json:"cross_chain_claimable"`
 }
 
@@ -464,8 +464,8 @@ type CrossChainClaimable struct {
 type ClaimAIB1Request struct {
 	TargetAddress string `json:"target_address"`
 	Amount        uint64 `json:"amount"`
-	PublicKey     string `json:"public_key"`     // Base64 编码
-	Signature     string `json:"signature"`      // Base64 编码
+	PublicKey     string `json:"public_key"` // Base64 编码
+	Signature     string `json:"signature"`  // Base64 编码
 	Nonce         uint64 `json:"nonce"`
 }
 
@@ -476,26 +476,26 @@ type ClaimUnlockedRequest struct {
 
 // MigrationClaimResponse 迁移操作响应
 type MigrationClaimResponse struct {
-	TxHash     string    `json:"tx_hash"`
-	Address    string    `json:"address"`
-	Amount     uint64    `json:"amount"`
-	Type       string    `json:"type"` // "aib1", "cross_chain"
-	Chain      string    `json:"chain,omitempty"`
-	Timestamp  time.Time `json:"timestamp"`
+	TxHash    string    `json:"tx_hash"`
+	Address   string    `json:"address"`
+	Amount    uint64    `json:"amount"`
+	Type      string    `json:"type"` // "aib1", "cross_chain"
+	Chain     string    `json:"chain,omitempty"`
+	Timestamp time.Time `json:"timestamp"`
 }
 
 // EstimateRequest 收益估算请求
 type EstimateRequest struct {
-	Chain   string `json:"chain"`   // "BTC", "ETH", "SOL"
-	Amount  uint64 `json:"amount"`  // 源链代币数量
+	Chain  string `json:"chain"`  // "BTC", "ETH", "SOL"
+	Amount uint64 `json:"amount"` // 源链代币数量
 }
 
 // EstimateResponse 收益估算响应
 type EstimateResponse struct {
-	SourceChain   string             `json:"source_chain"`
-	SourceAmount  uint64             `json:"source_amount"`
-	Reward        EstimateRewardInfo `json:"reward"`
-	Vesting       []VestingEntryInfo `json:"vesting"`
+	SourceChain  string             `json:"source_chain"`
+	SourceAmount uint64             `json:"source_amount"`
+	Reward       EstimateRewardInfo `json:"reward"`
+	Vesting      []VestingEntryInfo `json:"vesting"`
 }
 
 // EstimateRewardInfo 估算奖励信息

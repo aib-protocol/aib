@@ -25,18 +25,18 @@ type ZKMLBlockchain struct {
 	mu sync.RWMutex
 
 	// Components
-	blockchain  *consensus.Blockchain
+	blockchain   *consensus.Blockchain
 	orchestrator *orchestrator.Orchestrator
-	aiProvider  *inference.AnthropicProvider
+	aiProvider   *inference.AnthropicProvider
 
 	// Configuration
 	config *Config
 
 	// State
-	running   bool
-	taskCount int
+	running    bool
+	taskCount  int
 	blockCount int
-	startTime time.Time
+	startTime  time.Time
 
 	// Task queue
 	taskQueue []string
@@ -45,7 +45,7 @@ type ZKMLBlockchain struct {
 // Config holds the configuration
 type Config struct {
 	// AI Provider
-	AIProviderAIURL string
+	AIProviderAIURL  string
 	AIProviderAPIKey string
 	AIProviderModel  string
 
@@ -67,17 +67,17 @@ type Config struct {
 // DefaultConfig returns default configuration
 func DefaultConfig() *Config {
 	return &Config{
-		AIProviderAIURL: "http://217.216.43.45:51201/key/rk-e9412b1f5e955a92bbca9627",
+		AIProviderAIURL:  "http://217.216.43.45:51201/key/rk-e9412b1f5e955a92bbca9627",
 		AIProviderAPIKey: "rk-e9412b1f5e955a92bbca9627",
 		AIProviderModel:  "glm-5",
-		NodeID:   "zkml-node-1",
-		Port:     51200,
-		MinNodes: 1,
-		CommitDuration: 5 * time.Second,
-		RevealDuration: 5 * time.Second,
-		TaskInterval:   10 * time.Second,
-		TaskTimeout:    30 * time.Second,
-		BlockInterval:  10 * time.Second,
+		NodeID:           "zkml-node-1",
+		Port:             51200,
+		MinNodes:         1,
+		CommitDuration:   5 * time.Second,
+		RevealDuration:   5 * time.Second,
+		TaskInterval:     10 * time.Second,
+		TaskTimeout:      30 * time.Second,
+		BlockInterval:    10 * time.Second,
 	}
 }
 
@@ -117,11 +117,11 @@ func NewZKMLBlockchain(config *Config) (*ZKMLBlockchain, error) {
 	bcConfig := &consensus.Config{
 		BlockInterval:     config.BlockInterval,
 		MaxBlocksInMemory: 10000,
-		AutoProduce:      false, // We produce blocks from tasks
-		MinAgreementRate: 0.5,
-		GenesisTaskID:    "genesis",
-		GenesisResult:    "AIB ZKML Blockchain Genesis",
-		GenesisTimestamp: time.Now().Unix(),
+		AutoProduce:       false, // We produce blocks from tasks
+		MinAgreementRate:  0.5,
+		GenesisTaskID:     "genesis",
+		GenesisResult:     "AIB ZKML Blockchain Genesis",
+		GenesisTimestamp:  time.Now().Unix(),
 	}
 	bc, err := consensus.NewBlockchain(nil, bcConfig)
 	if err != nil {
@@ -258,12 +258,12 @@ func (zkb *ZKMLBlockchain) SubmitTask(prompt string) (*consensus.Block, error) {
 	}
 
 	event := &consensus.BlockEvent{
-		TaskID:          task.ID,
-		FinalResult:     vResult.MajorityResult,
-		IsValid:         vResult.IsValid,
-		AgreementRate:   vResult.AgreementRate,
-		NodeResults:     vResult.NodeResults,
-		ConsensusNodes:  consensusNodes,
+		TaskID:           task.ID,
+		FinalResult:      vResult.MajorityResult,
+		IsValid:          vResult.IsValid,
+		AgreementRate:    vResult.AgreementRate,
+		NodeResults:      vResult.NodeResults,
+		ConsensusNodes:   consensusNodes,
 		DisagreeingNodes: vResult.Disagreeing,
 		Metadata: map[string]string{
 			"prompt": prompt,

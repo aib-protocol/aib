@@ -17,7 +17,7 @@ const (
 
 var (
 	// Global flags
-	apiEndpoint string
+	apiEndpoint  string
 	outputFormat string
 	verbose      bool
 )

@@ -16,17 +16,17 @@ import (
 
 // DisputeResolver handles dispute resolution for state channels.
 type DisputeResolver struct {
-	manager                *Manager
-	evidenceStore          map[[32]byte][]Evidence
-	challengeQueue         chan DisputeTask
-	mu                     sync.RWMutex
-	blockChecker           BlockChecker
-	penaltyRecipient       interfaces.Address // Address to receive fraud penalties (treasury/burn)
+	manager          *Manager
+	evidenceStore    map[[32]byte][]Evidence
+	challengeQueue   chan DisputeTask
+	mu               sync.RWMutex
+	blockChecker     BlockChecker
+	penaltyRecipient interfaces.Address // Address to receive fraud penalties (treasury/burn)
 
 	// Configuration
 	challengePeriod        time.Duration
-	maxEvidenceAge        time.Duration
-	evidenceExpiry        time.Duration
+	maxEvidenceAge         time.Duration
+	evidenceExpiry         time.Duration
 	fraudPenaltyMultiplier float64
 	minChallengePeriod     time.Duration
 	maxChallengePeriod     time.Duration
@@ -47,23 +47,23 @@ type DisputeResolution struct {
 
 // Evidence represents evidence submitted during a dispute.
 type Evidence struct {
-	ChannelID    [32]byte
-	Sequence     uint64
-	BalanceA     uint64
-	BalanceB     uint64
-	SigA         []byte
-	SigB         []byte
-	Timestamp    time.Time
-	Submitter    interfaces.Address
-	BlockNumber  uint64
+	ChannelID   [32]byte
+	Sequence    uint64
+	BalanceA    uint64
+	BalanceB    uint64
+	SigA        []byte
+	SigB        []byte
+	Timestamp   time.Time
+	Submitter   interfaces.Address
+	BlockNumber uint64
 }
 
 // DisputeTask represents a dispute resolution task.
 type DisputeTask struct {
-	ChannelID    [32]byte
-	TaskType     int // 0=initiate, 0=respond, 2=finalize
-	Evidence     *Evidence
-	Result       chan DisputeResult
+	ChannelID [32]byte
+	TaskType  int // 0=initiate, 0=respond, 2=finalize
+	Evidence  *Evidence
+	Result    chan DisputeResult
 }
 
 // DisputeResult represents the result of a dispute resolution.
@@ -99,11 +99,11 @@ type DisputeConfig struct {
 	ChallengePeriod        time.Duration
 	MinChallengePeriod     time.Duration
 	MaxChallengePeriod     time.Duration
-	MaxEvidenceAge        time.Duration
-	EvidenceExpiry        time.Duration
+	MaxEvidenceAge         time.Duration
+	EvidenceExpiry         time.Duration
 	FraudPenaltyMultiplier float64
-	PenaltyRecipient      interfaces.Address
-	BlockChecker          BlockChecker
+	PenaltyRecipient       interfaces.Address
+	BlockChecker           BlockChecker
 }
 
 // DefaultDisputeConfig returns the default dispute configuration.
@@ -114,7 +114,7 @@ func DefaultDisputeConfig() *DisputeConfig {
 		MaxChallengePeriod:     7 * 24 * time.Hour,
 		MaxEvidenceAge:         7 * 24 * time.Hour,
 		EvidenceExpiry:         30 * 24 * time.Hour,
-		FraudPenaltyMultiplier: 1.0, // 100% penalty (all funds to honest party)
+		FraudPenaltyMultiplier: 1.0,                  // 100% penalty (all funds to honest party)
 		PenaltyRecipient:       interfaces.Address{}, // Burn to zero address by default
 	}
 }
@@ -455,16 +455,16 @@ func (dr *DisputeResolver) CheckDisputeStatus(channelID [32]byte) (*DisputeStatu
 	evidenceList := dr.evidenceStore[channelID]
 
 	status := &DisputeStatus{
-		ChannelID:       channelID,
-		Active:          !dispute.Resolved,
-		Challenger:      dispute.Challenger,
-		ChallengedSeq:   dispute.ChallengedState.Sequence,
-		ChallengeStart:  dispute.ChallengeStart,
-		ChallengeEnd:    dispute.ChallengeEnd,
-		TimeRemaining:   dispute.ChallengeEnd.Sub(time.Now()),
-		EvidenceCount:   len(evidenceList),
-		Resolved:        dispute.Resolved,
-		Winner:          dispute.Winner,
+		ChannelID:      channelID,
+		Active:         !dispute.Resolved,
+		Challenger:     dispute.Challenger,
+		ChallengedSeq:  dispute.ChallengedState.Sequence,
+		ChallengeStart: dispute.ChallengeStart,
+		ChallengeEnd:   dispute.ChallengeEnd,
+		TimeRemaining:  dispute.ChallengeEnd.Sub(time.Now()),
+		EvidenceCount:  len(evidenceList),
+		Resolved:       dispute.Resolved,
+		Winner:         dispute.Winner,
 	}
 
 	if !dispute.Resolved && status.TimeRemaining < 0 {
@@ -476,16 +476,16 @@ func (dr *DisputeResolver) CheckDisputeStatus(channelID [32]byte) (*DisputeStatu
 
 // DisputeStatus represents the current status of a dispute.
 type DisputeStatus struct {
-	ChannelID       [32]byte
-	Active          bool
-	Challenger      interfaces.Address
-	ChallengedSeq   uint64
-	ChallengeStart  time.Time
-	ChallengeEnd    time.Time
-	TimeRemaining   time.Duration
-	EvidenceCount   int
-	Resolved        bool
-	Winner          interfaces.Address
+	ChannelID      [32]byte
+	Active         bool
+	Challenger     interfaces.Address
+	ChallengedSeq  uint64
+	ChallengeStart time.Time
+	ChallengeEnd   time.Time
+	TimeRemaining  time.Duration
+	EvidenceCount  int
+	Resolved       bool
+	Winner         interfaces.Address
 }
 
 // GetEvidence returns all evidence for a channel dispute.
@@ -580,20 +580,20 @@ func (dr *DisputeResolver) SetPenaltyMultiplier(multiplier float64) {
 
 // FraudDetection monitors channels for potential fraud.
 type FraudDetection struct {
-	manager      *Manager
-	knownStates  map[[32]byte]map[uint64][32]byte // channelID -> sequence -> stateHash
-	alertChan    chan FraudAlert
-	mu           sync.RWMutex
+	manager     *Manager
+	knownStates map[[32]byte]map[uint64][32]byte // channelID -> sequence -> stateHash
+	alertChan   chan FraudAlert
+	mu          sync.RWMutex
 }
 
 // FraudAlert represents a fraud alert.
 type FraudAlert struct {
-	ChannelID     [32]byte
-	AlertType     string
-	Sequence      uint64
-	ReportedBy    interfaces.Address
-	Timestamp     time.Time
-	Description   string
+	ChannelID   [32]byte
+	AlertType   string
+	Sequence    uint64
+	ReportedBy  interfaces.Address
+	Timestamp   time.Time
+	Description string
 }
 
 // NewFraudDetection creates a new fraud detection system.

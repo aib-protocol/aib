@@ -20,12 +20,12 @@ import (
 // ============================================================================
 
 var (
-	ErrChannelNotMonitored = errors.New("channel is not being monitored")
+	ErrChannelNotMonitored    = errors.New("channel is not being monitored")
 	ErrWatchtowerInvalidState = errors.New("watchtower: invalid state")
-	ErrFraudDetected       = errors.New("fraud detected")
-	ErrChannelFrozen       = errors.New("channel is frozen")
-	ErrPunishmentFailed    = errors.New("punishment execution failed")
-	ErrAlertChannelFull    = errors.New("alert channel is full")
+	ErrFraudDetected          = errors.New("fraud detected")
+	ErrChannelFrozen          = errors.New("channel is frozen")
+	ErrPunishmentFailed       = errors.New("punishment execution failed")
+	ErrAlertChannelFull       = errors.New("alert channel is full")
 )
 
 // ============================================================================
@@ -36,12 +36,12 @@ var (
 type FraudType int
 
 const (
-	FraudTypeInvalidClose FraudType = iota // 违规关闭（使用过期状态）
-	FraudTypeDoubleClose                    // 双重关闭尝试
-	FraudTypeStateReversion                 // 状态回滚
-	FraudTypeBalanceManipulation            // 余额操纵
-	FraudTypeSequenceRollback              // 序列号回滚
-	FraudTypeUnauthorizedClose              // 未授权关闭
+	FraudTypeInvalidClose        FraudType = iota // 违规关闭（使用过期状态）
+	FraudTypeDoubleClose                          // 双重关闭尝试
+	FraudTypeStateReversion                       // 状态回滚
+	FraudTypeBalanceManipulation                  // 余额操纵
+	FraudTypeSequenceRollback                     // 序列号回滚
+	FraudTypeUnauthorizedClose                    // 未授权关闭
 )
 
 // String returns the string representation of FraudType
@@ -102,13 +102,13 @@ func (al AlertLevel) String() string {
 type AlertType int
 
 const (
-	AlertTypeTransactionAnomaly AlertType = iota // 异常交易
+	AlertTypeTransactionAnomaly  AlertType = iota // 异常交易
 	AlertTypeChannelAnomaly                       // 通道异常
 	AlertTypeNetworkIssue                         // 网络问题
-	AlertTypeFraudAttempt                        // 欺诈尝试
+	AlertTypeFraudAttempt                         // 欺诈尝试
 	AlertTypePunishmentTriggered                  // 惩罚触发
-	AlertTypeChannelFrozen                       // 通道冻结
-	AlertTypeStateChange                         // 状态变更
+	AlertTypeChannelFrozen                        // 通道冻结
+	AlertTypeStateChange                          // 状态变更
 )
 
 // ============================================================================
@@ -127,16 +127,16 @@ type WatchtowerConfig struct {
 	// Fraud detection thresholds
 	MaxStateAge           time.Duration // 最大状态年龄
 	MaxSequenceDiff       uint64        // 最大序列号差异
-	MinConfirmationBlocks uint64       // 最小确认块数
+	MinConfirmationBlocks uint64        // 最小确认块数
 
 	// Penalty settings
-	PenaltyEnabled       bool    // 是否启用惩罚
-	PenaltyRecipient     interfaces.Address // 惩罚接收地址
-	FraudPenaltyMultiplier float64 // 欺诈惩罚倍数
+	PenaltyEnabled         bool               // 是否启用惩罚
+	PenaltyRecipient       interfaces.Address // 惩罚接收地址
+	FraudPenaltyMultiplier float64            // 欺诈惩罚倍数
 
 	// Alert settings
-	AlertBufferSize    int           // 告警缓冲区大小
-	AlertThresholds    *AlertThresholds // 告警阈值
+	AlertBufferSize int              // 告警缓冲区大小
+	AlertThresholds *AlertThresholds // 告警阈值
 
 	// External dependencies
 	BlockChecker BlockChecker // 区块检查器
@@ -147,29 +147,29 @@ type WatchtowerConfig struct {
 
 // AlertThresholds holds alert threshold configuration
 type AlertThresholds struct {
-	MaxPendingHTLCs        int           // 最大待处理 HTLC 数量
-	MaxChannelInactivity   time.Duration // 最大通道不活动时间
-	MaxFailedAttempts     int           // 最大失败尝试次数
-	StateStaleness         time.Duration // 状态过期时间
+	MaxPendingHTLCs      int           // 最大待处理 HTLC 数量
+	MaxChannelInactivity time.Duration // 最大通道不活动时间
+	MaxFailedAttempts    int           // 最大失败尝试次数
+	StateStaleness       time.Duration // 状态过期时间
 }
 
 // DefaultWatchtowerConfig returns the default Watchtower configuration
 func DefaultWatchtowerConfig() *WatchtowerConfig {
 	return &WatchtowerConfig{
-		MonitorInterval:         10 * time.Second,
+		MonitorInterval:        10 * time.Second,
 		StateCheckInterval:     5 * time.Second,
 		ChallengePeriod:        24 * time.Hour,
 		MaxStateAge:            1 * time.Hour,
 		MaxSequenceDiff:        100,
-		MinConfirmationBlocks: 6,
+		MinConfirmationBlocks:  6,
 		PenaltyEnabled:         true,
 		FraudPenaltyMultiplier: 1.0,
 		AlertBufferSize:        1000,
 		AlertThresholds: &AlertThresholds{
 			MaxPendingHTLCs:      50,
-			MaxChannelInactivity:  24 * time.Hour,
-			MaxFailedAttempts:     3,
-			StateStaleness:        30 * time.Minute,
+			MaxChannelInactivity: 24 * time.Hour,
+			MaxFailedAttempts:    3,
+			StateStaleness:       30 * time.Minute,
 		},
 		P2PPeers: []string{},
 	}
@@ -191,9 +191,9 @@ type Watchtower struct {
 	mu                sync.RWMutex
 
 	// Channels for alerts and events
-	alertChan    chan *Alert
-	fraudChan    chan *FraudEvidence
-	punishChan   chan *PunishmentTask
+	alertChan  chan *Alert
+	fraudChan  chan *FraudEvidence
+	punishChan chan *PunishmentTask
 
 	// Control channels
 	ctx    context.Context
@@ -204,33 +204,33 @@ type Watchtower struct {
 	stats WatchtowerStats
 
 	// Notification callbacks
-	onAlert        func(*Alert)
+	onAlert         func(*Alert)
 	onFraudDetected func(*FraudEvidence)
-	onPunishment   func(*PunishmentResult)
+	onPunishment    func(*PunishmentResult)
 }
 
 // MonitoredChannel holds the monitoring state for a channel
 type MonitoredChannel struct {
-	ChannelID     [32]byte
-	PartyA        interfaces.Address
-	PartyB        interfaces.Address
-	Status        int
-	Sequence      uint64
-	BalanceA      uint64
-	BalanceB      uint64
-	StateHash     [32]byte
-	LastUpdate    time.Time
-	LastChecked   time.Time
+	ChannelID   [32]byte
+	PartyA      interfaces.Address
+	PartyB      interfaces.Address
+	Status      int
+	Sequence    uint64
+	BalanceA    uint64
+	BalanceB    uint64
+	StateHash   [32]byte
+	LastUpdate  time.Time
+	LastChecked time.Time
 
 	// Signature tracking
 	LatestSignedState *interfaces.SignedState
 
 	// Fraud detection state
-	KnownStates         map[uint64][32]byte // sequence -> stateHash
-	CloseAttempts       []CloseAttempt
-	IsFrozen            bool
-	FrozenAt            *time.Time
-	FrozenBy            interfaces.Address
+	KnownStates   map[uint64][32]byte // sequence -> stateHash
+	CloseAttempts []CloseAttempt
+	IsFrozen      bool
+	FrozenAt      *time.Time
+	FrozenBy      interfaces.Address
 
 	// Monitoring metadata
 	MonitorStartTime time.Time
@@ -239,57 +239,57 @@ type MonitoredChannel struct {
 
 // CloseAttempt records a close attempt
 type CloseAttempt struct {
-	Sequence     uint64
-	BalanceA     uint64
-	BalanceB     uint64
-	Initiator    interfaces.Address
-	Timestamp    time.Time
-	BlockNumber  uint64
-	IsOnChain    bool
+	Sequence    uint64
+	BalanceA    uint64
+	BalanceB    uint64
+	Initiator   interfaces.Address
+	Timestamp   time.Time
+	BlockNumber uint64
+	IsOnChain   bool
 }
 
 // Alert represents a Watchtower alert
 type Alert struct {
-	ID          string
-	Type        AlertType
-	Level       AlertLevel
-	ChannelID   [32]byte
-	Message     string
-	Details     map[string]interface{}
-	Timestamp   time.Time
+	ID           string
+	Type         AlertType
+	Level        AlertLevel
+	ChannelID    [32]byte
+	Message      string
+	Details      map[string]interface{}
+	Timestamp    time.Time
 	Acknowledged bool
 }
 
 // FraudEvidence holds evidence of fraudulent behavior
 type FraudEvidence struct {
-	ChannelID      [32]byte
-	FraudType      FraudType
-	Sequence       uint64
-	InvalidState   *interfaces.SignedState
-	ValidState     *interfaces.SignedState
-	Attacker       interfaces.Address
-	Victim         interfaces.Address
-	Timestamp      time.Time
-	BlockNumber    uint64
-	Description    string
-	Proof          []byte
+	ChannelID    [32]byte
+	FraudType    FraudType
+	Sequence     uint64
+	InvalidState *interfaces.SignedState
+	ValidState   *interfaces.SignedState
+	Attacker     interfaces.Address
+	Victim       interfaces.Address
+	Timestamp    time.Time
+	BlockNumber  uint64
+	Description  string
+	Proof        []byte
 }
 
 // PunishmentTask represents a punishment task
 type PunishmentTask struct {
-	ChannelID    [32]byte
-	FraudType    FraudType
-	Evidence     *FraudEvidence
-	HonestParty  interfaces.Address
-	Result       chan *PunishmentResult
+	ChannelID   [32]byte
+	FraudType   FraudType
+	Evidence    *FraudEvidence
+	HonestParty interfaces.Address
+	Result      chan *PunishmentResult
 }
 
 // PunishmentResult represents the result of a punishment action
 type PunishmentResult struct {
 	ChannelID     [32]byte
 	Success       bool
-	NewBalanceA  uint64
-	NewBalanceB  uint64
+	NewBalanceA   uint64
+	NewBalanceB   uint64
 	PenaltyAmount uint64
 	Reason        string
 	Timestamp     time.Time
@@ -298,7 +298,7 @@ type PunishmentResult struct {
 
 // WatchtowerStats holds Watchtower statistics
 type WatchtowerStats struct {
-	ChannelsMonitored    int64
+	ChannelsMonitored   int64
 	AlertsGenerated     int64
 	FraudDetected       int64
 	PunishmentsExecuted int64
@@ -331,14 +331,14 @@ func NewWatchtower(manager *Manager, cfg *WatchtowerConfig) (*Watchtower, error)
 	ctx, cancel := context.WithCancel(context.Background())
 
 	wt := &Watchtower{
-		config:           cfg,
-		manager:          manager,
+		config:            cfg,
+		manager:           manager,
 		monitoredChannels: make(map[[32]byte]*MonitoredChannel),
-		alertChan:        make(chan *Alert, cfg.AlertBufferSize),
-		fraudChan:        make(chan *FraudEvidence, 100),
-		punishChan:       make(chan *PunishmentTask, 100),
-		ctx:              ctx,
-		cancel:           cancel,
+		alertChan:         make(chan *Alert, cfg.AlertBufferSize),
+		fraudChan:         make(chan *FraudEvidence, 100),
+		punishChan:        make(chan *PunishmentTask, 100),
+		ctx:               ctx,
+		cancel:            cancel,
 	}
 
 	// Start the fraud detection background routine if we have a dispute resolver
@@ -437,13 +437,13 @@ func (wt *Watchtower) StartMonitoring(channelID [32]byte) error {
 		PartyB:           channel.PartyB,
 		Status:           StateOpen,
 		Sequence:         channel.Sequence,
-		BalanceA:        channel.BalanceA,
-		BalanceB:        channel.BalanceB,
-		StateHash:       channel.StateHash,
-		LastUpdate:      now,
-		LastChecked:     now,
-		KnownStates:    make(map[uint64][32]byte),
-		CloseAttempts:  make([]CloseAttempt, 0),
+		BalanceA:         channel.BalanceA,
+		BalanceB:         channel.BalanceB,
+		StateHash:        channel.StateHash,
+		LastUpdate:       now,
+		LastChecked:      now,
+		KnownStates:      make(map[uint64][32]byte),
+		CloseAttempts:    make([]CloseAttempt, 0),
 		MonitorStartTime: now,
 	}
 
@@ -458,8 +458,8 @@ func (wt *Watchtower) StartMonitoring(channelID [32]byte) error {
 	wt.sendAlert(AlertTypeStateChange, AlertLevelInfo, channelID,
 		"Channel monitoring started",
 		map[string]interface{}{
-			"sequence":   channel.Sequence,
-			"balance_a":  channel.BalanceA,
+			"sequence":  channel.Sequence,
+			"balance_a": channel.BalanceA,
 			"balance_b": channel.BalanceB,
 		})
 
@@ -488,7 +488,7 @@ func (wt *Watchtower) StopMonitoring(channelID [32]byte) error {
 		"Channel monitoring stopped",
 		map[string]interface{}{
 			"monitored_duration": time.Since(mc.MonitorStartTime),
-			"alert_count":       mc.AlertCount,
+			"alert_count":        mc.AlertCount,
 		})
 
 	return nil
@@ -628,10 +628,10 @@ func (wt *Watchtower) DetectFraud(channelID [32]byte, state *interfaces.SignedSt
 	if state.Sequence < mc.Sequence {
 		evidence = &FraudEvidence{
 			ChannelID:   channelID,
-			FraudType:  FraudTypeSequenceRollback,
-			Sequence:   state.Sequence,
-			Attacker:   initiator,
-			Timestamp:  now,
+			FraudType:   FraudTypeSequenceRollback,
+			Sequence:    state.Sequence,
+			Attacker:    initiator,
+			Timestamp:   now,
 			Description: fmt.Sprintf("Sequence rollback detected: %d -> %d", mc.Sequence, state.Sequence),
 		}
 		wt.handleFraudDetected(evidence)
@@ -657,13 +657,13 @@ func (wt *Watchtower) DetectFraud(channelID [32]byte, state *interfaces.SignedSt
 	// Check for invalid state (older than latest known)
 	if state.Sequence < mc.Sequence {
 		evidence = &FraudEvidence{
-			ChannelID:   channelID,
-			FraudType:   FraudTypeInvalidClose,
-			Sequence:    state.Sequence,
+			ChannelID:    channelID,
+			FraudType:    FraudTypeInvalidClose,
+			Sequence:     state.Sequence,
 			InvalidState: state,
-			Attacker:    initiator,
-			Timestamp:   now,
-			Description: fmt.Sprintf("Invalid close: state sequence %d is older than latest %d", state.Sequence, mc.Sequence),
+			Attacker:     initiator,
+			Timestamp:    now,
+			Description:  fmt.Sprintf("Invalid close: state sequence %d is older than latest %d", state.Sequence, mc.Sequence),
 		}
 		wt.handleFraudDetected(evidence)
 		return evidence
@@ -692,12 +692,12 @@ func (wt *Watchtower) DetectFraud(channelID [32]byte, state *interfaces.SignedSt
 		mc.CloseAttempts = make([]CloseAttempt, 0)
 	}
 	mc.CloseAttempts = append(mc.CloseAttempts, CloseAttempt{
-		Sequence:    state.Sequence,
-		BalanceA:    state.BalanceA,
-		BalanceB:   state.BalanceB,
-		Initiator:  initiator,
-		Timestamp:  now,
-		IsOnChain:  true, // Assuming it's on chain since we're detecting fraud
+		Sequence:  state.Sequence,
+		BalanceA:  state.BalanceA,
+		BalanceB:  state.BalanceB,
+		Initiator: initiator,
+		Timestamp: now,
+		IsOnChain: true, // Assuming it's on chain since we're detecting fraud
 	})
 	wt.mu.Unlock()
 
@@ -805,11 +805,11 @@ func (wt *Watchtower) FreezeChannel(channelID [32]byte, reason string) error {
 	wt.sendAlert(AlertTypeChannelFrozen, AlertLevelEmergency, channelID,
 		fmt.Sprintf("Channel frozen: %s", reason),
 		map[string]interface{}{
-			"frozen_at":   now,
-			"frozen_by":   fmt.Sprintf("%x", mc.FrozenBy[:]),
-			"reason":      reason,
-			"balance_a":   mc.BalanceA,
-			"balance_b":   mc.BalanceB,
+			"frozen_at": now,
+			"frozen_by": fmt.Sprintf("%x", mc.FrozenBy[:]),
+			"reason":    reason,
+			"balance_a": mc.BalanceA,
+			"balance_b": mc.BalanceB,
 		})
 
 	// Freeze the channel in the manager
@@ -894,11 +894,11 @@ func (wt *Watchtower) handleFraudDetected(evidence *FraudEvidence) {
 	wt.sendAlert(AlertTypeFraudAttempt, AlertLevelCritical, evidence.ChannelID,
 		fmt.Sprintf("Fraud detected: %s", evidence.Description),
 		map[string]interface{}{
-			"fraud_type":   evidence.FraudType.String(),
-			"sequence":     evidence.Sequence,
-			"attacker":     fmt.Sprintf("%x", evidence.Attacker[:]),
-			"timestamp":    evidence.Timestamp,
-			"description":  evidence.Description,
+			"fraud_type":  evidence.FraudType.String(),
+			"sequence":    evidence.Sequence,
+			"attacker":    fmt.Sprintf("%x", evidence.Attacker[:]),
+			"timestamp":   evidence.Timestamp,
+			"description": evidence.Description,
 		})
 
 	// Send to fraud channel
@@ -1005,7 +1005,7 @@ func (wt *Watchtower) checkChannel(channelID [32]byte) {
 		wt.sendAlert(AlertTypeStateChange, AlertLevelInfo, channelID,
 			fmt.Sprintf("Channel state updated: sequence %d", channel.Sequence),
 			map[string]interface{}{
-				"sequence":   channel.Sequence,
+				"sequence":  channel.Sequence,
 				"balance_a": channel.BalanceA,
 				"balance_b": channel.BalanceB,
 			})
@@ -1279,9 +1279,9 @@ func (wt *Watchtower) DetectStateReversion(channelID [32]byte, newState *interfa
 	if newState.Sequence < highestSeq {
 		return &FraudEvidence{
 			ChannelID:   channelID,
-			FraudType:  FraudTypeStateReversion,
-			Sequence:   newState.Sequence,
-			Timestamp:  time.Now(),
+			FraudType:   FraudTypeStateReversion,
+			Sequence:    newState.Sequence,
+			Timestamp:   time.Now(),
 			Description: fmt.Sprintf("State reversion detected: tried to revert from sequence %d to %d", highestSeq, newState.Sequence),
 		}
 	}

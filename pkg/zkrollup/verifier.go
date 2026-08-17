@@ -20,13 +20,13 @@ var (
 
 // BatchVerifier implements the ZKBatchVerifier interface using Merkle proofs.
 type BatchVerifier struct {
-	mu              sync.RWMutex
-	currentRoot     [32]byte
-	validator       *BatchValidator
-	processor       *BatchProcessor
-	config          *BatchValidationConfig
+	mu               sync.RWMutex
+	currentRoot      [32]byte
+	validator        *BatchValidator
+	processor        *BatchProcessor
+	config           *BatchValidationConfig
 	processedBatches map[[32]byte]bool
-	initialized     bool
+	initialized      bool
 }
 
 // NewBatchVerifier creates a new batch verifier with the given initial state root.
@@ -36,12 +36,12 @@ func NewBatchVerifier(initialRoot [32]byte) *BatchVerifier {
 	processor := NewBatchProcessor(validator, initialRoot)
 
 	return &BatchVerifier{
-		currentRoot:     initialRoot,
-		validator:       validator,
-		processor:       processor,
-		config:          config,
+		currentRoot:      initialRoot,
+		validator:        validator,
+		processor:        processor,
+		config:           config,
 		processedBatches: make(map[[32]byte]bool),
-		initialized:     true,
+		initialized:      true,
 	}
 }
 
@@ -233,12 +233,12 @@ func NewVerifierWithConfig(initialRoot [32]byte, config *BatchValidationConfig) 
 	processor := NewBatchProcessor(validator, initialRoot)
 
 	return &BatchVerifier{
-		currentRoot:     initialRoot,
-		validator:       validator,
-		processor:       processor,
-		config:          config,
+		currentRoot:      initialRoot,
+		validator:        validator,
+		processor:        processor,
+		config:           config,
 		processedBatches: make(map[[32]byte]bool),
-		initialized:     true,
+		initialized:      true,
 	}
 }
 
@@ -302,7 +302,7 @@ type BatchVerificationResult struct {
 func (bv *BatchVerifier) VerifyBatchDetailed(batch *interfaces.ZKProofBatch) *BatchVerificationResult {
 	result := &BatchVerificationResult{
 		OperationsCount: batch.TxCount,
-		StateRoot:     bv.GetCurrentStateRoot(),
+		StateRoot:       bv.GetCurrentStateRoot(),
 	}
 
 	valid, err := bv.VerifyBatch(batch)

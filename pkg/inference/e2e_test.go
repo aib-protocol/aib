@@ -347,8 +347,8 @@ func TestE2E_InvalidRequestValidation(t *testing.T) {
 		wantErr error
 	}{
 		{
-			name: "nil request",
-			req:  nil,
+			name:    "nil request",
+			req:     nil,
 			wantErr: ErrInvalidRequest,
 		},
 		{
@@ -618,8 +618,8 @@ func TestE2E_DifferentLevelNodes(t *testing.T) {
 			// Verify fee is based on level
 			if resp.Fee != tt.expectedBaseFee {
 				// Fee might have reputation multiplier, check it's close
-				lowerBound := tt.expectedBaseFee * 3 / 4  // 0.75x for reputation 0
-				upperBound := tt.expectedBaseFee * 5 / 4  // 1.25x for reputation 10
+				lowerBound := tt.expectedBaseFee * 3 / 4 // 0.75x for reputation 0
+				upperBound := tt.expectedBaseFee * 5 / 4 // 1.25x for reputation 10
 				if resp.Fee < lowerBound || resp.Fee > upperBound {
 					t.Errorf("expected fee between %d and %d, got %d",
 						lowerBound, upperBound, resp.Fee)

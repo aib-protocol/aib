@@ -19,24 +19,24 @@ import (
 
 // TransactionListRequest 交易列表请求参数
 type TransactionListRequest struct {
-	Address string `json:"address"`    // 可选：按地址过滤
-	Limit   int    `json:"limit"`      // 可选：限制数量，默认 100
-	Offset  int    `json:"offset"`     // 可选：偏移量，默认 0
+	Address string `json:"address"` // 可选：按地址过滤
+	Limit   int    `json:"limit"`   // 可选：限制数量，默认 100
+	Offset  int    `json:"offset"`  // 可选：偏移量，默认 0
 }
 
 // TransactionInfo 交易信息
 type TransactionInfo struct {
-	Hash      string       `json:"hash"`
-	Version   uint32       `json:"version"`
-	Inputs    []TxInput    `json:"inputs"`
-	Outputs   []TxOutput   `json:"outputs"`
-	LockTime  uint32       `json:"lock_time"`
-	Sequence  uint64       `json:"sequence"`
-	Timestamp *uint64      `json:"timestamp,omitempty"` // 如果在区块中
-	BlockHash *string      `json:"block_hash,omitempty"` // 如果在区块中
-	Height    *uint64      `json:"height,omitempty"`     // 如果在区块中
-	Fee       *uint64      `json:"fee,omitempty"`        // 交易费用
-	Size      int          `json:"size"`                 // 交易大小（字节）
+	Hash      string     `json:"hash"`
+	Version   uint32     `json:"version"`
+	Inputs    []TxInput  `json:"inputs"`
+	Outputs   []TxOutput `json:"outputs"`
+	LockTime  uint32     `json:"lock_time"`
+	Sequence  uint64     `json:"sequence"`
+	Timestamp *uint64    `json:"timestamp,omitempty"`  // 如果在区块中
+	BlockHash *string    `json:"block_hash,omitempty"` // 如果在区块中
+	Height    *uint64    `json:"height,omitempty"`     // 如果在区块中
+	Fee       *uint64    `json:"fee,omitempty"`        // 交易费用
+	Size      int        `json:"size"`                 // 交易大小（字节）
 }
 
 // TxInput 交易输入
@@ -49,26 +49,26 @@ type TxInput struct {
 
 // TxOutput 交易输出
 type TxOutput struct {
-	Value     uint64 `json:"value"`
-	Address   string `json:"address"`
-	PubKey    string `json:"pub_key"`
-	Index     uint32 `json:"index"`
-	IsSpent   bool   `json:"is_spent"`
-	SpentBy   *string `json:"spent_by,omitempty"`
+	Value   uint64  `json:"value"`
+	Address string  `json:"address"`
+	PubKey  string  `json:"pub_key"`
+	Index   uint32  `json:"index"`
+	IsSpent bool    `json:"is_spent"`
+	SpentBy *string `json:"spent_by,omitempty"`
 }
 
 // TransactionListResponse 交易列表响应
 type TransactionListResponse struct {
 	Transactions []TransactionInfo `json:"transactions"`
-	Total        int              `json:"total"`
-	Limit        int              `json:"limit"`
-	Offset       int              `json:"offset"`
+	Total        int               `json:"total"`
+	Limit        int               `json:"limit"`
+	Offset       int               `json:"offset"`
 }
 
 // TransactionDetailResponse 交易详情响应
 type TransactionDetailResponse struct {
-	Transaction TransactionInfo `json:"transaction"`
-	Confirmations *uint64      `json:"confirmations,omitempty"`
+	Transaction   TransactionInfo `json:"transaction"`
+	Confirmations *uint64         `json:"confirmations,omitempty"`
 }
 
 // handleTransactionsList 处理交易列表查询
@@ -195,7 +195,7 @@ func (s *Server) handleTransactionDetail(w http.ResponseWriter, r *http.Request)
 	}
 
 	writeSuccess(w, TransactionDetailResponse{
-		Transaction: *txInfo,
+		Transaction:   *txInfo,
 		Confirmations: confirmations,
 	})
 }
@@ -212,10 +212,10 @@ type CreateWalletRequest struct {
 
 // CreateWalletResponse 创建钱包响应
 type CreateWalletResponse struct {
-	Address    string `json:"address"`
-	PublicKey  string `json:"public_key"`
-	Label      string `json:"label,omitempty"`
-	CreatedAt  int64  `json:"created_at"`
+	Address   string `json:"address"`
+	PublicKey string `json:"public_key"`
+	Label     string `json:"label,omitempty"`
+	CreatedAt int64  `json:"created_at"`
 }
 
 // RestoreWalletRequest 恢复钱包请求
@@ -254,13 +254,13 @@ type WalletBalanceRequest struct {
 
 // WalletBalanceResponse 钱包余额响应
 type WalletBalanceResponse struct {
-	Address           string  `json:"address"`
-	Balance           uint64  `json:"balance"`            // 可用余额（最小单位）
-	BalanceAIB        float64 `json:"balance_aib"`        // 可用余额（AIB）
-	Unconfirmed       uint64  `json:"unconfirmed"`        // 未确认余额
-	UnconfirmedAIB    float64 `json:"unconfirmed_aib"`    // 未确认余额（AIB）
-	UTXOCount         int     `json:"utxo_count"`         // UTXO 数量
-	PendingUTXOCount  int     `json:"pending_utxo_count"` // 待确认 UTXO 数量
+	Address          string  `json:"address"`
+	Balance          uint64  `json:"balance"`            // 可用余额（最小单位）
+	BalanceAIB       float64 `json:"balance_aib"`        // 可用余额（AIB）
+	Unconfirmed      uint64  `json:"unconfirmed"`        // 未确认余额
+	UnconfirmedAIB   float64 `json:"unconfirmed_aib"`    // 未确认余额（AIB）
+	UTXOCount        int     `json:"utxo_count"`         // UTXO 数量
+	PendingUTXOCount int     `json:"pending_utxo_count"` // 待确认 UTXO 数量
 }
 
 // SendTransactionRequest 发送交易请求
@@ -270,17 +270,17 @@ type SendTransactionRequest struct {
 	Amount      uint64 `json:"amount"`       // 金额（最小单位）
 	Fee         uint64 `json:"fee"`          // 交易费用（可选，自动计算）
 	PrivateKey  string `json:"private_key"`  // 私钥（用于签名）
-	Memo        string `json:"memo"`        // 备注（可选）
+	Memo        string `json:"memo"`         // 备注（可选）
 }
 
 // SendTransactionResponse 发送交易响应
 type SendTransactionResponse struct {
-	TxHash      string `json:"tx_hash"`       // 交易哈希
-	FromAddress string `json:"from_address"`  // 发送方地址
-	ToAddress   string `json:"to_address"`    // 接收方地址
-	Amount      uint64 `json:"amount"`        // 金额
-	Fee         uint64 `json:"fee"`           // 实际费用
-	Timestamp   int64  `json:"timestamp"`     // 提交时间
+	TxHash      string `json:"tx_hash"`      // 交易哈希
+	FromAddress string `json:"from_address"` // 发送方地址
+	ToAddress   string `json:"to_address"`   // 接收方地址
+	Amount      uint64 `json:"amount"`       // 金额
+	Fee         uint64 `json:"fee"`          // 实际费用
+	Timestamp   int64  `json:"timestamp"`    // 提交时间
 }
 
 // handleCreateWallet 处理创建钱包
@@ -307,10 +307,10 @@ func (s *Server) handleCreateWallet(w http.ResponseWriter, r *http.Request) {
 	pubKey := walletInstance.GetPublicKey()
 
 	response := CreateWalletResponse{
-		Address:    hex.EncodeToString(address[:]),
-		PublicKey:  hex.EncodeToString(pubKey),
-		Label:      req.Label,
-		CreatedAt:  time.Now().Unix(),
+		Address:   hex.EncodeToString(address[:]),
+		PublicKey: hex.EncodeToString(pubKey),
+		Label:     req.Label,
+		CreatedAt: time.Now().Unix(),
 	}
 
 	// TODO: 如果提供了密码，应该加密存储私钥
@@ -358,10 +358,10 @@ func (s *Server) handleRestoreWallet(w http.ResponseWriter, r *http.Request) {
 	pubKey := sdk.GetPublicKey()
 
 	response := CreateWalletResponse{
-		Address:    hex.EncodeToString(address[:]),
-		PublicKey:  hex.EncodeToString(pubKey),
-		Label:      req.Label,
-		CreatedAt:  time.Now().Unix(),
+		Address:   hex.EncodeToString(address[:]),
+		PublicKey: hex.EncodeToString(pubKey),
+		Label:     req.Label,
+		CreatedAt: time.Now().Unix(),
 	}
 
 	writeSuccess(w, response)
@@ -511,13 +511,13 @@ func (s *Server) handleWalletBalance(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response := WalletBalanceResponse{
-		Address:           address,
-		Balance:           balance,
-		BalanceAIB:        float64(balance) / 1e6, // 假设 1 AIB = 1,000,000 最小单位
-		Unconfirmed:       unconfirmed,
-		UnconfirmedAIB:    float64(unconfirmed) / 1e6,
-		UTXOCount:         utxoCount,
-		PendingUTXOCount:  pendingUTXOCount,
+		Address:          address,
+		Balance:          balance,
+		BalanceAIB:       float64(balance) / 1e6, // 假设 1 AIB = 1,000,000 最小单位
+		Unconfirmed:      unconfirmed,
+		UnconfirmedAIB:   float64(unconfirmed) / 1e6,
+		UTXOCount:        utxoCount,
+		PendingUTXOCount: pendingUTXOCount,
 	}
 
 	writeSuccess(w, response)
@@ -592,7 +592,7 @@ func (s *Server) handleSendTransaction(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 计算费用
-	feePerByte := uint64(1) // 默认费用率
+	feePerByte := uint64(1)        // 默认费用率
 	estimatedTxSize := uint64(200) // 估算交易大小
 	var actualFee uint64
 	if req.Fee > 0 {

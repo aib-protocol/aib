@@ -1181,7 +1181,10 @@ func TestState_ConcurrentAccess(t *testing.T) {
 			coinbaseTx := CreateCoinbaseV2(proposerAddr, uint64(i))
 			coinbaseTx.SignInput(0, privKey)
 
-			prevBlock, _ := cs.GetBestBlock()
+			prevBlock, err := cs.GetBestBlock()
+			if err != nil || prevBlock == nil {
+				return
+			}
 			block := NewBlock([]*Transaction{coinbaseTx}, prevBlock.Hash, uint64(i), proposerAddr)
 			block.Header.Timestamp = now - 60 + uint64(i*30)
 			block.Header.VRFSeed = [32]byte{byte(i)}

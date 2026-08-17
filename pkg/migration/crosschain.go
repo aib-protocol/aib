@@ -36,14 +36,14 @@ type VestingEntry struct {
 
 // LockedReward represents a vesting reward for a user.
 type LockedReward struct {
-	Beneficiary interfaces.Address
-	Chain       ChainType
-	SourceTxID  [32]byte // Source chain transaction hash
-	SourceAmount uint64  // Amount in source chain (in smallest unit)
-	TotalReward uint64  // Total AIB2 reward (including incentive)
-	Claimed     uint64  // Amount already claimed
-	CreatedAt   time.Time
-	Vesting     []VestingEntry
+	Beneficiary  interfaces.Address
+	Chain        ChainType
+	SourceTxID   [32]byte // Source chain transaction hash
+	SourceAmount uint64   // Amount in source chain (in smallest unit)
+	TotalReward  uint64   // Total AIB2 reward (including incentive)
+	Claimed      uint64   // Amount already claimed
+	CreatedAt    time.Time
+	Vesting      []VestingEntry
 }
 
 // Claimable returns the amount that is currently unlockable.
@@ -97,8 +97,8 @@ type CrossChainMigration struct {
 	lockedRewards map[interfaces.Address][]*LockedReward
 	processedTxs  map[[32]byte]bool // Prevent duplicate migration
 
-	totalMigrated    uint64 // Total source tokens migrated
-	totalRewards     uint64 // Total AIB2 rewards minted
+	totalMigrated uint64 // Total source tokens migrated
+	totalRewards  uint64 // Total AIB2 rewards minted
 }
 
 // NewCrossChainMigration creates a new cross-chain migration contract.
@@ -194,10 +194,10 @@ func (c *CrossChainMigration) buildVestingSchedule(tgeTime time.Time) []VestingE
 type CrossChainProof struct {
 	Chain          ChainType
 	SourceTxID     [32]byte
-	SourceAddress  []byte // Source chain address (variable length)
-	Amount         uint64 // Amount in source chain smallest unit
-	BlockHeight    uint64 // Block height of source transaction
-	Confirmations  uint64 // Number of confirmations
+	SourceAddress  []byte   // Source chain address (variable length)
+	Amount         uint64   // Amount in source chain smallest unit
+	BlockHeight    uint64   // Block height of source transaction
+	Confirmations  uint64   // Number of confirmations
 	RelayerSigs    [][]byte // Relayer attestation signatures
 	RelayerPubKeys [][]byte // Relayer public keys
 }

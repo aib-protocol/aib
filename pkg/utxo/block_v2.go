@@ -14,9 +14,9 @@ import (
 
 // V2 区块奖励常量
 const (
-	BlockRewardV2Total    = uint64(50 * 1e8)  // 50 AIB in satoshi
-	StakingRewardAmount   = uint64(30 * 1e8)  // 30 AIB
-	InferenceRewardAmount = uint64(20 * 1e8)  // 20 AIB
+	BlockRewardV2Total    = uint64(50 * 1e8) // 50 AIB in satoshi
+	StakingRewardAmount   = uint64(30 * 1e8) // 30 AIB
+	InferenceRewardAmount = uint64(20 * 1e8) // 20 AIB
 )
 
 // BlockReputationScore represents a node's aggregated reputation score for blockchain storage.
@@ -34,9 +34,9 @@ type BlockReputationScore struct {
 	StakeScore   float64 `json:"stake_score"`
 
 	// Statistics
-	TotalTasksCompleted  uint64 `json:"total_tasks_completed"`
-	TotalBlocksProduced  uint64 `json:"total_blocks_produced"`
-	TotalSlashes         uint64 `json:"total_slashes"`
+	TotalTasksCompleted uint64 `json:"total_tasks_completed"`
+	TotalBlocksProduced uint64 `json:"total_blocks_produced"`
+	TotalSlashes        uint64 `json:"total_slashes"`
 
 	// Timestamp
 	UpdatedAt uint64 `json:"updated_at"` // Unix timestamp
@@ -55,9 +55,9 @@ type BlockInferenceStats struct {
 
 // BlockV2 extends Block with reputation data and inference statistics.
 type BlockV2 struct {
-	Block               // Embed original Block
-	ReputationUpdates []BlockReputationScore  // Reputation updates
-	InferenceStats    BlockInferenceStats // Inference statistics
+	Block                                    // Embed original Block
+	ReputationUpdates []BlockReputationScore // Reputation updates
+	InferenceStats    BlockInferenceStats    // Inference statistics
 }
 
 // NewBlockV2 creates a new v2 block with reputation updates and inference stats.
@@ -74,7 +74,7 @@ func NewBlockV2(
 
 	// Return extended v2 block
 	return &BlockV2{
-		Block:            *block,
+		Block:             *block,
 		ReputationUpdates: reputationUpdates,
 		InferenceStats:    inferenceStats,
 	}

@@ -14,11 +14,11 @@ type ViolationType string
 
 // Violation types
 const (
-	FraudProof   ViolationType = "fraud_proof"    // 伪造证明
-	SybilAttack  ViolationType = "sybil_attack"   // 女巫攻击
-	CopyResult   ViolationType = "copy_result"    // 抄袭结果
-	NoWork       ViolationType = "no_work"        // 没干活
-	Misbehavior  ViolationType = "misbehavior"    // 恶意行为
+	FraudProof  ViolationType = "fraud_proof"  // 伪造证明
+	SybilAttack ViolationType = "sybil_attack" // 女巫攻击
+	CopyResult  ViolationType = "copy_result"  // 抄袭结果
+	NoWork      ViolationType = "no_work"      // 没干活
+	Misbehavior ViolationType = "misbehavior"  // 恶意行为
 )
 
 // SlashConfig defines the slash ratios for different violations
@@ -45,16 +45,16 @@ func DefaultSlashConfig() *SlashConfig {
 
 // Evidence represents evidence of a violation
 type Evidence struct {
-	ID            string        // Unique evidence ID
-	Type          ViolationType // Type of violation
-	Offender      []byte        // Node ID of the offender
-	Reporter      []byte        // Node ID of the reporter
-	Timestamp     int64         // When the violation was detected
-	Description   string        // Human-readable description
-	ProofData     []byte        // Cryptographic proof
-	TaskID        string        // Associated task ID (if applicable)
-	Severity      int           // Severity level (1-10)
-	Witnesses     [][]byte      // Additional witnesses
+	ID          string        // Unique evidence ID
+	Type        ViolationType // Type of violation
+	Offender    []byte        // Node ID of the offender
+	Reporter    []byte        // Node ID of the reporter
+	Timestamp   int64         // When the violation was detected
+	Description string        // Human-readable description
+	ProofData   []byte        // Cryptographic proof
+	TaskID      string        // Associated task ID (if applicable)
+	Severity    int           // Severity level (1-10)
+	Witnesses   [][]byte      // Additional witnesses
 }
 
 // SlashEvent represents a slash event
@@ -103,11 +103,11 @@ func NewSlashEngine(config *SlashConfig) *SlashEngine {
 // (protocol-determined, not reporter-set, to prevent manipulation)
 func determineSeverity(evidence *Evidence) int {
 	baseSeverity := map[ViolationType]int{
-		FraudProof:  9,  // Almost always critical
-		SybilAttack: 9,  // Almost always critical
-		CopyResult:  5,  // Medium severity
-		NoWork:      3,  // Low severity
-		Misbehavior: 4,  // Low-medium severity
+		FraudProof:  9, // Almost always critical
+		SybilAttack: 9, // Almost always critical
+		CopyResult:  5, // Medium severity
+		NoWork:      3, // Low severity
+		Misbehavior: 4, // Low-medium severity
 	}
 
 	severity, ok := baseSeverity[evidence.Type]

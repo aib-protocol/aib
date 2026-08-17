@@ -629,8 +629,8 @@ func TestManager_UpdateState(t *testing.T) {
 	newState := interfaces.SignedState{
 		ChannelID: channel.ID,
 		Sequence:  1,
-		BalanceA: 4000,
-		BalanceB: 4000,
+		BalanceA:  4000,
+		BalanceB:  4000,
 		Timestamp: time.Now(),
 	}
 	tp.signState(&newState)
@@ -663,11 +663,11 @@ func TestManager_UpdateState_ChannelNotFound(t *testing.T) {
 
 	// Create a channel that doesn't exist in manager
 	nonExistentChannel := &interfaces.Channel{
-		ID:        [32]byte{99, 99, 99},
-		PartyA:    interfaces.Address{1, 2, 3},
-		PartyB:    interfaces.Address{4, 5, 6},
-		BalanceA:  5000,
-		BalanceB:  3000,
+		ID:       [32]byte{99, 99, 99},
+		PartyA:   interfaces.Address{1, 2, 3},
+		PartyB:   interfaces.Address{4, 5, 6},
+		BalanceA: 5000,
+		BalanceB: 3000,
 	}
 
 	newState := interfaces.SignedState{
@@ -776,8 +776,8 @@ func TestManager_UpdateState_InvalidBalance(t *testing.T) {
 	newState := interfaces.SignedState{
 		ChannelID: channel.ID,
 		Sequence:  1,
-		BalanceA: 6000, // Total: 7000 (was 8000)
-		BalanceB: 1000,
+		BalanceA:  6000, // Total: 7000 (was 8000)
+		BalanceB:  1000,
 		Timestamp: time.Now(),
 	}
 	tp.signState(&newState)
@@ -807,8 +807,8 @@ func TestManager_UpdateState_InvalidSignature(t *testing.T) {
 	newState := interfaces.SignedState{
 		ChannelID: channel.ID,
 		Sequence:  1,
-		BalanceA: 4000,
-		BalanceB: 4000,
+		BalanceA:  4000,
+		BalanceB:  4000,
 		Timestamp: time.Now(),
 	}
 	stateData := serializeState(&newState)
@@ -868,10 +868,10 @@ func TestManager_CloseChannel_ChannelNotFound(t *testing.T) {
 	manager, _ := NewManager(cfg)
 
 	nonExistentChannel := &interfaces.Channel{
-		ID:        [32]byte{99, 99, 99},
-		PartyA:    interfaces.Address{1, 2, 3},
-		PartyB:    interfaces.Address{4, 5, 6},
-		BalanceA:  5000,
+		ID:       [32]byte{99, 99, 99},
+		PartyA:   interfaces.Address{1, 2, 3},
+		PartyB:   interfaces.Address{4, 5, 6},
+		BalanceA: 5000,
 		BalanceB: 3000,
 	}
 
@@ -879,7 +879,7 @@ func TestManager_CloseChannel_ChannelNotFound(t *testing.T) {
 		ChannelID: nonExistentChannel.ID,
 		Sequence:  1,
 		BalanceA:  4000,
-		BalanceB: 4000,
+		BalanceB:  4000,
 		Timestamp: time.Now(),
 	}
 
@@ -908,7 +908,7 @@ func TestManager_CloseChannel_AlreadyClosed(t *testing.T) {
 		ChannelID: channel.ID,
 		Sequence:  1,
 		BalanceA:  4000,
-		BalanceB: 4000,
+		BalanceB:  4000,
 		Timestamp: time.Now(),
 	}
 	tp.signState(&finalState)
@@ -919,7 +919,7 @@ func TestManager_CloseChannel_AlreadyClosed(t *testing.T) {
 		ChannelID: channel.ID,
 		Sequence:  2,
 		BalanceA:  3000,
-		BalanceB: 5000,
+		BalanceB:  5000,
 		Timestamp: time.Now(),
 	}
 
@@ -948,7 +948,7 @@ func TestManager_CloseChannel_ChannelInDispute(t *testing.T) {
 		ChannelID: channel.ID,
 		Sequence:  2,
 		BalanceA:  3000,
-		BalanceB: 5000,
+		BalanceB:  5000,
 		Timestamp: time.Now(),
 	}
 	tp.signState(&evidence)
@@ -959,7 +959,7 @@ func TestManager_CloseChannel_ChannelInDispute(t *testing.T) {
 		ChannelID: channel.ID,
 		Sequence:  3,
 		BalanceA:  4000,
-		BalanceB: 4000,
+		BalanceB:  4000,
 		Timestamp: time.Now(),
 	}
 

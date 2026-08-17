@@ -468,7 +468,7 @@ func TestGetTopNodes(t *testing.T) {
 		rand.Read(pubKey[:])
 		node := NewInferenceNode(pubKey, 1, 1000000)
 		node.Reputation = float64(10 - i) // 10, 9, 8, 7, 6
-		if i == 0 || i == 2 { // Only 2 are online
+		if i == 0 || i == 2 {             // Only 2 are online
 			node.Register()
 		}
 		rm.RegisterNode(node)

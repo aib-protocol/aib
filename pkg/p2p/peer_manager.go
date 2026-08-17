@@ -41,18 +41,18 @@ type ChainPeerManager struct {
 	bootstrap []string              // bootstrap node addresses
 
 	// Callbacks
-	onNewBlock     func(data BlockData) error
-	onGetBlocks    func(from, to uint64) ([]BlockData, error)
-	onBestHeight   func() uint64
+	onNewBlock   func(data BlockData) error
+	onGetBlocks  func(from, to uint64) ([]BlockData, error)
+	onBestHeight func() uint64
 
 	// Block verification
 	blockVerifier BlockVerifier
 
 	// Control
-	logger  *log.Logger
-	ctx     context.Context
-	cancel  context.CancelFunc
-	wg      sync.WaitGroup
+	logger *log.Logger
+	ctx    context.Context
+	cancel context.CancelFunc
+	wg     sync.WaitGroup
 
 	maxPeers int
 }

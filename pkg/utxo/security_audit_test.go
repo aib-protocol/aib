@@ -69,7 +69,7 @@ func TestAttack_SpendInvalidUTXO(t *testing.T) {
 
 	// 攻击：尝试花费一个不存在的UTXO
 	tx := NewTransaction(
-		[]TXInput{{TxHash: [32]byte{99}, Index: 999}},  // 不存在的UTXO
+		[]TXInput{{TxHash: [32]byte{99}, Index: 999}}, // 不存在的UTXO
 		[]TXOutput{{Value: 1000, Address: [32]byte{2}, Script: nil}},
 	)
 	tx.SignInput(0, privKey)
@@ -206,7 +206,7 @@ func TestAttack_InvalidMerkleRoot(t *testing.T) {
 	correctRoot := block.Header.MerkleRoot
 
 	// 攻击：修改交易但不更新Merkle根
-	block.Transactions[0].Outputs[0].Value = 999999  // 修改金额
+	block.Transactions[0].Outputs[0].Value = 999999 // 修改金额
 
 	// 重新计算，看Merkle根是否改变
 	block.Header.MerkleRoot = block.CalculateMerkleRoot()

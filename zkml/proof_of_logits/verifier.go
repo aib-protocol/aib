@@ -11,19 +11,19 @@ import (
 type VerifierCircuit struct {
 	// In production, this would contain circuit parameters
 	// For now, we'll use a simple simulation
-	modelHash    []byte
-	promptHash   []byte
-	outputHash   []byte
-	logitsHash   []byte
+	modelHash  []byte
+	promptHash []byte
+	outputHash []byte
+	logitsHash []byte
 }
 
 // NewVerifierCircuit creates a new verification circuit
 func NewVerifierCircuit(modelHash, promptHash, outputHash, logitsHash []byte) *VerifierCircuit {
 	return &VerifierCircuit{
-		modelHash:    modelHash,
-		promptHash:   promptHash,
-		outputHash:   outputHash,
-		logitsHash:   logitsHash,
+		modelHash:  modelHash,
+		promptHash: promptHash,
+		outputHash: outputHash,
+		logitsHash: logitsHash,
 	}
 }
 
@@ -72,17 +72,17 @@ func (c *VerifierCircuit) GenerateWitness(logits *Logits, modelWeights []byte) (
 	// In production, this would generate actual witness data for ZK circuit
 	// For now, create a simple witness structure
 	witness := struct {
-		ModelHash    []byte
-		PromptHash   []byte
-		LogitsHash   []byte
-		LogitsCount  int
-		LogitsSum    float64
-		LogitsMean   float64
+		ModelHash   []byte
+		PromptHash  []byte
+		LogitsHash  []byte
+		LogitsCount int
+		LogitsSum   float64
+		LogitsMean  float64
 	}{
-		ModelHash:    c.modelHash,
-		PromptHash:   c.promptHash,
-		LogitsHash:   c.logitsHash,
-		LogitsCount:  len(logits.Values),
+		ModelHash:   c.modelHash,
+		PromptHash:  c.promptHash,
+		LogitsHash:  c.logitsHash,
+		LogitsCount: len(logits.Values),
 	}
 
 	// Compute logits statistics
@@ -106,23 +106,23 @@ func (c *VerifierCircuit) GenerateWitness(logits *Logits, modelWeights []byte) (
 
 // CircuitParameters contains parameters for the verification circuit
 type CircuitParameters struct {
-	ModelSize      int    // Number of parameters in the model
-	LogitsCount    int    // Number of logits to verify
-	CircuitDepth   int    // Circuit depth
-	ConstraintCount int   // Number of constraints
-	ProofSize      int    // Expected proof size in bytes
-	VerificationTime int  // Expected verification time in ms
+	ModelSize        int // Number of parameters in the model
+	LogitsCount      int // Number of logits to verify
+	CircuitDepth     int // Circuit depth
+	ConstraintCount  int // Number of constraints
+	ProofSize        int // Expected proof size in bytes
+	VerificationTime int // Expected verification time in ms
 }
 
 // GetParameters returns circuit parameters
 func (c *VerifierCircuit) GetParameters() *CircuitParameters {
 	return &CircuitParameters{
-		ModelSize:      0, // Placeholder
-		LogitsCount:    10, // Placeholder
-		CircuitDepth:   5, // Placeholder
-		ConstraintCount: 100, // Placeholder
-		ProofSize:      256, // Placeholder
-		VerificationTime: 10, // Placeholder
+		ModelSize:        0,   // Placeholder
+		LogitsCount:      10,  // Placeholder
+		CircuitDepth:     5,   // Placeholder
+		ConstraintCount:  100, // Placeholder
+		ProofSize:        256, // Placeholder
+		VerificationTime: 10,  // Placeholder
 	}
 }
 

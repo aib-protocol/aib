@@ -41,20 +41,20 @@ func (rs RoutingStrategy) String() string {
 
 // Route represents a payment route with associated metadata.
 type Route struct {
-	Method       PaymentMethod
+	Method      PaymentMethod
 	ChannelID   string // Empty for L1
 	TotalCost   uint64 // Amount + fees
 	Fee         uint64
-	ConfirmTime uint64 // Milliseconds
+	ConfirmTime uint64  // Milliseconds
 	SuccessProb float64 // Estimated probability of success (0-1)
 }
 
 // RouteOption contains options for route calculation.
 type RouteOption struct {
 	PreferMethod PaymentMethod // Force a specific method
-	MaxFee      uint64        // Maximum fee allowed
-	MaxTime     uint64        // Maximum confirmation time (ms)
-	Strategy    RoutingStrategy
+	MaxFee       uint64        // Maximum fee allowed
+	MaxTime      uint64        // Maximum confirmation time (ms)
+	Strategy     RoutingStrategy
 }
 
 // DefaultRouteOption returns default routing options.
@@ -68,32 +68,32 @@ func DefaultRouteOption() *RouteOption {
 
 // ChannelHealth represents the health status of an L2 channel.
 type ChannelHealth struct {
-	ChannelID       string
-	SuccessRate     float64  // Historical success rate (0-1)
-	AvgConfirmTime  uint64   // Average confirmation time (ms)
-	TotalVolume     uint64   // Total volume through channel
-	Age             time.Duration // Age of the channel
-	Score           float64  // Composite health score (0-1)
+	ChannelID      string
+	SuccessRate    float64       // Historical success rate (0-1)
+	AvgConfirmTime uint64        // Average confirmation time (ms)
+	TotalVolume    uint64        // Total volume through channel
+	Age            time.Duration // Age of the channel
+	Score          float64       // Composite health score (0-1)
 }
 
 // RoutingConfig contains configuration for the routing engine.
 type RoutingConfig struct {
-	L2Threshold       uint64        // Amount below which L2 is preferred
-	FeePerByte       uint64        // L1 fee rate
-	L2FeeBPS         uint64        // L2 fee in basis points
-	MaxChannelLoad   float64       // Maximum channel utilization (0-1)
-	MinChannelAge    time.Duration // Minimum channel age for "safe" strategy
+	L2Threshold         uint64        // Amount below which L2 is preferred
+	FeePerByte          uint64        // L1 fee rate
+	L2FeeBPS            uint64        // L2 fee in basis points
+	MaxChannelLoad      float64       // Maximum channel utilization (0-1)
+	MinChannelAge       time.Duration // Minimum channel age for "safe" strategy
 	HealthCheckInterval time.Duration
 }
 
 // DefaultRoutingConfig returns default routing configuration.
 func DefaultRoutingConfig() *RoutingConfig {
 	return &RoutingConfig{
-		L2Threshold:      DefaultL2Threshold,
-		FeePerByte:       1,
-		L2FeeBPS:         10, // 0.1%
-		MaxChannelLoad:   0.9,
-		MinChannelAge:    24 * time.Hour,
+		L2Threshold:         DefaultL2Threshold,
+		FeePerByte:          1,
+		L2FeeBPS:            10, // 0.1%
+		MaxChannelLoad:      0.9,
+		MinChannelAge:       24 * time.Hour,
 		HealthCheckInterval: 5 * time.Minute,
 	}
 }
@@ -142,7 +142,7 @@ func (sr *SmartRouter) CalculateRoutes(to [32]byte, amount uint64) ([]*Route, er
 	// Always add L1 route
 	l1Fee := amount*config.FeePerByte + 200 // Base fee estimate
 	routes = append(routes, &Route{
-		Method:       PaymentL1,
+		Method:      PaymentL1,
 		ChannelID:   "",
 		TotalCost:   amount + l1Fee,
 		Fee:         l1Fee,
@@ -172,7 +172,7 @@ func (sr *SmartRouter) CalculateRoutes(to [32]byte, amount uint64) ([]*Route, er
 		sr.mu.RUnlock()
 
 		routes = append(routes, &Route{
-			Method:       PaymentL2,
+			Method:      PaymentL2,
 			ChannelID:   ch.ChannelID,
 			TotalCost:   amount + l2Fee,
 			Fee:         l2Fee,

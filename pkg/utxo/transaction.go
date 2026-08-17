@@ -325,15 +325,15 @@ func (tx *Transaction) SerializeSize() int {
 		size += 4  // Index
 		size += 4  // sig length
 		size += len(in.Signature)
-		size += 4  // pubkey length
+		size += 4 // pubkey length
 		size += len(in.PublicKey)
 	}
 
 	size += 4 // output count
 
 	for _, out := range tx.Outputs {
-		size += 8  // value
-		size += 4  // script length
+		size += 8 // value
+		size += 4 // script length
 		size += len(out.Script)
 		size += 32 // address
 	}

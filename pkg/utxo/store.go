@@ -11,7 +11,7 @@ import (
 
 // UTXOStore implements the UTXOProvider interface.
 type UTXOStore struct {
-	utxos   map[string]*UTXO    // Key: txHash:index
+	utxos    map[string]*UTXO    // Key: txHash:index
 	balances map[[32]byte]uint64 // Address -> balance
 	mu       sync.RWMutex
 }
@@ -19,7 +19,7 @@ type UTXOStore struct {
 // NewUTXOStore creates a new UTXO store.
 func NewUTXOStore() *UTXOStore {
 	return &UTXOStore{
-		utxos:   make(map[string]*UTXO),
+		utxos:    make(map[string]*UTXO),
 		balances: make(map[[32]byte]uint64),
 	}
 }

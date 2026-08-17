@@ -207,14 +207,14 @@ type MempoolResponse struct {
 
 // MempoolTxInfo 表示内存池中的交易
 type MempoolTxInfo struct {
-	TxID      string    `json:"tx_id"`
-	Fee       uint64    `json:"fee"`
-	FeeRate   float64   `json:"fee_rate"`
-	Size      int       `json:"size"`
-	AddedAt   time.Time `json:"added_at"`
-	Inputs    int       `json:"inputs"`
-	Outputs   int       `json:"outputs"`
-	IsCoinbase bool     `json:"is_coinbase"`
+	TxID       string    `json:"tx_id"`
+	Fee        uint64    `json:"fee"`
+	FeeRate    float64   `json:"fee_rate"`
+	Size       int       `json:"size"`
+	AddedAt    time.Time `json:"added_at"`
+	Inputs     int       `json:"inputs"`
+	Outputs    int       `json:"outputs"`
+	IsCoinbase bool      `json:"is_coinbase"`
 }
 
 // handleMempool 处理 GET /v1/mempool
@@ -424,18 +424,18 @@ type ProposalsResponse struct {
 
 // ProposalInfo 表示治理提案
 type ProposalInfo struct {
-	ID          string    `json:"id"`
-	Title       string    `json:"title"`
-	Description string    `json:"description"`
-	Type        string    `json:"type"`
-	Status      string    `json:"status"`
-	Proposer    string    `json:"proposer"`
-	CreatedAt   time.Time `json:"created_at"`
-	ExpiresAt   time.Time `json:"expires_at,omitempty"`
-	VotesFor    uint64    `json:"votes_for"`
-	VotesAgainst uint64   `json:"votes_against"`
-	TotalVoted  uint64    `json:"total_voted"`
-	Quorum      uint64    `json:"quorum"`
+	ID           string    `json:"id"`
+	Title        string    `json:"title"`
+	Description  string    `json:"description"`
+	Type         string    `json:"type"`
+	Status       string    `json:"status"`
+	Proposer     string    `json:"proposer"`
+	CreatedAt    time.Time `json:"created_at"`
+	ExpiresAt    time.Time `json:"expires_at,omitempty"`
+	VotesFor     uint64    `json:"votes_for"`
+	VotesAgainst uint64    `json:"votes_against"`
+	TotalVoted   uint64    `json:"total_voted"`
+	Quorum       uint64    `json:"quorum"`
 }
 
 // handleProposals 处理 GET /v1/proposals
@@ -490,18 +490,18 @@ func (s *Server) getProposals(ctx context.Context, statusFilter string) []Propos
 			}
 
 			proposalInfo := ProposalInfo{
-				ID:          p.ID,
-				Title:       p.Title,
-				Description: p.Description,
-				Type:        p.Type,
-				Status:      p.Status,
-				Proposer:    hex.EncodeToString(p.Proposer[:]),
-				CreatedAt:   p.CreatedAt,
-				ExpiresAt:   p.ExpiresAt,
-				VotesFor:    p.VotesFor,
+				ID:           p.ID,
+				Title:        p.Title,
+				Description:  p.Description,
+				Type:         p.Type,
+				Status:       p.Status,
+				Proposer:     hex.EncodeToString(p.Proposer[:]),
+				CreatedAt:    p.CreatedAt,
+				ExpiresAt:    p.ExpiresAt,
+				VotesFor:     p.VotesFor,
 				VotesAgainst: p.VotesAgainst,
-				TotalVoted:  p.VotesFor + p.VotesAgainst,
-				Quorum:      p.Quorum,
+				TotalVoted:   p.VotesFor + p.VotesAgainst,
+				Quorum:       p.Quorum,
 			}
 			proposals = append(proposals, proposalInfo)
 		}
@@ -549,15 +549,15 @@ type governanceInterface interface {
 
 // Proposal 表示治理提案
 type Proposal struct {
-	ID          string
-	Title       string
-	Description string
-	Type        string
-	Status      string
-	Proposer    [32]byte
-	CreatedAt   time.Time
-	ExpiresAt   time.Time
-	VotesFor    uint64
+	ID           string
+	Title        string
+	Description  string
+	Type         string
+	Status       string
+	Proposer     [32]byte
+	CreatedAt    time.Time
+	ExpiresAt    time.Time
+	VotesFor     uint64
 	VotesAgainst uint64
-	Quorum      uint64
+	Quorum       uint64
 }

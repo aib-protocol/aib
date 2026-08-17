@@ -170,24 +170,24 @@ type StakeRequest struct {
 
 // StakeResponse represents staking response
 type StakeResponse struct {
-	TxHash       string `json:"tx_hash"`
-	Address      string `json:"address"`
-	Amount       uint64 `json:"amount"`
-	NewStake     uint64 `json:"new_stake"`
-	TotalStaked  uint64 `json:"total_staked"`
+	TxHash      string `json:"tx_hash"`
+	Address     string `json:"address"`
+	Amount      uint64 `json:"amount"`
+	NewStake    uint64 `json:"new_stake"`
+	TotalStaked uint64 `json:"total_staked"`
 }
 
 // NodeStatusResponse represents node status response
 type NodeStatusResponse struct {
-	Status       string    `json:"status"`
-	Version      string    `json:"version"`
-	Uptime       string    `json:"uptime"`
-	Height       uint64    `json:"height"`
-	Hash         string    `json:"hash"`
-	LastBlock    string    `json:"last_block_time"`
-	PeerCount    int       `json:"peer_count"`
-	Syncing      bool      `json:"syncing"`
-	SyncProgress float64   `json:"sync_progress"`
+	Status       string  `json:"status"`
+	Version      string  `json:"version"`
+	Uptime       string  `json:"uptime"`
+	Height       uint64  `json:"height"`
+	Hash         string  `json:"hash"`
+	LastBlock    string  `json:"last_block_time"`
+	PeerCount    int     `json:"peer_count"`
+	Syncing      bool    `json:"syncing"`
+	SyncProgress float64 `json:"sync_progress"`
 }
 
 // PeerInfo represents peer information

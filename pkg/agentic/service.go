@@ -12,14 +12,14 @@ import (
 
 // AgenticServiceImpl implements the AgenticService interface.
 type AgenticServiceImpl struct {
-	mu            sync.RWMutex
-	config        *Config
-	channelMgr    interfaces.ChannelManager
-	nodeRegistry  *NodeRegistry
-	stakingMgr    *StakingManager
-	providers     map[string]*ServiceProvider
-	requests      map[string]*ServiceRequest
-	started       bool
+	mu           sync.RWMutex
+	config       *Config
+	channelMgr   interfaces.ChannelManager
+	nodeRegistry *NodeRegistry
+	stakingMgr   *StakingManager
+	providers    map[string]*ServiceProvider
+	requests     map[string]*ServiceRequest
+	started      bool
 }
 
 // NewAgenticService creates a new agentic service implementation.
@@ -98,8 +98,8 @@ func (s *AgenticServiceImpl) ChatCompletion(ctx context.Context, req interfaces.
 	// In a real implementation, this would make an actual API call to the provider
 
 	response := &interfaces.ChatCompletionResponse{
-		ID:      generateRequestID(),
-		Model:   req.Model,
+		ID:    generateRequestID(),
+		Model: req.Model,
 		Choices: []interfaces.Choice{
 			{
 				Message: interfaces.Message{
@@ -284,11 +284,11 @@ func generateRequestID() string {
 
 // NodeRegistry manages node registration and discovery.
 type NodeRegistry struct {
-	mu        sync.RWMutex
-	nodes     map[interfaces.NodeID]*NodeInfo
-	byModel   map[string][]interfaces.NodeID
+	mu         sync.RWMutex
+	nodes      map[interfaces.NodeID]*NodeInfo
+	byModel    map[string][]interfaces.NodeID
 	stakingMgr *StakingManager
-	config    *Config
+	config     *Config
 }
 
 // NewNodeRegistry creates a new node registry.

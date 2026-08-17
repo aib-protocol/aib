@@ -23,14 +23,14 @@ import (
 
 // GenesisConfig represents the genesis.json structure
 type GenesisConfig struct {
-	ChainID      string         `json:"chain_id"`
-	GenesisTime  string         `json:"genesis_time"`
-	TotalSupply  string         `json:"total_supply"`
-	BlockReward  int            `json:"block_reward"`
-	BlockTime    int            `json:"block_time"`
-	Validators   []interface{}  `json:"validators"`
-	Allocations  Allocations    `json:"allocations"`
-	Config       GenesisConfig2 `json:"config"`
+	ChainID     string         `json:"chain_id"`
+	GenesisTime string         `json:"genesis_time"`
+	TotalSupply string         `json:"total_supply"`
+	BlockReward int            `json:"block_reward"`
+	BlockTime   int            `json:"block_time"`
+	Validators  []interface{}  `json:"validators"`
+	Allocations Allocations    `json:"allocations"`
+	Config      GenesisConfig2 `json:"config"`
 }
 
 // Allocations represents token allocation details
@@ -50,15 +50,15 @@ type AllocationAmount struct {
 
 // GenesisConfig2 represents additional config
 type GenesisConfig2 struct {
-	MaxValidators   int    `json:"max_validators"`
+	MaxValidators  int    `json:"max_validators"`
 	MinStakeAmount string `json:"min_stake_amount"`
 	UnbondingTime  string `json:"unbonding_time"`
 }
 
 // ValidationResult holds validation results
 type ValidationResult struct {
-	Passed  bool
-	Errors  []string
+	Passed   bool
+	Errors   []string
 	Warnings []string
 }
 

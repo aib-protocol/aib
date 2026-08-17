@@ -1,3 +1,4 @@
+//go:build ignore
 // +build ignore
 
 package main
@@ -20,16 +21,16 @@ func main() {
 	endTime := unlockTime.AddDate(1, 0, 0)
 
 	type Founder struct {
-		ID          string         `json:"id"`
-		Name        string         `json:"name"`
-		Address     string         `json:"address"`
-		PublicKey   string         `json:"public_key"`
-		TotalAmount uint64         `json:"total_amount"`
-		Claimed     uint64         `json:"claimed"`
-		Status      string         `json:"status"`
-		StartTime   string         `json:"start_time"`
-		UnlockTime  string         `json:"unlock_time"`
-		EndTime     string         `json:"end_time"`
+		ID          string            `json:"id"`
+		Name        string            `json:"name"`
+		Address     string            `json:"address"`
+		PublicKey   string            `json:"public_key"`
+		TotalAmount uint64            `json:"total_amount"`
+		Claimed     uint64            `json:"claimed"`
+		Status      string            `json:"status"`
+		StartTime   string            `json:"start_time"`
+		UnlockTime  string            `json:"unlock_time"`
+		EndTime     string            `json:"end_time"`
 		Metadata    map[string]string `json:"metadata"`
 	}
 
@@ -51,7 +52,7 @@ func main() {
 	for _, fd := range founderData {
 		pubKey, _, _ := ed25519.GenerateKey(rand.Reader)
 		pubKeyHex := hex.EncodeToString(pubKey)
-		
+
 		address := utxo.AddressFromPublicKey(pubKey)
 		addrStr, err := utxo.AddressToString(address)
 		if err != nil {
@@ -83,8 +84,8 @@ func main() {
 		"founders": founders,
 		"version":  1,
 		"multi_sig": map[string]interface{}{
-			"required_sigs":     3,
-			"signer_addresses":  []string{},
+			"required_sigs":    3,
+			"signer_addresses": []string{},
 		},
 	}
 

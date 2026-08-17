@@ -85,23 +85,23 @@ func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
 
 // FounderListResponse is the response for founder list.
 type FounderListResponse struct {
-	Founders     []FounderInfo `json:"founders"`
-	TotalCount   int           `json:"total_count"`
-	TotalAmount  uint64        `json:"total_amount"`
-	Version      uint64        `json:"version"`
+	Founders    []FounderInfo `json:"founders"`
+	TotalCount  int           `json:"total_count"`
+	TotalAmount uint64        `json:"total_amount"`
+	Version     uint64        `json:"version"`
 }
 
 // FounderInfo contains public information about a founder.
 type FounderInfo struct {
-	ID          string             `json:"id"`
-	Name        string             `json:"name"`
-	Address     string             `json:"address"`
-	TotalAmount uint64             `json:"total_amount"`
-	Status      string             `json:"status"`
-	StartTime   time.Time          `json:"start_time"`
-	UnlockTime  time.Time          `json:"unlock_time"`
-	EndTime     time.Time          `json:"end_time"`
-	Metadata    FounderMetadata    `json:"metadata"`
+	ID          string          `json:"id"`
+	Name        string          `json:"name"`
+	Address     string          `json:"address"`
+	TotalAmount uint64          `json:"total_amount"`
+	Status      string          `json:"status"`
+	StartTime   time.Time       `json:"start_time"`
+	UnlockTime  time.Time       `json:"unlock_time"`
+	EndTime     time.Time       `json:"end_time"`
+	Metadata    FounderMetadata `json:"metadata"`
 }
 
 // handleFounderList returns the list of founders.
@@ -181,26 +181,26 @@ func (h *Handler) handleClaimable(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeSuccess(w, map[string]interface{}{
-		"founder_id":        founderID,
-		"claimable_amount":  amount,
+		"founder_id":       founderID,
+		"claimable_amount": amount,
 	})
 }
 
 // ClaimRequest is the request for claiming tokens.
 type ClaimRequest struct {
-	FounderID  string `json:"founder_id"`
-	Amount     uint64 `json:"amount"`
-	PublicKey  string `json:"public_key"`  // Base64 encoded
-	Signature  string `json:"signature"`  // Base64 encoded
-	Nonce      uint64 `json:"nonce"`
+	FounderID string `json:"founder_id"`
+	Amount    uint64 `json:"amount"`
+	PublicKey string `json:"public_key"` // Base64 encoded
+	Signature string `json:"signature"`  // Base64 encoded
+	Nonce     uint64 `json:"nonce"`
 }
 
 // ClaimResponse is the response for a claim.
 type ClaimResponse struct {
-	TxHash     string    `json:"tx_hash"`
-	FounderID  string    `json:"founder_id"`
-	Amount     uint64    `json:"amount"`
-	Timestamp  time.Time `json:"timestamp"`
+	TxHash    string    `json:"tx_hash"`
+	FounderID string    `json:"founder_id"`
+	Amount    uint64    `json:"amount"`
+	Timestamp time.Time `json:"timestamp"`
 }
 
 // handleClaim processes a token claim request.
@@ -313,10 +313,10 @@ type SignReleaseRequest struct {
 
 // SignReleaseResponse is the response for signing a release.
 type SignReleaseResponse struct {
-	RequestID   string `json:"request_id"`
-	Status      string `json:"status"`
-	SigsCollected int  `json:"sigs_collected"`
-	SigsRequired  int  `json:"sigs_required"`
+	RequestID     string `json:"request_id"`
+	Status        string `json:"status"`
+	SigsCollected int    `json:"sigs_collected"`
+	SigsRequired  int    `json:"sigs_required"`
 }
 
 // handleReleaseSign adds a signature to a release request.
@@ -353,10 +353,10 @@ func (h *Handler) handleReleaseSign(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response := SignReleaseResponse{
-		RequestID:      fmt.Sprintf("%s:%d", req.FounderID, req.Nonce),
-		Status:         string(record.Status),
-		SigsCollected:  len(record.Signatures),
-		SigsRequired:   h.verifier.multiSig.RequiredSigs,
+		RequestID:     fmt.Sprintf("%s:%d", req.FounderID, req.Nonce),
+		Status:        string(record.Status),
+		SigsCollected: len(record.Signatures),
+		SigsRequired:  h.verifier.multiSig.RequiredSigs,
 	}
 
 	writeSuccess(w, response)
@@ -405,16 +405,16 @@ func (h *Handler) handleReleaseStatus(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeSuccess(w, map[string]interface{}{
-		"request_id":      requestID,
-		"founder_id":      record.FounderID,
-		"amount":          record.Amount,
-		"status":          string(record.Status),
-		"signers":         signers,
-		"sigs_collected":  len(record.Signatures),
-		"sigs_required":   h.verifier.multiSig.RequiredSigs,
-		"created_at":      record.CreatedAt,
-		"completed_at":    record.CompletedAt,
-		"tx_hash":         record.TxHash,
+		"request_id":     requestID,
+		"founder_id":     record.FounderID,
+		"amount":         record.Amount,
+		"status":         string(record.Status),
+		"signers":        signers,
+		"sigs_collected": len(record.Signatures),
+		"sigs_required":  h.verifier.multiSig.RequiredSigs,
+		"created_at":     record.CreatedAt,
+		"completed_at":   record.CompletedAt,
+		"tx_hash":        record.TxHash,
 	})
 }
 

@@ -166,8 +166,8 @@ func TestMigrationHub_GetCrossChainRate(t *testing.T) {
 	hub := createTestHub(t)
 
 	tests := []struct {
-		chain     ChainType
-		expected  uint64
+		chain    ChainType
+		expected uint64
 	}{
 		{ChainBTC, 3}, // month 3 rate
 		{ChainETH, 2},

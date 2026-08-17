@@ -27,17 +27,17 @@ var (
 	SelectorBalanceOf    = []byte{0x70, 0xa0, 0x82, 0x31} // balanceOf(address)
 
 	// ERC721 function selectors
-	SelectorOwnerOf         = []byte{0x63, 0x52, 0x21, 0x1e} // ownerOf(uint256)
-	SelectorSafeTransferFrom = []byte{0x42, 0x84, 0x2e, 0x0e} // safeTransferFrom(address,address,uint256)
+	SelectorOwnerOf           = []byte{0x63, 0x52, 0x21, 0x1e} // ownerOf(uint256)
+	SelectorSafeTransferFrom  = []byte{0x42, 0x84, 0x2e, 0x0e} // safeTransferFrom(address,address,uint256)
 	SelectorSetApprovalForAll = []byte{0xa2, 0x2c, 0xb4, 0x65} // setApprovalForAll(address,bool)
 	SelectorGetApproved       = []byte{0x08, 0x18, 0x12, 0xfc} // getApproved(uint256)
 
 	// Uniswap V2 function selectors
-	SelectorSwap          = []byte{0x02, 0x2c, 0x0d, 0x9f} // swap(uint256,uint256,address,bytes)
-	SelectorMint          = []byte{0x6a, 0x62, 0x78, 0x42} // mint(address)
-	SelectorBurn          = []byte{0x89, 0xaf, 0xcb, 0x44} // burn(address)
-	SelectorGetReserves   = []byte{0x09, 0x02, 0xf1, 0xac} // getReserves()
-	SelectorAddLiquidity  = []byte{0xe8, 0xe3, 0x37, 0x00} // addLiquidity(...)
+	SelectorSwap         = []byte{0x02, 0x2c, 0x0d, 0x9f} // swap(uint256,uint256,address,bytes)
+	SelectorMint         = []byte{0x6a, 0x62, 0x78, 0x42} // mint(address)
+	SelectorBurn         = []byte{0x89, 0xaf, 0xcb, 0x44} // burn(address)
+	SelectorGetReserves  = []byte{0x09, 0x02, 0xf1, 0xac} // getReserves()
+	SelectorAddLiquidity = []byte{0xe8, 0xe3, 0x37, 0x00} // addLiquidity(...)
 )
 
 // ============================================================================
@@ -386,24 +386,24 @@ func TestERC20BalanceOf(t *testing.T) {
 
 // SimulatedERC721 simulates an ERC721 NFT contract
 type SimulatedERC721 struct {
-	Name       string
-	Symbol     string
-	Owners     map[uint64]aal.Address
-	Balances   map[aal.Address]uint64
-	Approvals  map[uint64]aal.Address
+	Name              string
+	Symbol            string
+	Owners            map[uint64]aal.Address
+	Balances          map[aal.Address]uint64
+	Approvals         map[uint64]aal.Address
 	OperatorApprovals map[aal.Address]map[aal.Address]bool
-	NextTokenID uint64
+	NextTokenID       uint64
 }
 
 func NewSimulatedERC721(name, symbol string) *SimulatedERC721 {
 	return &SimulatedERC721{
-		Name:       name,
-		Symbol:     symbol,
-		Owners:     make(map[uint64]aal.Address),
-		Balances:   make(map[aal.Address]uint64),
-		Approvals:  make(map[uint64]aal.Address),
+		Name:              name,
+		Symbol:            symbol,
+		Owners:            make(map[uint64]aal.Address),
+		Balances:          make(map[aal.Address]uint64),
+		Approvals:         make(map[uint64]aal.Address),
 		OperatorApprovals: make(map[aal.Address]map[aal.Address]bool),
-		NextTokenID: 1,
+		NextTokenID:       1,
 	}
 }
 

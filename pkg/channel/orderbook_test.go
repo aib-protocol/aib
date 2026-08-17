@@ -22,12 +22,12 @@ func TestOrderBookBasicFunctionality(t *testing.T) {
 
 	// 测试1：添加买单
 	buyOrder := &Order{
-		Owner:       addr1,
-		Side:        OrderSideBuy,
-		Quantity:    100,
-		Price:       1000,
-		OrderType:   OrderTypeLimit,
-		Timestamp:   time.Now(),
+		Owner:     addr1,
+		Side:      OrderSideBuy,
+		Quantity:  100,
+		Price:     1000,
+		OrderType: OrderTypeLimit,
+		Timestamp: time.Now(),
 	}
 
 	order, trades, err := ob.PlaceOrder(buyOrder)
@@ -55,12 +55,12 @@ func TestOrderMatching(t *testing.T) {
 
 	// 添加卖单
 	sellOrder := &Order{
-		Owner:       addr2,
-		Side:        OrderSideSell,
-		Quantity:    50,
-		Price:       1000,
-		OrderType:   OrderTypeLimit,
-		Timestamp:   time.Now(),
+		Owner:     addr2,
+		Side:      OrderSideSell,
+		Quantity:  50,
+		Price:     1000,
+		OrderType: OrderTypeLimit,
+		Timestamp: time.Now(),
 	}
 
 	_, _, err := ob.PlaceOrder(sellOrder)
@@ -70,12 +70,12 @@ func TestOrderMatching(t *testing.T) {
 
 	// 添加匹配的买单
 	buyOrder := &Order{
-		Owner:       addr1,
-		Side:        OrderSideBuy,
-		Quantity:    50,
-		Price:       1000,
-		OrderType:   OrderTypeLimit,
-		Timestamp:   time.Now(),
+		Owner:     addr1,
+		Side:      OrderSideBuy,
+		Quantity:  50,
+		Price:     1000,
+		OrderType: OrderTypeLimit,
+		Timestamp: time.Now(),
 	}
 
 	_, trades, err := ob.PlaceOrder(buyOrder)
@@ -109,34 +109,34 @@ func TestPartialFill(t *testing.T) {
 
 	// 添加卖单 30
 	sellOrder1 := &Order{
-		Owner:       addr2,
-		Side:        OrderSideSell,
-		Quantity:    30,
-		Price:       1000,
-		OrderType:   OrderTypeLimit,
-		Timestamp:   time.Now(),
+		Owner:     addr2,
+		Side:      OrderSideSell,
+		Quantity:  30,
+		Price:     1000,
+		OrderType: OrderTypeLimit,
+		Timestamp: time.Now(),
 	}
 	ob.PlaceOrder(sellOrder1)
 
 	// 添加卖单 30
 	sellOrder2 := &Order{
-		Owner:       addr2,
-		Side:        OrderSideSell,
-		Quantity:    30,
-		Price:       1000,
-		OrderType:   OrderTypeLimit,
-		Timestamp:   time.Now(),
+		Owner:     addr2,
+		Side:      OrderSideSell,
+		Quantity:  30,
+		Price:     1000,
+		OrderType: OrderTypeLimit,
+		Timestamp: time.Now(),
 	}
 	ob.PlaceOrder(sellOrder2)
 
 	// 添加买单 50（应该部分成交）
 	buyOrder := &Order{
-		Owner:       addr1,
-		Side:        OrderSideBuy,
-		Quantity:    50,
-		Price:       1000,
-		OrderType:   OrderTypeLimit,
-		Timestamp:   time.Now(),
+		Owner:     addr1,
+		Side:      OrderSideBuy,
+		Quantity:  50,
+		Price:     1000,
+		OrderType: OrderTypeLimit,
+		Timestamp: time.Now(),
 	}
 
 	_, trades, err := ob.PlaceOrder(buyOrder)
@@ -178,22 +178,22 @@ func TestMarketOrder(t *testing.T) {
 
 	// 添加限价卖单
 	sellOrder := &Order{
-		Owner:       addr2,
-		Side:        OrderSideSell,
-		Quantity:    100,
-		Price:       1000,
-		OrderType:   OrderTypeLimit,
-		Timestamp:   time.Now(),
+		Owner:     addr2,
+		Side:      OrderSideSell,
+		Quantity:  100,
+		Price:     1000,
+		OrderType: OrderTypeLimit,
+		Timestamp: time.Now(),
 	}
 	ob.PlaceOrder(sellOrder)
 
 	// 添加市价买单
 	marketBuy := &Order{
-		Owner:       addr1,
-		Side:        OrderSideBuy,
-		Quantity:    50,
-		OrderType:   OrderTypeMarket,
-		Timestamp:   time.Now(),
+		Owner:     addr1,
+		Side:      OrderSideBuy,
+		Quantity:  50,
+		OrderType: OrderTypeMarket,
+		Timestamp: time.Now(),
 	}
 
 	_, trades, err := ob.PlaceOrder(marketBuy)
@@ -221,12 +221,12 @@ func TestCancelOrder(t *testing.T) {
 
 	// 添加订单
 	order := &Order{
-		Owner:       addr1,
-		Side:        OrderSideBuy,
-		Quantity:    100,
-		Price:       1000,
-		OrderType:   OrderTypeLimit,
-		Timestamp:   time.Now(),
+		Owner:     addr1,
+		Side:      OrderSideBuy,
+		Quantity:  100,
+		Price:     1000,
+		OrderType: OrderTypeLimit,
+		Timestamp: time.Now(),
 	}
 
 	order, _, err := ob.PlaceOrder(order)
@@ -264,24 +264,24 @@ func TestGetOrdersByOwner(t *testing.T) {
 	// 为 addr1 添加订单
 	for i := 0; i < 3; i++ {
 		order := &Order{
-			Owner:       addr1,
-			Side:        OrderSideBuy,
-			Quantity:    100,
-			Price:       uint64(1000 + i*10),
-			OrderType:   OrderTypeLimit,
-			Timestamp:   time.Now(),
+			Owner:     addr1,
+			Side:      OrderSideBuy,
+			Quantity:  100,
+			Price:     uint64(1000 + i*10),
+			OrderType: OrderTypeLimit,
+			Timestamp: time.Now(),
 		}
 		ob.PlaceOrder(order)
 	}
 
 	// 为 addr2 添加订单
 	order := &Order{
-		Owner:       addr2,
-		Side:        OrderSideSell,
-		Quantity:    100,
-		Price:       1000,
-		OrderType:   OrderTypeLimit,
-		Timestamp:   time.Now(),
+		Owner:     addr2,
+		Side:      OrderSideSell,
+		Quantity:  100,
+		Price:     1000,
+		OrderType: OrderTypeLimit,
+		Timestamp: time.Now(),
 	}
 	ob.PlaceOrder(order)
 
@@ -312,12 +312,12 @@ func TestGetDepth(t *testing.T) {
 	// 添加多个买单价格级别
 	for i := 0; i < 5; i++ {
 		order := &Order{
-			Owner:       addr1,
-			Side:        OrderSideBuy,
-			Quantity:    uint64((i + 1) * 10),
-			Price:       uint64(1000 - i*10),
-			OrderType:   OrderTypeLimit,
-			Timestamp:   time.Now(),
+			Owner:     addr1,
+			Side:      OrderSideBuy,
+			Quantity:  uint64((i + 1) * 10),
+			Price:     uint64(1000 - i*10),
+			OrderType: OrderTypeLimit,
+			Timestamp: time.Now(),
 		}
 		ob.PlaceOrder(order)
 	}
@@ -325,12 +325,12 @@ func TestGetDepth(t *testing.T) {
 	// 添加多个卖单价格级别
 	for i := 0; i < 5; i++ {
 		order := &Order{
-			Owner:       addr2,
-			Side:        OrderSideSell,
-			Quantity:    uint64((i + 1) * 10),
-			Price:       uint64(1000 + i*10),
-			OrderType:   OrderTypeLimit,
-			Timestamp:   time.Now(),
+			Owner:     addr2,
+			Side:      OrderSideSell,
+			Quantity:  uint64((i + 1) * 10),
+			Price:     uint64(1000 + i*10),
+			OrderType: OrderTypeLimit,
+			Timestamp: time.Now(),
 		}
 		ob.PlaceOrder(order)
 	}
@@ -437,24 +437,24 @@ func TestPricePriority(t *testing.T) {
 	sellPrices := []uint64{1000, 1010, 1020, 1030}
 	for _, price := range sellPrices {
 		order := &Order{
-			Owner:       addr2,
-			Side:        OrderSideSell,
-			Quantity:    10,
-			Price:       price,
-			OrderType:   OrderTypeLimit,
-			Timestamp:   time.Now(),
+			Owner:     addr2,
+			Side:      OrderSideSell,
+			Quantity:  10,
+			Price:     price,
+			OrderType: OrderTypeLimit,
+			Timestamp: time.Now(),
 		}
 		ob.PlaceOrder(order)
 	}
 
 	// 添加买单，应该匹配最低卖价1000
 	buyOrder := &Order{
-		Owner:       addr1,
-		Side:        OrderSideBuy,
-		Quantity:    10,
-		Price:       1050, // 愿意出更高价
-		OrderType:   OrderTypeLimit,
-		Timestamp:   time.Now(),
+		Owner:     addr1,
+		Side:      OrderSideBuy,
+		Quantity:  10,
+		Price:     1050, // 愿意出更高价
+		OrderType: OrderTypeLimit,
+		Timestamp: time.Now(),
 	}
 
 	_, trades, err := ob.PlaceOrder(buyOrder)
@@ -484,33 +484,33 @@ func TestTimePriority(t *testing.T) {
 
 	// 先添加两个卖单（相同价格）
 	sellOrder1 := &Order{
-		Owner:       addr2,
-		Side:        OrderSideSell,
-		Quantity:    10,
-		Price:       1000,
-		OrderType:   OrderTypeLimit,
-		Timestamp:   time.Now().Add(-time.Second), // 较早
+		Owner:     addr2,
+		Side:      OrderSideSell,
+		Quantity:  10,
+		Price:     1000,
+		OrderType: OrderTypeLimit,
+		Timestamp: time.Now().Add(-time.Second), // 较早
 	}
 	ob.PlaceOrder(sellOrder1)
 
 	sellOrder2 := &Order{
-		Owner:       addr2,
-		Side:        OrderSideSell,
-		Quantity:    10,
-		Price:       1000,
-		OrderType:   OrderTypeLimit,
-		Timestamp:   time.Now(), // 较晚
+		Owner:     addr2,
+		Side:      OrderSideSell,
+		Quantity:  10,
+		Price:     1000,
+		OrderType: OrderTypeLimit,
+		Timestamp: time.Now(), // 较晚
 	}
 	ob.PlaceOrder(sellOrder2)
 
 	// 添加买单
 	buyOrder := &Order{
-		Owner:       addr1,
-		Side:        OrderSideBuy,
-		Quantity:    10,
-		Price:       1000,
-		OrderType:   OrderTypeLimit,
-		Timestamp:   time.Now(),
+		Owner:     addr1,
+		Side:      OrderSideBuy,
+		Quantity:  10,
+		Price:     1000,
+		OrderType: OrderTypeLimit,
+		Timestamp: time.Now(),
 	}
 
 	_, trades, err := ob.PlaceOrder(buyOrder)

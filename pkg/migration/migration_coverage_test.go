@@ -259,7 +259,7 @@ func TestAIB1Migration_GetSnapshotRoot(t *testing.T) {
 	root := [32]byte{1, 2, 3, 4}
 	cfg := &AIB1Config{
 		SnapshotRoot:  root,
-		SnapshotTime: time.Now(),
+		SnapshotTime:  time.Now(),
 		ClaimDeadline: time.Now().Add(24 * time.Hour),
 	}
 
@@ -1102,8 +1102,8 @@ func TestCrossChainMigration_buildVestingSchedule_ZeroVestingMonths(t *testing.T
 
 func TestMinConfirmations(t *testing.T) {
 	tests := []struct {
-		chain     ChainType
-		expected  uint64
+		chain    ChainType
+		expected uint64
 	}{
 		{ChainBTC, 6},
 		{ChainETH, 12},
@@ -1125,12 +1125,12 @@ func TestVerifyCrossChainProof(t *testing.T) {
 	relayerPubKey2, relayerPrivKey2, _ := ed25519.GenerateKey(rand.Reader)
 
 	proof := &CrossChainProof{
-		Chain:         ChainBTC,
-		SourceTxID:    [32]byte{1, 2, 3},
-		SourceAddress: []byte("bc1q..."),
-		Amount:        1000000,
-		BlockHeight:   800000,
-		Confirmations: 10, // More than min (6)
+		Chain:          ChainBTC,
+		SourceTxID:     [32]byte{1, 2, 3},
+		SourceAddress:  []byte("bc1q..."),
+		Amount:         1000000,
+		BlockHeight:    800000,
+		Confirmations:  10, // More than min (6)
 		RelayerSigs:    [][]byte{},
 		RelayerPubKeys: [][]byte{},
 	}
@@ -1314,7 +1314,7 @@ func TestCrossChainMigration_Migrate_WindowClosed(t *testing.T) {
 	migration, _ := NewCrossChainMigration(cfg)
 
 	proof := &CrossChainProof{
-		Chain:        ChainBTC,
+		Chain:         ChainBTC,
 		Confirmations: 10,
 	}
 
@@ -1566,9 +1566,9 @@ func TestLockedReward_Claimable(t *testing.T) {
 		TotalReward: 10000,
 		Claimed:     0,
 		Vesting: []VestingEntry{
-			{UnlockTime: time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC), Percent: 20},  // 2000
-			{UnlockTime: time.Date(2026, 2, 1, 0, 0, 0, 0, time.UTC), Percent: 30},  // 3000
-			{UnlockTime: time.Date(2026, 3, 1, 0, 0, 0, 0, time.UTC), Percent: 50},  // 5000
+			{UnlockTime: time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC), Percent: 20}, // 2000
+			{UnlockTime: time.Date(2026, 2, 1, 0, 0, 0, 0, time.UTC), Percent: 30}, // 3000
+			{UnlockTime: time.Date(2026, 3, 1, 0, 0, 0, 0, time.UTC), Percent: 50}, // 5000
 		},
 	}
 

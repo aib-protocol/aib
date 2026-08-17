@@ -8,11 +8,11 @@ import (
 )
 
 var (
-	ErrAccountNotFound    = errors.New("account not found")
-	ErrInvalidKey         = errors.New("invalid key")
-	ErrStateCorrupted     = errors.New("state database corrupted")
-	ErrSnapshotNotFound   = errors.New("snapshot not found")
-	ErrInvalidStateRoot   = errors.New("invalid state root")
+	ErrAccountNotFound  = errors.New("account not found")
+	ErrInvalidKey       = errors.New("invalid key")
+	ErrStateCorrupted   = errors.New("state database corrupted")
+	ErrSnapshotNotFound = errors.New("snapshot not found")
+	ErrInvalidStateRoot = errors.New("invalid state root")
 )
 
 // Account represents an EVM-compatible account
@@ -27,12 +27,12 @@ type Account struct {
 
 // StateManager manages EVM state in memory
 type StateManager struct {
-	mu           sync.RWMutex
-	accounts     map[Address]*Account
-	snapshots    map[int]*Snapshot
-	snapshotID   int
-	stateRoot    Hash
-	preimages    map[Hash][]byte
+	mu         sync.RWMutex
+	accounts   map[Address]*Account
+	snapshots  map[int]*Snapshot
+	snapshotID int
+	stateRoot  Hash
+	preimages  map[Hash][]byte
 }
 
 // Snapshot represents a point-in-time state snapshot

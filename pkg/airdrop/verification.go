@@ -30,31 +30,31 @@ var (
 
 // GitHubUserInfo GitHub 用户信息
 type GitHubUserInfo struct {
-	ID        uint64    `json:"id"`
-	Login     string    `json:"login"`
-	Name      string    `json:"name"`
-	Email     string    `json:"email"`
-	AvatarURL string    `json:"avatar_url"`
-	Bio       string    `json:"bio"`
-	Blog      string    `json:"blog"`
-	Location  string    `json:"location"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-	PublicRepos int     `json:"public_repos"`
-	Followers   int     `json:"followers"`
-	Following   int     `json:"following"`
+	ID          uint64    `json:"id"`
+	Login       string    `json:"login"`
+	Name        string    `json:"name"`
+	Email       string    `json:"email"`
+	AvatarURL   string    `json:"avatar_url"`
+	Bio         string    `json:"bio"`
+	Blog        string    `json:"blog"`
+	Location    string    `json:"location"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+	PublicRepos int       `json:"public_repos"`
+	Followers   int       `json:"followers"`
+	Following   int       `json:"following"`
 }
 
 // VerificationResult 验证结果
 type VerificationResult struct {
-	Success     bool           `json:"success"`
-	UserInfo    *GitHubUserInfo `json:"user_info,omitempty"`
-	Email       string         `json:"email,omitempty"`
-	DeviceID    string         `json:"device_id,omitempty"`
-	IPAddress   string         `json:"ip_address,omitempty"`
-	Timestamp   time.Time      `json:"timestamp"`
-	Score       int            `json:"score"`
-	Reasons     []string       `json:"reasons,omitempty"`
+	Success   bool            `json:"success"`
+	UserInfo  *GitHubUserInfo `json:"user_info,omitempty"`
+	Email     string          `json:"email,omitempty"`
+	DeviceID  string          `json:"device_id,omitempty"`
+	IPAddress string          `json:"ip_address,omitempty"`
+	Timestamp time.Time       `json:"timestamp"`
+	Score     int             `json:"score"`
+	Reasons   []string        `json:"reasons,omitempty"`
 }
 
 // GitHubVerifier GitHub OAuth 验证器
@@ -172,20 +172,20 @@ func (c *VerificationCache) Set(key string, value *GitHubUserInfo, ttl time.Dura
 
 // EmailVerifier 邮箱验证器
 type EmailVerifier struct {
-	domains          map[string]bool
-	allowedDomains   []string
+	domains            map[string]bool
+	allowedDomains     []string
 	blacklistedDomains map[string]bool
-	verifyMX         bool
-	httpClient       *http.Client
+	verifyMX           bool
+	httpClient         *http.Client
 }
 
 // NewEmailVerifier 创建邮箱验证器
 func NewEmailVerifier(allowedDomains []string, verifyMX bool) *EmailVerifier {
 	ev := &EmailVerifier{
 		allowedDomains:     allowedDomains,
-		domains:           make(map[string]bool),
+		domains:            make(map[string]bool),
 		blacklistedDomains: make(map[string]bool),
-		verifyMX:          verifyMX,
+		verifyMX:           verifyMX,
 		httpClient: &http.Client{
 			Timeout: 10 * time.Second,
 		},
@@ -246,9 +246,9 @@ func (ev *EmailVerifier) VerifyEmail(email string) (bool, string) {
 
 // DeviceFingerprint 设备指纹识别器
 type DeviceFingerprint struct {
-	seen    map[string]time.Time
-	mu      sync.RWMutex
-	maxAge  time.Duration
+	seen   map[string]time.Time
+	mu     sync.RWMutex
+	maxAge time.Duration
 }
 
 // NewDeviceFingerprint 创建设备指纹识别器
@@ -301,8 +301,8 @@ type IPLimiter struct {
 
 // IPRecord IP 记录
 type IPRecord struct {
-	Count    int
-	LastSeen time.Time
+	Count     int
+	LastSeen  time.Time
 	FirstSeen time.Time
 }
 
@@ -386,44 +386,44 @@ func NormalizeIP(ip string) string {
 
 // Validator 综合验证器
 type Validator struct {
-	githubVerifier       *GitHubVerifier
-	emailVerifier        *EmailVerifier
-	deviceFingerprint    *DeviceFingerprint
-	ipLimiter            *IPLimiter
-	requireEmail         bool
-	requireGitHub        bool
-	scoreWeightGitHub    int
-	scoreWeightEmail     int
+	githubVerifier        *GitHubVerifier
+	emailVerifier         *EmailVerifier
+	deviceFingerprint     *DeviceFingerprint
+	ipLimiter             *IPLimiter
+	requireEmail          bool
+	requireGitHub         bool
+	scoreWeightGitHub     int
+	scoreWeightEmail      int
 	scoreWeightAccountAge int
 }
 
 // ValidatorConfig 验证器配置
 type ValidatorConfig struct {
-	GitHubClientID     string
-	GitHubClientSecret string
-	AllowedEmailDomains []string
-	VerifyEmailMX      bool
-	MaxClaimsPerIP     int
-	IPWindow           time.Duration
-	DeviceMaxAge       time.Duration
-	RequireEmail       bool
-	RequireGitHub      bool
-	ScoreWeightGitHub    int
-	ScoreWeightEmail     int
+	GitHubClientID        string
+	GitHubClientSecret    string
+	AllowedEmailDomains   []string
+	VerifyEmailMX         bool
+	MaxClaimsPerIP        int
+	IPWindow              time.Duration
+	DeviceMaxAge          time.Duration
+	RequireEmail          bool
+	RequireGitHub         bool
+	ScoreWeightGitHub     int
+	ScoreWeightEmail      int
 	ScoreWeightAccountAge int
 }
 
 // NewValidator 创建综合验证器
 func NewValidator(config *ValidatorConfig) *Validator {
 	return &Validator{
-		githubVerifier:    NewGitHubVerifier(config.GitHubClientID, config.GitHubClientSecret),
-		emailVerifier:     NewEmailVerifier(config.AllowedEmailDomains, config.VerifyEmailMX),
-		deviceFingerprint: NewDeviceFingerprint(config.DeviceMaxAge),
-		ipLimiter:         NewIPLimiter(config.MaxClaimsPerIP, config.IPWindow),
-		requireEmail:      config.RequireEmail,
-		requireGitHub:     config.RequireGitHub,
-		scoreWeightGitHub:    config.ScoreWeightGitHub,
-		scoreWeightEmail:     config.ScoreWeightEmail,
+		githubVerifier:        NewGitHubVerifier(config.GitHubClientID, config.GitHubClientSecret),
+		emailVerifier:         NewEmailVerifier(config.AllowedEmailDomains, config.VerifyEmailMX),
+		deviceFingerprint:     NewDeviceFingerprint(config.DeviceMaxAge),
+		ipLimiter:             NewIPLimiter(config.MaxClaimsPerIP, config.IPWindow),
+		requireEmail:          config.RequireEmail,
+		requireGitHub:         config.RequireGitHub,
+		scoreWeightGitHub:     config.ScoreWeightGitHub,
+		scoreWeightEmail:      config.ScoreWeightEmail,
 		scoreWeightAccountAge: config.ScoreWeightAccountAge,
 	}
 }

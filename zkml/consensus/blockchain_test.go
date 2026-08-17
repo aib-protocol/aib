@@ -35,15 +35,15 @@ func TestBlockchain_BasicFlow(t *testing.T) {
 
 	// Create a block event from ZKML verification
 	event := &BlockEvent{
-		TaskID:        "task-123",
-		FinalResult:   "4",
-		IsValid:       true,
-		AgreementRate: 1.0,
-		NodeResults:   map[string]string{"node1": "4", "node2": "4", "node3": "4"},
+		TaskID:         "task-123",
+		FinalResult:    "4",
+		IsValid:        true,
+		AgreementRate:  1.0,
+		NodeResults:    map[string]string{"node1": "4", "node2": "4", "node3": "4"},
 		ConsensusNodes: []string{"node1", "node2", "node3"},
-		Metadata:      map[string]string{"model": "glm-5", "prompt": "2+2"},
-		Timestamp:     time.Now().Unix(),
-		BlockHeight:   1,
+		Metadata:       map[string]string{"model": "glm-5", "prompt": "2+2"},
+		Timestamp:      time.Now().Unix(),
+		BlockHeight:    1,
 	}
 
 	// Add block event
@@ -84,15 +84,15 @@ func TestBlockchain_BasicFlow(t *testing.T) {
 
 	// Test invalid block (low agreement rate)
 	event2 := &BlockEvent{
-		TaskID:        "task-456",
-		FinalResult:   "inconsistent",
-		IsValid:       true, // Marked as valid but low agreement
-		AgreementRate: 0.3,  // Below minimum 0.5
-		NodeResults:   map[string]string{"node1": "A", "node2": "B", "node3": "C"},
-		ConsensusNodes: []string{"node1"},
+		TaskID:           "task-456",
+		FinalResult:      "inconsistent",
+		IsValid:          true, // Marked as valid but low agreement
+		AgreementRate:    0.3,  // Below minimum 0.5
+		NodeResults:      map[string]string{"node1": "A", "node2": "B", "node3": "C"},
+		ConsensusNodes:   []string{"node1"},
 		DisagreeingNodes: []string{"node2", "node3"},
-		Timestamp:     time.Now().Unix(),
-		BlockHeight:   2,
+		Timestamp:        time.Now().Unix(),
+		BlockHeight:      2,
 	}
 
 	// This should fail because agreement rate is below minimum
@@ -115,14 +115,14 @@ func TestBlockchain_GetBlocksInRange(t *testing.T) {
 	// Add multiple blocks
 	for i := 1; i <= 5; i++ {
 		event := &BlockEvent{
-			TaskID:        fmt.Sprintf("task-%d", i),
-			FinalResult:   fmt.Sprintf("result-%d", i),
-			IsValid:       true,
-			AgreementRate: 1.0,
-			NodeResults:   map[string]string{"node1": "ok"},
+			TaskID:         fmt.Sprintf("task-%d", i),
+			FinalResult:    fmt.Sprintf("result-%d", i),
+			IsValid:        true,
+			AgreementRate:  1.0,
+			NodeResults:    map[string]string{"node1": "ok"},
 			ConsensusNodes: []string{"node1"},
-			Timestamp:     time.Now().Unix(),
-			BlockHeight:   uint64(i),
+			Timestamp:      time.Now().Unix(),
+			BlockHeight:    uint64(i),
 		}
 		bc.AddBlockEvent(event)
 	}
@@ -170,14 +170,14 @@ func TestBlockchain_Callbacks(t *testing.T) {
 
 	// Add a block
 	event := &BlockEvent{
-		TaskID:        "callback-test",
-		FinalResult:   "test",
-		IsValid:       true,
-		AgreementRate: 1.0,
-		NodeResults:   map[string]string{"node1": "test"},
+		TaskID:         "callback-test",
+		FinalResult:    "test",
+		IsValid:        true,
+		AgreementRate:  1.0,
+		NodeResults:    map[string]string{"node1": "test"},
 		ConsensusNodes: []string{"node1"},
-		Timestamp:     time.Now().Unix(),
-		BlockHeight:   1,
+		Timestamp:      time.Now().Unix(),
+		BlockHeight:    1,
 	}
 
 	bc.AddBlockEvent(event)

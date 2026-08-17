@@ -21,10 +21,10 @@ import (
 type ChainType string
 
 const (
-	ChainBTC  ChainType = "BTC"  // Bitcoin
-	ChainETH  ChainType = "ETH"  // Ethereum
-	ChainSOL  ChainType = "SOL"  // Solana
-	ChainAIB  ChainType = "AIB"  // AIB native chain
+	ChainBTC ChainType = "BTC" // Bitcoin
+	ChainETH ChainType = "ETH" // Ethereum
+	ChainSOL ChainType = "SOL" // Solana
+	ChainAIB ChainType = "AIB" // AIB native chain
 )
 
 // String returns the string representation of ChainType.
@@ -42,7 +42,7 @@ type RelayerStatus string
 const (
 	StatusActive   RelayerStatus = "Active"   // Fully operational
 	StatusInactive RelayerStatus = "Inactive" // Temporarily inactive
-	StatusSlashed RelayerStatus = "Slashed"  // Punished for misbehavior
+	StatusSlashed  RelayerStatus = "Slashed"  // Punished for misbehavior
 )
 
 // String returns the string representation of RelayerStatus.
@@ -142,20 +142,20 @@ func (h *Hash) Bytes() []byte {
 
 // Relayer represents a cross-chain relayer node.
 type Relayer struct {
-	ID            string              // Unique identifier (node public key hash)
-	Address       Address             // Relayer address on AIB chain
-	NodeID        string              // P2P node ID
+	ID              string            // Unique identifier (node public key hash)
+	Address         Address           // Relayer address on AIB chain
+	NodeID          string            // P2P node ID
 	SupportedChains []ChainType       // List of chains this relayer supports
-	Stake         *big.Int           // Staked amount (in smallest unit)
-	Status        RelayerStatus       // Current operational status
-	Reputation    float64             // Reputation score (0-100)
-	TotalTXs      uint64              // Total transactions processed
-	SuccessRate   float64             // Success rate (0-1)
-	FeeRate       *big.Int           // Fee rate (per transaction)
-	CreatedAt     time.Time           // Registration timestamp
-	LastActiveAt  time.Time           // Last active timestamp
-	Metadata      map[string]string  // Additional metadata
-	mu            sync.RWMutex        // Mutex for concurrent access
+	Stake           *big.Int          // Staked amount (in smallest unit)
+	Status          RelayerStatus     // Current operational status
+	Reputation      float64           // Reputation score (0-100)
+	TotalTXs        uint64            // Total transactions processed
+	SuccessRate     float64           // Success rate (0-1)
+	FeeRate         *big.Int          // Fee rate (per transaction)
+	CreatedAt       time.Time         // Registration timestamp
+	LastActiveAt    time.Time         // Last active timestamp
+	Metadata        map[string]string // Additional metadata
+	mu              sync.RWMutex      // Mutex for concurrent access
 }
 
 // NewRelayer creates a new Relayer instance.
@@ -172,8 +172,8 @@ func NewRelayer(id string, addr Address, nodeID string, chains []ChainType, stak
 		TotalTXs:        0,
 		SuccessRate:     1.0,
 		FeeRate:         big.NewInt(1000), // Default fee: 1000 satoshi equivalent
-		CreatedAt:      now,
-		LastActiveAt:   now,
+		CreatedAt:       now,
+		LastActiveAt:    now,
 		Metadata:        make(map[string]string),
 	}
 }
@@ -276,24 +276,24 @@ func DeserializeRelayer(data []byte) (*Relayer, error) {
 
 // CrossChainTx represents a cross-chain transaction.
 type CrossChainTx struct {
-	ID            string         // Unique transaction ID
-	SourceChain   ChainType      // Source blockchain
-	DestChain     ChainType      // Destination blockchain
-	SourceTxHash  Hash           // Transaction hash on source chain
-	DestTxHash    Hash           // Transaction hash on destination chain
-	Sender        Address        // Sender address on source chain
-	Recipient     Address        // Recipient address on destination chain
-	Amount        *big.Int       // Amount to transfer
-	Token         string         // Token symbol (e.g., "BTC", "ETH")
-	Status        TxStatus       // Current transaction status
-	CreatedAt     time.Time      // Creation timestamp
-	UpdatedAt     time.Time      // Last update timestamp
-	Confirmations uint64         // Number of confirmations
-	Proof         *MerkleProof   // Merkle proof for verification
-	RelayerID     string         // Relayer processing this transaction
-	Fee           *big.Int       // Relayer fee
-	Expiry        time.Time      // Expiration time
-	mu            sync.RWMutex    // Mutex for concurrent access
+	ID            string       // Unique transaction ID
+	SourceChain   ChainType    // Source blockchain
+	DestChain     ChainType    // Destination blockchain
+	SourceTxHash  Hash         // Transaction hash on source chain
+	DestTxHash    Hash         // Transaction hash on destination chain
+	Sender        Address      // Sender address on source chain
+	Recipient     Address      // Recipient address on destination chain
+	Amount        *big.Int     // Amount to transfer
+	Token         string       // Token symbol (e.g., "BTC", "ETH")
+	Status        TxStatus     // Current transaction status
+	CreatedAt     time.Time    // Creation timestamp
+	UpdatedAt     time.Time    // Last update timestamp
+	Confirmations uint64       // Number of confirmations
+	Proof         *MerkleProof // Merkle proof for verification
+	RelayerID     string       // Relayer processing this transaction
+	Fee           *big.Int     // Relayer fee
+	Expiry        time.Time    // Expiration time
+	mu            sync.RWMutex // Mutex for concurrent access
 }
 
 // NewCrossChainTx creates a new cross-chain transaction.
@@ -308,19 +308,19 @@ func NewCrossChainTx(
 ) *CrossChainTx {
 	now := time.Now()
 	return &CrossChainTx{
-		ID:           id,
-		SourceChain:  sourceChain,
-		DestChain:    destChain,
-		Sender:       sender,
-		Recipient:    recipient,
-		Amount:       amount,
-		Token:        token,
-		Status:       TxStatusPending,
-		CreatedAt:    now,
-		UpdatedAt:    now,
-		RelayerID:    relayerID,
-		Fee:          big.NewInt(0),
-		Expiry:       now.Add(expiry),
+		ID:          id,
+		SourceChain: sourceChain,
+		DestChain:   destChain,
+		Sender:      sender,
+		Recipient:   recipient,
+		Amount:      amount,
+		Token:       token,
+		Status:      TxStatusPending,
+		CreatedAt:   now,
+		UpdatedAt:   now,
+		RelayerID:   relayerID,
+		Fee:         big.NewInt(0),
+		Expiry:      now.Add(expiry),
 	}
 }
 
@@ -387,12 +387,12 @@ func DeserializeCrossChainTx(data []byte) (*CrossChainTx, error) {
 
 // MerkleProof represents a merkle proof for cross-chain verification.
 type MerkleProof struct {
-	TxHash     Hash     // Transaction hash
-	BlockHash  Hash     // Block containing the transaction
-	BlockNumber uint64  // Block number
-	Index      uint64   // Transaction index in block
-	Proof      [][]byte // Merkle proof path
-	Chain      ChainType // Source chain
+	TxHash      Hash      // Transaction hash
+	BlockHash   Hash      // Block containing the transaction
+	BlockNumber uint64    // Block number
+	Index       uint64    // Transaction index in block
+	Proof       [][]byte  // Merkle proof path
+	Chain       ChainType // Source chain
 }
 
 // NewMerkleProof creates a new MerkleProof.
@@ -461,17 +461,17 @@ func DeserializeMerkleProof(data []byte) (*MerkleProof, error) {
 
 // SwapRequest represents a request to swap tokens across chains.
 type SwapRequest struct {
-	ID            string     // Unique request ID
-	SourceChain   ChainType  // Source blockchain
-	DestChain     ChainType  // Destination blockchain
-	Sender        Address    // Sender address on source chain
-	Recipient     Address    // Recipient address on destination chain
-	Amount        *big.Int   // Amount to swap
-	Token          string    // Token symbol
-	RelayerFee    *big.Int   // Maximum relayer fee willing to pay
-	Deadline      time.Time  // Swap deadline
-	SecretHash    []byte     // Hash of secret for HTLC
-	CreatedAt     time.Time  // Creation timestamp
+	ID          string    // Unique request ID
+	SourceChain ChainType // Source blockchain
+	DestChain   ChainType // Destination blockchain
+	Sender      Address   // Sender address on source chain
+	Recipient   Address   // Recipient address on destination chain
+	Amount      *big.Int  // Amount to swap
+	Token       string    // Token symbol
+	RelayerFee  *big.Int  // Maximum relayer fee willing to pay
+	Deadline    time.Time // Swap deadline
+	SecretHash  []byte    // Hash of secret for HTLC
+	CreatedAt   time.Time // Creation timestamp
 }
 
 // NewSwapRequest creates a new SwapRequest.
@@ -526,12 +526,12 @@ func (r *SwapRequest) ToCrossChainTx(relayerID string) *CrossChainTx {
 
 // RegisterRequest represents a request to register a relayer.
 type RegisterRequest struct {
-	NodeID        string      // P2P node ID
-	Address       Address     // Relayer address on AIB chain
-	SupportedChains []ChainType // List of supported chains
-	Stake         *big.Int   // Staked amount
-	FeeRate       *big.Int   // Fee rate
-	Metadata      map[string]string // Additional metadata
+	NodeID          string            // P2P node ID
+	Address         Address           // Relayer address on AIB chain
+	SupportedChains []ChainType       // List of supported chains
+	Stake           *big.Int          // Staked amount
+	FeeRate         *big.Int          // Fee rate
+	Metadata        map[string]string // Additional metadata
 }
 
 // NewRegisterRequest creates a new RegisterRequest.
@@ -558,23 +558,23 @@ func NewRegisterRequest(
 
 // Dispute represents a dispute in the relayer network.
 type Dispute struct {
-	ID           string         // Unique dispute ID
-	TxHash       string         // Transaction ID under dispute
-	Reporter     string         // Who reported the dispute
-	Reason       string         // Reason for dispute
-	Evidence     []byte         // Evidence data
-	Status       string         // Dispute status
-	CreatedAt    time.Time      // Creation timestamp
-	ResolvedAt   *time.Time     // Resolution timestamp
+	ID         string     // Unique dispute ID
+	TxHash     string     // Transaction ID under dispute
+	Reporter   string     // Who reported the dispute
+	Reason     string     // Reason for dispute
+	Evidence   []byte     // Evidence data
+	Status     string     // Dispute status
+	CreatedAt  time.Time  // Creation timestamp
+	ResolvedAt *time.Time // Resolution timestamp
 }
 
 // DisputeResolution represents the resolution of a dispute.
 type DisputeResolution struct {
-	DisputeID    string // Dispute ID
-	Winner       string // Winner (relayer ID)
-	Loser        string // Loser (relayer ID)
-	Resolution   string // Resolution description
-	Penalty      *big.Int // Penalty amount
+	DisputeID  string   // Dispute ID
+	Winner     string   // Winner (relayer ID)
+	Loser      string   // Loser (relayer ID)
+	Resolution string   // Resolution description
+	Penalty    *big.Int // Penalty amount
 }
 
 // ============================================================================

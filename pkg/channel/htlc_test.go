@@ -33,16 +33,16 @@ func newMockManager() *mockManager {
 
 func (m *mockManager) createTestChannel(channelID [32]byte, partyA, partyB interfaces.Address) {
 	m.channels[channelID] = &interfaces.Channel{
-		ID:        channelID,
+		ID:       channelID,
 		PartyA:   partyA,
 		PartyB:   partyB,
 		BalanceA: 1000000,
 		BalanceB: 1000000,
 	}
 	m.states[channelID] = &ChannelState{
-		Status:        StateOpen,
-		LastUpdate:    time.Now(),
-		PendingHTLCs:  make(map[[32]byte]*HTLC),
+		Status:       StateOpen,
+		LastUpdate:   time.Now(),
+		PendingHTLCs: make(map[[32]byte]*HTLC),
 	}
 }
 
@@ -72,10 +72,10 @@ func (m *MockMultiSigLockerForHTLC) VerifyMultiSig(utxo *interfaces.UTXO, sigA, 
 
 func TestManager_AddHTLC(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:   &MockMultiSigLockerForHTLC{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLockerForHTLC{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -116,10 +116,10 @@ func TestManager_AddHTLC(t *testing.T) {
 
 func TestManager_AddHTLC_ChannelNotFound(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:   &MockMultiSigLockerForHTLC{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLockerForHTLC{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -140,10 +140,10 @@ func TestManager_AddHTLC_ChannelNotFound(t *testing.T) {
 
 func TestManager_AddHTLC_InvalidSender(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:   &MockMultiSigLockerForHTLC{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLockerForHTLC{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -169,10 +169,10 @@ func TestManager_AddHTLC_InvalidSender(t *testing.T) {
 
 func TestManager_AddHTLC_SameSenderReceiver(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:   &MockMultiSigLockerForHTLC{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLockerForHTLC{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -198,10 +198,10 @@ func TestManager_AddHTLC_SameSenderReceiver(t *testing.T) {
 
 func TestManager_AddHTLC_InsufficientBalance(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:   &MockMultiSigLockerForHTLC{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLockerForHTLC{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -227,10 +227,10 @@ func TestManager_AddHTLC_InsufficientBalance(t *testing.T) {
 
 func TestManager_CompleteHTLC(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:   &MockMultiSigLockerForHTLC{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLockerForHTLC{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -269,10 +269,10 @@ func TestManager_CompleteHTLC(t *testing.T) {
 
 func TestManager_CompleteHTLC_InvalidPreimage(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:   &MockMultiSigLockerForHTLC{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLockerForHTLC{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -302,10 +302,10 @@ func TestManager_CompleteHTLC_InvalidPreimage(t *testing.T) {
 
 func TestManager_ExpireHTLC(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:   &MockMultiSigLockerForHTLC{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLockerForHTLC{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -343,10 +343,10 @@ func TestManager_ExpireHTLC(t *testing.T) {
 
 func TestManager_GetHTLCs(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:   &MockMultiSigLockerForHTLC{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLockerForHTLC{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -380,10 +380,10 @@ func TestManager_GetHTLCs(t *testing.T) {
 
 func TestManager_CountHTLCs(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:   &MockMultiSigLockerForHTLC{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLockerForHTLC{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -414,10 +414,10 @@ func TestManager_CountHTLCs(t *testing.T) {
 
 func TestManager_GetTotalHTLCAmount(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:   &MockMultiSigLockerForHTLC{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLockerForHTLC{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -449,10 +449,10 @@ func TestManager_GetTotalHTLCAmount(t *testing.T) {
 
 func TestManager_GetHTLCsBySender(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:   &MockMultiSigLockerForHTLC{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLockerForHTLC{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -483,10 +483,10 @@ func TestManager_GetHTLCsBySender(t *testing.T) {
 
 func TestManager_GetHTLCsByReceiver(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:   &MockMultiSigLockerForHTLC{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLockerForHTLC{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -517,10 +517,10 @@ func TestManager_GetHTLCsByReceiver(t *testing.T) {
 
 func TestManager_CheckHTLCExpiration(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:   &MockMultiSigLockerForHTLC{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLockerForHTLC{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -553,10 +553,10 @@ func TestManager_CheckHTLCExpiration(t *testing.T) {
 
 func TestManager_RemoveHTLC(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:   &MockMultiSigLockerForHTLC{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLockerForHTLC{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -590,10 +590,10 @@ func TestManager_RemoveHTLC(t *testing.T) {
 
 func TestManager_SettleExpiredHTLCs(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:   &MockMultiSigLockerForHTLC{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLockerForHTLC{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -946,21 +946,21 @@ func TestHTLC_Expiration(t *testing.T) {
 // TestSwapFields_AtomicSwap tests AtomicSwap structure fields
 func TestSwapFields_AtomicSwap(t *testing.T) {
 	swap := &AtomicSwap{
-		ID:          [32]byte{1, 2, 3},
-		SwapID:      "swap-001",
-		Sender:      createTestAddress("sender"),
-		Receiver:    createTestAddress("receiver"),
-		HashLock:    sha256.Sum256([]byte("secret")),
-		Amount:      1000,
-		AssetIn:     "AIB",
-		AssetOut:    "BTC",
-		Rate:        100000000, // 1 BTC = 100M satoshi AIB
-		TimeLock:    time.Now().Add(1 * time.Hour),
-		Status:      SwapCreated,
-		ChannelID:   [32]byte{9, 8, 7},
-		CreatedAt:   time.Now(),
-		Initiator:   createTestAddress("sender"),
-		Participant: createTestAddress("receiver"),
+		ID:           [32]byte{1, 2, 3},
+		SwapID:       "swap-001",
+		Sender:       createTestAddress("sender"),
+		Receiver:     createTestAddress("receiver"),
+		HashLock:     sha256.Sum256([]byte("secret")),
+		Amount:       1000,
+		AssetIn:      "AIB",
+		AssetOut:     "BTC",
+		Rate:         100000000, // 1 BTC = 100M satoshi AIB
+		TimeLock:     time.Now().Add(1 * time.Hour),
+		Status:       SwapCreated,
+		ChannelID:    [32]byte{9, 8, 7},
+		CreatedAt:    time.Now(),
+		Initiator:    createTestAddress("sender"),
+		Participant:  createTestAddress("receiver"),
 		IsCrossChain: false,
 	}
 
@@ -1102,9 +1102,9 @@ func TestHTLC_ID_Uniqueness(t *testing.T) {
 // TestCrossChainFields tests cross-chain swap fields
 func TestCrossChainFields(t *testing.T) {
 	swap := &AtomicSwap{
-		ID:            [32]byte{1},
-		IsCrossChain:  true,
-		ExternalTxID:  "btc-tx-123",
+		ID:           [32]byte{1},
+		IsCrossChain: true,
+		ExternalTxID: "btc-tx-123",
 	}
 
 	if !swap.IsCrossChain {
@@ -1121,10 +1121,10 @@ func TestRateField(t *testing.T) {
 	// e.g., 100000000 = 1.0 (AssetOut per AssetIn)
 
 	_ = &AtomicSwap{
-		Amount: 100000000, // 1 AIB (with 8 decimals)
-		AssetIn: "AIB",
+		Amount:   100000000, // 1 AIB (with 8 decimals)
+		AssetIn:  "AIB",
 		AssetOut: "BTC",
-		Rate:    10000, // 0.0001 BTC per AIB
+		Rate:     10000, // 0.0001 BTC per AIB
 	}
 
 	// Expected output = Amount * Rate / 10^8
@@ -1294,10 +1294,10 @@ func TestPreimageLengthVariations(t *testing.T) {
 
 func TestAtomicSwapManager_NewAtomicSwapManager(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:   &MockMultiSigLockerForHTLC{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLockerForHTLC{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -1318,10 +1318,10 @@ func TestAtomicSwapManager_NewAtomicSwapManager(t *testing.T) {
 
 func TestAtomicSwapManager_CreateSwap(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:   &MockMultiSigLockerForHTLC{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLockerForHTLC{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -1386,10 +1386,10 @@ func TestAtomicSwapManager_CreateSwap(t *testing.T) {
 
 func TestAtomicSwapManager_CreateSwap_InvalidAmount(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:   &MockMultiSigLockerForHTLC{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLockerForHTLC{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -1420,10 +1420,10 @@ func TestAtomicSwapManager_CreateSwap_InvalidAmount(t *testing.T) {
 
 func TestAtomicSwapManager_CreateSwap_InvalidAsset(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:   &MockMultiSigLockerForHTLC{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLockerForHTLC{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -1454,10 +1454,10 @@ func TestAtomicSwapManager_CreateSwap_InvalidAsset(t *testing.T) {
 
 func TestAtomicSwapManager_CreateSwap_SameParty(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:   &MockMultiSigLockerForHTLC{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLockerForHTLC{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -1487,10 +1487,10 @@ func TestAtomicSwapManager_CreateSwap_SameParty(t *testing.T) {
 
 func TestAtomicSwapManager_CreateSwap_ChannelNotFound(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:   &MockMultiSigLockerForHTLC{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLockerForHTLC{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -1518,10 +1518,10 @@ func TestAtomicSwapManager_CreateSwap_ChannelNotFound(t *testing.T) {
 
 func TestAtomicSwapManager_ClaimSwap(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:   &MockMultiSigLockerForHTLC{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLockerForHTLC{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -1566,10 +1566,10 @@ func TestAtomicSwapManager_ClaimSwap(t *testing.T) {
 
 func TestAtomicSwapManager_ClaimSwap_InvalidSecret(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:   &MockMultiSigLockerForHTLC{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLockerForHTLC{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -1605,10 +1605,10 @@ func TestAtomicSwapManager_ClaimSwap_InvalidSecret(t *testing.T) {
 
 func TestAtomicSwapManager_ClaimSwap_SwapExpired(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:   &MockMultiSigLockerForHTLC{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLockerForHTLC{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -1647,10 +1647,10 @@ func TestAtomicSwapManager_ClaimSwap_SwapExpired(t *testing.T) {
 
 func TestAtomicSwapManager_RefundSwap(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:   &MockMultiSigLockerForHTLC{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLockerForHTLC{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -1697,10 +1697,10 @@ func TestAtomicSwapManager_RefundSwap(t *testing.T) {
 
 func TestAtomicSwapManager_RefundSwap_NotExpired(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:   &MockMultiSigLockerForHTLC{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLockerForHTLC{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -1736,10 +1736,10 @@ func TestAtomicSwapManager_RefundSwap_NotExpired(t *testing.T) {
 
 func TestAtomicSwapManager_VerifyHash(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:   &MockMultiSigLockerForHTLC{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLockerForHTLC{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -1788,10 +1788,10 @@ func TestAtomicSwapManager_VerifyHash(t *testing.T) {
 
 func TestAtomicSwapManager_GetSwap(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:   &MockMultiSigLockerForHTLC{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLockerForHTLC{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -1837,10 +1837,10 @@ func TestAtomicSwapManager_GetSwap(t *testing.T) {
 
 func TestAtomicSwapManager_GetSwapsByChannel(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:   &MockMultiSigLockerForHTLC{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLockerForHTLC{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -1892,10 +1892,10 @@ func TestAtomicSwapManager_GetSwapsByChannel(t *testing.T) {
 
 func TestAtomicSwapManager_GetPendingSwaps(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:   &MockMultiSigLockerForHTLC{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLockerForHTLC{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -1933,10 +1933,10 @@ func TestAtomicSwapManager_GetPendingSwaps(t *testing.T) {
 
 func TestAtomicSwapManager_GetExpiredSwaps(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:   &MockMultiSigLockerForHTLC{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLockerForHTLC{},
 	}
 
 	manager, _ := NewManager(cfg)

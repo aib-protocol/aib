@@ -28,11 +28,11 @@ func TestMemoryStorage_SaveBlock(t *testing.T) {
 	store := NewMemoryStorage()
 
 	block := &Block{
-		Height:       0,
-		TaskID:       "test-task",
-		FinalResult:  "result",
-		IsValid:      true,
-		Nonce:        123,
+		Height:      0,
+		TaskID:      "test-task",
+		FinalResult: "result",
+		IsValid:     true,
+		Nonce:       123,
 	}
 
 	err := store.SaveBlock(block)
@@ -58,10 +58,10 @@ func TestMemoryStorage_LoadBlock(t *testing.T) {
 	store := NewMemoryStorage()
 
 	block := &Block{
-		Height:       5,
-		TaskID:       "test-task",
-		FinalResult:  "result",
-		IsValid:      true,
+		Height:      5,
+		TaskID:      "test-task",
+		FinalResult: "result",
+		IsValid:     true,
 	}
 
 	store.SaveBlock(block)
@@ -137,10 +137,10 @@ func TestMemoryStorage_GetBlockByHash(t *testing.T) {
 	store := NewMemoryStorage()
 
 	block := &Block{
-		Height:   5,
-		TaskID:   "test-task",
+		Height:      5,
+		TaskID:      "test-task",
 		FinalResult: "result",
-		Nonce:   100,
+		Nonce:       100,
 	}
 
 	store.SaveBlock(block)

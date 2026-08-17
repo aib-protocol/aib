@@ -12,7 +12,7 @@ func TestSimpleUpgradeSimulation(t *testing.T) {
 	t.Log("=== Starting Simple Upgrade Simulation ===")
 
 	testCases := []struct {
-		name         string
+		name          string
 		upgradeHeight uint64
 	}{
 		{"Quick Test", 10},

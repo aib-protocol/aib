@@ -20,7 +20,7 @@ import (
 
 // VulnerableContract simulates a contract vulnerable to reentrancy
 type VulnerableContract struct {
-	Balances map[aal.Address]*big.Int
+	Balances   map[aal.Address]*big.Int
 	EthBalance *big.Int
 	Target     *SecureContract
 }
@@ -219,8 +219,8 @@ func TestIntegerOverflowPrevention(t *testing.T) {
 	maxInt256 := new(big.Int).Sub(new(big.Int).Lsh(big.NewInt(1), 255), big.NewInt(1))
 
 	tests := []struct {
-		name     string
-		a, b     *big.Int
+		name      string
+		a, b      *big.Int
 		operation string
 		expectErr bool
 	}{
@@ -342,8 +342,8 @@ func TestSafeMathLibrary(t *testing.T) {
 
 // AccessControlContract simulates an access-controlled contract
 type AccessControlContract struct {
-	Owners     map[aal.Address]bool
-	Operators  map[aal.Address]map[aal.Address]bool
+	Owners    map[aal.Address]bool
+	Operators map[aal.Address]map[aal.Address]bool
 }
 
 func NewAccessControlContract() *AccessControlContract {
@@ -726,9 +726,9 @@ func TestReentrancyFuzzing(t *testing.T) {
 	// Fuzz test for reentrancy vulnerabilities
 
 	testCases := []struct {
-		callDepth    int
-		reentrancy   bool
-		shouldFail   bool
+		callDepth  int
+		reentrancy bool
+		shouldFail bool
 	}{
 		{1, false, false},
 		{2, false, false},
@@ -760,8 +760,8 @@ func TestIntegerOverflowFuzzing(t *testing.T) {
 		big.NewInt(0),
 		big.NewInt(1),
 		big.NewInt(-1),
-		new(big.Int).Lsh(big.NewInt(1), 255),  // Max int256
-		new(big.Int).Lsh(big.NewInt(1), 256),  // Max uint256
+		new(big.Int).Lsh(big.NewInt(1), 255), // Max int256
+		new(big.Int).Lsh(big.NewInt(1), 256), // Max uint256
 		new(big.Int).Sub(new(big.Int).Lsh(big.NewInt(1), 255), big.NewInt(1)), // Max int256 - 1
 	}
 

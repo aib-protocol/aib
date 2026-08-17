@@ -12,12 +12,12 @@ import (
 
 // ModelFingerprint represents a unique fingerprint of an AI model
 type ModelFingerprint struct {
-	WeightsHash   []byte  // Merkle root hash of model weights
-	Architecture  string  // Model architecture (e.g., "llama2-7b")
-	Version       string  // Model version
-	Timestamp     int64   // Registration timestamp
-	NodeID        []byte  // ID of the node that registered this model
-	Signature     []byte  // Node signature of the fingerprint
+	WeightsHash  []byte // Merkle root hash of model weights
+	Architecture string // Model architecture (e.g., "llama2-7b")
+	Version      string // Model version
+	Timestamp    int64  // Registration timestamp
+	NodeID       []byte // ID of the node that registered this model
+	Signature    []byte // Node signature of the fingerprint
 }
 
 // ModelWeight represents a single weight parameter of the model

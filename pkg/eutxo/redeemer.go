@@ -13,10 +13,10 @@ import (
 // Redeemer represents the data provided when spending an eUTXO.
 // It contains the execution data and resource limits for script validation.
 type Redeemer struct {
-	Data      []byte    // Redeemer data (depends on script type)
-	ExUnits   ExUnits   // Execution units (CPU + Memory budget)
-	Index     uint32    // Redeemer index (for multiple redeemers)
-	Tag       uint8     // Redeemer tag (Spend, Mint, Cert, etc.)
+	Data    []byte  // Redeemer data (depends on script type)
+	ExUnits ExUnits // Execution units (CPU + Memory budget)
+	Index   uint32  // Redeemer index (for multiple redeemers)
+	Tag     uint8   // Redeemer tag (Spend, Mint, Cert, etc.)
 }
 
 // ExUnits represents execution units for script execution.
@@ -42,7 +42,7 @@ const (
 
 // RedeemerData represents structured redeemer data.
 type RedeemerData struct {
-	Constructor uint16        // Constructor index
+	Constructor uint16          // Constructor index
 	Fields      []RedeemerField // Redeemer fields
 }
 
@@ -299,13 +299,13 @@ func CalculateExUnits(operation string, dataSize int) ExUnits {
 	switch operation {
 	case "signature":
 		return ExUnits{
-			Steps: baseSteps + dataSteps + 50000,  // Signature verification cost
-			Mem:   baseMem + dataMem + 500000,     // Signature verification memory
+			Steps: baseSteps + dataSteps + 50000, // Signature verification cost
+			Mem:   baseMem + dataMem + 500000,    // Signature verification memory
 		}
 	case "hash":
 		return ExUnits{
-			Steps: baseSteps + dataSteps + 10000,  // Hash computation cost
-			Mem:   baseMem + dataMem + 100000,     // Hash computation memory
+			Steps: baseSteps + dataSteps + 10000, // Hash computation cost
+			Mem:   baseMem + dataMem + 100000,    // Hash computation memory
 		}
 	case "script":
 		return ExUnits{
@@ -423,10 +423,10 @@ func RedeemerToJSON(redeemer *Redeemer) ([]byte, error) {
 
 	// If not valid JSON, wrap in a structure
 	wrapped := map[string]interface{}{
-		"data":      redeemer.Data,
-		"exUnits":   redeemer.ExUnits,
-		"tag":       redeemer.Tag,
-		"type":      RedeemerType(RedeemerTag(redeemer.Tag)),
+		"data":    redeemer.Data,
+		"exUnits": redeemer.ExUnits,
+		"tag":     redeemer.Tag,
+		"type":    RedeemerType(RedeemerTag(redeemer.Tag)),
 	}
 	return json.Marshal(wrapped)
 }
@@ -471,4 +471,3 @@ func NewRewardRedeemer(credential []byte, amount uint64) *Redeemer {
 	})
 	return NewRedeemer(data, ExUnits{Steps: 10000, Mem: 100000}, TagReward)
 }
-

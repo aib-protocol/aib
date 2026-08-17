@@ -18,18 +18,18 @@ import (
 
 // PersistentUTXOStore implements persistent storage using bbolt.
 type PersistentUTXOStore struct {
-	db        *bbolt.DB
-	mu        sync.RWMutex
-	readOnly  bool
+	db       *bbolt.DB
+	mu       sync.RWMutex
+	readOnly bool
 }
 
 // Bucket names
 var (
-	BucketUTXO       = []byte("utxo")
-	BucketBalances   = []byte("balances")
-	BucketHeads     = []byte("heads")      // Chain heads (for pruning)
-	BucketMeta      = []byte("meta")      // Metadata
-	BucketTXIndex   = []byte("txindex")   // Transaction index
+	BucketUTXO     = []byte("utxo")
+	BucketBalances = []byte("balances")
+	BucketHeads    = []byte("heads")   // Chain heads (for pruning)
+	BucketMeta     = []byte("meta")    // Metadata
+	BucketTXIndex  = []byte("txindex") // Transaction index
 )
 
 // NewPersistentUTXOStore creates a new persistent UTXO store.

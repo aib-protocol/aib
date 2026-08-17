@@ -311,14 +311,14 @@ func TestDiscovery_Timeout_PeerLatency(t *testing.T) {
 	// 添加节点并设置延迟
 	now := time.Now()
 	peer := &DiscoveredPeer{
-		ID:             PeerID("latency-test-peer"),
-		Addrs:          []string{"/ip4/127.0.0.1/tcp/4001"},
-		Models:         []string{"gpt-4"},
-		Discovered:     now,
-		LastPing:       now,
-		Latency:        100 * time.Millisecond,
-		PingSuccesses:  5,
-		PingFailures:   0,
+		ID:            PeerID("latency-test-peer"),
+		Addrs:         []string{"/ip4/127.0.0.1/tcp/4001"},
+		Models:        []string{"gpt-4"},
+		Discovered:    now,
+		LastPing:      now,
+		Latency:       100 * time.Millisecond,
+		PingSuccesses: 5,
+		PingFailures:  0,
 	}
 	discovery.AddDiscoveredPeer(peer)
 
@@ -348,21 +348,21 @@ func TestDiscovery_Timeout_StalePeerCleanup(t *testing.T) {
 
 	// 添加一个正常节点
 	activePeer := &DiscoveredPeer{
-		ID:              PeerID("active-peer"),
-		Addrs:           []string{"/ip4/127.0.0.1/tcp/4001"},
-		LastPing:        time.Now(),
-		PingSuccesses:   5,
-		PingFailures:    0,
+		ID:            PeerID("active-peer"),
+		Addrs:         []string{"/ip4/127.0.0.1/tcp/4001"},
+		LastPing:      time.Now(),
+		PingSuccesses: 5,
+		PingFailures:  0,
 	}
 	discovery.AddDiscoveredPeer(activePeer)
 
 	// 添加一个陈旧节点（最后一次ping是6分钟前，超过5分钟阈值）
 	stalePeer := &DiscoveredPeer{
-		ID:              PeerID("stale-peer"),
-		Addrs:           []string{"/ip4/127.0.0.1/tcp/4002"},
-		LastPing:        time.Now().Add(-6 * time.Minute),
-		PingSuccesses:   1,
-		PingFailures:    5,
+		ID:            PeerID("stale-peer"),
+		Addrs:         []string{"/ip4/127.0.0.1/tcp/4002"},
+		LastPing:      time.Now().Add(-6 * time.Minute),
+		PingSuccesses: 1,
+		PingFailures:  5,
 	}
 	discovery.AddDiscoveredPeer(stalePeer)
 

@@ -98,11 +98,11 @@ func decryptPrivateKey(ciphertext, password, nonce []byte) ([]byte, error) {
 }
 
 var (
-	ErrInvalidEntropyLength = &backupTestError{"invalid entropy length"}
-	ErrEmptyMnemonic       = &backupTestError{"empty mnemonic"}
+	ErrInvalidEntropyLength  = &backupTestError{"invalid entropy length"}
+	ErrEmptyMnemonic         = &backupTestError{"empty mnemonic"}
 	ErrInvalidPrivateKeySize = &backupTestError{"invalid private key size"}
-	ErrEmptyPassword       = &backupTestError{"empty password"}
-	ErrInvalidNonceSize    = &backupTestError{"invalid nonce size"}
+	ErrEmptyPassword         = &backupTestError{"empty password"}
+	ErrInvalidNonceSize      = &backupTestError{"invalid nonce size"}
 )
 
 type backupTestError struct {

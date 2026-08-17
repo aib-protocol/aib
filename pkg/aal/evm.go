@@ -10,7 +10,7 @@ import (
 
 var (
 	ErrEVMExecutionFailed = errors.New("EVM execution failed")
-	ErrOutOfGas          = errors.New("out of gas")
+	ErrOutOfGas           = errors.New("out of gas")
 	ErrInvalidTransaction = errors.New("invalid transaction")
 	ErrGasLimitExceeded   = errors.New("gas limit exceeded")
 )
@@ -41,10 +41,10 @@ type EVMExecutor struct {
 // BlockContext contains block-level information for EVM execution
 type BlockContext struct {
 	CanTransfer func(db StateDB, addr Address, amount *big.Int) bool
-	Transfer   func(db StateDB, sender, recipient Address, amount *big.Int)
-	GetHash    func(uint64) Hash
-	Coinbase   Address
-	GasLimit   uint64
+	Transfer    func(db StateDB, sender, recipient Address, amount *big.Int)
+	GetHash     func(uint64) Hash
+	Coinbase    Address
+	GasLimit    uint64
 	BlockNumber *big.Int
 	Time        uint64
 	Difficulty  *big.Int

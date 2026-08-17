@@ -57,10 +57,10 @@ type Orchestrator struct {
 	tasks map[string]*Task // taskID -> Task
 
 	// Metrics
-	totalTasks      int
-	completedTasks  int
-	failedTasks     int
-	totalSlashes    int
+	totalTasks     int
+	completedTasks int
+	failedTasks    int
+	totalSlashes   int
 }
 
 // NewOrchestrator creates a new orchestrator with the given configuration

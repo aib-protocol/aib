@@ -25,37 +25,37 @@ import (
 // Structure used for Merkle tree leaves
 type Account struct {
 	Address   string `json:"address"`
-	Balance   string `json:"balance"` // Amount as string to avoid float precision issues
+	Balance   string `json:"balance"`   // Amount as string to avoid float precision issues
 	Timestamp int64  `json:"timestamp"` // Last activity timestamp
-	Nonce     int64  `json:"nonce"` // For replay protection
+	Nonce     int64  `json:"nonce"`     // For replay protection
 }
 
 // SnapshotConfig holds snapshot generation parameters
 type SnapshotConfig struct {
-	InputFile     string `json:"input_file"`
-	OutputFile    string `json:"output_file"`
-	SnapshotID    string `json:"snapshot_id"`
-	SnapshotTime  string `json:"snapshot_time"` // RFC3339 format
-	ClaimDeadline string `json:"claim_deadline"` // RFC3339 format
-	Network       string `json:"network"`
+	InputFile      string `json:"input_file"`
+	OutputFile     string `json:"output_file"`
+	SnapshotID     string `json:"snapshot_id"`
+	SnapshotTime   string `json:"snapshot_time"`  // RFC3339 format
+	ClaimDeadline  string `json:"claim_deadline"` // RFC3339 format
+	Network        string `json:"network"`
 	MinClaimAmount string `json:"min_claim_amount"`
-	HashAlgorithm string `json:"hash_algorithm"` // "sha256", "sha512", etc.
-	TreeType      string `json:"tree_type"` // "standard", "sparse"
+	HashAlgorithm  string `json:"hash_algorithm"` // "sha256", "sha512", etc.
+	TreeType       string `json:"tree_type"`      // "standard", "sparse"
 }
 
 // SnapshotResult contains the generated snapshot data
 type SnapshotResult struct {
-	SnapshotID     string             `json:"snapshot_id"`
-	SnapshotTime   string             `json:"snapshot_time"`
-	SnapshotRoot   string             `json:"snapshot_root"` // Hex encoded Merkle root
-	TotalAccounts  int                `json:"total_accounts"`
-	TotalAmount    string             `json:"total_amount"`
-	ClaimDeadline  string             `json:"claim_deadline"`
-	Network        string             `json:"network"`
-	Accounts       []Account          `json:"accounts"`
-	MerkleTree     [][]string         `json:"merkle_tree"` // Each level as hex strings
-	Proofs         map[string]Proof   `json:"proofs"`      // Address -> proof
-	Metadata       SnapshotMetadata   `json:"metadata"`
+	SnapshotID    string           `json:"snapshot_id"`
+	SnapshotTime  string           `json:"snapshot_time"`
+	SnapshotRoot  string           `json:"snapshot_root"` // Hex encoded Merkle root
+	TotalAccounts int              `json:"total_accounts"`
+	TotalAmount   string           `json:"total_amount"`
+	ClaimDeadline string           `json:"claim_deadline"`
+	Network       string           `json:"network"`
+	Accounts      []Account        `json:"accounts"`
+	MerkleTree    [][]string       `json:"merkle_tree"` // Each level as hex strings
+	Proofs        map[string]Proof `json:"proofs"`      // Address -> proof
+	Metadata      SnapshotMetadata `json:"metadata"`
 }
 
 // Proof represents a Merkle proof for an account
@@ -67,12 +67,12 @@ type Proof struct {
 
 // SnapshotMetadata holds snapshot metadata
 type SnapshotMetadata struct {
-	Version     string `json:"version"`
-	CreatedAt   string `json:"created_at"`
-	CreatedBy   string `json:"created_by"`
-	TreeType    string `json:"tree_type"`
+	Version       string `json:"version"`
+	CreatedAt     string `json:"created_at"`
+	CreatedBy     string `json:"created_by"`
+	TreeType      string `json:"tree_type"`
 	HashAlgorithm string `json:"hash_algorithm"`
-	InputFile   string `json:"input_file,omitempty"`
+	InputFile     string `json:"input_file,omitempty"`
 }
 
 // Hasher defines hash function interface

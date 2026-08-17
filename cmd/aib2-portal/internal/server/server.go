@@ -274,12 +274,12 @@ type aiContextResponse struct {
 }
 
 type aiPoCU struct {
-	ADR         string       `json:"adr"`
-	Summary     string       `json:"summary"`
-	Problem     string       `json:"problem"`
-	Layers      []aiPoCULayer `json:"layers"`
-	Analogy     string       `json:"worldcoin_analogy"`
-	Phases      []aiPoCUPhase `json:"rollout_phases"`
+	ADR     string        `json:"adr"`
+	Summary string        `json:"summary"`
+	Problem string        `json:"problem"`
+	Layers  []aiPoCULayer `json:"layers"`
+	Analogy string        `json:"worldcoin_analogy"`
+	Phases  []aiPoCUPhase `json:"rollout_phases"`
 }
 
 type aiPoCULayer struct {
@@ -461,25 +461,25 @@ func (s *Server) handleExplorer(w http.ResponseWriter, r *http.Request) {
 // API handlers
 
 type APIStats struct {
-	GoFiles       int `json:"go_files"`
-	TestFiles     int `json:"test_files"`
-	TotalLines    int `json:"total_lines"`
-	ModulesTotal  int `json:"modules_total"`
-	ModulesDone   int `json:"modules_done"`
+	GoFiles        int `json:"go_files"`
+	TestFiles      int `json:"test_files"`
+	TotalLines     int `json:"total_lines"`
+	ModulesTotal   int `json:"modules_total"`
+	ModulesDone    int `json:"modules_done"`
 	ModulesPlanned int `json:"modules_planned"`
 }
 
 type APISystem struct {
-	Uptime      string  `json:"uptime"`
-	LoadAvg     string  `json:"load_avg"`
-	MemoryTotal string  `json:"memory_total"`
-	MemoryUsed  string  `json:"memory_used"`
-	DiskTotal   string  `json:"disk_total"`
-	DiskUsed    string  `json:"disk_used"`
-	DiskPercent string  `json:"disk_percent"`
-	CPUCount    int     `json:"cpu_count"`
-	GoVersion   string  `json:"go_version"`
-	Kernel      string  `json:"kernel"`
+	Uptime      string `json:"uptime"`
+	LoadAvg     string `json:"load_avg"`
+	MemoryTotal string `json:"memory_total"`
+	MemoryUsed  string `json:"memory_used"`
+	DiskTotal   string `json:"disk_total"`
+	DiskUsed    string `json:"disk_used"`
+	DiskPercent string `json:"disk_percent"`
+	CPUCount    int    `json:"cpu_count"`
+	GoVersion   string `json:"go_version"`
+	Kernel      string `json:"kernel"`
 }
 
 type APITests struct {
@@ -622,8 +622,8 @@ func (s *Server) handleZKMLProxy(w http.ResponseWriter, r *http.Request) {
 		// ZKML chain not available, return default response
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(map[string]interface{}{
-			"error":      "ZKML blockchain not available",
-			"running":    false,
+			"error":       "ZKML blockchain not available",
+			"running":     false,
 			"block_count": 0,
 		})
 		return
@@ -686,31 +686,31 @@ func (s *Server) handleNodeProxy(w http.ResponseWriter, r *http.Request) {
 // --- Migration API Handlers ---
 
 type migrationSnapshotResponse struct {
-	SnapshotRoot   string    `json:"snapshot_root"`
-	SnapshotTime   time.Time `json:"snapshot_time"`
-	ClaimDeadline  time.Time `json:"claim_deadline"`
-	ClaimOpen      bool      `json:"claim_open"`
-	TotalMigrated  uint64    `json:"total_migrated"`
+	SnapshotRoot  string    `json:"snapshot_root"`
+	SnapshotTime  time.Time `json:"snapshot_time"`
+	ClaimDeadline time.Time `json:"claim_deadline"`
+	ClaimOpen     bool      `json:"claim_open"`
+	TotalMigrated uint64    `json:"total_migrated"`
 }
 
 type chainRateInfo struct {
-	Chain        string    `json:"chain"`
-	CurrentRate  int       `json:"current_rate"`
-	WindowOpen   bool      `json:"window_open"`
-	WindowStart  time.Time `json:"window_start"`
-	WindowEnd    time.Time `json:"window_end"`
+	Chain       string    `json:"chain"`
+	CurrentRate int       `json:"current_rate"`
+	WindowOpen  bool      `json:"window_open"`
+	WindowStart time.Time `json:"window_start"`
+	WindowEnd   time.Time `json:"window_end"`
 }
 
 type migrationRatesResponse struct {
-	Timestamp  time.Time               `json:"timestamp"`
-	AIB1Rate   int                     `json:"aib1_rate"`
+	Timestamp  time.Time                `json:"timestamp"`
+	AIB1Rate   int                      `json:"aib1_rate"`
 	ChainRates map[string]chainRateInfo `json:"chain_rates"`
 }
 
 type migrationStatusResponse struct {
 	Success         bool   `json:"success"`
 	MigrationWindow bool   `json:"migration_window"`
-	AIB1ClaimOpen  bool   `json:"aib1_claim_open"`
+	AIB1ClaimOpen   bool   `json:"aib1_claim_open"`
 	BTCRate         int    `json:"btc_rate"`
 	ETHRate         int    `json:"eth_rate"`
 	SOLRate         int    `json:"sol_rate"`
@@ -727,7 +727,7 @@ func (s *Server) handleMigrationRates(w http.ResponseWriter, r *http.Request) {
 	// For demo: BTC 1:5, ETH 1:4, SOL 1:3
 	resp := migrationRatesResponse{
 		Timestamp: time.Now().UTC(),
-		AIB1Rate: 100, // 1:1 = 100%
+		AIB1Rate:  100, // 1:1 = 100%
 		ChainRates: map[string]chainRateInfo{
 			"BTC": {Chain: "BTC", CurrentRate: 5, WindowOpen: true, WindowStart: time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC), WindowEnd: time.Date(2026, 4, 1, 0, 0, 0, 0, time.UTC)},
 			"ETH": {Chain: "ETH", CurrentRate: 4, WindowOpen: true, WindowStart: time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC), WindowEnd: time.Date(2026, 4, 1, 0, 0, 0, 0, time.UTC)},
@@ -778,13 +778,13 @@ func (s *Server) handleMigrationStatus(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp := migrationStatusResponse{
-		Success:        true,
+		Success:         true,
 		MigrationWindow: windowOpen,
-		AIB1ClaimOpen:  true,
-		BTCRate:        btcRate,
-		ETHRate:        ethRate,
-		SOLRate:        solRate,
-		TotalMigrated:  0,
+		AIB1ClaimOpen:   true,
+		BTCRate:         btcRate,
+		ETHRate:         ethRate,
+		SOLRate:         solRate,
+		TotalMigrated:   0,
 	}
 
 	w.Header().Set("Content-Type", "application/json")

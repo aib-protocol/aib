@@ -153,17 +153,17 @@ func ExampleEscrowContract() {
 func ExampleStateMachineContract() {
 	// Define state transitions
 	_ = map[string][]string{
-		"Created":  {"Funded", "Cancelled"},
-		"Funded":   {"Active", "Refunded"},
-		"Active":   {"Completed", "Cancelled"},
+		"Created":   {"Funded", "Cancelled"},
+		"Funded":    {"Active", "Refunded"},
+		"Active":    {"Completed", "Cancelled"},
 		"Completed": {},
 		"Cancelled": {},
 	}
 
 	// Create initial state datum
 	initialState, _ := NewDatumFromJSON(map[string]interface{}{
-		"state":     "Created",
-		"step":      0,
+		"state":        "Created",
+		"step":         0,
 		"participants": []string{"Alice", "Bob"},
 	})
 
@@ -177,8 +177,8 @@ func ExampleStateMachineContract() {
 
 	// Example transition: Created -> Funded
 	nextState, _ := NewDatumFromJSON(map[string]interface{}{
-		"state":     "Funded",
-		"step":      1,
+		"state":        "Funded",
+		"step":         1,
 		"participants": []string{"Alice", "Bob"},
 	})
 
@@ -189,21 +189,21 @@ func ExampleStateMachineContract() {
 // Collects funds until a goal is reached or deadline passes.
 
 type CrowdfundingState struct {
-	Creator      []byte
-	GoalAmount   uint64
-	Deadline     uint64
-	TotalRaised  uint64
-	Backers      [][]byte
-	IsActive     bool
+	Creator     []byte
+	GoalAmount  uint64
+	Deadline    uint64
+	TotalRaised uint64
+	Backers     [][]byte
+	IsActive    bool
 }
 
 func ExampleCrowdfundingContract() {
 	// Create crowdfunding datum
 	cfState := CrowdfundingState{
-		GoalAmount:   100000000, // 100 ADA
-		Deadline:     50000,
-		TotalRaised:  0,
-		IsActive:     true,
+		GoalAmount:  100000000, // 100 ADA
+		Deadline:    50000,
+		TotalRaised: 0,
+		IsActive:    true,
 	}
 
 	datum, _ := NewDatumFromJSON(cfState)
@@ -236,9 +236,9 @@ func ExampleVestingContract() {
 	schedule := VestingSchedule{
 		TotalAmount:   1000000000, // 1000 tokens
 		StartTime:     10000,
-		CliffTime:     20000,       // 1 year cliff
-		VestingPeriod: 1000000,     // 1 year total
-		Interval:      10000,       // unlock every 10K slots
+		CliffTime:     20000,   // 1 year cliff
+		VestingPeriod: 1000000, // 1 year total
+		Interval:      10000,   // unlock every 10K slots
 		Beneficiary:   make([]byte, 32),
 	}
 

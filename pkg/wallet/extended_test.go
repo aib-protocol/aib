@@ -44,9 +44,9 @@ func TestMultiAddress_CreateMultipleWallets(t *testing.T) {
 func TestMultiAddress_AddressList(t *testing.T) {
 	// Create a simple address list manager
 	type AddressEntry struct {
-		Address   [32]byte
-		Label     string
-		IsActive  bool
+		Address  [32]byte
+		Label    string
+		IsActive bool
 	}
 
 	entries := make([]AddressEntry, 0)
@@ -912,7 +912,7 @@ func TestBackupRestore_ExportImportPrivateKey(t *testing.T) {
 func TestBackupRestore_ExportImportMultipleWallets(t *testing.T) {
 	type WalletBackup struct {
 		PrivateKey []byte
-		Label     string
+		Label      string
 	}
 
 	// Create multiple wallets with labels
@@ -1130,10 +1130,10 @@ func TestBackupRestore_SerializedBackup(t *testing.T) {
 
 	// Create backup with additional metadata
 	type WalletBackupData struct {
-		PrivateKey   []byte
-		CreatedAt    uint64
-		Label        string
-		Version      string
+		PrivateKey []byte
+		CreatedAt  uint64
+		Label      string
+		Version    string
 	}
 
 	backup := WalletBackupData{

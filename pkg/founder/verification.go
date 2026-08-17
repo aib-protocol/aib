@@ -14,29 +14,29 @@ import (
 
 // Verifier handles founder identity verification and multi-signature operations.
 type Verifier struct {
-	founders    *FounderList
-	multiSig    *MultiSigConfig
-	releases    map[string]*ReleaseRecord // Key: founderID:nonce
-	mu          sync.RWMutex
+	founders *FounderList
+	multiSig *MultiSigConfig
+	releases map[string]*ReleaseRecord // Key: founderID:nonce
+	mu       sync.RWMutex
 }
 
 // ReleaseRecord tracks a multi-sig release request.
 type ReleaseRecord struct {
-	FounderID      string         `json:"founder_id"`
-	Nonce          uint64         `json:"nonce"`
-	Amount         uint64         `json:"amount"`
-	TargetAddress  [32]byte       `json:"target_address"`
-	Signatures     []SignedRelease `json:"signatures"`
-	Status         ReleaseStatus  `json:"status"`
-	CreatedAt      time.Time      `json:"created_at"`
-	CompletedAt    *time.Time     `json:"completed_at,omitempty"`
-	TxHash         string         `json:"tx_hash,omitempty"`
+	FounderID     string          `json:"founder_id"`
+	Nonce         uint64          `json:"nonce"`
+	Amount        uint64          `json:"amount"`
+	TargetAddress [32]byte        `json:"target_address"`
+	Signatures    []SignedRelease `json:"signatures"`
+	Status        ReleaseStatus   `json:"status"`
+	CreatedAt     time.Time       `json:"created_at"`
+	CompletedAt   *time.Time      `json:"completed_at,omitempty"`
+	TxHash        string          `json:"tx_hash,omitempty"`
 }
 
 // SignedRelease represents a signature from an authorized signer.
 type SignedRelease struct {
-	SignerAddress [32]byte `json:"signer_address"`
-	Signature     []byte   `json:"signature"`
+	SignerAddress [32]byte  `json:"signer_address"`
+	Signature     []byte    `json:"signature"`
 	Timestamp     time.Time `json:"timestamp"`
 }
 

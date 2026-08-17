@@ -22,11 +22,11 @@ import (
 type OrderStatus int
 
 const (
-	OrderStatusPending      OrderStatus = iota // 待成交
-	OrderStatusPartialFilled                   // 部分成交
-	OrderStatusFilled                          // 完全成交
-	OrderStatusCancelled                       // 已取消
-	OrderStatusExpired                         // 已过期
+	OrderStatusPending       OrderStatus = iota // 待成交
+	OrderStatusPartialFilled                    // 部分成交
+	OrderStatusFilled                           // 完全成交
+	OrderStatusCancelled                        // 已取消
+	OrderStatusExpired                          // 已过期
 )
 
 // String 返回订单状态的字符串表示
@@ -121,17 +121,17 @@ var (
 
 // Order 代表一个订单
 type Order struct {
-	ID             uint64           // 唯一订单ID
+	ID             uint64             // 唯一订单ID
 	Owner          interfaces.Address // 订单所有者
-	TradingPair    string           // 交易对 (如 "AIB/USDT")
-	Side           OrderSide        // 订单方向 (BUY/SELL)
-	Quantity       uint64           // 订单总数量
-	FilledQuantity uint64           // 已成交数量
-	Price          uint64           // 订单价格 (0 表示市价单)
-	OrderType      OrderType        // 订单类型 (限价单/市价单)
-	Status         OrderStatus      // 订单状态
-	Timestamp      time.Time        // 创建时间
-	Expiration     *time.Time       // 过期时间 (可选)
+	TradingPair    string             // 交易对 (如 "AIB/USDT")
+	Side           OrderSide          // 订单方向 (BUY/SELL)
+	Quantity       uint64             // 订单总数量
+	FilledQuantity uint64             // 已成交数量
+	Price          uint64             // 订单价格 (0 表示市价单)
+	OrderType      OrderType          // 订单类型 (限价单/市价单)
+	Status         OrderStatus        // 订单状态
+	Timestamp      time.Time          // 创建时间
+	Expiration     *time.Time         // 过期时间 (可选)
 }
 
 // RemainingQuantity 返回订单的剩余未成交数量
@@ -181,16 +181,16 @@ func (o *Order) Fill(quantity uint64) uint64 {
 
 // Trade 代表一次成交记录
 type Trade struct {
-	ID            uint64           // 唯一成交ID
-	TradingPair   string           // 交易对
-	MakerOrderID  uint64           // Maker订单ID
-	TakerOrderID  uint64           // Taker订单ID
-	Maker         interfaces.Address // Maker地址
-	Taker         interfaces.Address // Taker地址
-	Side          OrderSide        // 成交方向 (买单/卖单)
-	Quantity      uint64           // 成交数量
-	Price         uint64           // 成交价格
-	Timestamp     time.Time        // 成交时间
+	ID           uint64             // 唯一成交ID
+	TradingPair  string             // 交易对
+	MakerOrderID uint64             // Maker订单ID
+	TakerOrderID uint64             // Taker订单ID
+	Maker        interfaces.Address // Maker地址
+	Taker        interfaces.Address // Taker地址
+	Side         OrderSide          // 成交方向 (买单/卖单)
+	Quantity     uint64             // 成交数量
+	Price        uint64             // 成交价格
+	Timestamp    time.Time          // 成交时间
 }
 
 // ============================================================================
@@ -199,9 +199,9 @@ type Trade struct {
 
 // priceLevel 表示同一价格的订单级别
 type priceLevel struct {
-	price    uint64           // 价格
-	orders   *list.List       // 订单列表 (按时间顺序)
-	totalQty uint64           // 该价格级别的总数量
+	price    uint64     // 价格
+	orders   *list.List // 订单列表 (按时间顺序)
+	totalQty uint64     // 该价格级别的总数量
 }
 
 // OrderBook 代表一个交易对的订单簿
@@ -558,21 +558,21 @@ func (ob *OrderBook) GetTrades() []*Trade {
 
 // GetDepth 获取订单簿深度
 func (ob *OrderBook) GetDepth(levels int) (bids []struct {
-	Price  uint64
+	Price    uint64
 	Quantity uint64
 }, asks []struct {
-	Price  uint64
+	Price    uint64
 	Quantity uint64
 }) {
 	ob.mu.RLock()
 	defer ob.mu.RUnlock()
 
 	bids = make([]struct {
-		Price  uint64
+		Price    uint64
 		Quantity uint64
 	}, 0, levels)
 	asks = make([]struct {
-		Price  uint64
+		Price    uint64
 		Quantity uint64
 	}, 0, levels)
 
@@ -581,7 +581,7 @@ func (ob *OrderBook) GetDepth(levels int) (bids []struct {
 		price := ob.bidPrices[i]
 		if level, exists := ob.bids[price]; exists {
 			bids = append(bids, struct {
-				Price  uint64
+				Price    uint64
 				Quantity uint64
 			}{Price: price, Quantity: level.totalQty})
 		}
@@ -592,7 +592,7 @@ func (ob *OrderBook) GetDepth(levels int) (bids []struct {
 		price := ob.askPrices[i]
 		if level, exists := ob.asks[price]; exists {
 			asks = append(asks, struct {
-				Price  uint64
+				Price    uint64
 				Quantity uint64
 			}{Price: price, Quantity: level.totalQty})
 		}
@@ -749,16 +749,16 @@ func (ob *OrderBook) executeTrade(takerOrder, makerOrder *Order, price uint64) *
 	}
 
 	trade := &Trade{
-		ID:            ob.generateTradeID(),
-		TradingPair:   ob.tradingPair,
-		MakerOrderID:  makerOrderID,
-		TakerOrderID:  takerOrderID,
-		Maker:         maker,
-		Taker:         taker,
-		Side:          takerOrder.Side, // Taker的方向
-		Quantity:      takerFilled,
-		Price:         price,
-		Timestamp:     time.Now(),
+		ID:           ob.generateTradeID(),
+		TradingPair:  ob.tradingPair,
+		MakerOrderID: makerOrderID,
+		TakerOrderID: takerOrderID,
+		Maker:        maker,
+		Taker:        taker,
+		Side:         takerOrder.Side, // Taker的方向
+		Quantity:     takerFilled,
+		Price:        price,
+		Timestamp:    time.Now(),
 	}
 
 	ob.trades = append(ob.trades, trade)

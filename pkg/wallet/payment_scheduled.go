@@ -40,24 +40,24 @@ func (ss ScheduledStatus) String() string {
 
 // RecurringConfig configures recurring payments.
 type RecurringConfig struct {
-	Interval   time.Duration // Interval between payments
-	MaxCount   uint64        // Maximum number of executions (0 = unlimited)
-	executed   uint64        // Number of executions so far
+	Interval time.Duration // Interval between payments
+	MaxCount uint64        // Maximum number of executions (0 = unlimited)
+	executed uint64        // Number of executions so far
 }
 
 // ScheduledPayment represents a payment scheduled for future execution.
 type ScheduledPayment struct {
-	ID          string
-	To          [32]byte
-	Amount      uint64
-	ExecuteAt   time.Time        // When to execute the payment
-	Recurring   *RecurringConfig // Nil if not recurring
-	Status      ScheduledStatus
-	LastResult  *PaymentResult
-	Memo        string
-	CreatedAt   time.Time
-	ExecutedAt  time.Time
-	mu          sync.Mutex
+	ID         string
+	To         [32]byte
+	Amount     uint64
+	ExecuteAt  time.Time        // When to execute the payment
+	Recurring  *RecurringConfig // Nil if not recurring
+	Status     ScheduledStatus
+	LastResult *PaymentResult
+	Memo       string
+	CreatedAt  time.Time
+	ExecutedAt time.Time
+	mu         sync.Mutex
 }
 
 // ScheduleResult represents the result of scheduling a payment.

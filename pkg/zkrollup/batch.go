@@ -26,15 +26,15 @@ var (
 
 // Batch processing errors.
 var (
-	ErrBatchNil               = errors.New("batch is nil")
-	ErrNoOperations           = errors.New("no operations in batch")
-	ErrStateRootEmpty         = errors.New("state root is empty")
-	ErrOperationCountMismatch = errors.New("operation count mismatch")
-	ErrInvalidBatchHash       = errors.New("invalid batch hash")
-	ErrBatchAlreadyProcessed  = errors.New("batch already processed")
-	ErrInvalidSignature       = errors.New("invalid signature")
-	ErrChannelNotFound        = errors.New("channel not found")
-	ErrInsufficientBalance    = errors.New("insufficient balance")
+	ErrBatchNil                 = errors.New("batch is nil")
+	ErrNoOperations             = errors.New("no operations in batch")
+	ErrStateRootEmpty           = errors.New("state root is empty")
+	ErrOperationCountMismatch   = errors.New("operation count mismatch")
+	ErrInvalidBatchHash         = errors.New("invalid batch hash")
+	ErrBatchAlreadyProcessed    = errors.New("batch already processed")
+	ErrInvalidSignature         = errors.New("invalid signature")
+	ErrChannelNotFound          = errors.New("channel not found")
+	ErrInsufficientBalance      = errors.New("insufficient balance")
 	ErrInvalidStateTransitionOp = errors.New("invalid state transition")
 )
 

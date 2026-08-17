@@ -33,15 +33,15 @@ func NewAnthropicCompat(apiKey string) *AnthropicCompat {
 
 // MessagesRequest represents an Anthropic messages request.
 type AnthropicMessagesRequest struct {
-	Model     string                       `json:"model"`
-	Messages  []AnthropicMessage           `json:"messages"`
-	MaxTokens int                          `json:"max_tokens"`
-	System    string                       `json:"system,omitempty"`
-	Temperature float64                    `json:"temperature,omitempty"`
-	TopP      float64                      `json:"top_p,omitempty"`
-	TopK      int                          `json:"top_k,omitempty"`
-	Stream    bool                         `json:"stream,omitempty"`
-	StopSequences []string                 `json:"stop_sequences,omitempty"`
+	Model         string             `json:"model"`
+	Messages      []AnthropicMessage `json:"messages"`
+	MaxTokens     int                `json:"max_tokens"`
+	System        string             `json:"system,omitempty"`
+	Temperature   float64            `json:"temperature,omitempty"`
+	TopP          float64            `json:"top_p,omitempty"`
+	TopK          int                `json:"top_k,omitempty"`
+	Stream        bool               `json:"stream,omitempty"`
+	StopSequences []string           `json:"stop_sequences,omitempty"`
 }
 
 // AnthropicMessage represents a message in the conversation.
@@ -76,7 +76,7 @@ type AnthropicUsage struct {
 
 // AnthropicErrorResponse represents an error response.
 type AnthropicErrorResponse struct {
-	Type  string `json:"type"`
+	Type  string               `json:"type"`
 	Error AnthropicErrorDetail `json:"error"`
 }
 
@@ -220,9 +220,9 @@ type StreamingText struct {
 
 // StreamingDelta represents a streaming delta.
 type StreamingDelta struct {
-	Type         string `json:"type"`
-	Index        int    `json:"index"`
-	Delta        StreamingDeltaText `json:"delta"`
+	Type  string             `json:"type"`
+	Index int                `json:"index"`
+	Delta StreamingDeltaText `json:"delta"`
 }
 
 // StreamingDeltaText represents delta text.
@@ -233,27 +233,27 @@ type StreamingDeltaText struct {
 
 // MessageStart represents the start of a message.
 type MessageStart struct {
-	Type    string              `json:"type"`
+	Type    string                 `json:"type"`
 	Message AnthropicMessageHeader `json:"message"`
 }
 
 // AnthropicMessageHeader represents message header.
 type AnthropicMessageHeader struct {
-	ID      string `json:"id"`
-	Type    string `json:"type"`
-	Role    string `json:"role"`
-	Content []interface{} `json:"content"`
-	Model   string `json:"model"`
-	StopReason string `json:"stop_reason"`
-	StopSequence *string `json:"stop_sequence"`
-	Usage   AnthropicUsage `json:"usage"`
+	ID           string         `json:"id"`
+	Type         string         `json:"type"`
+	Role         string         `json:"role"`
+	Content      []interface{}  `json:"content"`
+	Model        string         `json:"model"`
+	StopReason   string         `json:"stop_reason"`
+	StopSequence *string        `json:"stop_sequence"`
+	Usage        AnthropicUsage `json:"usage"`
 }
 
 // MessageDelta represents message delta.
 type MessageDelta struct {
-	Type        string              `json:"type"`
-	Delta       map[string]string   `json:"delta"`
-	Usage       AnthropicUsage      `json:"usage"`
+	Type  string            `json:"type"`
+	Delta map[string]string `json:"delta"`
+	Usage AnthropicUsage    `json:"usage"`
 }
 
 // MessageStop represents message stop event.

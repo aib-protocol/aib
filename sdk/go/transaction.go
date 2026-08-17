@@ -12,11 +12,11 @@ import (
 
 // Transaction represents a UTXO-based transaction.
 type Transaction struct {
-	Version    uint32
-	Inputs     []TXInput
-	Outputs    []TXOutput
-	LockTime   uint32
-	Sequence   uint64
+	Version  uint32
+	Inputs   []TXInput
+	Outputs  []TXOutput
+	LockTime uint32
+	Sequence uint64
 }
 
 // TXInput represents a transaction input (reference to a previous UTXO).
@@ -30,10 +30,10 @@ type TXInput struct {
 
 // TXOutput represents a transaction output (new UTXO).
 type TXOutput struct {
-	Address   Address // Recipient address
-	Amount    uint64  // Amount in smallest units (like satoshis)
-	AssetID   [32]byte
-	Metadata  []byte
+	Address  Address // Recipient address
+	Amount   uint64  // Amount in smallest units (like satoshis)
+	AssetID  [32]byte
+	Metadata []byte
 }
 
 // NewTransaction creates a new transaction with the specified inputs and outputs.
@@ -116,10 +116,10 @@ func BuildTransaction(inputs []TXInputParams, outputs []TXOutputParams) (*Transa
 		}
 
 		tx.Outputs = append(tx.Outputs, TXOutput{
-			Address:   addr,
-			Amount:    out.Amount,
-			AssetID:   assetID,
-			Metadata:  nil,
+			Address:  addr,
+			Amount:   out.Amount,
+			AssetID:  assetID,
+			Metadata: nil,
 		})
 	}
 

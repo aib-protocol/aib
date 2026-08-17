@@ -11,18 +11,18 @@ import (
 // 无需权限即可注册新模型（permissionless）
 // 权重通过治理决定
 type ModelRegistry struct {
-	mu             sync.RWMutex
-	models         map[string]*ModelInfo         // modelID -> ModelInfo
-	performance    map[string]*ModelPerformance   // modelID -> 性能数据
-	votingWeights  map[string]float64            // modelID -> 投票中权重
+	mu            sync.RWMutex
+	models        map[string]*ModelInfo        // modelID -> ModelInfo
+	performance   map[string]*ModelPerformance // modelID -> 性能数据
+	votingWeights map[string]float64           // modelID -> 投票中权重
 }
 
 // NewModelRegistry 创建新模型注册表
 func NewModelRegistry() *ModelRegistry {
 	return &ModelRegistry{
-		models:         make(map[string]*ModelInfo),
-		performance:    make(map[string]*ModelPerformance),
-		votingWeights:  make(map[string]float64),
+		models:        make(map[string]*ModelInfo),
+		performance:   make(map[string]*ModelPerformance),
+		votingWeights: make(map[string]float64),
 	}
 }
 

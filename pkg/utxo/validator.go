@@ -266,19 +266,19 @@ func (e *ValidationError) Unwrap() error {
 
 // ValidationErrorCodes defines common validation error codes.
 var ValidationErrorCodes = struct {
-	InvalidStructure  string
-	InvalidTimestamp  string
-	InvalidParent     string
+	InvalidStructure   string
+	InvalidTimestamp   string
+	InvalidParent      string
 	InvalidTransaction string
-	InvalidSignature  string
-	InvalidProposer   string
+	InvalidSignature   string
+	InvalidProposer    string
 }{
-	InvalidStructure:  "INVALID_STRUCTURE",
-	InvalidTimestamp:  "INVALID_TIMESTAMP",
-	InvalidParent:     "INVALID_PARENT",
+	InvalidStructure:   "INVALID_STRUCTURE",
+	InvalidTimestamp:   "INVALID_TIMESTAMP",
+	InvalidParent:      "INVALID_PARENT",
 	InvalidTransaction: "INVALID_TRANSACTION",
-	InvalidSignature:  "INVALID_SIGNATURE",
-	InvalidProposer:   "INVALID_PROPOSER",
+	InvalidSignature:   "INVALID_SIGNATURE",
+	InvalidProposer:    "INVALID_PROPOSER",
 }
 
 // ============================================================================

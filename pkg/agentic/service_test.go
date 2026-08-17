@@ -16,13 +16,13 @@ type MockChannelManager struct{}
 
 func (m *MockChannelManager) OpenChannel(ctx context.Context, partyA, partyB interfaces.Address, depositA, depositB uint64) (*interfaces.Channel, error) {
 	return &interfaces.Channel{
-		ID:           [32]byte{1, 2, 3},
-		PartyA:       partyA,
-		PartyB:       partyB,
-		BalanceA:     depositA,
-		BalanceB:     depositB,
-		Sequence:     0,
-		CreatedAt:    time.Now(),
+		ID:        [32]byte{1, 2, 3},
+		PartyA:    partyA,
+		PartyB:    partyB,
+		BalanceA:  depositA,
+		BalanceB:  depositB,
+		Sequence:  0,
+		CreatedAt: time.Now(),
 	}, nil
 }
 
@@ -123,8 +123,8 @@ func TestAgenticService_ChatCompletion(t *testing.T) {
 		Messages: []interfaces.Message{
 			{Role: "user", Content: "Hello, world!"},
 		},
-		MaxTokens:    100,
-		Temperature:  0.7,
+		MaxTokens:   100,
+		Temperature: 0.7,
 	}
 
 	// Since we don't have actual providers registered, this will fail
@@ -187,13 +187,13 @@ func TestAgenticService_OpenServiceChannel(t *testing.T) {
 	_, privKey, _ := ed25519.GenerateKey(nil)
 	nodeID := interfaces.NodeID{9, 9, 9}
 	nodeInfo := &agentic.NodeInfo{
-		ID:        nodeID,
-		Address:   interfaces.Address{8, 8, 8},
-		PublicKey: privKey.Public().(ed25519.PublicKey),
-		Stake:     5000,
-		Models:    []string{"gpt-4"},
+		ID:         nodeID,
+		Address:    interfaces.Address{8, 8, 8},
+		PublicKey:  privKey.Public().(ed25519.PublicKey),
+		Stake:      5000,
+		Models:     []string{"gpt-4"},
 		Reputation: 0.8,
-		Status:    agentic.NodeStatusActive,
+		Status:     agentic.NodeStatusActive,
 	}
 
 	// Register the node
@@ -237,19 +237,19 @@ func TestAgenticService_RegisterProvider(t *testing.T) {
 	// Create provider
 	_, privKey, _ := ed25519.GenerateKey(nil)
 	nodeInfo := &agentic.NodeInfo{
-		ID:        interfaces.NodeID{1},
-		PublicKey: privKey.Public().(ed25519.PublicKey),
-		Stake:     1000,
-		Models:    []string{"gpt-4"},
+		ID:         interfaces.NodeID{1},
+		PublicKey:  privKey.Public().(ed25519.PublicKey),
+		Stake:      1000,
+		Models:     []string{"gpt-4"},
 		Reputation: 0.9,
-		Status:    agentic.NodeStatusActive,
+		Status:     agentic.NodeStatusActive,
 	}
 
 	provider := &agentic.ServiceProvider{
-		NodeInfo: nodeInfo,
-		Pricing:  map[string]uint64{"gpt-4": 10},
-		Capacity: 100,
-		Load:     0,
+		NodeInfo:    nodeInfo,
+		Pricing:     map[string]uint64{"gpt-4": 10},
+		Capacity:    100,
+		Load:        0,
 		SuccessRate: 1.0,
 	}
 
@@ -483,10 +483,10 @@ func TestNodeRegistry_CleanInactive(t *testing.T) {
 	// Register inactive node
 	nodeID := interfaces.NodeID{1}
 	nodeInfo := &agentic.NodeInfo{
-		ID:        nodeID,
-		Status:    agentic.NodeStatusInactive,
-		LastSeen:  time.Now().Add(-2 * time.Hour), // 2 hours ago
-		Models:    []string{"gpt-4"},
+		ID:       nodeID,
+		Status:   agentic.NodeStatusInactive,
+		LastSeen: time.Now().Add(-2 * time.Hour), // 2 hours ago
+		Models:   []string{"gpt-4"},
 	}
 	nr.RegisterNode(nodeInfo)
 
@@ -511,10 +511,10 @@ func TestNodeRegistry_CleanInactive_NoRemove(t *testing.T) {
 	// Register active node
 	nodeID := interfaces.NodeID{1}
 	nodeInfo := &agentic.NodeInfo{
-		ID:        nodeID,
-		Status:    agentic.NodeStatusActive,
-		LastSeen:  time.Now(),
-		Models:    []string{"gpt-4"},
+		ID:       nodeID,
+		Status:   agentic.NodeStatusActive,
+		LastSeen: time.Now(),
+		Models:   []string{"gpt-4"},
 	}
 	nr.RegisterNode(nodeInfo)
 
@@ -591,11 +591,11 @@ func TestNodeRegistry_GetStakingManager(t *testing.T) {
 
 func TestDiscoveryMessage_Unmarshal(t *testing.T) {
 	msg := &agentic.DiscoveryMessage{
-		NodeID:   interfaces.NodeID{1, 2, 3},
-		Endpoint: "http://localhost:8080",
-		Models:   []string{"gpt-4"},
-		Services: []agentic.ServiceType{agentic.ServiceTypeChat},
-		Version:  "1.0",
+		NodeID:    interfaces.NodeID{1, 2, 3},
+		Endpoint:  "http://localhost:8080",
+		Models:    []string{"gpt-4"},
+		Services:  []agentic.ServiceType{agentic.ServiceTypeChat},
+		Version:   "1.0",
 		Timestamp: time.Now(),
 	}
 

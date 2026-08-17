@@ -32,13 +32,13 @@ func (pm PaymentMethod) String() string {
 
 // PaymentResult represents the result of a payment operation.
 type PaymentResult struct {
-	Method     PaymentMethod // L1 or L2
-	TxHash     [32]byte      // Transaction hash (L1) or channel update ID (L2)
-	Fee        uint64        // Fee paid
-	Amount     uint64        // Amount sent
-	Success    bool          // Whether the payment succeeded
-	Error      string        // Error message if failed
-	ConfirmTime uint64       // Confirmation time (ms)
+	Method      PaymentMethod // L1 or L2
+	TxHash      [32]byte      // Transaction hash (L1) or channel update ID (L2)
+	Fee         uint64        // Fee paid
+	Amount      uint64        // Amount sent
+	Success     bool          // Whether the payment succeeded
+	Error       string        // Error message if failed
+	ConfirmTime uint64        // Confirmation time (ms)
 }
 
 // String returns a human-readable result summary.
@@ -61,12 +61,12 @@ type L2Channel struct {
 
 // PaymentManager manages payment routing between L1 and L2.
 type PaymentManager struct {
-	wallet        *Wallet
-	l2Threshold   uint64              // Below this value, prefer L2
-	feePerByte    uint64              // Current fee rate for L1 transactions
-	l2Channels    map[string]*L2Channel // Available L2 channels
-	utxoStore     *utxo.UTXOStore     // UTXO store for balance queries
-	mu            sync.RWMutex
+	wallet      *Wallet
+	l2Threshold uint64                // Below this value, prefer L2
+	feePerByte  uint64                // Current fee rate for L1 transactions
+	l2Channels  map[string]*L2Channel // Available L2 channels
+	utxoStore   *utxo.UTXOStore       // UTXO store for balance queries
+	mu          sync.RWMutex
 }
 
 // NewPaymentManager creates a new payment manager.

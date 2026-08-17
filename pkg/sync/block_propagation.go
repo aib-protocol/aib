@@ -20,36 +20,36 @@ import (
 
 // BlockPropagator handles block propagation via gossip protocol.
 type BlockPropagator struct {
-	mu           sync.RWMutex
-	localChain   Blockchain
-	p2p          Network
-	running      bool
-	ctx          context.Context
-	cancel       context.CancelFunc
-	wg           sync.WaitGroup
+	mu         sync.RWMutex
+	localChain Blockchain
+	p2p        Network
+	running    bool
+	ctx        context.Context
+	cancel     context.CancelFunc
+	wg         sync.WaitGroup
 
 	// Configuration
 	propagationTimeout time.Duration
-	gossipFanout      int
+	gossipFanout       int
 
 	// Received blocks cache (for deduplication)
-	receivedBlocks    map[string]time.Time // block hash -> received time
-	announcedBlocks    map[string]time.Time // block hash -> announcement time
+	receivedBlocks  map[string]time.Time // block hash -> received time
+	announcedBlocks map[string]time.Time // block hash -> announcement time
 
 	// Pending validation
 	pendingValidation chan *Block
 
 	// Callbacks
 	onBlockValidated func(*Block, p2p.PeerID) error
-	onBlockReceived func(*Block, p2p.PeerID) error
+	onBlockReceived  func(*Block, p2p.PeerID) error
 }
 
 // BlockPropagationConfig holds configuration for block propagation.
 type BlockPropagationConfig struct {
 	PropagationTimeout time.Duration
-	GossipFanout      int
-	OnBlockValidated  func(*Block, p2p.PeerID) error
-	OnBlockReceived   func(*Block, p2p.PeerID) error
+	GossipFanout       int
+	OnBlockValidated   func(*Block, p2p.PeerID) error
+	OnBlockReceived    func(*Block, p2p.PeerID) error
 }
 
 // DefaultBlockPropagationConfig returns default configuration.
@@ -75,11 +75,11 @@ func NewBlockPropagator(localChain Blockchain, p2p Network, cfg *BlockPropagatio
 		cancel:             cancel,
 		propagationTimeout: cfg.PropagationTimeout,
 		gossipFanout:       cfg.GossipFanout,
-		receivedBlocks:    make(map[string]time.Time),
-		announcedBlocks:   make(map[string]time.Time),
-		pendingValidation: make(chan *Block, 100),
-		onBlockValidated:  cfg.OnBlockValidated,
-		onBlockReceived:   cfg.OnBlockReceived,
+		receivedBlocks:     make(map[string]time.Time),
+		announcedBlocks:    make(map[string]time.Time),
+		pendingValidation:  make(chan *Block, 100),
+		onBlockValidated:   cfg.OnBlockValidated,
+		onBlockReceived:    cfg.OnBlockReceived,
 	}
 }
 
@@ -159,10 +159,10 @@ func (bp *BlockPropagator) BroadcastBlock(block *Block) error {
 
 	// Create block announcement message
 	announce := &BlockMessage{
-		Type:       "block_announce",
-		Block:      block,
-		FromPeer:  bp.p2p.PeerID(),
-		TTL:        bp.gossipFanout,
+		Type:         "block_announce",
+		Block:        block,
+		FromPeer:     bp.p2p.PeerID(),
+		TTL:          bp.gossipFanout,
 		ReceivedFrom: "",
 	}
 
@@ -489,10 +489,10 @@ func (bp *BlockPropagator) cleanupOldEntries() {
 
 // BlockMessage represents a message in the block propagation protocol.
 type BlockMessage struct {
-	Type         string   `json:"type"`
-	Block        *Block   `json:"block,omitempty"`
+	Type         string     `json:"type"`
+	Block        *Block     `json:"block,omitempty"`
 	FromPeer     p2p.PeerID `json:"from_peer"`
-	TTL          int      `json:"ttl"`
+	TTL          int        `json:"ttl"`
 	ReceivedFrom p2p.PeerID `json:"received_from,omitempty"`
-	RequestID    string   `json:"request_id,omitempty"`
+	RequestID    string     `json:"request_id,omitempty"`
 }

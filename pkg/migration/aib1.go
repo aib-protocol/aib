@@ -19,16 +19,16 @@ import (
 // ============================================================================
 
 var (
-	ErrAlreadyClaimed         = errors.New("already claimed")
-	ErrClaimExpired            = errors.New("claim deadline expired")
-	ErrInvalidSignature        = errors.New("invalid signature")
-	ErrSnapshotNotFound        = errors.New("snapshot not found")
-	ErrAmountExceedsBalance   = errors.New("amount exceeds snapshot balance")
-	ErrMigrationWindowClosed   = errors.New("migration window closed")
-	ErrInvalidChain           = errors.New("invalid chain type")
-	ErrNoLockedRewards        = errors.New("no locked rewards found")
-	ErrNothingToClaim         = errors.New("nothing to claim")
-	ErrInvalidProof           = errors.New("invalid merkle proof")
+	ErrAlreadyClaimed        = errors.New("already claimed")
+	ErrClaimExpired          = errors.New("claim deadline expired")
+	ErrInvalidSignature      = errors.New("invalid signature")
+	ErrSnapshotNotFound      = errors.New("snapshot not found")
+	ErrAmountExceedsBalance  = errors.New("amount exceeds snapshot balance")
+	ErrMigrationWindowClosed = errors.New("migration window closed")
+	ErrInvalidChain          = errors.New("invalid chain type")
+	ErrNoLockedRewards       = errors.New("no locked rewards found")
+	ErrNothingToClaim        = errors.New("nothing to claim")
+	ErrInvalidProof          = errors.New("invalid merkle proof")
 )
 
 // ============================================================================
@@ -47,13 +47,13 @@ type SnapshotRecord struct {
 type AIB1Migration struct {
 	mu sync.RWMutex
 
-	snapshotRoot   [32]byte
-	snapshotTime   time.Time
-	claimDeadline  time.Time
-	claims         map[interfaces.Address]bool
-	snapshotData   map[interfaces.Address]uint64
-	totalMigrated  uint64
-	hasher         crypto.Hasher
+	snapshotRoot  [32]byte
+	snapshotTime  time.Time
+	claimDeadline time.Time
+	claims        map[interfaces.Address]bool
+	snapshotData  map[interfaces.Address]uint64
+	totalMigrated uint64
+	hasher        crypto.Hasher
 
 	// now returns the current time; overridable for tests.
 	now func() time.Time

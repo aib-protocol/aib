@@ -21,10 +21,10 @@ type ScenarioTask struct {
 
 // ScenarioResult holds the result of running a scenario
 type ScenarioResult struct {
-	ScenarioName        string
-	TaskResults         []*TestNetResult
-	AllExpectationsMet  bool
-	Duration            time.Duration
+	ScenarioName       string
+	TaskResults        []*TestNetResult
+	AllExpectationsMet bool
+	Duration           time.Duration
 }
 
 // Predefined scenarios

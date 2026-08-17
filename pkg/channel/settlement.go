@@ -30,30 +30,30 @@ const (
 type SettlementStatus int
 
 const (
-	SettlementPending SettlementStatus = iota // 待处理
-	SettlementConfirming                        // 确认中
-	SettlementComplete                          // 已完成
-	SettlementFailed                           // 失败
-	SettlementCancelled                        // 已取消
+	SettlementPending    SettlementStatus = iota // 待处理
+	SettlementConfirming                         // 确认中
+	SettlementComplete                           // 已完成
+	SettlementFailed                             // 失败
+	SettlementCancelled                          // 已取消
 )
 
 // Settlement represents a channel settlement record
 type Settlement struct {
-	ID           [32]byte         // 结算交易唯一ID
-	ChannelID    [32]byte         // 关联的通道ID
-	StateHash    [32]byte         // 最终状态哈希
-	BalanceA     uint64           // PartyA 最终余额
-	BalanceB     uint64           // PartyB 最终余额
-	Sequence     uint64           // 结算时的序列号
-	Type         SettlementType   // 结算类型
-	Status       SettlementStatus  // 结算状态
+	ID           [32]byte           // 结算交易唯一ID
+	ChannelID    [32]byte           // 关联的通道ID
+	StateHash    [32]byte           // 最终状态哈希
+	BalanceA     uint64             // PartyA 最终余额
+	BalanceB     uint64             // PartyB 最终余额
+	Sequence     uint64             // 结算时的序列号
+	Type         SettlementType     // 结算类型
+	Status       SettlementStatus   // 结算状态
 	Initiator    interfaces.Address // 结算发起方
-	Timestamp    time.Time         // 结算时间戳
-	BlockNumber  uint64            // 结算所在区块
-	TxHash       [32]byte          // 链上交易哈希
-	SigA         []byte            // PartyA 签名
-	SigB         []byte            // PartyB 签名
-	ChallengeEnd *time.Time       // 争议期结束时间（强制结算时使用）
+	Timestamp    time.Time          // 结算时间戳
+	BlockNumber  uint64             // 结算所在区块
+	TxHash       [32]byte           // 链上交易哈希
+	SigA         []byte             // PartyA 签名
+	SigB         []byte             // PartyB 签名
+	ChallengeEnd *time.Time         // 争议期结束时间（强制结算时使用）
 }
 
 // SettlementConfig holds configuration for the settlement manager
@@ -106,11 +106,11 @@ func NewSettlementManager(manager *Manager, cfg *SettlementConfig) (*SettlementM
 	}
 
 	return &SettlementManager{
-		manager:              manager,
-		settlements:          make(map[[32]byte]*Settlement),
-		challengePeriod:      cfg.ChallengePeriod,
+		manager:             manager,
+		settlements:         make(map[[32]byte]*Settlement),
+		challengePeriod:     cfg.ChallengePeriod,
 		confirmationDepth:   cfg.ConfirmationDepth,
-		minSettlementAmount:  cfg.MinSettlementAmount,
+		minSettlementAmount: cfg.MinSettlementAmount,
 		multiSig:            cfg.MultiSigLocker,
 	}, nil
 }
@@ -832,17 +832,17 @@ type BatchSettlementRequest struct {
 
 // BatchSettlementResult represents the result of a batch settlement operation
 type BatchSettlementResult struct {
-	ChannelID     [32]byte
+	ChannelID    [32]byte
 	SettlementID [32]byte
-	Status        SettlementStatus
-	Error         error
+	Status       SettlementStatus
+	Error        error
 }
 
 // BatchSettlementHandler handles batch settlement operations
 type BatchSettlementHandler struct {
-	manager     *SettlementManager
-	results     map[[32]byte]*BatchSettlementResult
-	mu          sync.RWMutex
+	manager *SettlementManager
+	results map[[32]byte]*BatchSettlementResult
+	mu      sync.RWMutex
 }
 
 // NewBatchSettlementHandler creates a new batch settlement handler
@@ -888,19 +888,19 @@ func (bsh *BatchSettlementHandler) ExecuteBatchSettlement(ctx context.Context, r
 		_, err = bsh.manager.ExecuteSettlement(ctx, channelID)
 		if err != nil {
 			results = append(results, &BatchSettlementResult{
-				ChannelID:     channelID,
+				ChannelID:    channelID,
 				SettlementID: settlement.ID,
-				Status:        SettlementFailed,
-				Error:         err,
+				Status:       SettlementFailed,
+				Error:        err,
 			})
 			continue
 		}
 
 		results = append(results, &BatchSettlementResult{
-			ChannelID:     channelID,
+			ChannelID:    channelID,
 			SettlementID: settlement.ID,
-			Status:        SettlementConfirming,
-			Error:         nil,
+			Status:       SettlementConfirming,
+			Error:        nil,
 		})
 	}
 
@@ -950,13 +950,13 @@ func (bsh *BatchSettlementHandler) ValidateBatchSettlement(req *BatchSettlementR
 
 // SettlementProof represents a proof for settlement verification
 type SettlementProof struct {
-	Settlement    *Settlement
-	StateProof    []byte // Merkle proof for the state
-	StateHash     [32]byte
-	Signatures    map[string][]byte // party -> signature
-	BlockNumber   uint64
-	BlockHash     [32]byte
-	Timestamp     time.Time
+	Settlement  *Settlement
+	StateProof  []byte // Merkle proof for the state
+	StateHash   [32]byte
+	Signatures  map[string][]byte // party -> signature
+	BlockNumber uint64
+	BlockHash   [32]byte
+	Timestamp   time.Time
 }
 
 // SettlementProofVerifier verifies settlement proofs
@@ -1151,11 +1151,11 @@ func (sm *SettlementManager) GenerateSettlementProof(channelID [32]byte) (*Settl
 	}
 
 	proof := &SettlementProof{
-		Settlement: settlement,
-		StateHash:  computeStateHash(channel),
-		Signatures: signatures,
+		Settlement:  settlement,
+		StateHash:   computeStateHash(channel),
+		Signatures:  signatures,
 		BlockNumber: settlement.BlockNumber,
-		Timestamp:  settlement.Timestamp,
+		Timestamp:   settlement.Timestamp,
 	}
 
 	// Generate a simple proof (in real implementation, this would be a merkle proof)

@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/holiman/uint256"
 	"github.com/aib-protocol/aib/pkg/evm"
 	"github.com/aib-protocol/aib/pkg/evm/abi"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/holiman/uint256"
 )
 
 func main() {

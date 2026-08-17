@@ -25,8 +25,8 @@ type TestNetConfig struct {
 	HonestRatio    float64       // Honest node ratio (0-1, for simulation)
 
 	// Real AI inference (optional)
-	UseRealAI     bool                    // Use real AI API instead of mock
-	AIProvider    inference.AnthropicConfig // Anthropic API config
+	UseRealAI  bool                      // Use real AI API instead of mock
+	AIProvider inference.AnthropicConfig // Anthropic API config
 }
 
 // DefaultTestNetConfig returns sensible defaults for testing
@@ -68,22 +68,22 @@ type TestNetResult struct {
 
 // TestNetStats holds cumulative statistics
 type TestNetStats struct {
-	TotalTasks     int
-	PassedTasks    int
-	FailedTasks    int
-	TotalSlashes   int
-	TotalEvents    int
-	AvgDuration    time.Duration
-	NodeStats      map[string]*NodeStats
+	TotalTasks   int
+	PassedTasks  int
+	FailedTasks  int
+	TotalSlashes int
+	TotalEvents  int
+	AvgDuration  time.Duration
+	NodeStats    map[string]*NodeStats
 }
 
 // NodeStats tracks per-node statistics
 type NodeStats struct {
-	TasksAssigned int
+	TasksAssigned  int
 	TasksCompleted int
-	SlashCount    int
-	Online        bool
-	Honest        bool
+	SlashCount     int
+	Online         bool
+	Honest         bool
 }
 
 // TestNet simulates a multi-node testnet environment
@@ -97,7 +97,7 @@ type TestNet struct {
 	running      bool
 
 	// Real AI inference
-	aiProvider   *inference.AnthropicProvider
+	aiProvider *inference.AnthropicProvider
 
 	// Stats tracking
 	totalTasks   int

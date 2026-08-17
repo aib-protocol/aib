@@ -48,14 +48,14 @@ func (s *Server) handleStatus(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeSuccess(w, map[string]interface{}{
-		"node_id":       "aib-node-mvp",
-		"version":       "2.0.0-mvp",
-		"network":       "testnet",
-		"block_height":  blockHeight,
-		"peers":         peerCount,
-		"sync_status":   "synced",
-		"block_time":    "60s",
-		"uptime":        s.Uptime().String(),
+		"node_id":      "aib-node-mvp",
+		"version":      "2.0.0-mvp",
+		"network":      "testnet",
+		"block_height": blockHeight,
+		"peers":        peerCount,
+		"sync_status":  "synced",
+		"block_time":   "60s",
+		"uptime":       s.Uptime().String(),
 	})
 }
 

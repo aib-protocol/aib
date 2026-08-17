@@ -64,37 +64,37 @@ type ChainAdapter interface {
 
 // BaseChainAdapter provides common functionality for all chain adapters.
 type BaseChainAdapter struct {
-	chainType       ChainType
-	confirmations   uint64
-	mu              sync.RWMutex
+	chainType     ChainType
+	confirmations uint64
+	mu            sync.RWMutex
 	// Simulated state for testing
-	lockedFunds     map[string]*LockedFund
-	transactions    map[string]*ChainTransaction
+	lockedFunds  map[string]*LockedFund
+	transactions map[string]*ChainTransaction
 }
 
 // LockedFund represents locked funds on a chain.
 type LockedFund struct {
-	RequestID   string
-	Amount      *big.Int
-	Recipient   Address
-	LockTxHash  string
-	CreatedAt   time.Time
-	ExpiresAt   time.Time
+	RequestID  string
+	Amount     *big.Int
+	Recipient  Address
+	LockTxHash string
+	CreatedAt  time.Time
+	ExpiresAt  time.Time
 }
 
 // ChainTransaction represents a transaction on a specific chain.
 type ChainTransaction struct {
-	Hash        string
-	BlockHash   string
-	BlockNumber uint64
-	Index       uint64
-	From        Address
-	To          Address
-	Amount      *big.Int
-	Token       string
+	Hash          string
+	BlockHash     string
+	BlockNumber   uint64
+	Index         uint64
+	From          Address
+	To            Address
+	Amount        *big.Int
+	Token         string
 	Confirmations uint64
-	Timestamp   time.Time
-	Status      string
+	Timestamp     time.Time
+	Status        string
 }
 
 // NewBaseChainAdapter creates a new base chain adapter.
@@ -186,28 +186,28 @@ func (a *BitcoinAdapter) LockFunds(req *SwapRequest) (string, error) {
 
 	// Create locked fund record
 	fund := &LockedFund{
-		RequestID:   req.ID,
-		Amount:      req.Amount,
+		RequestID:  req.ID,
+		Amount:     req.Amount,
 		Recipient:  req.Recipient,
-		LockTxHash:  txHash,
-		CreatedAt:   time.Now(),
-		ExpiresAt:   req.Deadline,
+		LockTxHash: txHash,
+		CreatedAt:  time.Now(),
+		ExpiresAt:  req.Deadline,
 	}
 	a.addLockedFund(req.ID, fund)
 
 	// Create transaction record
 	chainTx := &ChainTransaction{
-		Hash:        txHash,
-		BlockHash:   a.generateBlockHash(),
-		BlockNumber: 800000, // Simulated block number
-		Index:       0,
-		From:        req.Sender,
-		To:          req.Recipient,
-		Amount:      req.Amount,
-		Token:       "BTC",
+		Hash:          txHash,
+		BlockHash:     a.generateBlockHash(),
+		BlockNumber:   800000, // Simulated block number
+		Index:         0,
+		From:          req.Sender,
+		To:            req.Recipient,
+		Amount:        req.Amount,
+		Token:         "BTC",
 		Confirmations: 0,
-		Timestamp:   time.Now(),
-		Status:      "confirmed",
+		Timestamp:     time.Now(),
+		Status:        "confirmed",
 	}
 	a.addTransaction(chainTx)
 
@@ -231,17 +231,17 @@ func (a *BitcoinAdapter) UnlockFunds(req *SwapRequest, proof *MerkleProof) (stri
 
 	// Create transaction record
 	chainTx := &ChainTransaction{
-		Hash:        unlockTxHash,
-		BlockHash:   a.generateBlockHash(),
-		BlockNumber: proof.BlockNumber + 1,
-		Index:       0,
-		From:        req.Sender,
-		To:          req.Recipient,
-		Amount:      req.Amount,
-		Token:       "BTC",
+		Hash:          unlockTxHash,
+		BlockHash:     a.generateBlockHash(),
+		BlockNumber:   proof.BlockNumber + 1,
+		Index:         0,
+		From:          req.Sender,
+		To:            req.Recipient,
+		Amount:        req.Amount,
+		Token:         "BTC",
 		Confirmations: 0,
-		Timestamp:   time.Now(),
-		Status:      "confirmed",
+		Timestamp:     time.Now(),
+		Status:        "confirmed",
 	}
 	a.addTransaction(chainTx)
 
@@ -273,14 +273,14 @@ func (a *BitcoinAdapter) VerifyTx(txHash string) (*CrossChainTx, uint64, error) 
 	}
 
 	crossChainTx := &CrossChainTx{
-		SourceChain: ChainBTC,
-		DestChain:   ChainAIB, // Simulated destination
+		SourceChain:  ChainBTC,
+		DestChain:    ChainAIB, // Simulated destination
 		SourceTxHash: Hash{Chain: ChainBTC},
-		Sender:      tx.From,
-		Recipient:   tx.To,
-		Amount:      tx.Amount,
-		Token:       tx.Token,
-		Status:      TxStatusCompleted,
+		Sender:       tx.From,
+		Recipient:    tx.To,
+		Amount:       tx.Amount,
+		Token:        tx.Token,
+		Status:       TxStatusCompleted,
 	}
 
 	return crossChainTx, tx.Confirmations, nil
@@ -332,17 +332,17 @@ func (a *BitcoinAdapter) GetTxByHash(txHash string) (map[string]interface{}, err
 	}
 
 	return map[string]interface{}{
-		"hash":         tx.Hash,
-		"block_hash":   tx.BlockHash,
-		"block_number": tx.BlockNumber,
-		"index":        tx.Index,
-		"from":         tx.From.String(),
-		"to":           tx.To.String(),
-		"amount":       tx.Amount.String(),
-		"token":        tx.Token,
+		"hash":          tx.Hash,
+		"block_hash":    tx.BlockHash,
+		"block_number":  tx.BlockNumber,
+		"index":         tx.Index,
+		"from":          tx.From.String(),
+		"to":            tx.To.String(),
+		"amount":        tx.Amount.String(),
+		"token":         tx.Token,
 		"confirmations": tx.Confirmations,
-		"timestamp":    tx.Timestamp.Unix(),
-		"status":       tx.Status,
+		"timestamp":     tx.Timestamp.Unix(),
+		"status":        tx.Status,
 	}, nil
 }
 
@@ -427,28 +427,28 @@ func (a *EthereumAdapter) LockFunds(req *SwapRequest) (string, error) {
 
 	// Create locked fund record
 	fund := &LockedFund{
-		RequestID:   req.ID,
-		Amount:      req.Amount,
+		RequestID:  req.ID,
+		Amount:     req.Amount,
 		Recipient:  req.Recipient,
-		LockTxHash:  txHash,
-		CreatedAt:   time.Now(),
-		ExpiresAt:   req.Deadline,
+		LockTxHash: txHash,
+		CreatedAt:  time.Now(),
+		ExpiresAt:  req.Deadline,
 	}
 	a.addLockedFund(req.ID, fund)
 
 	// Create transaction record
 	chainTx := &ChainTransaction{
-		Hash:        txHash,
-		BlockHash:   a.generateBlockHash(),
-		BlockNumber: 18000000, // Simulated block number
-		Index:       5,
-		From:        req.Sender,
-		To:          req.Recipient,
-		Amount:      req.Amount,
-		Token:       req.Token,
+		Hash:          txHash,
+		BlockHash:     a.generateBlockHash(),
+		BlockNumber:   18000000, // Simulated block number
+		Index:         5,
+		From:          req.Sender,
+		To:            req.Recipient,
+		Amount:        req.Amount,
+		Token:         req.Token,
 		Confirmations: 0,
-		Timestamp:   time.Now(),
-		Status:      "confirmed",
+		Timestamp:     time.Now(),
+		Status:        "confirmed",
 	}
 	a.addTransaction(chainTx)
 
@@ -465,17 +465,17 @@ func (a *EthereumAdapter) UnlockFunds(req *SwapRequest, proof *MerkleProof) (str
 	unlockTxHash := a.generateUnlockTxHash(req)
 
 	chainTx := &ChainTransaction{
-		Hash:        unlockTxHash,
-		BlockHash:   a.generateBlockHash(),
-		BlockNumber: proof.BlockNumber + 1,
-		Index:       0,
-		From:        req.Sender,
-		To:          req.Recipient,
-		Amount:      req.Amount,
-		Token:       req.Token,
+		Hash:          unlockTxHash,
+		BlockHash:     a.generateBlockHash(),
+		BlockNumber:   proof.BlockNumber + 1,
+		Index:         0,
+		From:          req.Sender,
+		To:            req.Recipient,
+		Amount:        req.Amount,
+		Token:         req.Token,
 		Confirmations: 0,
-		Timestamp:   time.Now(),
-		Status:      "confirmed",
+		Timestamp:     time.Now(),
+		Status:        "confirmed",
 	}
 	a.addTransaction(chainTx)
 
@@ -504,14 +504,14 @@ func (a *EthereumAdapter) VerifyTx(txHash string) (*CrossChainTx, uint64, error)
 	}
 
 	return &CrossChainTx{
-		SourceChain: ChainETH,
-		DestChain:   ChainAIB,
+		SourceChain:  ChainETH,
+		DestChain:    ChainAIB,
 		SourceTxHash: Hash{Chain: ChainETH},
-		Sender:      tx.From,
-		Recipient:   tx.To,
-		Amount:      tx.Amount,
-		Token:       tx.Token,
-		Status:      TxStatusCompleted,
+		Sender:       tx.From,
+		Recipient:    tx.To,
+		Amount:       tx.Amount,
+		Token:        tx.Token,
+		Status:       TxStatusCompleted,
 	}, tx.Confirmations, nil
 }
 
@@ -554,17 +554,17 @@ func (a *EthereumAdapter) GetTxByHash(txHash string) (map[string]interface{}, er
 	}
 
 	return map[string]interface{}{
-		"hash":         tx.Hash,
-		"block_hash":   tx.BlockHash,
-		"block_number": tx.BlockNumber,
-		"index":        tx.Index,
-		"from":         tx.From.String(),
-		"to":           tx.To.String(),
-		"amount":       tx.Amount.String(),
-		"token":        tx.Token,
+		"hash":          tx.Hash,
+		"block_hash":    tx.BlockHash,
+		"block_number":  tx.BlockNumber,
+		"index":         tx.Index,
+		"from":          tx.From.String(),
+		"to":            tx.To.String(),
+		"amount":        tx.Amount.String(),
+		"token":         tx.Token,
 		"confirmations": tx.Confirmations,
-		"timestamp":    tx.Timestamp.Unix(),
-		"status":       tx.Status,
+		"timestamp":     tx.Timestamp.Unix(),
+		"status":        tx.Status,
 	}, nil
 }
 
@@ -647,27 +647,27 @@ func (a *SolanaAdapter) LockFunds(req *SwapRequest) (string, error) {
 	txHash := a.generateTxHash(req)
 
 	fund := &LockedFund{
-		RequestID:   req.ID,
-		Amount:      req.Amount,
+		RequestID:  req.ID,
+		Amount:     req.Amount,
 		Recipient:  req.Recipient,
-		LockTxHash:  txHash,
-		CreatedAt:   time.Now(),
-		ExpiresAt:   req.Deadline,
+		LockTxHash: txHash,
+		CreatedAt:  time.Now(),
+		ExpiresAt:  req.Deadline,
 	}
 	a.addLockedFund(req.ID, fund)
 
 	chainTx := &ChainTransaction{
-		Hash:        txHash,
-		BlockHash:   a.generateBlockHash(),
-		BlockNumber: 230000000, // Simulated
-		Index:       10,
-		From:        req.Sender,
-		To:          req.Recipient,
-		Amount:      req.Amount,
-		Token:       req.Token,
+		Hash:          txHash,
+		BlockHash:     a.generateBlockHash(),
+		BlockNumber:   230000000, // Simulated
+		Index:         10,
+		From:          req.Sender,
+		To:            req.Recipient,
+		Amount:        req.Amount,
+		Token:         req.Token,
 		Confirmations: 0,
-		Timestamp:   time.Now(),
-		Status:      "confirmed",
+		Timestamp:     time.Now(),
+		Status:        "confirmed",
 	}
 	a.addTransaction(chainTx)
 
@@ -683,17 +683,17 @@ func (a *SolanaAdapter) UnlockFunds(req *SwapRequest, proof *MerkleProof) (strin
 	unlockTxHash := a.generateUnlockTxHash(req)
 
 	chainTx := &ChainTransaction{
-		Hash:        unlockTxHash,
-		BlockHash:   a.generateBlockHash(),
-		BlockNumber: proof.BlockNumber + 1,
-		Index:       0,
-		From:        req.Sender,
-		To:          req.Recipient,
-		Amount:      req.Amount,
-		Token:       req.Token,
+		Hash:          unlockTxHash,
+		BlockHash:     a.generateBlockHash(),
+		BlockNumber:   proof.BlockNumber + 1,
+		Index:         0,
+		From:          req.Sender,
+		To:            req.Recipient,
+		Amount:        req.Amount,
+		Token:         req.Token,
 		Confirmations: 0,
-		Timestamp:   time.Now(),
-		Status:      "confirmed",
+		Timestamp:     time.Now(),
+		Status:        "confirmed",
 	}
 	a.addTransaction(chainTx)
 
@@ -717,14 +717,14 @@ func (a *SolanaAdapter) VerifyTx(txHash string) (*CrossChainTx, uint64, error) {
 	}
 
 	return &CrossChainTx{
-		SourceChain: ChainSOL,
-		DestChain:   ChainAIB,
+		SourceChain:  ChainSOL,
+		DestChain:    ChainAIB,
 		SourceTxHash: Hash{Chain: ChainSOL},
-		Sender:      tx.From,
-		Recipient:   tx.To,
-		Amount:      tx.Amount,
-		Token:       tx.Token,
-		Status:      TxStatusCompleted,
+		Sender:       tx.From,
+		Recipient:    tx.To,
+		Amount:       tx.Amount,
+		Token:        tx.Token,
+		Status:       TxStatusCompleted,
 	}, tx.Confirmations, nil
 }
 
@@ -767,17 +767,17 @@ func (a *SolanaAdapter) GetTxByHash(txHash string) (map[string]interface{}, erro
 	}
 
 	return map[string]interface{}{
-		"hash":         tx.Hash,
-		"block_hash":   tx.BlockHash,
-		"block_number": tx.BlockNumber,
-		"index":        tx.Index,
-		"from":         tx.From.String(),
-		"to":           tx.To.String(),
-		"amount":       tx.Amount.String(),
-		"token":        tx.Token,
+		"hash":          tx.Hash,
+		"block_hash":    tx.BlockHash,
+		"block_number":  tx.BlockNumber,
+		"index":         tx.Index,
+		"from":          tx.From.String(),
+		"to":            tx.To.String(),
+		"amount":        tx.Amount.String(),
+		"token":         tx.Token,
 		"confirmations": tx.Confirmations,
-		"timestamp":    tx.Timestamp.Unix(),
-		"status":       tx.Status,
+		"timestamp":     tx.Timestamp.Unix(),
+		"status":        tx.Status,
 	}, nil
 }
 

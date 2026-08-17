@@ -347,7 +347,7 @@ func TestTestNet_ConcurrentTasks(t *testing.T) {
 func TestTestNet_AutoSlash(t *testing.T) {
 	config := &TestNetConfig{
 		NodeCount:      5,
-		MinNodes:       5,  // Use all 5 nodes so dishonest ones are always included
+		MinNodes:       5, // Use all 5 nodes so dishonest ones are always included
 		CommitDuration: 200 * time.Millisecond,
 		RevealDuration: 200 * time.Millisecond,
 		AutoSlash:      true,
@@ -842,7 +842,7 @@ func TestTestNet_EmptyPrompt(t *testing.T) {
 // Test 21: Scenario runner - MajorityDisagreement
 func TestTestNet_ScenarioMajorityDisagreement(t *testing.T) {
 	config := &TestNetConfig{
-		NodeCount:      6,  // 6 nodes: will make 4 dishonest (>50%)
+		NodeCount:      6, // 6 nodes: will make 4 dishonest (>50%)
 		MinNodes:       5,
 		CommitDuration: 100 * time.Millisecond,
 		RevealDuration: 100 * time.Millisecond,
@@ -871,7 +871,7 @@ func TestTestNet_ScenarioMajorityDisagreement(t *testing.T) {
 // Test 22: Scenario runner - Byzantine
 func TestTestNet_ScenarioByzantine(t *testing.T) {
 	config := &TestNetConfig{
-		NodeCount:      6,  // 6 nodes: all will be made dishonest
+		NodeCount:      6, // 6 nodes: all will be made dishonest
 		MinNodes:       5,
 		CommitDuration: 100 * time.Millisecond,
 		RevealDuration: 100 * time.Millisecond,

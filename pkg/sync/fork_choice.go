@@ -17,9 +17,9 @@ import (
 
 // ForkSelector implements the fork choice rule for selecting the best chain.
 type ForkSelector struct {
-	mu           sync.RWMutex
-	localChain   Blockchain
-	running      bool
+	mu         sync.RWMutex
+	localChain Blockchain
+	running    bool
 
 	// Fork detection
 	reorgThreshold int // blocks behind before considering reorg
@@ -32,7 +32,7 @@ func NewForkSelector(localChain Blockchain, reorgThreshold int) *ForkSelector {
 	}
 
 	return &ForkSelector{
-		localChain:    localChain,
+		localChain:     localChain,
 		reorgThreshold: reorgThreshold,
 	}
 }
@@ -418,7 +418,7 @@ func (rh *ReorgHandler) ProcessReorg(newChain []*Block, oldChain []*Block) error
 type ChainInfo struct {
 	Height       uint64 `json:"height"`
 	TipHash      string `json:"tip_hash"`
-	Work         string `json:"work"`         // Hex representation of total work
+	Work         string `json:"work"` // Hex representation of total work
 	IsValid      bool   `json:"is_valid"`
 	ForkDetected bool   `json:"fork_detected"`
 }

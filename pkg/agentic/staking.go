@@ -11,9 +11,9 @@ import (
 
 // StakingManager manages staking and slashing operations.
 type StakingManager struct {
-	mu         sync.RWMutex
-	stakes     map[interfaces.NodeID]*StakeInfo
-	pending    map[interfaces.NodeID]*StakeInfo
+	mu           sync.RWMutex
+	stakes       map[interfaces.NodeID]*StakeInfo
+	pending      map[interfaces.NodeID]*StakeInfo
 	slashRecords []*SlashRecord
 
 	config *Config
@@ -30,10 +30,10 @@ func NewStakingManager(cfg *Config) (*StakingManager, error) {
 	}
 
 	return &StakingManager{
-		stakes:     make(map[interfaces.NodeID]*StakeInfo),
-		pending:    make(map[interfaces.NodeID]*StakeInfo),
+		stakes:       make(map[interfaces.NodeID]*StakeInfo),
+		pending:      make(map[interfaces.NodeID]*StakeInfo),
 		slashRecords: []*SlashRecord{},
-		config:     cfg,
+		config:       cfg,
 	}, nil
 }
 
@@ -56,12 +56,12 @@ func (sm *StakingManager) Stake(nodeID interfaces.NodeID, amount uint64, lockDur
 		}
 	} else {
 		sm.stakes[nodeID] = &StakeInfo{
-			NodeID:         nodeID,
-			Amount:         amount,
-			LockedUntil:    lockedUntil,
-			SlashCount:     0,
-			TotalSlashed:   0,
-			LastSlashTime:  nil,
+			NodeID:        nodeID,
+			Amount:        amount,
+			LockedUntil:   lockedUntil,
+			SlashCount:    0,
+			TotalSlashed:  0,
+			LastSlashTime: nil,
 		}
 	}
 

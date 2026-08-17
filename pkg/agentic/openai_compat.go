@@ -31,14 +31,14 @@ func NewOpenAICompat(baseURL, apiKey string) *OpenAICompat {
 
 // ChatCompletionRequest represents an OpenAI chat completion request.
 type OpenAIChatCompletionRequest struct {
-	Model       string         `json:"model"`
+	Model       string          `json:"model"`
 	Messages    []OpenAIMessage `json:"messages"`
-	MaxTokens   int            `json:"max_tokens,omitempty"`
-	Temperature float64        `json:"temperature,omitempty"`
-	TopP        float64        `json:"top_p,omitempty"`
-	N           int            `json:"n,omitempty"`
-	Stream      bool           `json:"stream,omitempty"`
-	Stop        []string       `json:"stop,omitempty"`
+	MaxTokens   int             `json:"max_tokens,omitempty"`
+	Temperature float64         `json:"temperature,omitempty"`
+	TopP        float64         `json:"top_p,omitempty"`
+	N           int             `json:"n,omitempty"`
+	Stream      bool            `json:"stream,omitempty"`
+	Stop        []string        `json:"stop,omitempty"`
 }
 
 // OpenAIMessage represents a message in the chat.
@@ -49,12 +49,12 @@ type OpenAIMessage struct {
 
 // ChatCompletionResponse represents an OpenAI chat completion response.
 type OpenAIChatCompletionResponse struct {
-	ID      string                    `json:"id"`
-	Object  string                    `json:"object"`
-	Created int64                     `json:"created"`
-	Model   string                    `json:"model"`
-	Choices []OpenAIChoice            `json:"choices"`
-	Usage   OpenAIUsage               `json:"usage"`
+	ID      string         `json:"id"`
+	Object  string         `json:"object"`
+	Created int64          `json:"created"`
+	Model   string         `json:"model"`
+	Choices []OpenAIChoice `json:"choices"`
+	Usage   OpenAIUsage    `json:"usage"`
 }
 
 // OpenAIChoice represents a choice in the response.

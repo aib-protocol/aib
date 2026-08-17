@@ -869,7 +869,7 @@ func TestIntegration_SmartRouterWithConstraints(t *testing.T) {
 	// Test with max fee constraint
 	t.Run("MaxFeeConstraint", func(t *testing.T) {
 		opts := &RouteOption{
-			MaxFee:  50,
+			MaxFee:   50,
 			Strategy: StrategyCheapest,
 		}
 		route, err := router.SelectRoute(toAddr, 1000, opts)

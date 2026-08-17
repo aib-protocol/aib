@@ -30,11 +30,11 @@ const (
 
 // Vulnerability represents a detected security issue
 type Vulnerability struct {
-	ID          string
-	Severity    Severity
-	Category    string
-	Description string
-	Location    string
+	ID             string
+	Severity       Severity
+	Category       string
+	Description    string
+	Location       string
 	Recommendation string
 }
 
@@ -45,16 +45,16 @@ type Vulnerability struct {
 // VulnerabilityPatterns contains regex patterns for common Solidity vulnerabilities
 var VulnerabilityPatterns = map[string]*regexp.Regexp{
 	// Reentrancy vulnerabilities
-	"reentrancy_call": regexp.MustCompile(`(?i)(call\.value|transfer|send).*\{[^}]*(?<!>)call\{`),
+	"reentrancy_call":        regexp.MustCompile(`(?i)(call\.value|transfer|send).*\{[^}]*(?<!>)call\{`),
 	"reentrancy_unprotected": regexp.MustCompile(`(?i)function\s+\w+\s*\([^)]*\)\s*(public|external)\s*\{[^}](?!.*require\(?!.*\(msg\.sender[^)]*\)))(?!.*ReentrancyGuard)`),
 
 	// Integer overflow/underflow (pre-Solidity 0.8.0)
 	"integer_overflow": regexp.MustCompile(`(?i)pragma\s+solidity\s+(\^|>=)\s*0\.[0-7]\.`),
-	"unsafe_math": regexp.MustCompile(`(?i)\.(add|sub|mul|div|mod)\(.*[^safe]`),
+	"unsafe_math":      regexp.MustCompile(`(?i)\.(add|sub|mul|div|mod)\(.*[^safe]`),
 
 	// Access control issues
 	"missing_access_control": regexp.MustCompile(`(?i)function\s+\w+\s*\([^)]*\)\s*(public|external)\s*(?!.*(onlyOwner|require\(msg\.sender))\{`),
-	"tx_origin_usage": regexp.MustCompile(`(?i)tx\.origin`),
+	"tx_origin_usage":        regexp.MustCompile(`(?i)tx\.origin`),
 
 	// Front-running risks
 	"front_running": regexp.MustCompile(`(?i)(block\.timestamp|block\.number).*==.*(now|block\.number)`),
@@ -64,7 +64,7 @@ var VulnerabilityPatterns = map[string]*regexp.Regexp{
 
 	// Self-destruct risks
 	"unprotected_selfdestruct": regexp.MustCompile(`(?i)selfdestruct.*\(address\(0\)`),
-	"suicide_usage": regexp.MustCompile(`(?i)suicide\(`),
+	"suicide_usage":            regexp.MustCompile(`(?i)suicide\(`),
 }
 
 // DetectSolidityVulnerabilities scans Solidity code for known vulnerabilities
@@ -74,11 +74,11 @@ func DetectSolidityVulnerabilities(code string) []Vulnerability {
 	// Check for outdated Solidity version (before 0.8.0)
 	if match := VulnerabilityPatterns["integer_overflow"].FindString(code); match != "" {
 		vulns = append(vulns, Vulnerability{
-			ID:          "SOL-001",
-			Severity:    SeverityHigh,
-			Category:    "Integer Overflow",
-			Description: "Solidity version below 0.8.0 may have integer overflow issues",
-			Location:    "pragma",
+			ID:             "SOL-001",
+			Severity:       SeverityHigh,
+			Category:       "Integer Overflow",
+			Description:    "Solidity version below 0.8.0 may have integer overflow issues",
+			Location:       "pragma",
 			Recommendation: "Upgrade to Solidity 0.8.0 or higher, or use SafeMath library",
 		})
 	}
@@ -86,11 +86,11 @@ func DetectSolidityVulnerabilities(code string) []Vulnerability {
 	// Check for tx.origin usage (phishing risk)
 	if VulnerabilityPatterns["tx_origin_usage"].FindString(code) != "" {
 		vulns = append(vulns, Vulnerability{
-			ID:          "SOL-002",
-			Severity:    SeverityMedium,
-			Category:    "Phishing",
-			Description: "tx.origin usage can be exploited in phishing attacks",
-			Location:    "tx.origin",
+			ID:             "SOL-002",
+			Severity:       SeverityMedium,
+			Category:       "Phishing",
+			Description:    "tx.origin usage can be exploited in phishing attacks",
+			Location:       "tx.origin",
 			Recommendation: "Use msg.sender instead of tx.origin for authorization",
 		})
 	}
@@ -98,11 +98,11 @@ func DetectSolidityVulnerabilities(code string) []Vulnerability {
 	// Check for unprotected functions
 	if VulnerabilityPatterns["missing_access_control"].FindString(code) != "" {
 		vulns = append(vulns, Vulnerability{
-			ID:          "SOL-003",
-			Severity:    SeverityHigh,
-			Category:    "Access Control",
-			Description: "Function may lack proper access control",
-			Location:    "function definition",
+			ID:             "SOL-003",
+			Severity:       SeverityHigh,
+			Category:       "Access Control",
+			Description:    "Function may lack proper access control",
+			Location:       "function definition",
 			Recommendation: "Add appropriate access control modifiers (onlyOwner, etc.)",
 		})
 	}
@@ -110,11 +110,11 @@ func DetectSolidityVulnerabilities(code string) []Vulnerability {
 	// Check for front-running patterns
 	if VulnerabilityPatterns["front_running"].FindString(code) != "" {
 		vulns = append(vulns, Vulnerability{
-			ID:          "SOL-004",
-			Severity:    SeverityMedium,
-			Category:    "Front-Running",
-			Description: "Code may be vulnerable to front-running attacks",
-			Location:    "block usage",
+			ID:             "SOL-004",
+			Severity:       SeverityMedium,
+			Category:       "Front-Running",
+			Description:    "Code may be vulnerable to front-running attacks",
+			Location:       "block usage",
 			Recommendation: "Use commit-reveal schemes or batch transactions",
 		})
 	}
@@ -122,11 +122,11 @@ func DetectSolidityVulnerabilities(code string) []Vulnerability {
 	// Check for unsafe delegatecall
 	if VulnerabilityPatterns["delegatecall_untrusted"].FindString(code) != "" {
 		vulns = append(vulns, Vulnerability{
-			ID:          "SOL-005",
-			Severity:    SeverityCritical,
-			Category:    "Delegatecall",
-			Description: "Untrusted delegatecall can lead to code execution",
-			Location:    "delegatecall",
+			ID:             "SOL-005",
+			Severity:       SeverityCritical,
+			Category:       "Delegatecall",
+			Description:    "Untrusted delegatecall can lead to code execution",
+			Location:       "delegatecall",
 			Recommendation: "Validate target address and use trusted contracts only",
 		})
 	}
@@ -134,11 +134,11 @@ func DetectSolidityVulnerabilities(code string) []Vulnerability {
 	// Check for selfdestruct
 	if VulnerabilityPatterns["unprotected_selfdestruct"].FindString(code) != "" {
 		vulns = append(vulns, Vulnerability{
-			ID:          "SOL-006",
-			Severity:    SeverityHigh,
-			Category:    "Destructibility",
-			Description: "Unprotected selfdestruct can permanently destroy contract",
-			Location:    "selfdestruct",
+			ID:             "SOL-006",
+			Severity:       SeverityHigh,
+			Category:       "Destructibility",
+			Description:    "Unprotected selfdestruct can permanently destroy contract",
+			Location:       "selfdestruct",
 			Recommendation: "Add access control to selfdestruct functions",
 		})
 	}
@@ -490,7 +490,7 @@ type SecurityReport struct {
 	HighCount            int
 	MediumCount          int
 	LowCount             int
-	Vulnerabilities     []Vulnerability
+	Vulnerabilities      []Vulnerability
 }
 
 // ScanSmartContract performs comprehensive security scan on Solidity code

@@ -23,8 +23,8 @@ type Blockchain struct {
 	config *Config
 
 	// Callbacks
-	onBlockProduced   func(*Block)
-	onBlockVerified  func(*Block)
+	onBlockProduced      func(*Block)
+	onBlockVerified      func(*Block)
 	onVerificationFailed func(*BlockEvent, error)
 }
 
@@ -53,11 +53,11 @@ func DefaultConfig() *Config {
 	return &Config{
 		BlockInterval:     5 * time.Second,
 		MaxBlocksInMemory: 10000,
-		AutoProduce:      true,
-		MinAgreementRate: 0.5,
-		GenesisTaskID:    "genesis",
-		GenesisResult:    "ZKML Blockchain Genesis Block",
-		GenesisTimestamp: 1704067200, // 2024-01-01 00:00:00 UTC
+		AutoProduce:       true,
+		MinAgreementRate:  0.5,
+		GenesisTaskID:     "genesis",
+		GenesisResult:     "ZKML Blockchain Genesis Block",
+		GenesisTimestamp:  1704067200, // 2024-01-01 00:00:00 UTC
 	}
 }
 
@@ -436,15 +436,15 @@ func (bc *Blockchain) verifyBlock(block *Block) error {
 // createGenesisBlock creates the genesis block
 func (bc *Blockchain) createGenesisBlock() error {
 	genesisEvent := &BlockEvent{
-		TaskID:        bc.config.GenesisTaskID,
-		FinalResult:   bc.config.GenesisResult,
-		IsValid:       true,
-		AgreementRate: 1.0,
-		NodeResults:   map[string]string{"genesis": "OK"},
+		TaskID:         bc.config.GenesisTaskID,
+		FinalResult:    bc.config.GenesisResult,
+		IsValid:        true,
+		AgreementRate:  1.0,
+		NodeResults:    map[string]string{"genesis": "OK"},
 		ConsensusNodes: []string{"genesis"},
-		Metadata:      map[string]string{"type": "genesis"},
-		Timestamp:     bc.config.GenesisTimestamp,
-		BlockHeight:   0,
+		Metadata:       map[string]string{"type": "genesis"},
+		Timestamp:      bc.config.GenesisTimestamp,
+		BlockHeight:    0,
 	}
 
 	genesisBlock := NewBlock(0, make([]byte, 32), genesisEvent)
@@ -467,9 +467,9 @@ func (bc *Blockchain) GetBlockchainInfo() map[string]interface{} {
 	latestBlock, _ := bc.GetLatestBlock()
 
 	info := map[string]interface{}{
-		"running":           bc.running,
-		"block_count":       len(bc.blocks),
-		"config":            bc.config,
+		"running":     bc.running,
+		"block_count": len(bc.blocks),
+		"config":      bc.config,
 	}
 
 	if latestBlock != nil {

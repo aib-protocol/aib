@@ -90,11 +90,11 @@ func (m *mockBlockchain) GetBlockByHash(hash []byte) (*Block, error) {
 
 // mockNetwork implements Network interface for testing.
 type mockNetwork struct {
-	peers       map[p2p.PeerID]*p2p.PeerInfo
-	peerID      p2p.PeerID
-	messages    []*p2p.Message
-	handlers    map[p2p.ProtocolID]p2p.MessageHandler
-	lock        int
+	peers    map[p2p.PeerID]*p2p.PeerInfo
+	peerID   p2p.PeerID
+	messages []*p2p.Message
+	handlers map[p2p.ProtocolID]p2p.MessageHandler
+	lock     int
 }
 
 func newMockNetwork() *mockNetwork {
@@ -143,7 +143,7 @@ func (m *mockNetwork) Connect(ctx context.Context, addrInfo p2p.AddrInfo) error 
 
 var (
 	ErrBlockNotFound = &testError{"block not found"}
-	ErrNoBlocks     = &testError{"no blocks"}
+	ErrNoBlocks      = &testError{"no blocks"}
 )
 
 type testError struct {
@@ -163,9 +163,9 @@ func TestNewSyncManager(t *testing.T) {
 	net := newMockNetwork()
 
 	cfg := &Config{
-		SyncInterval:     5 * time.Second,
-		MaxBlocksPerReq:  50,
-		Timeout:          10 * time.Second,
+		SyncInterval:    5 * time.Second,
+		MaxBlocksPerReq: 50,
+		Timeout:         10 * time.Second,
 	}
 
 	sm := NewSyncManager(chain, net, cfg)
@@ -579,9 +579,9 @@ func TestHandleBlocks(t *testing.T) {
 
 	// Add a genesis block
 	genesis := &Block{
-		Height:         0,
-		Timestamp:      time.Now().Unix(),
-		PrevBlockHash:  make([]byte, 32),
+		Height:        0,
+		Timestamp:     time.Now().Unix(),
+		PrevBlockHash: make([]byte, 32),
 	}
 	genesis.BlockHash = genesis.calculateHash()
 	chain.AddBlock(genesis)
@@ -595,15 +595,15 @@ func TestHandleBlocks(t *testing.T) {
 
 	// Create a valid block
 	block := &Block{
-		Height:         1,
-		Timestamp:      time.Now().Unix(),
-		PrevBlockHash:  genesis.Hash(),
+		Height:        1,
+		Timestamp:     time.Now().Unix(),
+		PrevBlockHash: genesis.Hash(),
 	}
 	block.BlockHash = block.calculateHash()
 
 	msg := &SyncMessage{
-		Type:    "blocks",
-		Blocks:  []*Block{block},
+		Type:     "blocks",
+		Blocks:   []*Block{block},
 		FromPeer: "peer1",
 	}
 
@@ -643,8 +643,8 @@ func TestHandleBlocksInvalidBlock(t *testing.T) {
 	block.BlockHash = block.calculateHash()
 
 	msg := &SyncMessage{
-		Type:    "blocks",
-		Blocks:  []*Block{block},
+		Type:     "blocks",
+		Blocks:   []*Block{block},
 		FromPeer: "peer1",
 	}
 
@@ -696,9 +696,9 @@ func TestSyncManagerValidateBlock(t *testing.T) {
 
 	// Add a genesis block
 	genesis := &Block{
-		Height:         0,
-		Timestamp:      time.Now().Unix(),
-		PrevBlockHash:  make([]byte, 32),
+		Height:        0,
+		Timestamp:     time.Now().Unix(),
+		PrevBlockHash: make([]byte, 32),
 	}
 	genesis.BlockHash = genesis.calculateHash()
 	chain.AddBlock(genesis)
@@ -707,9 +707,9 @@ func TestSyncManagerValidateBlock(t *testing.T) {
 
 	// Test valid block
 	validBlock := &Block{
-		Height:         1,
-		Timestamp:      time.Now().Unix(),
-		PrevBlockHash:  genesis.Hash(),
+		Height:        1,
+		Timestamp:     time.Now().Unix(),
+		PrevBlockHash: genesis.Hash(),
 	}
 	validBlock.BlockHash = validBlock.calculateHash()
 
@@ -720,9 +720,9 @@ func TestSyncManagerValidateBlock(t *testing.T) {
 
 	// Test block too far ahead
 	tooFarBlock := &Block{
-		Height:         MaxBlockAge + 100,
-		Timestamp:      time.Now().Unix(),
-		PrevBlockHash:  make([]byte, 32),
+		Height:        MaxBlockAge + 100,
+		Timestamp:     time.Now().Unix(),
+		PrevBlockHash: make([]byte, 32),
 	}
 	tooFarBlock.BlockHash = tooFarBlock.calculateHash()
 
@@ -733,17 +733,17 @@ func TestSyncManagerValidateBlock(t *testing.T) {
 
 	// Test block with previous hash mismatch
 	genesis2 := &Block{
-		Height:         0,
-		Timestamp:      time.Now().Unix(),
-		PrevBlockHash:  make([]byte, 32),
+		Height:        0,
+		Timestamp:     time.Now().Unix(),
+		PrevBlockHash: make([]byte, 32),
 	}
 	genesis2.BlockHash = []byte("different")
 	chain.AddBlock(genesis2)
 
 	mismatchBlock := &Block{
-		Height:         1,
-		Timestamp:      time.Now().Unix(),
-		PrevBlockHash:  []byte("wrong"),
+		Height:        1,
+		Timestamp:     time.Now().Unix(),
+		PrevBlockHash: []byte("wrong"),
 	}
 	mismatchBlock.BlockHash = mismatchBlock.calculateHash()
 
@@ -759,9 +759,9 @@ func TestSyncFromPeersWithBlocks(t *testing.T) {
 
 	// Add a genesis block
 	genesis := &Block{
-		Height:         0,
-		Timestamp:      time.Now().Unix(),
-		PrevBlockHash:  make([]byte, 32),
+		Height:        0,
+		Timestamp:     time.Now().Unix(),
+		PrevBlockHash: make([]byte, 32),
 	}
 	genesis.BlockHash = genesis.calculateHash()
 	chain.AddBlock(genesis)

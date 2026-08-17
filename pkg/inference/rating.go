@@ -13,15 +13,15 @@ import (
 
 // RatingManager manages node ratings and reputation
 type RatingManager struct {
-	nodes            map[[32]byte]*InferenceNode
-	pendingRatings   map[[32]byte][]RatingSubmission
-	ratingHistory    map[[32]byte][]RatingRecord
-	mu               sync.RWMutex
+	nodes          map[[32]byte]*InferenceNode
+	pendingRatings map[[32]byte][]RatingSubmission
+	ratingHistory  map[[32]byte][]RatingRecord
+	mu             sync.RWMutex
 
 	// Configuration
-	minStake         uint64
-	reputationDecay  float64
-	maxHistory       int
+	minStake        uint64
+	reputationDecay float64
+	maxHistory      int
 }
 
 // RatingSubmission represents a rating submission from a user
@@ -36,24 +36,24 @@ type RatingSubmission struct {
 
 // RatingRecord represents a stored rating
 type RatingRecord struct {
-	NodePubKey    [32]byte
-	UserPubKey    [32]byte
-	Score         float64
-	Reason        string
-	Signature     []byte
-	Timestamp     time.Time
-	BlockHeight   uint64
-	Confirmed     bool
+	NodePubKey  [32]byte
+	UserPubKey  [32]byte
+	Score       float64
+	Reason      string
+	Signature   []byte
+	Timestamp   time.Time
+	BlockHeight uint64
+	Confirmed   bool
 }
 
 // RatingStats contains rating statistics for a node
 type RatingStats struct {
-	TotalRatings    uint64
-	AvgScore        float64
-	MinScore        float64
-	MaxScore        float64
-	ScoreStdDev     float64
-	RecentAvgScore  float64 // Last 7 days
+	TotalRatings   uint64
+	AvgScore       float64
+	MinScore       float64
+	MaxScore       float64
+	ScoreStdDev    float64
+	RecentAvgScore float64 // Last 7 days
 }
 
 // ErrInvalidRating is returned when rating is invalid
@@ -77,22 +77,22 @@ const MaxRatingsPerNode = 1000
 // NewRatingManager creates a new rating manager
 func NewRatingManager() *RatingManager {
 	return &RatingManager{
-		nodes:            make(map[[32]byte]*InferenceNode),
-		pendingRatings:   make(map[[32]byte][]RatingSubmission),
-		ratingHistory:    make(map[[32]byte][]RatingRecord),
-		reputationDecay:  DefaultReputationDecay,
-		maxHistory:       MaxRatingsPerNode,
+		nodes:           make(map[[32]byte]*InferenceNode),
+		pendingRatings:  make(map[[32]byte][]RatingSubmission),
+		ratingHistory:   make(map[[32]byte][]RatingRecord),
+		reputationDecay: DefaultReputationDecay,
+		maxHistory:      MaxRatingsPerNode,
 	}
 }
 
 // NewRatingManagerWithConfig creates a new rating manager with configuration
 func NewRatingManagerWithConfig(minStake uint64, decay float64) *RatingManager {
 	rm := &RatingManager{
-		nodes:            make(map[[32]byte]*InferenceNode),
-		pendingRatings:   make(map[[32]byte][]RatingSubmission),
-		ratingHistory:    make(map[[32]byte][]RatingRecord),
-		reputationDecay:  decay,
-		maxHistory:       MaxRatingsPerNode,
+		nodes:           make(map[[32]byte]*InferenceNode),
+		pendingRatings:  make(map[[32]byte][]RatingSubmission),
+		ratingHistory:   make(map[[32]byte][]RatingRecord),
+		reputationDecay: decay,
+		maxHistory:      MaxRatingsPerNode,
 	}
 	if decay <= 0 {
 		rm.reputationDecay = DefaultReputationDecay

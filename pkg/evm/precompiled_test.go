@@ -296,11 +296,11 @@ func TestPrecompileModexpGasCost(t *testing.T) {
 	// Modexp gas cost formula:
 	// max(200, floor(f(max_base_len, max_modulus_len)) * ceil(exp_len / 8))
 	tests := []struct {
-		name        string
-		baseLen     uint64
-		expLen      uint64
-		modLen      uint64
-		minGas      uint64
+		name    string
+		baseLen uint64
+		expLen  uint64
+		modLen  uint64
+		minGas  uint64
 	}{
 		{"Small params", 1, 1, 1, 200},
 		{"Medium params", 32, 32, 32, 200},
@@ -530,12 +530,12 @@ func TestNonPrecompiledAddress(t *testing.T) {
 func TestPrecompileGasConsistency(t *testing.T) {
 	// Verify gas costs are consistent with EIP-2028
 	precompileGas := map[string]uint64{
-		"ecrecover":    3000,
-		"SHA256_base":  60,
-		"RIPEMD160_base": 600,
-		"identity_base": 15,
-		"bn128Add":     150,
-		"bn128Mul":     6000,
+		"ecrecover":         3000,
+		"SHA256_base":       60,
+		"RIPEMD160_base":    600,
+		"identity_base":     15,
+		"bn128Add":          150,
+		"bn128Mul":          6000,
 		"bn128Pairing_base": 45000,
 	}
 

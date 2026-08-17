@@ -51,27 +51,27 @@ type eTXInput struct {
 
 // eTXOutput represents an output of an eUTXO transaction.
 type eTXOutput struct {
-	Address   Address
-	Value     uint64
-	Datum     []byte   // Inline datum (optional)
-	DatumHash [32]byte // Datum hash (when datum not inline)
-	Script    []byte   // Validator script (optional)
+	Address    Address
+	Value      uint64
+	Datum      []byte   // Inline datum (optional)
+	DatumHash  [32]byte // Datum hash (when datum not inline)
+	Script     []byte   // Validator script (optional)
 	ScriptHash [32]byte // Script hash (when script not inline)
 }
 
 // eUTXOTransaction represents an Extended UTXO transaction.
 type eUTXOTransaction struct {
-	Version    uint32     // Transaction version
-	Inputs     []eTXInput // Inputs being spent
+	Version    uint32      // Transaction version
+	Inputs     []eTXInput  // Inputs being spent
 	Outputs    []eTXOutput // Outputs being created
-	Fee        uint64     // Transaction fee
-	TTL        uint64     // Time-to-Live (slot number)
-	ValidAfter uint64     // Earliest valid slot (optional)
-	Metadata   []byte     // Transaction metadata (optional)
-	Datums     [][]byte   // Additional datums (non-inline)
-	Signatures [][]byte   // Additional signatures
-	Slot       uint64    // Current slot number (for validation)
-	Hash       [32]byte  // Transaction hash (computed)
+	Fee        uint64      // Transaction fee
+	TTL        uint64      // Time-to-Live (slot number)
+	ValidAfter uint64      // Earliest valid slot (optional)
+	Metadata   []byte      // Transaction metadata (optional)
+	Datums     [][]byte    // Additional datums (non-inline)
+	Signatures [][]byte    // Additional signatures
+	Slot       uint64      // Current slot number (for validation)
+	Hash       [32]byte    // Transaction hash (computed)
 }
 
 // Address represents an eUTXO address (script or pubkey).

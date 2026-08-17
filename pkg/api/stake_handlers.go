@@ -88,11 +88,11 @@ type UnstakeInfo struct {
 
 // WalletStakeResponse 钱包质押状态响应
 type WalletStakeResponse struct {
-	Address        string       `json:"address"`
-	TotalStaked    string       `json:"total_staked"`
-	TotalUnstaking string       `json:"total_unstaking"`
-	PendingRewards string       `json:"pending_rewards"`
-	Stakes         []StakeInfo  `json:"stakes"`
+	Address        string        `json:"address"`
+	TotalStaked    string        `json:"total_staked"`
+	TotalUnstaking string        `json:"total_unstaking"`
+	PendingRewards string        `json:"pending_rewards"`
+	Stakes         []StakeInfo   `json:"stakes"`
 	Unstaking      []UnstakeInfo `json:"unstaking"`
 }
 

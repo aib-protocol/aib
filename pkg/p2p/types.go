@@ -43,8 +43,8 @@ type AddrInfo struct {
 // Conn represents a connection to a peer.
 type Conn struct {
 	net.Conn
-	LocalPeer  PeerID
-	RemotePeer PeerID
+	LocalPeer   PeerID
+	RemotePeer  PeerID
 	Established time.Time
 }
 

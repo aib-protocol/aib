@@ -20,10 +20,10 @@ var (
 
 // Handler 空投 API 处理器
 type Handler struct {
-	validator  *Validator
-	scorer     *Scorer
+	validator   *Validator
+	scorer      *Scorer
 	distributor *Distributor
-	router     *mux.Router
+	router      *mux.Router
 }
 
 // HandlerConfig 处理器配置
@@ -143,10 +143,10 @@ func (h *Handler) handleEligibility(w http.ResponseWriter, r *http.Request) {
 	amount, err := h.distributor.CanClaim(address, verifyResult.UserInfo.ID, score.Total)
 	if err != nil {
 		h.writeJSON(w, http.StatusOK, &EligibilityResponse{
-			Eligible:    false,
-			Score:       score,
-			Amount:      nil,
-			Reason:      err.Error(),
+			Eligible: false,
+			Score:    score,
+			Amount:   nil,
+			Reason:   err.Error(),
 		})
 		return
 	}
@@ -211,9 +211,9 @@ func (h *Handler) handleClaim(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.writeJSON(w, http.StatusCreated, &ClaimResponse{
-		Success:    true,
-		Record:     record,
-		Message:    "Airdrop claimed successfully",
+		Success: true,
+		Record:  record,
+		Message: "Airdrop claimed successfully",
 	})
 }
 

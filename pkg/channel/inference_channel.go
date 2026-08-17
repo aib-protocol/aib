@@ -45,21 +45,21 @@ const (
 
 // InferenceChannel 推理支付通道
 type InferenceChannel struct {
-	ChannelID      [32]byte
-	UserPubKey     [32]byte
-	NodePubKey     [32]byte
-	UserBalance    uint64 // 用户余额
-	NodeBalance    uint64 // 节点余额
-	TotalDeposit   uint64 // 总存入金额
-	Level          uint8  // 接口等级 1/2/3
-	InferenceCount uint64 // 推理次数
-	SequenceNum    uint64 // 序列号（防重放）
-	Status         InferenceChannelStatus
-	CreatedAt      uint64
-	ClosedAt       uint64
-	ChallengeEnd   *time.Time
+	ChannelID       [32]byte
+	UserPubKey      [32]byte
+	NodePubKey      [32]byte
+	UserBalance     uint64 // 用户余额
+	NodeBalance     uint64 // 节点余额
+	TotalDeposit    uint64 // 总存入金额
+	Level           uint8  // 接口等级 1/2/3
+	InferenceCount  uint64 // 推理次数
+	SequenceNum     uint64 // 序列号（防重放）
+	Status          InferenceChannelStatus
+	CreatedAt       uint64
+	ClosedAt        uint64
+	ChallengeEnd    *time.Time
 	ChallengeReason string
-	mu             sync.Mutex
+	mu              sync.Mutex
 }
 
 // InferenceChannelManager 管理所有推理通道
@@ -285,18 +285,18 @@ func (m *InferenceChannelManager) GetChannels() []*InferenceChannel {
 // mutex (copying a sync.Mutex is flagged by go vet and is unsafe).
 func (c *InferenceChannel) snapshot() *InferenceChannel {
 	cp := InferenceChannel{
-		ChannelID:      c.ChannelID,
-		UserPubKey:     c.UserPubKey,
-		NodePubKey:     c.NodePubKey,
-		UserBalance:    c.UserBalance,
-		NodeBalance:    c.NodeBalance,
-		TotalDeposit:   c.TotalDeposit,
-		Level:          c.Level,
-		InferenceCount: c.InferenceCount,
-		SequenceNum:    c.SequenceNum,
-		Status:         c.Status,
-		CreatedAt:      c.CreatedAt,
-		ClosedAt:       c.ClosedAt,
+		ChannelID:       c.ChannelID,
+		UserPubKey:      c.UserPubKey,
+		NodePubKey:      c.NodePubKey,
+		UserBalance:     c.UserBalance,
+		NodeBalance:     c.NodeBalance,
+		TotalDeposit:    c.TotalDeposit,
+		Level:           c.Level,
+		InferenceCount:  c.InferenceCount,
+		SequenceNum:     c.SequenceNum,
+		Status:          c.Status,
+		CreatedAt:       c.CreatedAt,
+		ClosedAt:        c.ClosedAt,
 		ChallengeReason: c.ChallengeReason,
 	}
 	if c.ChallengeEnd != nil {

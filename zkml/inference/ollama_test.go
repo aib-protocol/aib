@@ -15,15 +15,15 @@ import (
 // TestNewOllamaProvider 测试创建 OllamaProvider
 func TestNewOllamaProvider(t *testing.T) {
 	tests := []struct {
-		name     string
-		config   *OllamaConfig
-		wantURL  string
+		name      string
+		config    *OllamaConfig
+		wantURL   string
 		wantModel string
 	}{
 		{
-			name:     "默认配置",
-			config:   nil,
-			wantURL:  "http://localhost:11434",
+			name:      "默认配置",
+			config:    nil,
+			wantURL:   "http://localhost:11434",
 			wantModel: "llama2",
 		},
 		{
@@ -32,7 +32,7 @@ func TestNewOllamaProvider(t *testing.T) {
 				BaseURL: "http://example.com:8080",
 				Model:   "mistral",
 			},
-			wantURL:  "http://example.com:8080",
+			wantURL:   "http://example.com:8080",
 			wantModel: "mistral",
 		},
 		{
@@ -40,7 +40,7 @@ func TestNewOllamaProvider(t *testing.T) {
 			config: &OllamaConfig{
 				BaseURL: "http://example.com:8080/",
 			},
-			wantURL:  "http://example.com:8080",
+			wantURL:   "http://example.com:8080",
 			wantModel: "llama2",
 		},
 	}

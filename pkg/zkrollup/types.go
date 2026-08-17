@@ -15,8 +15,8 @@ import (
 
 // MerkleTree represents a binary Merkle tree for batch verification.
 type MerkleTree struct {
-	Root   [32]byte    // Root hash of the tree
-	Leaves [][32]byte  // Leaf nodes (channel operation hashes)
+	Root   [32]byte     // Root hash of the tree
+	Leaves [][32]byte   // Leaf nodes (channel operation hashes)
 	Levels [][][32]byte // All levels from leaves to root
 }
 
@@ -56,10 +56,10 @@ func DefaultBatchConfig() *BatchConfig {
 
 // operationResult holds the result of validating a single operation.
 type operationResult struct {
-	Index    uint64
-	Valid    bool
+	Index     uint64
+	Valid     bool
 	ChannelID [32]byte
-	Error    error
+	Error     error
 }
 
 // verificationResult holds the overall batch verification result.

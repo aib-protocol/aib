@@ -172,7 +172,7 @@ func TestUnifiedProvider_GetWeightWithPerformance(t *testing.T) {
 		Performance: &ModelPerformance{
 			TaskCompletionRate: 0.95,
 			UserSatisfaction:   4.5,
-			CostPerTask:       0.005,
+			CostPerTask:        0.005,
 		},
 	})
 
@@ -384,12 +384,12 @@ func TestInferenceProviderTypeConstants(t *testing.T) {
 
 func TestModelInfo(t *testing.T) {
 	info := &ModelInfo{
-		ModelID:      "model-1",
-		Name:         "Test Model",
-		Type:         ProviderTypeOllama,
-		BaseURL:      "http://localhost:11434",
-		Weight:       1.5,
-		Performance:  &ModelPerformance{
+		ModelID: "model-1",
+		Name:    "Test Model",
+		Type:    ProviderTypeOllama,
+		BaseURL: "http://localhost:11434",
+		Weight:  1.5,
+		Performance: &ModelPerformance{
 			TaskCompletionRate: 0.9,
 			UserSatisfaction:   4.2,
 			AvgResponseTime:    150 * time.Millisecond,

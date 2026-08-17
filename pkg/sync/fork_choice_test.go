@@ -593,18 +593,18 @@ func TestIsBetterChainLongerThanLocal(t *testing.T) {
 
 	// Add genesis block to chain
 	genesis := &Block{
-		Height:         0,
-		Timestamp:      time.Now().Unix(),
-		PrevBlockHash:  make([]byte, 32),
+		Height:        0,
+		Timestamp:     time.Now().Unix(),
+		PrevBlockHash: make([]byte, 32),
 	}
 	genesis.BlockHash = genesis.calculateHash()
 	chain.AddBlock(genesis)
 
 	// Add block 1
 	block1 := &Block{
-		Height:         1,
-		Timestamp:      time.Now().Unix(),
-		PrevBlockHash:  genesis.Hash(),
+		Height:        1,
+		Timestamp:     time.Now().Unix(),
+		PrevBlockHash: genesis.Hash(),
 	}
 	block1.BlockHash = block1.calculateHash()
 	chain.AddBlock(block1)
@@ -619,18 +619,18 @@ func TestProcessReorgSuccess(t *testing.T) {
 
 	// Add genesis block
 	genesis := &Block{
-		Height:         0,
-		Timestamp:      1000,
-		PrevBlockHash:  make([]byte, 32),
+		Height:        0,
+		Timestamp:     1000,
+		PrevBlockHash: make([]byte, 32),
 	}
 	genesis.BlockHash = genesis.calculateHash()
 	chain.AddBlock(genesis)
 
 	// Add block 1
 	block1 := &Block{
-		Height:         1,
-		Timestamp:      1001,
-		PrevBlockHash:  genesis.Hash(),
+		Height:        1,
+		Timestamp:     1001,
+		PrevBlockHash: genesis.Hash(),
 	}
 	block1.BlockHash = block1.calculateHash()
 	chain.AddBlock(block1)
@@ -642,10 +642,10 @@ func TestProcessReorgSuccess(t *testing.T) {
 		genesis,
 		block1,
 		{
-			Height:         2,
-			Timestamp:      1002,
-			PrevBlockHash:  block1.Hash(),
-			BlockHash:      []byte("new_hash_2"),
+			Height:        2,
+			Timestamp:     1002,
+			PrevBlockHash: block1.Hash(),
+			BlockHash:     []byte("new_hash_2"),
 		},
 	}
 

@@ -1,15 +1,15 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"crypto/ed25519"
 	"crypto/rand"
 	"encoding/hex"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
-	"bytes"
-	"encoding/json"
 	"net"
 	"net/http"
 	"os"
@@ -367,7 +367,7 @@ func (n *Node) runSeedHeartbeat() {
 
 	sendHeartbeat := func() {
 		height, _ := n.chainState.GetBestBlockHeight(), uint64(0)
-		blockHash := ""  // 获取最新区块 hash
+		blockHash := "" // 获取最新区块 hash
 		if block, err := n.chainState.GetBlockByHeight(height); err == nil {
 			blockHash = hex.EncodeToString(block.Hash[:])
 		}

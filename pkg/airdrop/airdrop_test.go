@@ -81,11 +81,11 @@ func TestSybilDetector(t *testing.T) {
 
 	for i := 0; i < 10; i++ {
 		userInfo := &GitHubUserInfo{
-			ID:        uint64(1000 + i),
-			Login:     "bot" + string(rune('0'+i)),
-			CreatedAt: baseTime.Add(time.Duration(i) * time.Hour),
-			Followers: 0,
-			Following: 0,
+			ID:          uint64(1000 + i),
+			Login:       "bot" + string(rune('0'+i)),
+			CreatedAt:   baseTime.Add(time.Duration(i) * time.Hour),
+			Followers:   0,
+			Following:   0,
 			PublicRepos: 0,
 		}
 

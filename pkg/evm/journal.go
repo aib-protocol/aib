@@ -69,9 +69,9 @@ type (
 		prev uint64
 	}
 	storageChange struct {
-		addr  common.Address
-		key   common.Hash
-		prev  common.Hash
+		addr common.Address
+		key  common.Hash
+		prev common.Hash
 	}
 	selfDestructChange struct {
 		addr common.Address

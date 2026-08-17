@@ -18,10 +18,10 @@ import (
 
 func TestExpireRouteHTLC(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:    &MockMultiSigLockerForHTLC{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLockerForHTLC{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -83,10 +83,10 @@ func TestExpireRouteHTLC(t *testing.T) {
 
 func TestRouteHTLC(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:    &MockMultiSigLockerForHTLC{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLockerForHTLC{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -120,10 +120,10 @@ func TestRouteHTLC(t *testing.T) {
 
 func TestRouteHTLC_InvalidRoute(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:    &MockMultiSigLockerForHTLC{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLockerForHTLC{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -142,10 +142,10 @@ func TestRouteHTLC_InvalidRoute(t *testing.T) {
 
 func TestRouteHTLC_NoChannel(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:    &MockMultiSigLockerForHTLC{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLockerForHTLC{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -169,10 +169,10 @@ func TestRouteHTLC_NoChannel(t *testing.T) {
 
 func TestCompleteRouteHTLC(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:    &MockMultiSigLockerForHTLC{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLockerForHTLC{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -218,10 +218,10 @@ func TestCompleteRouteHTLC(t *testing.T) {
 
 func TestCompleteRouteHTLC_ErrorPath(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:    &MockMultiSigLockerForHTLC{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLockerForHTLC{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -254,10 +254,10 @@ func TestCompleteRouteHTLC_ErrorPath(t *testing.T) {
 
 func TestRoutePayment(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:    &MockMultiSigLockerForHTLC{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLockerForHTLC{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -292,10 +292,10 @@ func TestRoutePayment(t *testing.T) {
 
 func TestCreateAtomicSwap(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:    &MockMultiSigLockerForHTLC{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLockerForHTLC{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -343,10 +343,10 @@ func TestCreateAtomicSwap(t *testing.T) {
 
 func TestCreateAtomicSwap_NoSourceChannel(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:    &MockMultiSigLockerForHTLC{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLockerForHTLC{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -379,10 +379,10 @@ func TestCreateAtomicSwap_NoSourceChannel(t *testing.T) {
 
 func TestCompleteAtomicSwap(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:    &MockMultiSigLockerForHTLC{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLockerForHTLC{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -426,10 +426,10 @@ func TestCompleteAtomicSwap(t *testing.T) {
 
 func TestCompleteAtomicSwap_Failure(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:    &MockMultiSigLockerForHTLC{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLockerForHTLC{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -462,10 +462,10 @@ func TestExpireAtomicSwap(t *testing.T) {
 
 func TestGetAtomicSwapStatus(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:    &MockMultiSigLockerForHTLC{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLockerForHTLC{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -621,10 +621,10 @@ func TestValidateState(t *testing.T) {
 	copy(partyB[:], pubB)
 
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:    &MockMultiSigLockerForHTLC{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLockerForHTLC{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -676,10 +676,10 @@ func TestValidateState_InvalidSignature(t *testing.T) {
 	copy(partyB[:], pubB)
 
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:    &MockMultiSigLockerForHTLC{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLockerForHTLC{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -722,10 +722,10 @@ func TestExecuteDisputeSettlement(t *testing.T) {
 	copy(partyB[:], pubA)
 
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:    &MockMultiSigLockerForHTLC{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLockerForHTLC{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -1194,11 +1194,11 @@ func TestOrderBook_AddCancelOrder(t *testing.T) {
 	now := time.Now()
 
 	order := &Order{
-		ID:       1,
-		Owner:    owner,
-		Side:     OrderSideBuy,
-		Quantity: 100,
-		Price:    50,
+		ID:        1,
+		Owner:     owner,
+		Side:      OrderSideBuy,
+		Quantity:  100,
+		Price:     50,
 		OrderType: OrderTypeLimit,
 		Status:    OrderStatusPending,
 		Timestamp: now,
@@ -1240,11 +1240,11 @@ func TestOrderBook_MultipleOrdersSamePrice(t *testing.T) {
 
 	for i, owner := range owners {
 		order := &Order{
-			ID:       uint64(i + 1),
-			Owner:    owner,
-			Side:     OrderSideSell,
-			Quantity: 100,
-			Price:    50,
+			ID:        uint64(i + 1),
+			Owner:     owner,
+			Side:      OrderSideSell,
+			Quantity:  100,
+			Price:     50,
 			OrderType: OrderTypeLimit,
 			Status:    OrderStatusPending,
 			Timestamp: now.Add(time.Duration(i) * time.Second),
@@ -1278,11 +1278,11 @@ func TestOrderBook_CancelNonOwner(t *testing.T) {
 	now := time.Now()
 
 	order := &Order{
-		ID:       1,
-		Owner:    owner1,
-		Side:     OrderSideBuy,
-		Quantity: 100,
-		Price:    50,
+		ID:        1,
+		Owner:     owner1,
+		Side:      OrderSideBuy,
+		Quantity:  100,
+		Price:     50,
 		OrderType: OrderTypeLimit,
 		Status:    OrderStatusPending,
 		Timestamp: now,
@@ -1465,10 +1465,10 @@ func TestDefaultWatchtowerConfig(t *testing.T) {
 
 func TestNewWatchtower(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:    &MockMultiSigLocker{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLocker{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -1484,10 +1484,10 @@ func TestNewWatchtower(t *testing.T) {
 
 func TestNewWatchtowerWithDisputeResolver(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:    &MockMultiSigLocker{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLocker{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -1511,10 +1511,10 @@ func TestNewWatchtower_NilManager(t *testing.T) {
 
 func TestNewWatchtowerWithDisputeResolver_NilDisputeResolver(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:    &MockMultiSigLocker{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLocker{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -1527,10 +1527,10 @@ func TestNewWatchtowerWithDisputeResolver_NilDisputeResolver(t *testing.T) {
 
 func TestWatchtower_StartMonitoring(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:    &MockMultiSigLocker{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLocker{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -1557,10 +1557,10 @@ func TestWatchtower_StartMonitoring(t *testing.T) {
 
 func TestWatchtower_StartMonitoring_ChannelNotFound(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:    &MockMultiSigLocker{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLocker{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -1575,10 +1575,10 @@ func TestWatchtower_StartMonitoring_ChannelNotFound(t *testing.T) {
 
 func TestWatchtower_StopMonitoring(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:    &MockMultiSigLocker{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLocker{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -1600,10 +1600,10 @@ func TestWatchtower_StopMonitoring(t *testing.T) {
 
 func TestWatchtower_StopMonitoring_NotMonitored(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:    &MockMultiSigLocker{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLocker{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -1618,10 +1618,10 @@ func TestWatchtower_StopMonitoring_NotMonitored(t *testing.T) {
 
 func TestWatchtower_GetMonitoredChannel(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:    &MockMultiSigLocker{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLocker{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -1646,10 +1646,10 @@ func TestWatchtower_GetMonitoredChannel(t *testing.T) {
 
 func TestWatchtower_GetMonitoredChannel_NotFound(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:    &MockMultiSigLocker{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLocker{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -1664,10 +1664,10 @@ func TestWatchtower_GetMonitoredChannel_NotFound(t *testing.T) {
 
 func TestWatchtower_ListMonitoredChannels(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:    &MockMultiSigLocker{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLocker{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -1696,10 +1696,10 @@ func TestWatchtower_VerifyState(t *testing.T) {
 	copy(partyB[:], pubB)
 
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:    &MockMultiSigLocker{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLocker{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -1733,10 +1733,10 @@ func TestWatchtower_VerifyState(t *testing.T) {
 
 func TestWatchtower_VerifyState_NotMonitored(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:    &MockMultiSigLocker{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLocker{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -1755,10 +1755,10 @@ func TestWatchtower_VerifyState_NotMonitored(t *testing.T) {
 
 func TestWatchtower_DetectFraud_SequenceRollback(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:    &MockMultiSigLocker{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLocker{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -1796,10 +1796,10 @@ func TestWatchtower_DetectFraud_SequenceRollback(t *testing.T) {
 
 func TestWatchtower_DetectFraud_BalanceManipulation(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:    &MockMultiSigLocker{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLocker{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -1833,25 +1833,25 @@ func TestWatchtower_DetectFraud_BalanceManipulation(t *testing.T) {
 
 func TestWatchtower_CheckStateTransition(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:    &MockMultiSigLocker{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLocker{},
 	}
 
 	manager, _ := NewManager(cfg)
 	wt, _ := NewWatchtower(manager, nil)
 
 	oldState := &interfaces.SignedState{
-		Sequence:  1,
-		BalanceA:  5000,
-		BalanceB:  5000,
+		Sequence: 1,
+		BalanceA: 5000,
+		BalanceB: 5000,
 	}
 
 	newState := &interfaces.SignedState{
-		Sequence:  2,
-		BalanceA:  4000,
-		BalanceB:  6000,
+		Sequence: 2,
+		BalanceA: 4000,
+		BalanceB: 6000,
 	}
 
 	err := wt.CheckStateTransition([32]byte{1}, oldState, newState)
@@ -1862,25 +1862,25 @@ func TestWatchtower_CheckStateTransition(t *testing.T) {
 
 func TestWatchtower_CheckStateTransition_SequenceNotIncremented(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:    &MockMultiSigLocker{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLocker{},
 	}
 
 	manager, _ := NewManager(cfg)
 	wt, _ := NewWatchtower(manager, nil)
 
 	oldState := &interfaces.SignedState{
-		Sequence:  2,
-		BalanceA:  5000,
-		BalanceB:  5000,
+		Sequence: 2,
+		BalanceA: 5000,
+		BalanceB: 5000,
 	}
 
 	newState := &interfaces.SignedState{
-		Sequence:  1, // Not incremented
-		BalanceA:  4000,
-		BalanceB:  6000,
+		Sequence: 1, // Not incremented
+		BalanceA: 4000,
+		BalanceB: 6000,
 	}
 
 	err := wt.CheckStateTransition([32]byte{1}, oldState, newState)
@@ -1891,24 +1891,24 @@ func TestWatchtower_CheckStateTransition_SequenceNotIncremented(t *testing.T) {
 
 func TestWatchtower_CheckStateTransition_BalanceViolation(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:    &MockMultiSigLocker{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLocker{},
 	}
 
 	manager, _ := NewManager(cfg)
 	wt, _ := NewWatchtower(manager, nil)
 
 	oldState := &interfaces.SignedState{
-		Sequence:  1,
-		BalanceA:  5000,
-		BalanceB:  5000,
+		Sequence: 1,
+		BalanceA: 5000,
+		BalanceB: 5000,
 	}
 
 	newState := &interfaces.SignedState{
-		Sequence:  2,
-		BalanceA:  8000, // Total increased
+		Sequence: 2,
+		BalanceA: 8000, // Total increased
 		BalanceB: 3000,
 	}
 
@@ -1920,10 +1920,10 @@ func TestWatchtower_CheckStateTransition_BalanceViolation(t *testing.T) {
 
 func TestWatchtower_FreezeChannel(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:    &MockMultiSigLocker{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLocker{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -1945,10 +1945,10 @@ func TestWatchtower_FreezeChannel(t *testing.T) {
 
 func TestWatchtower_FreezeChannel_NotMonitored(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:    &MockMultiSigLocker{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLocker{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -1963,10 +1963,10 @@ func TestWatchtower_FreezeChannel_NotMonitored(t *testing.T) {
 
 func TestWatchtower_UnfreezeChannel(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:    &MockMultiSigLocker{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLocker{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -1989,10 +1989,10 @@ func TestWatchtower_UnfreezeChannel(t *testing.T) {
 
 func TestWatchtower_SendAlert(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:    &MockMultiSigLocker{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLocker{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -2004,10 +2004,10 @@ func TestWatchtower_SendAlert(t *testing.T) {
 
 func TestWatchtower_GetAlertChannel(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:    &MockMultiSigLocker{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLocker{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -2021,10 +2021,10 @@ func TestWatchtower_GetAlertChannel(t *testing.T) {
 
 func TestWatchtower_SetCallbacks(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:    &MockMultiSigLocker{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLocker{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -2037,10 +2037,10 @@ func TestWatchtower_SetCallbacks(t *testing.T) {
 
 func TestWatchtower_DetectStateReversion(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:    &MockMultiSigLocker{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLocker{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -2073,10 +2073,10 @@ func TestWatchtower_DetectStateReversion(t *testing.T) {
 
 func TestWatchtower_DetectUnauthorizedClose(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:    &MockMultiSigLocker{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLocker{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -2129,10 +2129,10 @@ func TestWatchtower_ChannelStatusToString(t *testing.T) {
 
 func TestWatchtower_IsHealthy(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:    &MockMultiSigLocker{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLocker{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -2145,10 +2145,10 @@ func TestWatchtower_IsHealthy(t *testing.T) {
 
 func TestWatchtower_GetStats(t *testing.T) {
 	cfg := &Config{
-		ChallengePeriod:   24 * time.Hour,
-		MinDeposit:        1000,
-		MaxChannelValue:   1000000,
-		MultiSigLocker:    &MockMultiSigLocker{},
+		ChallengePeriod: 24 * time.Hour,
+		MinDeposit:      1000,
+		MaxChannelValue: 1000000,
+		MultiSigLocker:  &MockMultiSigLocker{},
 	}
 
 	manager, _ := NewManager(cfg)
@@ -2209,7 +2209,7 @@ func TestDisputeResolver_RespondToDispute_Timeout(t *testing.T) {
 
 	// Create dispute manually
 	dispute := &DisputeRecord{
-		ChannelID: channel.ID,
+		ChannelID:  channel.ID,
 		Challenger: partyA,
 		ChallengedState: interfaces.SignedState{
 			ChannelID: channel.ID,
@@ -2253,7 +2253,7 @@ func TestDisputeResolver_RespondToDispute_SequenceError(t *testing.T) {
 
 	// Create dispute with high sequence
 	dispute := &DisputeRecord{
-		ChannelID: channel.ID,
+		ChannelID:  channel.ID,
 		Challenger: partyA,
 		ChallengedState: interfaces.SignedState{
 			ChannelID: channel.ID,
@@ -2297,13 +2297,13 @@ func TestDisputeResolver_FinalizeDispute_AlreadyResolved(t *testing.T) {
 	channel, _ := mgr.OpenChannel(ctx, partyA, partyB, 5000, 3000)
 
 	dispute := &DisputeRecord{
-		ChannelID: channel.ID,
-		Challenger: partyA,
+		ChannelID:      channel.ID,
+		Challenger:     partyA,
 		ChallengeStart: time.Now(),
 		ChallengeEnd:   time.Now().Add(-1 * time.Hour),
 		Resolved:       true,
-		Winner:        partyA,
-		Resolution:    "test",
+		Winner:         partyA,
+		Resolution:     "test",
 	}
 
 	mgr.mu.Lock()
@@ -2351,7 +2351,7 @@ func TestDisputeResolver_CheckDisputeStatus(t *testing.T) {
 	}
 
 	dispute := &DisputeRecord{
-		ChannelID: channel.ID,
+		ChannelID:  channel.ID,
 		Challenger: interfaces.Address{1},
 		ChallengedState: interfaces.SignedState{
 			ChannelID: channel.ID,

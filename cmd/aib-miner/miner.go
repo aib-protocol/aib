@@ -11,24 +11,24 @@ import (
 
 // MinerStatus 矿工状态信息
 type MinerStatus struct {
-	NodeID         string        `json:"node_id"`          // 节点 ID
-	Running        bool          `json:"running"`          // 是否运行中
-	Uptime         time.Duration `json:"uptime"`           // 运行时长
-	TasksProcessed int           `json:"tasks_processed"`  // 已处理任务数
-	Model          string        `json:"model"`            // 使用的模型
-	StartTime      time.Time     `json:"start_time"`       // 启动时间
+	NodeID         string        `json:"node_id"`         // 节点 ID
+	Running        bool          `json:"running"`         // 是否运行中
+	Uptime         time.Duration `json:"uptime"`          // 运行时长
+	TasksProcessed int           `json:"tasks_processed"` // 已处理任务数
+	Model          string        `json:"model"`           // 使用的模型
+	StartTime      time.Time     `json:"start_time"`      // 启动时间
 }
 
 // Miner 矿工节点核心，负责管理推理任务的执行
 type Miner struct {
-	config     *MinerConfig      // 矿工配置
+	config     *MinerConfig               // 矿工配置
 	orch       *orchestrator.Orchestrator // 编排器实例
 	scheduler  *orchestrator.Scheduler    // 调度器
-	running    bool              // 运行状态标志
-	startedAt  time.Time         // 启动时间
-	tasksCount int               // 已处理任务计数
-	mu         sync.RWMutex      // 读写锁，保护并发访问
-	cancel     context.CancelFunc // 取消函数，用于停止主循环
+	running    bool                       // 运行状态标志
+	startedAt  time.Time                  // 启动时间
+	tasksCount int                        // 已处理任务计数
+	mu         sync.RWMutex               // 读写锁，保护并发访问
+	cancel     context.CancelFunc         // 取消函数，用于停止主循环
 }
 
 // NewMiner 创建新的矿工实例

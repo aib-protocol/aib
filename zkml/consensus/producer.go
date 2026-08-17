@@ -8,12 +8,12 @@ import (
 
 // BlockProducer handles automatic block production
 type BlockProducer struct {
-	bc     *Blockchain
-	config *Config
+	bc      *Blockchain
+	config  *Config
 	running bool
-	mu     sync.RWMutex
-	ticker *time.Ticker
-	stopCh chan struct{}
+	mu      sync.RWMutex
+	ticker  *time.Ticker
+	stopCh  chan struct{}
 }
 
 // NewBlockProducer creates a new block producer
@@ -93,15 +93,15 @@ func (bp *BlockProducer) produceBlock() {
 
 	// Create a new block with verification pending status
 	event := &BlockEvent{
-		TaskID:        fmt.Sprintf("auto-block-%d", latest.Height+1),
-		FinalResult:   "Auto-produced block",
-		IsValid:       true,
-		AgreementRate: 1.0,
-		NodeResults:   map[string]string{"producer": "idle"},
+		TaskID:         fmt.Sprintf("auto-block-%d", latest.Height+1),
+		FinalResult:    "Auto-produced block",
+		IsValid:        true,
+		AgreementRate:  1.0,
+		NodeResults:    map[string]string{"producer": "idle"},
 		ConsensusNodes: []string{"producer"},
-		Metadata:      map[string]string{"type": "auto"},
-		Timestamp:     time.Now().Unix(),
-		BlockHeight:   latest.Height + 1,
+		Metadata:       map[string]string{"type": "auto"},
+		Timestamp:      time.Now().Unix(),
+		BlockHeight:    latest.Height + 1,
 	}
 
 	if err := bp.bc.AddBlockEvent(event); err != nil {
@@ -115,9 +115,9 @@ func (bp *BlockProducer) GetStats() map[string]interface{} {
 	defer bp.mu.RUnlock()
 
 	return map[string]interface{}{
-		"running":       bp.running,
+		"running":        bp.running,
 		"block_interval": bp.config.BlockInterval.String(),
-		"auto_produce":  bp.config.AutoProduce,
+		"auto_produce":   bp.config.AutoProduce,
 	}
 }
 
@@ -221,7 +221,7 @@ func (m *Monitor) GetStats() map[string]interface{} {
 	defer m.mu.RUnlock()
 
 	return map[string]interface{}{
-		"running":           m.running,
+		"running":            m.running,
 		"min_agreement_rate": m.config.MinAgreementRate,
 	}
 }

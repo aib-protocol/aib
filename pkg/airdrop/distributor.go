@@ -29,24 +29,24 @@ var (
 
 // AirdropAmount 空投金额
 type AirdropAmount struct {
-	Base   uint64 `json:"base"`   // 基础金额
-	Bonus  uint64 `json:"bonus"`  // 奖励金额
-	Total  uint64 `json:"total"`  // 总金额
+	Base  uint64 `json:"base"`  // 基础金额
+	Bonus uint64 `json:"bonus"` // 奖励金额
+	Total uint64 `json:"total"` // 总金额
 }
 
 // ClaimRecord 认领记录
 type ClaimRecord struct {
-	Address         string    `json:"address"`
-	GitHubID        uint64    `json:"github_id"`
-	GitHubLogin     string    `json:"github_login"`
-	Email           string    `json:"email,omitempty"`
-	DeviceID        string    `json:"device_id"`
-	IPAddress       string    `json:"ip_address"`
-	Amount          *AirdropAmount `json:"amount"`
-	Score           int       `json:"score"`
-	Timestamp       time.Time `json:"timestamp"`
-	TxHash          string    `json:"tx_hash,omitempty"`
-	Signature       string    `json:"signature"`
+	Address     string         `json:"address"`
+	GitHubID    uint64         `json:"github_id"`
+	GitHubLogin string         `json:"github_login"`
+	Email       string         `json:"email,omitempty"`
+	DeviceID    string         `json:"device_id"`
+	IPAddress   string         `json:"ip_address"`
+	Amount      *AirdropAmount `json:"amount"`
+	Score       int            `json:"score"`
+	Timestamp   time.Time      `json:"timestamp"`
+	TxHash      string         `json:"tx_hash,omitempty"`
+	Signature   string         `json:"signature"`
 }
 
 // DistributorConfig 分发器配置
@@ -82,11 +82,11 @@ func DefaultDistributorConfig() *DistributorConfig {
 	}
 
 	return &DistributorConfig{
-		BaseAmount:         baseAmount,       // 1000 tokens (1e21)
-		MaxBonusMultiplier: 5.0,              // 最多 5x 奖励
+		BaseAmount:         baseAmount, // 1000 tokens (1e21)
+		MaxBonusMultiplier: 5.0,        // 最多 5x 奖励
 		Enabled:            true,
 		RequireSignature:   true,
-		MaxTotalAmount:     maxTotalAmount,   // 1亿 tokens (1e26)
+		MaxTotalAmount:     maxTotalAmount, // 1亿 tokens (1e26)
 		MinClaimScore:      50,
 	}
 }
@@ -255,16 +255,16 @@ func (d *Distributor) Claim(req *ClaimRequest) (*ClaimRecord, error) {
 	// 3. 创建认领记录
 	timestamp := time.Now()
 	record := &ClaimRecord{
-		Address:      req.Address,
-		GitHubID:     req.GitHubID,
-		GitHubLogin:  req.GitHubLogin,
-		Email:        req.Email,
-		DeviceID:     req.DeviceID,
-		IPAddress:    req.IPAddress,
-		Amount:       amount,
-		Score:        req.Score,
-		Timestamp:    timestamp,
-		Signature:    req.SignatureHex,
+		Address:     req.Address,
+		GitHubID:    req.GitHubID,
+		GitHubLogin: req.GitHubLogin,
+		Email:       req.Email,
+		DeviceID:    req.DeviceID,
+		IPAddress:   req.IPAddress,
+		Amount:      amount,
+		Score:       req.Score,
+		Timestamp:   timestamp,
+		Signature:   req.SignatureHex,
 	}
 
 	// 4. 记录签名（如果需要）
@@ -294,16 +294,16 @@ func (d *Distributor) Claim(req *ClaimRequest) (*ClaimRecord, error) {
 
 // ClaimRequest 认领请求
 type ClaimRequest struct {
-	Address      string    `json:"address"`
-	GitHubID     uint64    `json:"github_id"`
-	GitHubLogin  string    `json:"github_login"`
-	Email        string    `json:"email,omitempty"`
-	DeviceID     string    `json:"device_id"`
-	IPAddress    string    `json:"ip_address"`
-	Score        int       `json:"score"`
-	Timestamp    int64     `json:"timestamp"`
-	Signature    []byte    `json:"signature,omitempty"`
-	SignatureHex string    `json:"signature_hex,omitempty"`
+	Address      string `json:"address"`
+	GitHubID     uint64 `json:"github_id"`
+	GitHubLogin  string `json:"github_login"`
+	Email        string `json:"email,omitempty"`
+	DeviceID     string `json:"device_id"`
+	IPAddress    string `json:"ip_address"`
+	Score        int    `json:"score"`
+	Timestamp    int64  `json:"timestamp"`
+	Signature    []byte `json:"signature,omitempty"`
+	SignatureHex string `json:"signature_hex,omitempty"`
 }
 
 // verifySignature 验证签名

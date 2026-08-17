@@ -49,23 +49,23 @@ type SendResult struct {
 
 // TransactionRecord represents a transaction record for history.
 type TransactionRecord struct {
-	TxHash     [32]byte // Transaction hash
-	Direction  string    // "sent" or "received"
-	Amount     uint64    // Amount transferred
-	Fee        uint64    // Fee paid
-	Timestamp  uint64    // Unix timestamp
-	Confirmations uint64 // Number of confirmations
-	Method     string    // "L1" or "L2"
+	TxHash        [32]byte // Transaction hash
+	Direction     string   // "sent" or "received"
+	Amount        uint64   // Amount transferred
+	Fee           uint64   // Fee paid
+	Timestamp     uint64   // Unix timestamp
+	Confirmations uint64   // Number of confirmations
+	Method        string   // "L1" or "L2"
 }
 
 // WalletSDK provides a unified interface for wallet operations.
 type WalletSDK struct {
-	wallet     *Wallet
-	payment    *PaymentManager
-	utxoStore  *utxo.UTXOStore
-	config     *SDKConfig
-	history    []TransactionRecord // In-memory transaction history
-	mu         sync.RWMutex
+	wallet    *Wallet
+	payment   *PaymentManager
+	utxoStore *utxo.UTXOStore
+	config    *SDKConfig
+	history   []TransactionRecord // In-memory transaction history
+	mu        sync.RWMutex
 }
 
 // NewWalletSDK creates a new WalletSDK instance with the given configuration.

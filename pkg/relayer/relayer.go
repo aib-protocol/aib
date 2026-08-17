@@ -42,15 +42,15 @@ type RelayerManager interface {
 
 // RelayerStatusInfo contains detailed relayer status information.
 type RelayerStatusInfo struct {
-	RelayerID       string     `json:"relayer_id"`
+	RelayerID       string        `json:"relayer_id"`
 	Status          RelayerStatus `json:"status"`
-	Stake           string     `json:"stake"`
-	Reputation      float64    `json:"reputation"`
-	TotalTXs        uint64     `json:"total_txs"`
-	SuccessRate     float64    `json:"success_rate"`
-	ActiveTXs       uint64     `json:"active_txs"`
-	SupportedChains []ChainType `json:"supported_chains"`
-	FeeRate         string     `json:"fee_rate"`
+	Stake           string        `json:"stake"`
+	Reputation      float64       `json:"reputation"`
+	TotalTXs        uint64        `json:"total_txs"`
+	SuccessRate     float64       `json:"success_rate"`
+	ActiveTXs       uint64        `json:"active_txs"`
+	SupportedChains []ChainType   `json:"supported_chains"`
+	FeeRate         string        `json:"fee_rate"`
 	Uptime          time.Duration `json:"uptime"`
 }
 
@@ -97,10 +97,10 @@ type Task struct {
 type TaskType string
 
 const (
-	TaskLockFunds    TaskType = "LockFunds"
-	TaskUnlockFunds  TaskType = "UnlockFunds"
-	TaskSubmitProof  TaskType = "SubmitProof"
-	TaskVerifyTx     TaskType = "VerifyTx"
+	TaskLockFunds   TaskType = "LockFunds"
+	TaskUnlockFunds TaskType = "UnlockFunds"
+	TaskSubmitProof TaskType = "SubmitProof"
+	TaskVerifyTx    TaskType = "VerifyTx"
 )
 
 // NewRelayerNode creates a new RelayerNode instance.
@@ -344,14 +344,14 @@ func (r *RelayerNode) ReleaseFunds(txHash string) error {
 
 	// Create swap request from transaction
 	req := &SwapRequest{
-		ID:           tx.ID,
-		SourceChain:  tx.SourceChain,
-		DestChain:    tx.DestChain,
-		Sender:       tx.Sender,
-		Recipient:    tx.Recipient,
-		Amount:       tx.Amount,
-		Token:        tx.Token,
-		Deadline:     tx.Expiry,
+		ID:          tx.ID,
+		SourceChain: tx.SourceChain,
+		DestChain:   tx.DestChain,
+		Sender:      tx.Sender,
+		Recipient:   tx.Recipient,
+		Amount:      tx.Amount,
+		Token:       tx.Token,
+		Deadline:    tx.Expiry,
 	}
 
 	// Unlock funds on destination chain
@@ -581,18 +581,18 @@ func (r *RelayerNode) Serialize() ([]byte, error) {
 	defer r.mu.RUnlock()
 
 	type RelayerJSON struct {
-		ID              string         `json:"id"`
-		Address         Address        `json:"address"`
-		NodeID          string         `json:"node_id"`
-		Status          RelayerStatus  `json:"status"`
-		Stake           string         `json:"stake"`
-		SupportedChains []ChainType    `json:"supported_chains"`
-		FeeRate         string         `json:"fee_rate"`
-		Reputation      float64        `json:"reputation"`
-		TotalTXs        uint64         `json:"total_txs"`
-		SuccessRate     float64        `json:"success_rate"`
-		CreatedAt       int64          `json:"created_at"`
-		LastActiveAt    int64          `json:"last_active_at"`
+		ID              string        `json:"id"`
+		Address         Address       `json:"address"`
+		NodeID          string        `json:"node_id"`
+		Status          RelayerStatus `json:"status"`
+		Stake           string        `json:"stake"`
+		SupportedChains []ChainType   `json:"supported_chains"`
+		FeeRate         string        `json:"fee_rate"`
+		Reputation      float64       `json:"reputation"`
+		TotalTXs        uint64        `json:"total_txs"`
+		SuccessRate     float64       `json:"success_rate"`
+		CreatedAt       int64         `json:"created_at"`
+		LastActiveAt    int64         `json:"last_active_at"`
 	}
 
 	data := RelayerJSON{
@@ -616,18 +616,18 @@ func (r *RelayerNode) Serialize() ([]byte, error) {
 // DeserializeRelayerNode deserializes a relayer node from JSON.
 func DeserializeRelayerNode(data []byte) (*RelayerNode, error) {
 	type RelayerJSON struct {
-		ID              string         `json:"id"`
-		Address         Address        `json:"address"`
-		NodeID          string         `json:"node_id"`
-		Status          RelayerStatus  `json:"status"`
-		Stake           string         `json:"stake"`
-		SupportedChains []ChainType    `json:"supported_chains"`
-		FeeRate         string         `json:"fee_rate"`
-		Reputation      float64        `json:"reputation"`
-		TotalTXs        uint64         `json:"total_txs"`
-		SuccessRate     float64        `json:"success_rate"`
-		CreatedAt       int64          `json:"created_at"`
-		LastActiveAt    int64          `json:"last_active_at"`
+		ID              string        `json:"id"`
+		Address         Address       `json:"address"`
+		NodeID          string        `json:"node_id"`
+		Status          RelayerStatus `json:"status"`
+		Stake           string        `json:"stake"`
+		SupportedChains []ChainType   `json:"supported_chains"`
+		FeeRate         string        `json:"fee_rate"`
+		Reputation      float64       `json:"reputation"`
+		TotalTXs        uint64        `json:"total_txs"`
+		SuccessRate     float64       `json:"success_rate"`
+		CreatedAt       int64         `json:"created_at"`
+		LastActiveAt    int64         `json:"last_active_at"`
 	}
 
 	var jsonData RelayerJSON

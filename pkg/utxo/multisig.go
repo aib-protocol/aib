@@ -20,13 +20,13 @@ const (
 	OP_DATA ScriptOp = 0x00
 
 	// Control flow opcodes
-	OP_DUP          ScriptOp = 0x76
+	OP_DUP ScriptOp = 0x76
 	//OP_EQUAL       ScriptOp = 0x87
 	//OP_EQUALVERIFY ScriptOp = 0x88
 
 	// Crypto opcodes
-	OP_CHECKSIG       ScriptOp = 0xac
-	OP_CHECKMULTISIG  ScriptOp = 0xae
+	OP_CHECKSIG      ScriptOp = 0xac
+	OP_CHECKMULTISIG ScriptOp = 0xae
 
 	// Multi-sig specific
 	OP_CHECKSIGVERIFY ScriptOp = 0xaf

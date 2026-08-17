@@ -245,8 +245,8 @@ func TestWeightedSelector_Select(t *testing.T) {
 
 	// Add some nodes with different reputations
 	nodes := []struct {
-		id       string
-		score    float64
+		id    string
+		score float64
 	}{
 		{"high-rep", 300},
 		{"med-rep", 150},
@@ -285,8 +285,8 @@ func TestWeightedSelector_ProbabilityDistribution(t *testing.T) {
 
 	// Create nodes with different reputations
 	nodes := []struct {
-		id       string
-		score    float64
+		id    string
+		score float64
 	}{
 		{"node-high", 400},
 		{"node-med", 200},

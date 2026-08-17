@@ -51,26 +51,26 @@ func (s AtomicSwapStatus) String() string {
 // AtomicSwap 代表一个原子交换协议
 // 用于在 L2 通道内实现不同资产之间的原子兑换
 type AtomicSwap struct {
-	ID          [32]byte       // 唯一交换ID
-	SwapID      string         // 人类可读的交换ID
-	Sender      interfaces.Address // 发送方
-	Receiver    interfaces.Address // 接收方
-	HashLock    [32]byte       // 哈希锁 SHA256(secret)
-	Secret      []byte         // 密钥（仅在认领后公开）
-	Amount      uint64         // 交换金额
-	AssetIn     string         // 输入资产类型 (如 "AIB", "BTC", "ETH")
-	AssetOut    string         // 输出资产类型
-	Rate        uint64         // 汇率 (AssetOut per AssetIn * 10^8)
-	TimeLock    time.Time      // 超时时间
-	Status      AtomicSwapStatus // 交换状态
-	ChannelID   [32]byte       // 关联的通道ID
-	CreatedAt   time.Time      // 创建时间
-	ClaimedAt   *time.Time     // 认领时间
-	RefundedAt  *time.Time     // 退款时间
-	HTLCID      [32]byte       // 关联的HTLC ID
-	Initiator   interfaces.Address // 发起方（支付输入资产的一方）
-	Participant interfaces.Address // 参与方（支付输出资产的一方）
-	IsCrossChain bool              // 是否跨链交换
+	ID           [32]byte           // 唯一交换ID
+	SwapID       string             // 人类可读的交换ID
+	Sender       interfaces.Address // 发送方
+	Receiver     interfaces.Address // 接收方
+	HashLock     [32]byte           // 哈希锁 SHA256(secret)
+	Secret       []byte             // 密钥（仅在认领后公开）
+	Amount       uint64             // 交换金额
+	AssetIn      string             // 输入资产类型 (如 "AIB", "BTC", "ETH")
+	AssetOut     string             // 输出资产类型
+	Rate         uint64             // 汇率 (AssetOut per AssetIn * 10^8)
+	TimeLock     time.Time          // 超时时间
+	Status       AtomicSwapStatus   // 交换状态
+	ChannelID    [32]byte           // 关联的通道ID
+	CreatedAt    time.Time          // 创建时间
+	ClaimedAt    *time.Time         // 认领时间
+	RefundedAt   *time.Time         // 退款时间
+	HTLCID       [32]byte           // 关联的HTLC ID
+	Initiator    interfaces.Address // 发起方（支付输入资产的一方）
+	Participant  interfaces.Address // 参与方（支付输出资产的一方）
+	IsCrossChain bool               // 是否跨链交换
 	ExternalTxID string             // 外部链交易ID（跨链用）
 }
 
@@ -96,17 +96,17 @@ var (
 
 // AtomicSwapManager 管理通道内的原子交换
 type AtomicSwapManager struct {
-	manager       *Manager
-	swaps         map[[32]byte]*AtomicSwap // swapID -> AtomicSwap
-	swapsByChannel map[[32]byte][][32]byte // channelID -> []swapID
-	mu            sync.RWMutex
+	manager        *Manager
+	swaps          map[[32]byte]*AtomicSwap // swapID -> AtomicSwap
+	swapsByChannel map[[32]byte][][32]byte  // channelID -> []swapID
+	mu             sync.RWMutex
 }
 
 // NewAtomicSwapManager 创建新的原子交换管理器
 func NewAtomicSwapManager(m *Manager) *AtomicSwapManager {
 	return &AtomicSwapManager{
-		manager:       m,
-		swaps:         make(map[[32]byte]*AtomicSwap),
+		manager:        m,
+		swaps:          make(map[[32]byte]*AtomicSwap),
 		swapsByChannel: make(map[[32]byte][][32]byte),
 	}
 }
@@ -438,14 +438,14 @@ var (
 	}
 	AssetBTC = AssetInfo{
 		Symbol:   "BTC",
-		Name:    "Bitcoin",
+		Name:     "Bitcoin",
 		Decimals: 8,
 		IsNative: true,
 		ChainID:  "bitcoin",
 	}
 	AssetETH = AssetInfo{
 		Symbol:   "ETH",
-		Name:    "Ethereum",
+		Name:     "Ethereum",
 		Decimals: 18,
 		IsNative: true,
 		ChainID:  "ethereum",
@@ -488,17 +488,17 @@ func IsValidAsset(symbol string) bool {
 
 // HTLC represents a Hash Time-Locked Contract.
 type HTLC struct {
-	ChannelID    [32]byte
-	ID           [32]byte
-	HashLock     [32]byte
-	TimeLock     time.Time
-	Amount       uint64
-	Sender       interfaces.Address
-	Receiver     interfaces.Address
-	Preimage     []byte
-	State        int // 0=pending, 1=completed, 2=expired
-	CreatedAt    time.Time
-	CompletedAt  *time.Time
+	ChannelID   [32]byte
+	ID          [32]byte
+	HashLock    [32]byte
+	TimeLock    time.Time
+	Amount      uint64
+	Sender      interfaces.Address
+	Receiver    interfaces.Address
+	Preimage    []byte
+	State       int // 0=pending, 1=completed, 2=expired
+	CreatedAt   time.Time
+	CompletedAt *time.Time
 }
 
 // HTLCStates defines the possible states of an HTLC
@@ -544,15 +544,15 @@ func NewHTLC(
 	}
 
 	return &HTLC{
-		ChannelID:    channelID,
-		ID:           htlcID,
-		HashLock:     hashLock,
-		TimeLock:     timeLock,
-		Amount:       amount,
-		Sender:       sender,
-		Receiver:     receiver,
-		State:        HTLCPending,
-		CreatedAt:    time.Now(),
+		ChannelID: channelID,
+		ID:        htlcID,
+		HashLock:  hashLock,
+		TimeLock:  timeLock,
+		Amount:    amount,
+		Sender:    sender,
+		Receiver:  receiver,
+		State:     HTLCPending,
+		CreatedAt: time.Now(),
 	}, nil
 }
 

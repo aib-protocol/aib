@@ -12,18 +12,18 @@ import (
 
 // V2 协议参数
 const (
-	TotalSupply          = uint64(3_141_592_653)  // π × 10^8
+	TotalSupply          = uint64(3_141_592_653) // π × 10^8
 	TotalSupplySatoshi   = TotalSupply * 1e8
-	BlockRewardV2        = uint64(50)             // 50 AIB per block
+	BlockRewardV2        = uint64(50) // 50 AIB per block
 	BlockRewardSatoshi   = BlockRewardV2 * 1e8
-	StakingRewardRatio   = 0.6                    // 60% 质押奖励
-	InferenceRewardRatio = 0.4                    // 40% 推理奖励
-	MinStakeV2           = uint64(1000)            // 最低1000 AIB
+	StakingRewardRatio   = 0.6          // 60% 质押奖励
+	InferenceRewardRatio = 0.4          // 40% 推理奖励
+	MinStakeV2           = uint64(1000) // 最低1000 AIB
 	MinStakeV2Satoshi    = MinStakeV2 * 1e8
-	InitialNodeStake     = uint64(1000)           // 初始节点1000 AIB (与最低质押一致)
+	InitialNodeStake     = uint64(1000) // 初始节点1000 AIB (与最低质押一致)
 	InitialNodeCount     = 100
-	UnlockPeriodBlocks   = uint64(20160)          // 7天 (30秒/块): 7*24*60*60/30
-	ScoreCheckInterval   = uint64(100)            // 每100块校验评分 (~50分钟)
+	UnlockPeriodBlocks   = uint64(20160) // 7天 (30秒/块): 7*24*60*60/30
+	ScoreCheckInterval   = uint64(100)   // 每100块校验评分 (~50分钟)
 )
 
 // CoinbaseV2 创建v2版coinbase交易，分配质押+推理奖励
@@ -111,9 +111,9 @@ func (cs *ConsensusState) SelectProposerV2(seed []byte, rm *ReputationManager) (
 
 	// 计算每个验证者的有效权重
 	type weightedValidator struct {
-		addr           [32]byte
+		addr            [32]byte
 		effectiveWeight float64
-		originalStake  uint64
+		originalStake   uint64
 	}
 
 	var weighted []weightedValidator
@@ -127,7 +127,7 @@ func (cs *ConsensusState) SelectProposerV2(seed []byte, rm *ReputationManager) (
 		weighted = append(weighted, weightedValidator{
 			addr:            v.Address,
 			effectiveWeight: effectiveWeight,
-			originalStake:  v.Stake,
+			originalStake:   v.Stake,
 		})
 		totalEffectiveWeight += effectiveWeight
 	}

@@ -7,16 +7,16 @@ import (
 
 func TestBlock_NewBlock(t *testing.T) {
 	event := &BlockEvent{
-		TaskID:          "test-task",
-		FinalResult:     "final result",
-		IsValid:         true,
-		AgreementRate:   0.85,
-		NodeResults:     map[string]string{"n1": "r1", "n2": "r2"},
-		ConsensusNodes:  []string{"n1", "n2"},
+		TaskID:           "test-task",
+		FinalResult:      "final result",
+		IsValid:          true,
+		AgreementRate:    0.85,
+		NodeResults:      map[string]string{"n1": "r1", "n2": "r2"},
+		ConsensusNodes:   []string{"n1", "n2"},
 		DisagreeingNodes: []string{"n3"},
-		Metadata:        map[string]string{"key": "value"},
-		Timestamp:       1234567890,
-		BlockHeight:     5,
+		Metadata:         map[string]string{"key": "value"},
+		Timestamp:        1234567890,
+		BlockHeight:      5,
 	}
 
 	block := NewBlock(5, []byte("prevhash"), event)
@@ -40,16 +40,16 @@ func TestBlock_NewBlock(t *testing.T) {
 
 func TestBlock_CalculateHash(t *testing.T) {
 	block := &Block{
-		Height:           1,
-		PrevBlockHash:   []byte("prevhash"),
-		Timestamp:       1234567890,
-		TaskID:          "test-task",
-		FinalResult:     "result",
-		IsValid:         true,
-		AgreementRate:   0.8,
-		NodeResults:     map[string]string{"n1": "r1"},
-		ConsensusNodes:  []string{"n1"},
-		Nonce:           42,
+		Height:         1,
+		PrevBlockHash:  []byte("prevhash"),
+		Timestamp:      1234567890,
+		TaskID:         "test-task",
+		FinalResult:    "result",
+		IsValid:        true,
+		AgreementRate:  0.8,
+		NodeResults:    map[string]string{"n1": "r1"},
+		ConsensusNodes: []string{"n1"},
+		Nonce:          42,
 	}
 
 	hash := block.CalculateHash()
@@ -67,12 +67,12 @@ func TestBlock_CalculateHash(t *testing.T) {
 
 func TestBlock_Hash(t *testing.T) {
 	block := &Block{
-		Height:         1,
-		PrevBlockHash:  []byte("prevhash"),
-		TaskID:         "task",
-		FinalResult:    "result",
-		IsValid:        true,
-		AgreementRate:  1.0,
+		Height:        1,
+		PrevBlockHash: []byte("prevhash"),
+		TaskID:        "task",
+		FinalResult:   "result",
+		IsValid:       true,
+		AgreementRate: 1.0,
 	}
 
 	// First call should compute hash
@@ -128,10 +128,10 @@ func TestBlock_String(t *testing.T) {
 	// Check for expected substrings
 	expectedSubstrings := []string{
 		"Block{",
-		"100",           // height
-		"test-task",     // task ID
-		"true",          // is valid
-		"85.00",         // agreement rate percentage
+		"100",       // height
+		"test-task", // task ID
+		"true",      // is valid
+		"85.00",     // agreement rate percentage
 	}
 
 	for _, substr := range expectedSubstrings {
@@ -246,14 +246,14 @@ func TestBlock_Serialize(t *testing.T) {
 
 func TestDeserializeBlock(t *testing.T) {
 	original := &Block{
-		Height:        7,
-		TaskID:        "deserialize-test",
-		FinalResult:   "final",
-		IsValid:       false,
-		AgreementRate: 0.5,
-		NodeResults:   map[string]string{"node1": "result1"},
+		Height:         7,
+		TaskID:         "deserialize-test",
+		FinalResult:    "final",
+		IsValid:        false,
+		AgreementRate:  0.5,
+		NodeResults:    map[string]string{"node1": "result1"},
 		ConsensusNodes: []string{"node1"},
-		Nonce:         42,
+		Nonce:          42,
 	}
 
 	data, err := original.Serialize()
@@ -303,27 +303,27 @@ func TestBlock_DeterministicHash(t *testing.T) {
 	}
 
 	block1 := &Block{
-		Height:         1,
-		PrevBlockHash:  []byte("prev"),
-		Timestamp:      1234567890,
-		TaskID:         "task",
-		FinalResult:    "result",
-		IsValid:        true,
-		AgreementRate:  0.9,
-		NodeResults:    nodeResults,
-		Nonce:          100,
+		Height:        1,
+		PrevBlockHash: []byte("prev"),
+		Timestamp:     1234567890,
+		TaskID:        "task",
+		FinalResult:   "result",
+		IsValid:       true,
+		AgreementRate: 0.9,
+		NodeResults:   nodeResults,
+		Nonce:         100,
 	}
 
 	block2 := &Block{
-		Height:         1,
-		PrevBlockHash:  []byte("prev"),
-		Timestamp:      1234567890,
-		TaskID:         "task",
-		FinalResult:    "result",
-		IsValid:        true,
-		AgreementRate:  0.9,
-		NodeResults:    nodeResults,
-		Nonce:          100,
+		Height:        1,
+		PrevBlockHash: []byte("prev"),
+		Timestamp:     1234567890,
+		TaskID:        "task",
+		FinalResult:   "result",
+		IsValid:       true,
+		AgreementRate: 0.9,
+		NodeResults:   nodeResults,
+		Nonce:         100,
 	}
 
 	hash1 := block1.CalculateHash()
@@ -336,17 +336,17 @@ func TestBlock_DeterministicHash(t *testing.T) {
 
 func TestBlock_HashChangesWithDifferentData(t *testing.T) {
 	block1 := &Block{
-		Height:        1,
-		TaskID:        "task",
-		FinalResult:   "result1",
-		Nonce:         1,
+		Height:      1,
+		TaskID:      "task",
+		FinalResult: "result1",
+		Nonce:       1,
 	}
 
 	block2 := &Block{
-		Height:        1,
-		TaskID:        "task",
-		FinalResult:   "result2", // Different result
-		Nonce:         1,
+		Height:      1,
+		TaskID:      "task",
+		FinalResult: "result2", // Different result
+		Nonce:       1,
 	}
 
 	hash1 := block1.CalculateHash()
@@ -359,17 +359,17 @@ func TestBlock_HashChangesWithDifferentData(t *testing.T) {
 
 func TestBlock_NonceAffectsHash(t *testing.T) {
 	block1 := &Block{
-		Height:        1,
-		TaskID:        "task",
-		FinalResult:   "result",
-		Nonce:         1,
+		Height:      1,
+		TaskID:      "task",
+		FinalResult: "result",
+		Nonce:       1,
 	}
 
 	block2 := &Block{
-		Height:        1,
-		TaskID:        "task",
-		FinalResult:   "result",
-		Nonce:         2, // Different nonce
+		Height:      1,
+		TaskID:      "task",
+		FinalResult: "result",
+		Nonce:       2, // Different nonce
 	}
 
 	hash1 := block1.CalculateHash()

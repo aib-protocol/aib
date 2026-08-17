@@ -112,35 +112,35 @@ func Keccak256Hash(data []byte) Hash {
 
 // Log represents an event log emitted during contract execution
 type Log struct {
-	Address     Address   // contract address
-	Topics      []Hash    // list of topics
-	Data        []byte    // event data
-	BlockNumber uint64    // block number
-	TxHash      Hash      // transaction hash
-	TxIndex     uint      // transaction index
-	BlockHash   Hash      // block hash
-	Index       uint      // log index
+	Address     Address // contract address
+	Topics      []Hash  // list of topics
+	Data        []byte  // event data
+	BlockNumber uint64  // block number
+	TxHash      Hash    // transaction hash
+	TxIndex     uint    // transaction index
+	BlockHash   Hash    // block hash
+	Index       uint    // log index
 }
 
 // Rules represents consensus rules for a block
 type Rules struct {
-	IsHomestead       bool
-	IsEIP150          bool
-	IsEIP155          bool
-	IsEIP158          bool
-	IsByzantium       bool
-	IsConstantinople  bool
-	IsPetersburg      bool
-	IsIstanbul        bool
-	IsBerlin          bool
-	IsLondon          bool
+	IsHomestead      bool
+	IsEIP150         bool
+	IsEIP155         bool
+	IsEIP158         bool
+	IsByzantium      bool
+	IsConstantinople bool
+	IsPetersburg     bool
+	IsIstanbul       bool
+	IsBerlin         bool
+	IsLondon         bool
 }
 
 // ChainConfig represents the chain configuration
 type ChainConfig struct {
-	ChainID       *big.Int
-	BlockNumber   *big.Int
-	Rules         Rules
+	ChainID     *big.Int
+	BlockNumber *big.Int
+	Rules       Rules
 }
 
 // DefaultChainConfig returns a default chain configuration
