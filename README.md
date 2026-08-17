@@ -1,6 +1,6 @@
 <div align="center">
 
-# AIB Protocol
+# AIB Protocol  （Drafting and Refactoring Peroid, all not working yet)
 
 ### AI-Native Blockchain Protocol
 
