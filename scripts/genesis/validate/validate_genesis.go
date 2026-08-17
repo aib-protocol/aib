@@ -69,6 +69,11 @@ const (
 	ExpectedTotalSupply = 3141592653
 	ExpectedBlockReward = 50
 	ExpectedBlockTime   = 30
+
+	// BootstrapAllocation is the ONLY pre-mine in AIB: 10,000 AIB granted to
+	// the founder at genesis for early testnet bootstrapping. Every other
+	// AIB must be mined; treasury/ecosystem/airdrop allocations are zero.
+	BootstrapAllocation int64 = 10000
 )
 
 func main() {
@@ -229,13 +234,13 @@ func validateGenesis(genesis GenesisConfig, data string, verbose bool) Validatio
 	airdropPct, _ := strconv.Atoi(genesis.Allocations.AirdropPool.Percentage)
 
 	totalPct := teamPct + ecoPct + stakePct + commPct + airdropPct
-	if totalPct != 100 {
+	if totalPct != 0 {
 		result.Passed = false
 		result.Errors = append(result.Errors,
-			fmt.Sprintf("Allocation percentages do not sum to 100: got %d",
+			fmt.Sprintf("No-premine policy: allocation percentages must all be zero, got sum %d%%",
 				totalPct))
 	} else if verbose {
-		fmt.Printf("  OK: Total percentage = %d%%\n", totalPct)
+		fmt.Printf("  OK: No-premine — all allocation percentages are zero\n")
 	}
 
 	// 7. Validate Individual Allocation Amounts
@@ -251,12 +256,15 @@ func validateGenesis(genesis GenesisConfig, data string, verbose bool) Validatio
 		isRemainderBin bool // community pool receives integer division remainder
 	}
 
+	// No-premine policy: the ONLY pre-allocated AIB is the 10,000-unit
+	// bootstrap grant (early testnet bootstrapping). Everything else must
+	// be zero — all remaining supply is minted exclusively by mining.
 	allocList := []allocEntry{
-		{15, genesis.Allocations.Team.Amount, genesis.Allocations.Team.Percentage, "Team", false},
+		{-1, genesis.Allocations.Team.Amount, genesis.Allocations.Team.Percentage, "Team (bootstrap)", false},
 		{0, genesis.Allocations.Ecosystem.Amount, genesis.Allocations.Ecosystem.Percentage, "Ecosystem", false},
 		{0, genesis.Allocations.Community.Amount, genesis.Allocations.Community.Percentage, "Community", false},
-		{5, genesis.Allocations.AirdropPool.Amount, genesis.Allocations.AirdropPool.Percentage, "Airdrop Pool", false},
-		{80, genesis.Allocations.StakingRewards.Amount, genesis.Allocations.StakingRewards.Percentage, "Staking Rewards", true},
+		{0, genesis.Allocations.AirdropPool.Amount, genesis.Allocations.AirdropPool.Percentage, "Airdrop Pool", false},
+		{0, genesis.Allocations.StakingRewards.Amount, genesis.Allocations.StakingRewards.Percentage, "Staking Rewards", false},
 	}
 
 	// Calculate the remainder from integer division: staking pool absorbs it
@@ -266,7 +274,8 @@ func validateGenesis(genesis GenesisConfig, data string, verbose bool) Validatio
 			nonRemainderSum += int64(ExpectedTotalSupply) * int64(alloc.expectedPct) / 100
 		}
 	}
-	communityExpected := int64(ExpectedTotalSupply) - nonRemainderSum
+	// Total allocated must equal exactly the bootstrap grant — see check below.
+	_ = nonRemainderSum
 
 	totalAllocated := int64(0)
 	for _, alloc := range allocList {
@@ -279,8 +288,9 @@ func validateGenesis(genesis GenesisConfig, data string, verbose bool) Validatio
 		}
 
 		var expectedAmount int64
-		if alloc.isRemainderBin {
-			expectedAmount = communityExpected
+		if alloc.expectedPct < 0 {
+			// sentinel: the single bootstrap grant
+			expectedAmount = BootstrapAllocation
 		} else {
 			expectedAmount = int64(ExpectedTotalSupply) * int64(alloc.expectedPct) / 100
 		}
@@ -297,14 +307,14 @@ func validateGenesis(genesis GenesisConfig, data string, verbose bool) Validatio
 		totalAllocated += amount
 	}
 
-	// Verify total allocated equals total supply
-	if totalAllocated != int64(ExpectedTotalSupply) {
+	// Verify total allocated equals exactly the bootstrap grant.
+	// Everything else (total_supply - BootstrapAllocation) is minted by mining.
+	if totalAllocated != BootstrapAllocation {
 		result.Passed = false
 		result.Errors = append(result.Errors,
-			fmt.Sprintf("Total allocated (%d) does not equal total supply (%d)",
-				totalAllocated, ExpectedTotalSupply))
+			fmt.Sprintf("No-premine policy: total allocated must be exactly the %d bootstrap grant, got %d", BootstrapAllocation, totalAllocated))
 	} else if verbose {
-		fmt.Printf("  OK: Total allocated = Total supply = %d\n", totalAllocated)
+		fmt.Printf("  OK: Only pre-mine = bootstrap grant (%d); remaining %d AIB mined into existence\n", totalAllocated, ExpectedTotalSupply-BootstrapAllocation)
 	}
 
 	// 8. Validate Config
@@ -393,18 +403,18 @@ func printResults(result ValidationResult, verbose bool) {
 
 	// Print mathematical verification
 	if verbose {
-		teamAmt := int64(ExpectedTotalSupply) * 15 / 100
+		teamAmt := BootstrapAllocation
 		ecoAmt := int64(ExpectedTotalSupply) * 0 / 100
-		stakeAmt := int64(ExpectedTotalSupply) * 80 / 100
+		stakeAmt := int64(ExpectedTotalSupply) * 0 / 100
 		commAmt := int64(ExpectedTotalSupply) - teamAmt - ecoAmt - stakeAmt
 
 		fmt.Println("\n=================================================")
 		fmt.Println("  Mathematical Verification")
 		fmt.Println("=================================================")
 		fmt.Printf("\nExpected Total Supply: %d\n", ExpectedTotalSupply)
-		fmt.Printf("Team (15%%):            %d\n", teamAmt)
+		fmt.Printf("Team (bootstrap):      %d\n", teamAmt)
 		fmt.Printf("Ecosystem (0%%):        %d\n", ecoAmt)
-		fmt.Printf("Staking Rewards (80%%): %d\n", stakeAmt)
+		fmt.Printf("Staking Rewards (0%%):  %d\n", stakeAmt)
 		fmt.Printf("Community (0%%+rem):    %d (includes %d remainder from integer division)\n",
 			commAmt, commAmt-int64(ExpectedTotalSupply)*15/100)
 		fmt.Printf("Sum:                   %d\n", teamAmt+ecoAmt+stakeAmt+commAmt)

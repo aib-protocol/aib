@@ -204,15 +204,14 @@ go test -cover ./...
 
 | Category | Amount | Percentage |
 |----------|--------|------------|
-| Staking & Block Rewards | 2,513,274,124 | 80% |
-| Team | 471,238,897 | 15% |
-| Airdrop Pool | 157,079,632 | 5% |
-| Initial Genesis | 10,000 | 0.0003% |
-| Community Treasury | 0 | 0% |
-| Ecosystem Fund | 0 | 0% |
+| Mined (PoAIW → PoAT, see RFC-001) | 3,141,582,653 | 100% of circulating supply |
+| Founder Bootstrap Grant | 10,000 | 0.0003% |
 
-> **Note:** Community Treasury and Ecosystem Fund allocations are currently zero.
-> They may be reintroduced via on-chain governance before mainnet launch.
+> **No-premine policy:** the ONLY pre-allocated AIB is a 10,000-unit bootstrap
+> grant to the founder for early testnet bootstrapping. There is no team
+> allocation, no treasury, no ecosystem fund, no airdrop pool. Every other
+> AIB is minted exclusively by mining. Community programs, if ever funded,
+> must come from voluntarily donated mined coins — never from genesis.
 
 ### Block Reward Schedule
 
