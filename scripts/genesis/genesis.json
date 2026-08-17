@@ -11,19 +11,19 @@
       "percentage": "15"
     },
     "ecosystem": {
-      "amount": "942477795",
-      "percentage": "30"
+      "amount": "0",
+      "percentage": "0"
     },
     "staking_rewards": {
-      "amount": "1256637061",
-      "percentage": "40"
+      "amount": "2513274124",
+      "percentage": "80"
     },
     "community": {
-      "amount": "314159265",
-      "percentage": "10"
+      "amount": "0",
+      "percentage": "0"
     },
     "airdrop_pool": {
-      "amount": "157079635",
+      "amount": "157079632",
       "percentage": "5"
     }
   },
@@ -35,7 +35,10 @@
       "must_claim": true,
       "claim_deadline": "2026-04-14T00:00:00Z"
     },
-    "exclusions": ["team_addresses", "contract_addresses"]
+    "exclusions": [
+      "team_addresses",
+      "contract_addresses"
+    ]
   },
   "config": {
     "max_validators": 100,

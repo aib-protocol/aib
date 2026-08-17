@@ -204,10 +204,15 @@ go test -cover ./...
 
 | Category | Amount | Percentage |
 |----------|--------|------------|
-| Block Rewards (PoAIW) | 2,827,433,388 | 90% |
+| Staking & Block Rewards | 2,513,274,124 | 80% |
+| Team | 471,238,897 | 15% |
+| Airdrop Pool | 157,079,632 | 5% |
 | Initial Genesis | 10,000 | 0.0003% |
-| Community Treasury | 157,079,633 | 5% |
-| Ecosystem Fund | 157,079,632 | 5% |
+| Community Treasury | 0 | 0% |
+| Ecosystem Fund | 0 | 0% |
+
+> **Note:** Community Treasury and Ecosystem Fund allocations are currently zero.
+> They may be reintroduced via on-chain governance before mainnet launch.
 
 ### Block Reward Schedule
 
