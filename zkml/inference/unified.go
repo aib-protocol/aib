@@ -33,12 +33,12 @@ type UnifiedConfig struct {
 	Model       string                `json:"model"`       // model name
 	Weight      float64               `json:"weight"`      // model weight
 	Timeout     time.Duration         `json:"timeout"`     // request timeout
-	MaxTokens   int                   `json:"max_tokens"`  // 最大生成 tokens
-	Temperature float64               `json:"temperature"` // 温度参数
-	TopP        float64               `json:"top_p"`       // Top-p 采样
+	MaxTokens   int                   `json:"max_tokens"`  // maximum tokens to generate
+	Temperature float64               `json:"temperature"` // temperature parameter
+	TopP        float64               `json:"top_p"`       // Top-p sampling
 }
 
-// DefaultUnifiedConfig 返回默认配置
+// DefaultUnifiedConfig returnsdefaultconfig
 func DefaultUnifiedConfig() *UnifiedConfig {
 	return &UnifiedConfig{
 		Type:        ProviderTypeOpenAI,
@@ -52,9 +52,9 @@ func DefaultUnifiedConfig() *UnifiedConfig {
 	}
 }
 
-// UnifiedProvider 统一推理提供者
-// supports any OpenAI-compatible API 的通用提供者
-// 无需为每个新模型编写代码适配器
+// UnifiedProvider is the unified inference provider
+// generic provider that supports any OpenAI-compatible API
+// no need to write a code adapter for each new model
 type UnifiedProvider struct {
 	config        *UnifiedConfig
 	modelID       []byte
@@ -62,7 +62,7 @@ type UnifiedProvider struct {
 	modelRegistry *ModelRegistry
 }
 
-// NewUnifiedProvider 创建新的统一推理提供者
+// NewUnifiedProvider creates a new unified inference provider
 func NewUnifiedProvider(config *UnifiedConfig) (*UnifiedProvider, error) {
 	if config == nil {
 		config = DefaultUnifiedConfig()
@@ -76,11 +76,11 @@ func NewUnifiedProvider(config *UnifiedConfig) (*UnifiedProvider, error) {
 		return nil, fmt.Errorf("unified: model name is required")
 	}
 
-	// 计算模型指纹 ID
+	// compute the model fingerprint ID
 	modelData := fmt.Sprintf("%s:%s", config.BaseURL, config.Model)
 	modelID := sha256.Sum256([]byte(modelData))
 
-	// 创建 HTTP 客户端
+	// create the HTTP client
 	client := &http.Client{
 		Timeout: config.Timeout,
 	}
@@ -95,12 +95,12 @@ func NewUnifiedProvider(config *UnifiedConfig) (*UnifiedProvider, error) {
 	}, nil
 }
 
-// Infer performs inference（实现 InferenceProvider 接口）
+// Infer performs inference (implements the InferenceProvider interface)
 
-// 支持以下provider：
-// 1. OpenAI 兼容 API（默认）：任何 OpenAI 格式 API
-// 2. Ollama API（本地推理）
-// 3. Anthropic Claude API（需要特殊处理）
+// supports the following providers:
+// 1. OpenAI-compatible API (default): any OpenAI-format API
+// 2. Ollama API (local inference)
+// 3. Anthropic Claude API (requires special handling)
 func (p *UnifiedProvider) Infer(ctx context.Context, prompt string) (string, error) {
 	switch p.config.Type {
 	case ProviderTypeOpenAI:
@@ -110,22 +110,22 @@ func (p *UnifiedProvider) Infer(ctx context.Context, prompt string) (string, err
 	case ProviderTypeAnthropic:
 		return p.inferAnthropic(ctx, prompt)
 	case ProviderTypeCustom:
-		// 自定义适配器，通过插件加载
+		// custom adapter, loaded via plugin
 		return p.inferCustom(ctx, prompt)
 	case ProviderTypePlugin:
-		// 动态加载的插件适配器
+		// dynamically loaded plugin adapter
 		return p.inferPlugin(ctx, prompt)
 	default:
-		return p.inferOpenAICompatible(ctx, prompt) // 默认回退
+		return p.inferOpenAICompatible(ctx, prompt) // default fallback
 	}
 }
 
-// inferOpenAICompatible 调用 OpenAI 兼容 API
+// inferOpenAICompatible calls an OpenAI-compatible API
 
-// 支持：智谱 GLM-4、DeepSeek、阿里通义、腾讯混元等
-// 只要 API 格式兼容 OpenAI 即可
+// supports: Zhipu GLM-4, DeepSeek, Alibaba Tongyi, Tencent Hunyuan, etc.
+// any API with an OpenAI-compatible format works
 func (p *UnifiedProvider) inferOpenAICompatible(ctx context.Context, prompt string) (string, error) {
-	// OpenAI 格式的请求体
+	// request body in OpenAI format
 	requestBody := map[string]interface{}{
 		"model": p.config.Model,
 		"messages": []map[string]string{
@@ -149,7 +149,7 @@ func (p *UnifiedProvider) inferOpenAICompatible(ctx context.Context, prompt stri
 		return "", fmt.Errorf("unified: failed to create request: %w", err)
 	}
 
-	// 设置请求头
+	// set request headers
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+p.config.APIKey)
 
@@ -191,11 +191,11 @@ func (p *UnifiedProvider) inferOpenAICompatible(ctx context.Context, prompt stri
 	return result.Choices[0].Message.Content, nil
 }
 
-// inferOllama 调用 Ollama API（用于本地模型）
+// inferOllama calls the Ollama API (for local models)
 
-// 支持：llama2、qwen2.5、deepseek-coder、mistral等
+// supports: llama2, qwen2.5, deepseek-coder, mistral, etc.
 func (p *UnifiedProvider) inferOllama(ctx context.Context, prompt string) (string, error) {
-	// Ollama 格式的请求体
+	// request body in Ollama format
 	requestBody := map[string]interface{}{
 		"model":  p.config.Model,
 		"prompt": prompt,
@@ -244,9 +244,9 @@ func (p *UnifiedProvider) inferOllama(ctx context.Context, prompt string) (strin
 	return ollamaResp.Response, nil
 }
 
-// inferAnthropic 调用 Anthropic Claude API
+// inferAnthropic calls the Anthropic Claude API
 
-// Claude API 格式与 OpenAI 不同，需要特殊处理
+// the Claude API format differs from OpenAI and requires special handling
 func (p *UnifiedProvider) inferAnthropic(ctx context.Context, prompt string) (string, error) {
 	requestBody := map[string]interface{}{
 		"model":      p.config.Model,
@@ -306,80 +306,80 @@ func (p *UnifiedProvider) inferAnthropic(ctx context.Context, prompt string) (st
 	return claudeResp.Content[0].Text, nil
 }
 
-// inferCustom 调用自定义适配器
+// inferCustom calls a custom adapter
 
-// 用于特殊API格式（如百度文心、讯飞星火等）
+// for special API formats (e.g. Baidu ERNIE, iFlytek Spark, etc.)
 func (p *UnifiedProvider) inferCustom(ctx context.Context, prompt string) (string, error) {
-	// 自定义适配器通过插件或外部程序实现
-	// 这里只是一个占位接口
+	// custom adapters are implemented via plugins or external programs
+	// this is just a placeholder interface
 	return "", fmt.Errorf("unified: custom adapter not implemented")
 }
 
-// inferPlugin 调用动态加载的插件适配器
+// inferPlugin calls a dynamically loaded plugin adapter
 
-// 支持 .so（Linux） 或 .dll（Windows） 插件
+// supports .so (Linux) or .dll (Windows) plugins
 func (p *UnifiedProvider) inferPlugin(ctx context.Context, prompt string) (string, error) {
-	// 插件动态加载功能
+	// plugin dynamic loading feature
 	return "", fmt.Errorf("unified: plugin system not implemented")
 }
 
-// ModelID 返回模型指纹（实现 InferenceProvider 接口）
+// ModelID returns the model fingerprint (implements the InferenceProvider interface)
 
-// 用于唯一标识模型，基于 baseURL + model 的 SHA-256 哈希
+// uniquely identifies the model, based on the SHA-256 hash of baseURL + model
 func (p *UnifiedProvider) ModelID() []byte {
 	return p.modelID
 }
 
 // ModelInfo represents information about a registered model
 type ModelInfo struct {
-	ModelID      string                `json:"model_id"`      // 模型唯一标识
-	Name         string                `json:"name"`          // 模型显示名称
+	ModelID      string                `json:"model_id"`      // unique model identifier
+	Name         string                `json:"name"`          // model display name
 	Type         InferenceProviderType `json:"type"`          // provider type
 	BaseURL      string                `json:"base_url"`      // API base URL
-	Weight       float64               `json:"weight"`        // 权重（1.0 = 基准）
-	Performance  *ModelPerformance     `json:"performance"`   // 性能指标
-	RegisteredAt time.Time             `json:"registered_at"` // 注册时间
+	Weight       float64               `json:"weight"`        // weight (1.0 = baseline)
+	Performance  *ModelPerformance     `json:"performance"`   // performance metrics
+	RegisteredAt time.Time             `json:"registered_at"` // registration time
 }
 
 // ModelPerformance represents performance metrics for a model
 type ModelPerformance struct {
-	TaskCompletionRate float64       `json:"task_completion_rate"` // 任务完成率
-	UserSatisfaction   float64       `json:"user_satisfaction"`    // 用户满意度
-	AvgResponseTime    time.Duration `json:"avg_response_time"`    // 平均响应时间
-	CostPerTask        float64       `json:"cost_per_task"`        // 每任务成本
-	ReliabilityScore   float64       `json:"reliability_score"`    // 可靠性评分
+	TaskCompletionRate float64       `json:"task_completion_rate"` // task completion rate
+	UserSatisfaction   float64       `json:"user_satisfaction"`    // user satisfaction
+	AvgResponseTime    time.Duration `json:"avg_response_time"`    // average response time
+	CostPerTask        float64       `json:"cost_per_task"`        // cost per task
+	ReliabilityScore   float64       `json:"reliability_score"`    // reliability score
 }
 
 // GetWeight getmodel weight
 
-// 权重计算公式：
+// weight calculation formula:
 // weight = base_weight * (1 + performance_bonus - cost_penalty)
 func (p *UnifiedProvider) GetWeight() float64 {
 	if p.modelRegistry == nil {
 		return p.config.Weight
 	}
 
-	// 获取模型性能数据
+	// get model performance data
 	perf := p.modelRegistry.GetPerformance(p.modelID)
 	if perf == nil {
 		return p.config.Weight
 	}
 
-	// 计算权重调整系数
-	// 性能奖励：完成任务率高、用户满意
-	// 成本惩罚：成本高则权重降低
-	performanceBonus := (perf.TaskCompletionRate-0.85)*0.5 + // 0.85基准完成率
-		(perf.UserSatisfaction-4.0)*0.2 // 4.0基准满意度
+	// compute the weight adjustment factor
+	// performance bonus: high task completion rate, satisfied users
+	// cost penalty: higher cost lowers the weight
+	performanceBonus := (perf.TaskCompletionRate-0.85)*0.5 + // 0.85 baseline completion rate
+		(perf.UserSatisfaction-4.0)*0.2 // 4.0 baseline satisfaction
 
-	costPenalty := (perf.CostPerTask - 0.005) * 100 // 0.005基准成本
+	costPenalty := (perf.CostPerTask - 0.005) * 100 // 0.005 baseline cost
 
-	// 应用权重调整
+	// apply the weight adjustment
 	adjustedWeight := p.config.Weight * (1 + performanceBonus - costPenalty)
 
-	// 确保权重在合理范围内
+	// ensure the weight stays within a reasonable range
 
-	minWeight := 0.1 // 最小权重
-	maxWeight := 3.0 // 最大权重
+	minWeight := 0.1 // minimum weight
+	maxWeight := 3.0 // maximum weight
 	if adjustedWeight < minWeight {
 		return minWeight
 	}
@@ -390,9 +390,9 @@ func (p *UnifiedProvider) GetWeight() float64 {
 	return adjustedWeight
 }
 
-// WeightedInfer 执行加权推理
+// WeightedInfer performs weighted inference
 
-// 返回结果和权重系数
+// returns the result and the weight factor
 func (p *UnifiedProvider) WeightedInfer(ctx context.Context, prompt string) (string, float64, error) {
 	result, err := p.Infer(ctx, prompt)
 	if err != nil {
@@ -403,18 +403,18 @@ func (p *UnifiedProvider) WeightedInfer(ctx context.Context, prompt string) (str
 	return result, weight, nil
 }
 
-// GovernanceProposal 治理提案结构
+// GovernanceProposal governance proposal struct
 
-// 用于提出权重调整、模型注册/取消等治理操作
+// used for governance operations such as weight adjustment and model registration/removal
 type GovernanceProposal struct {
-	ID          string                   `json:"id"`          // 提案ID
-	Type        GovernanceProposalType   `json:"type"`        // 提案类型
-	Title       string                   `json:"title"`       // 提案标题
-	Description string                   `json:"description"` // 详细描述
-	Evidence    map[string]interface{}   `json:"evidence"`    // 证据数据
-	Proposer    string                   `json:"proposer"`    // 提案人
-	Deadline    time.Time                `json:"deadline"`    // 投票截止时间
-	Status      GovernanceProposalStatus `json:"status"`      // 提案状态
+	ID          string                   `json:"id"`          // proposal ID
+	Type        GovernanceProposalType   `json:"type"`        // proposal type
+	Title       string                   `json:"title"`       // proposal title
+	Description string                   `json:"description"` // detailed description
+	Evidence    map[string]interface{}   `json:"evidence"`    // evidence data
+	Proposer    string                   `json:"proposer"`    // proposer
+	Deadline    time.Time                `json:"deadline"`    // voting deadline
+	Status      GovernanceProposalStatus `json:"status"`      // proposal status
 }
 
 type GovernanceProposalType string
@@ -434,9 +434,9 @@ const (
 	ProposalStatusRejected GovernanceProposalStatus = "rejected"
 )
 
-// ProposeWeightAdjustment 提出权重调整提案
+// ProposeWeightAdjustment submits a weight adjustment proposal
 
-// 任何人都可以提出，基于真实性能数据
+// anyone can submit one, based on real performance data
 func (p *UnifiedProvider) ProposeWeightAdjustment(
 	modelID string,
 	currentWeight float64,
@@ -455,18 +455,18 @@ func (p *UnifiedProvider) ProposeWeightAdjustment(
 		Description: fmt.Sprintf("Proposal to adjust model weight from %.2f to %.2f",
 			currentWeight, proposedWeight),
 		Evidence: evidence,
-		Proposer: "anonymous",                        // 实际应使用节点ID或钱包地址
-		Deadline: time.Now().Add(7 * 24 * time.Hour), // 7天投票期
+		Proposer: "anonymous",                        // should actually use the node ID or wallet address
+		Deadline: time.Now().Add(7 * 24 * time.Hour), // 7-day voting period
 		Status:   ProposalStatusActive,
 	}
 
-	// TODO: 提交到链上治理合约
+	// TODO: submit to the on-chain governance contract
 	return proposal, nil
 }
 
 // GovernanceVote governancevote
 
-// 任何持币者可以投票
+// any token holder can vote
 type GovernanceVote struct {
 	ProposalID string    `json:"proposal_id"`
 	Voter      string    `json:"voter"`
@@ -474,9 +474,9 @@ type GovernanceVote struct {
 	Timestamp  time.Time `json:"timestamp"`
 }
 
-// ExecuteProposal 执行已通过的提案
+// ExecuteProposal executes a passed proposal
 
-// 自动生效，无需人工干预
+// takes effect automatically, no manual intervention required
 func (p *UnifiedProvider) ExecuteProposal(proposal *GovernanceProposal) error {
 	if proposal.Status != ProposalStatusPassed {
 		return fmt.Errorf("unified: proposal not passed")
@@ -484,7 +484,7 @@ func (p *UnifiedProvider) ExecuteProposal(proposal *GovernanceProposal) error {
 
 	switch proposal.Type {
 	case ProposalTypeWeightAdjustment:
-		// 从evidence中提取modelID和newWeight
+		// extract modelID and newWeight from evidence
 		modelID, ok := proposal.Evidence["model_id"].(string)
 		if !ok {
 			return fmt.Errorf("unified: missing model_id in evidence")
@@ -504,9 +504,9 @@ func (p *UnifiedProvider) ExecuteProposal(proposal *GovernanceProposal) error {
 		}
 
 	case ProposalTypeModelRegistration:
-		// 注册新模型
+		// register a new model
 	case ProposalTypeModelRemoval:
-		// 移除模型
+		// remove the model
 
 	default:
 		return fmt.Errorf("unified: unknown proposal type: %s", proposal.Type)
