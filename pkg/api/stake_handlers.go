@@ -16,29 +16,29 @@ import (
 )
 
 // ============================================================================
-// 质押相关常量
+// Staking-related constants
 // ============================================================================
 
 const (
-	// MinStakeAmount 最小质押金额 (1000 AIB in smallest units)
+	// MinStakeAmount is the minimum staking amount (1000 AIB in smallest units)
 	MinStakeAmount = 1000 * 100000000
 
-	// UnstakeUnlockPeriod 解锁期（约 7 天，假设 60 秒/区块）
-	// 7 * 24 * 60 * 60 / 60 = 10080 个区块
+	// UnstakeUnlockPeriod is the unlock period (approx. 7 days, assuming 60 seconds/block)
+	// 7 * 24 * 60 * 60 / 60 = 10080 blocks
 	UnstakeUnlockBlocks = 10080
 
-	// StakingScriptType 质押脚本类型标识
+	// StakingScriptType is the staking script type identifier
 	StakingScriptType = "staking"
 )
 
 // ============================================================================
-// 请求/响应结构
+// Request/response structures
 // ============================================================================
 
 // StakeRequest stakerequest
 type StakeRequest struct {
 	PrivateKey string `json:"private_key"`
-	Amount     string `json:"amount"` // 字符串格式的金额（最小单位）
+	Amount     string `json:"amount"` // Amount as a string (smallest units)
 }
 
 // StakeResponse stakeresponse
@@ -52,13 +52,13 @@ type StakeResponse struct {
 	Timestamp    string `json:"timestamp"`
 }
 
-// UnstakeRequest 解质押请求
+// UnstakeRequest is the unstaking request
 type UnstakeRequest struct {
 	PrivateKey string `json:"private_key"`
-	Amount     string `json:"amount"` // 解质押金额
+	Amount     string `json:"amount"` // Amount to unstake
 }
 
-// UnstakeResponse 解质押响应
+// UnstakeResponse is the unstaking response
 type UnstakeResponse struct {
 	TxHash       string `json:"tx_hash"`
 	UnstakeID    string `json:"unstake_id"`
@@ -69,7 +69,7 @@ type UnstakeResponse struct {
 	Timestamp    string `json:"timestamp"`
 }
 
-// StakeInfo 质押信息
+// StakeInfo stake / stakinginfo
 type StakeInfo struct {
 	StakeID        string `json:"stake_id"`
 	Amount         string `json:"amount"`
@@ -77,7 +77,7 @@ type StakeInfo struct {
 	Status         string `json:"status"` // "staked", "unstaking", "unlocked"
 }
 
-// UnstakeInfo 解质押信息
+// UnstakeInfo holds unstaking information
 type UnstakeInfo struct {
 	UnstakeID         string `json:"unstake_id"`
 	Amount            string `json:"amount"`
@@ -86,7 +86,7 @@ type UnstakeInfo struct {
 	Status            string `json:"status"`
 }
 
-// WalletStakeResponse 钱包质押状态响应
+// WalletStakeResponse is the wallet staking status response
 type WalletStakeResponse struct {
 	Address        string        `json:"address"`
 	TotalStaked    string        `json:"total_staked"`
@@ -97,7 +97,7 @@ type WalletStakeResponse struct {
 }
 
 // ============================================================================
-// 质押处理器
+// Staking handlers
 // ============================================================================
 
 // handleStake handlestakerequest
@@ -124,7 +124,7 @@ func (s *Server) handleStake(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 解析私钥
+	// Parse the private key
 	privateKey, err := hex.DecodeString(req.PrivateKey)
 	if err != nil {
 		writeError(w, http.StatusBadRequest, ErrCodeInvalidRequest, "Invalid private key format", "")
@@ -136,7 +136,7 @@ func (s *Server) handleStake(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 创建钱包
+	// Create the wallet
 	walletSDK, err := wallet.NewWalletSDK(&wallet.SDKConfig{
 		PrivateKey: privateKey,
 	})
@@ -152,7 +152,7 @@ func (s *Server) handleStake(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 验证最小质押金额
+	// Validate the minimum staking amount
 	if amount < MinStakeAmount {
 		minStakeAIB := MinStakeAmount / uint64(100000000) // 1e8
 		writeError(w, http.StatusBadRequest, ErrCodeInvalidRequest, "Amount below minimum stake",
@@ -160,13 +160,13 @@ func (s *Server) handleStake(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 获取必要的组件
+	// Get the required components
 	if s.utxoStore == nil {
 		writeError(w, http.StatusInternalServerError, ErrCodeInternalError, "UTXO store not available", "")
 		return
 	}
 
-	// 使用类型断言获取实际的 UTXO Store
+	// Use a type assertion to get the actual UTXO store
 	utxoStore, ok := s.utxoStore.(interface {
 		GetUTXOsForAmount(addr [32]byte, amount uint64) ([]*utxo.UTXO, uint64, error)
 	})
@@ -179,15 +179,15 @@ func (s *Server) handleStake(w http.ResponseWriter, r *http.Request) {
 	address := walletSDK.GetAddress()
 	addressHex := hex.EncodeToString(address[:])
 
-	// 计算费用
+	// Calculate the fee
 	feePerByte := uint64(1)
 	estimatedTxSize := uint64(200)
 	actualFee := feePerByte * estimatedTxSize
 
-	// 获取需要的总金额（质押金额 + 手续费）
+	// Get the total amount needed (stake amount + fee)
 	totalNeeded := amount + actualFee
 
-	// 选择 UTXO
+	// Select UTXOs
 	selectedUTXOs, totalValue, err := utxoStore.GetUTXOsForAmount(address, totalNeeded)
 	if err != nil {
 		writeError(w, http.StatusBadRequest, ErrCodeInsufficientBalance, "Failed to select UTXOs", err.Error())
@@ -204,8 +204,8 @@ func (s *Server) handleStake(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// buildtransactionoutput
-	// 输出 0: 质押输出（特殊脚本类型）
-	// 输出 1: 找零（如果有）
+	// Output 0: staking output (special script type)
+	// Output 1: change (if any)
 	outputs := []utxo.TXOutput{
 		{
 			Value:   amount,
@@ -213,11 +213,11 @@ func (s *Server) handleStake(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 
-	// 设置质押脚本
-	// 注意：这里需要特殊处理质押输出
-	// 暂时使用普通输出，后续可以通过修改 Script 字段来实现特殊脚本类型
+	// Set the staking script
+	// Note: the staking output requires special handling here
+	// Use a normal output for now; a special script type can be implemented later by modifying the Script field
 
-	// 计算找零
+	// Calculate the change
 	changeAmount := totalValue - amount - actualFee
 	if changeAmount > 0 {
 		outputs = append(outputs, utxo.TXOutput{
@@ -229,10 +229,10 @@ func (s *Server) handleStake(w http.ResponseWriter, r *http.Request) {
 	// createtransaction
 	tx := utxo.NewTransaction(inputs, outputs)
 
-	// 设置质押输出索引 0 的脚本为质押类型
+	// Set the script of staking output at index 0 to the staking type
 	tx.Outputs[0].Script = []byte(StakingScriptType)
 
-	// 签名所有输入
+	// Sign all inputs
 	privKey := ed25519.PrivateKey(privateKey)
 	for i := range inputs {
 		if err := tx.SignInput(i, privKey); err != nil {
@@ -241,13 +241,13 @@ func (s *Server) handleStake(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// 提交到内存池
+	// Submit to the mempool
 	if s.mempool == nil {
 		writeError(w, http.StatusInternalServerError, ErrCodeInternalError, "Mempool not available", "")
 		return
 	}
 
-	// 使用类型断言获取实际的 Mempool
+	// Use a type assertion to get the actual mempool
 	actualMempool, ok := s.mempool.(interface {
 		AddTransaction(tx *utxo.Transaction, utxoProvider utxo.UTXOProvider) error
 	})
@@ -263,13 +263,13 @@ func (s *Server) handleStake(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 添加交易到 mempool
+	// Add the transaction to the mempool
 	if err := actualMempool.AddTransaction(tx, utxoProvider); err != nil {
 		writeError(w, http.StatusBadRequest, ErrCodeInvalidRequest, "Failed to add transaction to mempool", err.Error())
 		return
 	}
 
-	// 计算交易哈希
+	// Calculate the transaction hash
 	txHash := tx.Hash()
 
 	// buildresponse
@@ -286,7 +286,7 @@ func (s *Server) handleStake(w http.ResponseWriter, r *http.Request) {
 	writeSuccess(w, response)
 }
 
-// handleUnstake 处理解质押请求
+// handleUnstake handles unstaking requests
 // POST /v1/unstake
 func (s *Server) handleUnstake(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
@@ -310,7 +310,7 @@ func (s *Server) handleUnstake(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 解析私钥
+	// Parse the private key
 	privateKey, err := hex.DecodeString(req.PrivateKey)
 	if err != nil {
 		writeError(w, http.StatusBadRequest, ErrCodeInvalidRequest, "Invalid private key format", "")
@@ -322,7 +322,7 @@ func (s *Server) handleUnstake(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 创建钱包
+	// Create the wallet
 	walletSDK, err := wallet.NewWalletSDK(&wallet.SDKConfig{
 		PrivateKey: privateKey,
 	})
@@ -338,7 +338,7 @@ func (s *Server) handleUnstake(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 获取必要的组件
+	// Get the required components
 	if s.utxoStore == nil {
 		writeError(w, http.StatusInternalServerError, ErrCodeInternalError, "UTXO store not available", "")
 		return
@@ -348,10 +348,10 @@ func (s *Server) handleUnstake(w http.ResponseWriter, r *http.Request) {
 	address := walletSDK.GetAddress()
 	addressHex := hex.EncodeToString(address[:])
 
-	// 获取所有 UTXO
+	// Get all UTXOs
 	allUTXOs := s.utxoStore.GetAllUTXOs(address)
 
-	// 筛选质押类型的 UTXO
+	// Filter UTXOs of the staking type
 	var stakedUTXOs []*utxo.UTXO
 	for _, u := range allUTXOs {
 		if len(u.Script) > 0 && string(u.Script) == StakingScriptType {
@@ -364,7 +364,7 @@ func (s *Server) handleUnstake(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 选择质押 UTXO
+	// Select staked UTXOs
 	var selectedUTXOs []*utxo.UTXO
 	var totalStaked uint64
 
@@ -392,13 +392,13 @@ func (s *Server) handleUnstake(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// 计算费用
+	// Calculate the fee
 	feePerByte := uint64(1)
 	estimatedTxSize := uint64(200)
 	actualFee := feePerByte * estimatedTxSize
 
 	// buildtransactionoutput
-	// 输出 0: 解质押输出
+	// Output 0: unstaking output
 	outputs := []utxo.TXOutput{
 		{
 			Value:   amount,
@@ -406,7 +406,7 @@ func (s *Server) handleUnstake(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 
-	// 计算找零
+	// Calculate the change
 	changeAmount := totalStaked - amount - actualFee
 	if changeAmount > 0 {
 		outputs = append(outputs, utxo.TXOutput{
@@ -415,7 +415,7 @@ func (s *Server) handleUnstake(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	// 获取当前区块高度
+	// Get the current block height
 	currentHeight := uint64(0)
 	if chain := s.GetChain(); chain != nil {
 		if h, err := chain.GetBestBlockHeight(); err == nil {
@@ -423,17 +423,17 @@ func (s *Server) handleUnstake(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// 计算解锁高度
+	// Calculate the unlock height
 	unlockHeight := currentHeight + UnstakeUnlockBlocks
 
 	// createtransaction
 	tx := utxo.NewTransaction(inputs, outputs)
-	tx.LockTime = uint32(unlockHeight) // 设置解锁时间
+	tx.LockTime = uint32(unlockHeight) // Set the lock time
 
-	// 设置解质押输出脚本
+	// Set the unstaking output script
 	tx.Outputs[0].Script = []byte("unstake")
 
-	// 签名所有输入
+	// Sign all inputs
 	privKey := ed25519.PrivateKey(privateKey)
 	for i := range inputs {
 		if err := tx.SignInput(i, privKey); err != nil {
@@ -442,13 +442,13 @@ func (s *Server) handleUnstake(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// 提交到内存池
+	// Submit to the mempool
 	if s.mempool == nil {
 		writeError(w, http.StatusInternalServerError, ErrCodeInternalError, "Mempool not available", "")
 		return
 	}
 
-	// 使用类型断言获取实际的 Mempool
+	// Use a type assertion to get the actual mempool
 	actualMempool, ok := s.mempool.(interface {
 		AddTransaction(tx *utxo.Transaction, utxoProvider utxo.UTXOProvider) error
 	})
@@ -464,13 +464,13 @@ func (s *Server) handleUnstake(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 添加交易到 mempool
+	// Add the transaction to the mempool
 	if err := actualMempool.AddTransaction(tx, utxoProvider); err != nil {
 		writeError(w, http.StatusBadRequest, ErrCodeInvalidRequest, "Failed to add transaction to mempool", err.Error())
 		return
 	}
 
-	// 计算交易哈希
+	// Calculate the transaction hash
 	txHash := tx.Hash()
 
 	// buildresponse
@@ -516,22 +516,22 @@ func (s *Server) handleGetStake(w http.ResponseWriter, r *http.Request) {
 	}
 	copy(address[:], addrBytes)
 
-	// 获取 UTXO 存储
+	// Get the UTXO store
 	if s.utxoStore == nil {
 		writeError(w, http.StatusInternalServerError, ErrCodeInternalError, "UTXO store not available", "")
 		return
 	}
 
-	// 获取所有 UTXO
+	// Get all UTXOs
 	utxos := s.utxoStore.GetAllUTXOs(address)
 
-	// 分类统计
+	// Categorize and tally
 	var totalStaked uint64
 	var totalUnstaking uint64
 	var stakes []StakeInfo
 	var unstaking []UnstakeInfo
 
-	// 当前区块高度
+	// Current block height
 	currentHeight := uint64(0)
 	if chain := s.GetChain(); chain != nil {
 		if h, err := chain.GetBestBlockHeight(); err == nil {
@@ -544,7 +544,7 @@ func (s *Server) handleGetStake(w http.ResponseWriter, r *http.Request) {
 
 		switch scriptType {
 		case StakingScriptType:
-			// 活跃质押
+			// Active stakes
 			totalStaked += u.Value
 			stakes = append(stakes, StakeInfo{
 				StakeID:        hex.EncodeToString(u.TxHash[:]) + ":" + strconv.FormatUint(uint64(u.Index), 10),
@@ -554,7 +554,7 @@ func (s *Server) handleGetStake(w http.ResponseWriter, r *http.Request) {
 			})
 
 		case "unstake":
-			// 解质押中
+			// Unstaking
 			totalUnstaking += u.Value
 			unstaking = append(unstaking, UnstakeInfo{
 				UnstakeID:         hex.EncodeToString(u.TxHash[:]) + ":" + strconv.FormatUint(uint64(u.Index), 10),
@@ -566,7 +566,7 @@ func (s *Server) handleGetStake(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// 从 mempool 获取待处理的质押/解质押
+	// Get pending stakes/unstakes from the mempool
 	if s.mempool != nil {
 		entries := s.mempool.GetAllEntries()
 		for _, entry := range entries {
@@ -597,8 +597,8 @@ func (s *Server) handleGetStake(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// 获取待领取奖励（从共识状态）
-	// 注意：由于接口限制，这里暂时返回 0
+	// Get pending rewards (from consensus state)
+	// Note: returns 0 for now due to interface limitations
 	var pendingRewards uint64
 
 	// buildresponse
