@@ -6,17 +6,17 @@ import (
 )
 
 // ============================================================================
-// 统一响应结构
+// Unified response structures
 // ============================================================================
 
-// APIResponse 统一 API 响应结构
+// APIResponse is the unified API response structure
 type APIResponse struct {
 	Success bool        `json:"success"`
 	Data    interface{} `json:"data,omitempty"`
 	Error   *ErrorInfo  `json:"error,omitempty"`
 }
 
-// ErrorInfo 错误详细信息
+// ErrorInfo holds detailed error information
 type ErrorInfo struct {
 	Code    string `json:"code"`
 	Message string `json:"message"`
@@ -44,7 +44,7 @@ func NewErrorResponse(code, message, details string) APIResponse {
 }
 
 // ============================================================================
-// 错误码定义
+// Error code definitions
 // ============================================================================
 
 const (
@@ -59,10 +59,10 @@ const (
 )
 
 // ============================================================================
-// 基础 API 类型
+// Basic API types
 // ============================================================================
 
-// HealthResponse 健康检查响应
+// HealthResponse health checkresponse
 type HealthResponse struct {
 	Status    string    `json:"status"`
 	Timestamp time.Time `json:"timestamp"`
@@ -78,7 +78,7 @@ type BalanceResponse struct {
 	UTXOs     []UTxOInfo `json:"utxos,omitempty"`
 }
 
-// UTxOInfo UTXO 信息
+// UTxOInfo holds UTXO information
 type UTxOInfo struct {
 	TxHash string `json:"tx_hash"`
 	Index  uint32 `json:"index"`
@@ -86,7 +86,7 @@ type UTxOInfo struct {
 	Script string `json:"script,omitempty"`
 }
 
-// TransactionRequest 提交交易请求
+// TransactionRequest submittransactionrequest
 type TransactionRequest struct {
 	From     string `json:"from"`
 	To       string `json:"to"`
@@ -129,7 +129,7 @@ type BlockListResponse struct {
 // channel API type
 // ============================================================================
 
-// OpenChannelRequest 开启通道请求
+// OpenChannelRequest is a channel open request
 type OpenChannelRequest struct {
 	PartyA   string `json:"party_a"`
 	PartyB   string `json:"party_b"`
@@ -137,18 +137,18 @@ type OpenChannelRequest struct {
 	DepositB uint64 `json:"deposit_b"`
 }
 
-// CloseChannelRequest 关闭通道请求
+// CloseChannelRequest is a channel close request
 type CloseChannelRequest struct {
 	ChannelID string `json:"channel_id"`
 	SigA      []byte `json:"sig_a"`
 	SigB      []byte `json:"sig_b"`
 }
 
-// PaymentRequest 通道支付请求
+// PaymentRequest is a channel payment request
 type PaymentRequest struct {
 	ChannelID string `json:"channel_id"`
 	Amount    uint64 `json:"amount"`
-	FromA     bool   `json:"from_a"` // true: A支付给B, false: B支付给A
+	FromA     bool   `json:"from_a"` // true: A pays B, false: B pays A
 }
 
 // UpdateChannelRequest updatechannelstatusrequest
@@ -161,7 +161,7 @@ type UpdateChannelRequest struct {
 	SigB      []byte `json:"sig_b"`
 }
 
-// ChannelResponse 通道详情响应
+// ChannelResponse channeldetailsresponse
 type ChannelResponse struct {
 	ID         string     `json:"id"`
 	PartyA     string     `json:"party_a"`
@@ -192,10 +192,10 @@ type ChannelStatusResponse struct {
 }
 
 // ============================================================================
-// AI 服务 API 类型
+// AI service API type
 // ============================================================================
 
-// InferenceRequest AI 推理请求
+// InferenceRequest is an AI inference request
 type InferenceRequest struct {
 	Prompt      string  `json:"prompt"`
 	ModelID     string  `json:"model_id,omitempty"`
@@ -204,7 +204,7 @@ type InferenceRequest struct {
 	TopP        float64 `json:"top_p,omitempty"`
 }
 
-// InferenceResponse AI 推理响应
+// InferenceResponse is an AI inference response
 type InferenceResponse struct {
 	Result     string    `json:"result"`
 	ModelID    string    `json:"model_id"`
@@ -214,7 +214,7 @@ type InferenceResponse struct {
 	Timestamp  time.Time `json:"timestamp"`
 }
 
-// ModelInfoResponse 模型信息响应
+// ModelInfoResponse modelinforesponse
 type ModelInfoResponse struct {
 	ModelID      string    `json:"model_id"`
 	Name         string    `json:"name"`
@@ -225,13 +225,13 @@ type ModelInfoResponse struct {
 	RegisteredAt time.Time `json:"registered_at"`
 }
 
-// ModelListResponse 模型列表响应
+// ModelListResponse modellistresponse
 type ModelListResponse struct {
 	Models []ModelInfoResponse `json:"models"`
 	Total  int                 `json:"total"`
 }
 
-// AINodeInfoResponse AI 节点信息响应
+// AINodeInfoResponse is an AI node info response
 type AINodeInfoResponse struct {
 	NodeID     string    `json:"node_id"`
 	Address    string    `json:"address"`
@@ -249,16 +249,16 @@ type AINodeListResponse struct {
 }
 
 // ============================================================================
-// 分页类型
+// Pagination types
 // ============================================================================
 
-// PaginationRequest 分页请求
+// PaginationRequest is a pagination request
 type PaginationRequest struct {
 	Page     int `json:"page,omitempty"`
 	PageSize int `json:"page_size,omitempty"`
 }
 
-// PaginationResponse 分页响应元数据
+// PaginationResponse is pagination response metadata
 type PaginationResponse struct {
 	Page      int `json:"page"`
 	PageSize  int `json:"page_size"`
@@ -266,7 +266,7 @@ type PaginationResponse struct {
 	TotalPage int `json:"total_page"`
 }
 
-// NewPaginationResponse 创建分页响应
+// NewPaginationResponse creates a pagination response
 func NewPaginationResponse(page, pageSize, total int) PaginationResponse {
 	totalPage := total / pageSize
 	if total%pageSize != 0 {
@@ -284,9 +284,9 @@ func NewPaginationResponse(page, pageSize, total int) PaginationResponse {
 // configtype
 // ============================================================================
 
-// Config API 服务器配置
+// Config holds the API server configuration
 type Config struct {
-	// 服务器配置
+	// Server configuration
 	Port         int           `json:"port"`
 	ReadTimeout  time.Duration `json:"read_timeout"`
 	WriteTimeout time.Duration `json:"write_timeout"`
@@ -297,11 +297,11 @@ type Config struct {
 	AllowedMethods []string `json:"allowed_methods"`
 	AllowedHeaders []string `json:"allowed_headers"`
 
-	// 限流配置
+	// Rate limiting configuration
 	RateLimitPerSecond int `json:"rate_limit_per_second"`
 	RateLimitBurst     int `json:"rate_limit_burst"`
 
-	// 认证配置
+	// Authentication configuration
 	APIKeys []string `json:"api_keys"`
 
 	// logconfig
@@ -311,7 +311,7 @@ type Config struct {
 	LogResponseBody  bool `json:"log_response_body"`
 }
 
-// DefaultConfig 返回默认配置
+// DefaultConfig returnsdefaultconfig
 func DefaultConfig() *Config {
 	return &Config{
 		Port:               8080,
@@ -347,8 +347,8 @@ type PeerResponse struct {
 // Migration API type
 // ============================================================================
 
-// MigrationStatus 迁移状态（从 migration hub 获取）
-// 注意：此类型需要与 pkg/migration/hub.go 中的 MigrationStatus 保持同步
+// MigrationStatus is the migration status (fetched from the migration hub)
+// Note: this type must be kept in sync with MigrationStatus in pkg/migration/hub.go
 type MigrationStatus struct {
 	// AIB1
 	AIB1TotalMigrated uint64    `json:"aib1_total_migrated"`
@@ -375,12 +375,12 @@ type MigrationStatus struct {
 	SOLWindowOpen    bool   `json:"sol_window_open"`
 	SOLCurrentRate   uint64 `json:"sol_current_rate"`
 
-	// 时间窗口
+	// Time window
 	MigrationWindowStart time.Time `json:"migration_window_start"`
 	MigrationWindowEnd   time.Time `json:"migration_window_end"`
 }
 
-// AIB1SnapshotResponse AIB1 快照信息响应
+// AIB1SnapshotResponse is the AIB1 snapshot info response
 type AIB1SnapshotResponse struct {
 	SnapshotRoot  string    `json:"snapshot_root"`
 	SnapshotTime  time.Time `json:"snapshot_time"`
@@ -389,44 +389,44 @@ type AIB1SnapshotResponse struct {
 	TotalMigrated uint64    `json:"total_migrated"`
 }
 
-// MigrationRatesResponse 迁移汇率响应
+// MigrationRatesResponse is the migration rates response
 type MigrationRatesResponse struct {
 	Timestamp  time.Time                `json:"timestamp"`
-	AIB1Rate   uint64                   `json:"aib1_rate"` // 1:1 固定
+	AIB1Rate   uint64                   `json:"aib1_rate"` // fixed 1:1
 	ChainRates map[string]ChainRateInfo `json:"chain_rates"`
 }
 
-// ChainRateInfo 链汇率信息
+// ChainRateInfo holds per-chain rate information
 type ChainRateInfo struct {
 	Chain       string    `json:"chain"`
-	CurrentRate uint64    `json:"current_rate"` // 激励比率（百分比）
+	CurrentRate uint64    `json:"current_rate"` // incentive rate (percentage)
 	WindowOpen  bool      `json:"window_open"`
 	WindowStart time.Time `json:"window_start"`
 	WindowEnd   time.Time `json:"window_end"`
 }
 
-// UserMigrationInfoAPI 用户迁移信息 API 响应
+// UserMigrationInfoAPI is the user migration info API response
 type UserMigrationInfoAPI struct {
 	// AIB1
 	AIB1SnapshotBalance uint64 `json:"aib1_snapshot_balance"`
 	AIB1Claimed         bool   `json:"aib1_claimed"`
 
-	// 跨链锁定奖励
+	// Cross-chain locked rewards
 	LockedRewards LockedRewardsInfo `json:"locked_rewards"`
 
-	// 总计
+	// Totals
 	TotalClaimable uint64 `json:"total_claimable"`
 	TotalLocked    uint64 `json:"total_locked"`
 }
 
-// LockedRewardsInfo 锁定奖励信息
+// LockedRewardsInfo holds locked rewards information
 type LockedRewardsInfo struct {
 	BTC []VestingRewardInfo `json:"btc"`
 	ETH []VestingRewardInfo `json:"eth"`
 	SOL []VestingRewardInfo `json:"sol"`
 }
 
-// VestingRewardInfo Vesting 奖励信息
+// VestingRewardInfo holds vesting reward information
 type VestingRewardInfo struct {
 	SourceTxID      string             `json:"source_tx_id"`
 	SourceAmount    uint64             `json:"source_amount"`
@@ -437,44 +437,44 @@ type VestingRewardInfo struct {
 	VestingSchedule []VestingEntryInfo `json:"vesting_schedule"`
 }
 
-// VestingEntryInfo Vesting 解锁条目信息
+// VestingEntryInfo holds a vesting unlock entry
 type VestingEntryInfo struct {
 	UnlockTime time.Time `json:"unlock_time"`
 	Percent    uint64    `json:"percent"`
 	Amount     uint64    `json:"amount"`
-	Status     string    `json:"status"` // "locked" 或 "unlocked"
+	Status     string    `json:"status"` // "locked" or "unlocked"
 }
 
-// ClaimableResponse 可领取金额响应
+// ClaimableResponse is the claimable amount response
 type ClaimableResponse struct {
 	Address             string              `json:"address"`
 	TotalClaimable      uint64              `json:"total_claimable"`
-	AIB1Claimable       uint64              `json:"aib1_claimable"` // AIB1 待认领（快照余额）
+	AIB1Claimable       uint64              `json:"aib1_claimable"` // AIB1 pending claim (snapshot balance)
 	CrossChainClaimable CrossChainClaimable `json:"cross_chain_claimable"`
 }
 
-// CrossChainClaimable 跨链可领取金额
+// CrossChainClaimable holds cross-chain claimable amounts
 type CrossChainClaimable struct {
 	BTC uint64 `json:"btc"`
 	ETH uint64 `json:"eth"`
 	SOL uint64 `json:"sol"`
 }
 
-// ClaimAIB1Request AIB1 认领请求
+// ClaimAIB1Request is an AIB1 claim request
 type ClaimAIB1Request struct {
 	TargetAddress string `json:"target_address"`
 	Amount        uint64 `json:"amount"`
-	PublicKey     string `json:"public_key"` // Base64 编码
-	Signature     string `json:"signature"`  // Base64 编码
+	PublicKey     string `json:"public_key"` // Base64 encoded
+	Signature     string `json:"signature"`  // Base64 encoded
 	Nonce         uint64 `json:"nonce"`
 }
 
-// ClaimUnlockedRequest 解锁代币认领请求
+// ClaimUnlockedRequest is an unlocked-token claim request
 type ClaimUnlockedRequest struct {
 	Address string `json:"address"`
 }
 
-// MigrationClaimResponse 迁移操作响应
+// MigrationClaimResponse is a migration operation response
 type MigrationClaimResponse struct {
 	TxHash    string    `json:"tx_hash"`
 	Address   string    `json:"address"`
@@ -484,13 +484,13 @@ type MigrationClaimResponse struct {
 	Timestamp time.Time `json:"timestamp"`
 }
 
-// EstimateRequest 收益估算请求
+// EstimateRequest is a reward estimation request
 type EstimateRequest struct {
 	Chain  string `json:"chain"`  // "BTC", "ETH", "SOL"
-	Amount uint64 `json:"amount"` // 源链代币数量
+	Amount uint64 `json:"amount"` // source-chain token amount
 }
 
-// EstimateResponse 收益估算响应
+// EstimateResponse is a reward estimation response
 type EstimateResponse struct {
 	SourceChain  string             `json:"source_chain"`
 	SourceAmount uint64             `json:"source_amount"`
@@ -498,7 +498,7 @@ type EstimateResponse struct {
 	Vesting      []VestingEntryInfo `json:"vesting"`
 }
 
-// EstimateRewardInfo 估算奖励信息
+// EstimateRewardInfo holds estimated reward information
 type EstimateRewardInfo struct {
 	TotalReward   uint64 `json:"total_reward"`
 	CurrentRate   uint64 `json:"current_rate"`
