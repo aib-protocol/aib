@@ -6,7 +6,7 @@ import (
 )
 
 // ============================================================================
-// AI 服务 API 处理器
+// AI service API handlers
 // ============================================================================
 
 func (s *Server) handleInference(w http.ResponseWriter, r *http.Request) {
@@ -26,7 +26,7 @@ func (s *Server) handleInference(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// MVP: 返回模拟响应
+	// MVP: return a mock response
 	writeSuccess(w, InferenceResponse{
 		Result:     "MVP inference response",
 		ModelID:    req.ModelID,

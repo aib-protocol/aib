@@ -692,7 +692,7 @@ func TestBalanceSync_AfterPayment(t *testing.T) {
 		t.Fatalf("Payment should succeed: %s", result.Error)
 	}
 
-	// Send-to-self 不应改变总余额（仅内部转移/找零）
+	// Send-to-self must not change total balance (internal transfer/change only)
 	if finalBalance, err := sdk.Balance(); err != nil {
 		t.Fatalf("Failed to get final balance: %v", err)
 	} else {

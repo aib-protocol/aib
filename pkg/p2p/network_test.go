@@ -572,7 +572,7 @@ func TestCreateNetworkFromEd25519(t *testing.T) {
 }
 
 // ============================================================================
-// PeerManager 扩展测试
+// PeerManager extension tests
 // ============================================================================
 
 // TestPeerManager_DisconnectPeer tests DisconnectPeer functionality

@@ -460,7 +460,7 @@ func TestReputationManager_ApplyDecay(t *testing.T) {
 	nodeID := "test-node-1"
 	score := rm.GetOrCreateScore(nodeID)
 
-	// 直接创建 active point
+	// create active point directly
 	timestamp := time.Now()
 	point := &ReputationPoint{
 		ID:        generatePointID(nodeID, ReputationSourceUserAccept, timestamp),

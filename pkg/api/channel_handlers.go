@@ -7,7 +7,7 @@ import (
 )
 
 // ============================================================================
-// 通道 API 处理器
+// channel API handlers
 // ============================================================================
 
 func (s *Server) handleChannelOpen(w http.ResponseWriter, r *http.Request) {

@@ -12,7 +12,7 @@ import (
 	"github.com/aib-protocol/aib/internal/interfaces"
 )
 
-// V2 区块奖励常量
+// V2 block reward constants
 const (
 	BlockRewardV2Total    = uint64(50 * 1e8) // 50 AIB in satoshi
 	StakingRewardAmount   = uint64(30 * 1e8) // 30 AIB
