@@ -34,8 +34,8 @@ interface IWETH is IERC20 {
 
 /**
  * @title UniswapV2Router
- * @dev Uniswap V2 路由合约 - 提供交换和流动性添加功能
- * @dev 支持 ETH 包装、代币交换、流动性添加/移除
+ * @dev Uniswap V2 router - swaps and liquidity management
+ * @dev Supports ETH wrapping, token swaps, add/remove liquidity
  */
 contract UniswapV2Router {
     address public immutable factory;
@@ -78,7 +78,7 @@ contract UniswapV2Router {
         WETH = _WETH;
     }
 
-    // ============ 添加流动性 ============
+    // ============ add liquidity ============
 
     function addLiquidity(
         address tokenA,
@@ -159,7 +159,7 @@ contract UniswapV2Router {
         }
     }
 
-    // ============ 移除流动性 ============
+    // ============ remove liquidity ============
 
     function removeLiquidity(
         address tokenA,
@@ -207,7 +207,7 @@ contract UniswapV2Router {
         payable(to).transfer(amountETH);
     }
 
-    // ============ 交换 ============
+    // ============ swaps ============
 
     function swapExactTokensForTokens(
         uint256 amountIn,
@@ -349,7 +349,7 @@ contract UniswapV2Router {
         emit Swap(msg.sender, amounts[0], amounts[amounts.length - 1], to, path[0], path[path.length - 1]);
     }
 
-    // ============ 辅助函数 ============
+    // ============ helper functions ============
 
     function _swap(uint256[] memory amounts, address[] memory path, address _to) internal {
         for (uint256 i; i < path.length - 1; i++) {
@@ -388,7 +388,7 @@ contract UniswapV2Router {
         require(success && (data.length == 0 || abi.decode(data, (bool))), "TRANSFER_FAILED");
     }
 
-    // ============ 查询函数 ============
+    // ============ view functions ============
 
     function quote(uint256 amountA, uint256 reserveA, uint256 reserveB) external pure returns (uint256 amountB) {
         return UniswapV2Library.quote(amountA, reserveA, reserveB);
@@ -413,7 +413,7 @@ contract UniswapV2Router {
 
 /**
  * @title UniswapV2Library
- * @dev Uniswap V2 工具库
+ * @dev Uniswap V2 library
  */
 library UniswapV2Library {
     function sortTokens(address tokenA, address tokenB) internal pure returns (address token0, address token1) {

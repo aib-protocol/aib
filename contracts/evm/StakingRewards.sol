@@ -5,41 +5,41 @@ import "./interfaces/IStakingRewards.sol";
 
 /**
  * @title StakingRewards
- * @dev AIB 质押奖励合约
- * @dev 支持区块奖励分配、惩罚机制和奖励累积
+ * @dev AIB staking rewards contract
+ * @dev Supports per-block reward distribution, slashing, and reward accumulation
  */
 contract StakingRewards is IStakingRewards {
-    // 代币合约
+    // token contract
     IAIBToken public immutable token;
 
-    // 每区块奖励
+    // reward per block
     uint256 public rewardPerBlock;
     uint256 private constant REWARD_PRECISION = 1e18;
 
-    // 全局累积奖励
+    // globally accumulated rewards
     uint256 public rewardPerTokenStored;
     uint256 public lastUpdateTime;
 
-    // 用户相关
+    // user-related
     struct UserInfo {
-        uint256 amount;          // 质押数量
-        uint256 rewardDebt;      // 奖励债务
-        uint256 pendingRewards;  // 待领取奖励
-        uint256 lastStakeTime;   // 最后质押时间
+        uint256 amount;          // staked amount
+        uint256 rewardDebt;      // reward debt
+        uint256 pendingRewards;  // pending rewards
+        uint256 lastStakeTime;   // last stake time
     }
 
     mapping(address => UserInfo) public userInfo;
 
-    // 总质押量
+    // total staked
     uint256 public totalStaked;
 
-    // 合约所有者
+    // contract owner
     address public owner;
 
-    // 惩罚系数 (基数为 10000，如 500 = 5%)
+    // penalty factor (basis 10000, e.g. 500 = 5%)
     uint256 public slashRate = 500;
 
-    // 修改器
+    // modifiers
     modifier onlyOwner() {
         require(msg.sender == owner, "Not the owner");
         _;
@@ -65,7 +65,7 @@ contract StakingRewards is IStakingRewards {
         lastUpdateTime = block.timestamp;
     }
 
-    // ============ 核心视图函数 ============
+    // ============ core view functions ============
 
     function rewardPerToken() public view returns (uint256) {
         if (totalStaked == 0) {
@@ -83,12 +83,12 @@ contract StakingRewards is IStakingRewards {
         return userReward - user.rewardDebt + user.pendingRewards;
     }
 
-    // ============ 质押功能 ============
+    // ============ staking ============
 
     function stake(uint256 amount) external override updateReward(msg.sender) {
         require(amount > 0, "Amount must be > 0");
 
-        // 从用户转账到合约
+        // transfer from user to contract
         token.transferFrom(msg.sender, address(this), amount);
 
         UserInfo storage user = userInfo[msg.sender];
@@ -107,13 +107,13 @@ contract StakingRewards is IStakingRewards {
         user.amount -= amount;
         totalStaked -= amount;
 
-        // 转回代币
+        // return tokens
         token.transfer(msg.sender, amount);
 
         emit Unstaked(msg.sender, amount);
     }
 
-    // ============ 奖励功能 ============
+    // ============ rewards ============
 
     function claimRewards() external override updateReward(msg.sender) {
         UserInfo storage user = userInfo[msg.sender];
@@ -123,8 +123,8 @@ contract StakingRewards is IStakingRewards {
 
         user.pendingRewards = 0;
 
-        // 这里假设 token 合约有 mint 功能或合约预先充值了奖励
-        // 实际部署时需要根据具体情况调整
+        // assumes the token contract can mint or the contract is pre-funded
+        // adjust in actual deployment
         require(token.balanceOf(address(this)) >= rewards, "Insufficient reward pool");
 
         token.transfer(msg.sender, rewards);
@@ -136,7 +136,7 @@ contract StakingRewards is IStakingRewards {
         return earned(account);
     }
 
-    // ============ 管理功能 ============
+    // ============ admin ============
 
     function setRewardPerBlock(uint256 _rewardPerBlock) external override onlyOwner {
         rewardPerBlock = _rewardPerBlock;
@@ -153,21 +153,21 @@ contract StakingRewards is IStakingRewards {
         UserInfo storage user = userInfo[account];
         require(user.amount >= amount, "Amount exceeds staked balance");
 
-        // 计算惩罚量
+        // compute penalty amount
         uint256 slashAmount = (amount * slashRate) / 10000;
         uint256 remaining = amount - slashAmount;
 
-        // 减少质押
+        // reduce stake
         user.amount -= amount;
         totalStaked -= amount;
 
-        // 返还未惩罚部分
+        // return the unpenalized part
         if (remaining > 0) {
             token.transfer(account, remaining);
         }
 
-        // 惩罚的代币可以销毁或转回所有者
-        // 这里选择转回所有者作为奖励池补充
+        // penalized tokens can be burned or returned to owner
+        // here returned to owner as reward-pool replenishment
         if (slashAmount > 0) {
             token.transfer(owner, slashAmount);
         }
@@ -175,7 +175,7 @@ contract StakingRewards is IStakingRewards {
         emit Slashed(account, slashAmount);
     }
 
-    // ============ 查询功能 ============
+    // ============ views ============
 
     function getStakedBalance(address account) external view override returns (uint256) {
         return userInfo[account].amount;
@@ -185,7 +185,7 @@ contract StakingRewards is IStakingRewards {
         return totalStaked;
     }
 
-    // ============ 紧急功能 ============
+    // ============ emergency ============
 
     function emergencyWithdraw() external {
         UserInfo storage user = userInfo[msg.sender];
@@ -196,7 +196,7 @@ contract StakingRewards is IStakingRewards {
         user.amount = 0;
         totalStaked -= amount;
 
-        // 放弃未领取的奖励
+        // forfeit unclaimed rewards
         user.pendingRewards = 0;
 
         token.transfer(msg.sender, amount);
@@ -215,7 +215,7 @@ contract StakingRewards is IStakingRewards {
     }
 }
 
-// 简化的 IAIBToken 接口，用于内部使用
+// simplified IAIBToken interface for internal use
 interface IAIBToken {
     function transferFrom(address from, address to, uint256 amount) external returns (bool);
     function transfer(address to, uint256 amount) external returns (bool);

@@ -6,47 +6,47 @@ import "./interfaces/IGovernance.sol";
 
 /**
  * @title Governance
- * @dev AIB 治理合约
- * @dev 支持提案创建、投票和执行
+ * @dev AIB governance contract
+ * @dev Supports proposal creation, voting, and execution
  */
 contract Governance {
-    // 代币合约
+    // token contract
     IAIBToken public immutable aibToken;
 
-    // 提案存储
+    // proposal storage
     Proposal[] public proposals;
 
-    // 投票权重缓存
+    // cast-vote weight cache
     uint256 private latestBlockNumber;
 
-    // 投票统计
+    // cast-vote statistics
     struct VoteInfo {
         uint256 support;      // 0=against, 1=for, 2=abstain
-        uint256 weight;       // 投票权重
+        uint256 weight;       // cast-vote weight
     }
 
     mapping(uint256 => mapping(address => VoteInfo)) public votes; // proposalId => voter => voteInfo
 
-    // 检查是否已投票
+    // check if already voted
     mapping(uint256 => mapping(address => bool)) public hasVoted;
 
-    // 配置参数
+    // config parameters
     uint256 public votingPeriod;
     uint256 public votingDelay;
     uint256 public proposalThreshold;
     uint256 public quorumVotes;
 
-    // 参数修改管理器
+    // parameter-change manager
     address public parametersManager;
 
-    // 事件
+    // events
     event ProposalCreated(uint256 indexed proposalId, address indexed proposer, bytes32 descriptionHash);
     event VoteCast(address indexed voter, uint256 proposalId, uint8 support, uint256 weight);
     event ProposalExecuted(uint256 indexed proposalId);
     event ProposalCanceled(uint256 indexed proposalId);
     event ParametersUpdated(uint256 votingPeriod, uint256 votingDelay, uint256 proposalThreshold, uint256 quorumVotes);
 
-    // 提案状态名称（用于查询）
+    // proposal status names (for queries)
     string[8] private proposalStateName;
 
     constructor(
@@ -64,7 +64,7 @@ contract Governance {
         quorumVotes = _quorumVotes;
         parametersManager = msg.sender;
 
-        // 初始化状态名称映射
+        // initialize status name mapping
         proposalStateName[uint256(ProposalState.Pending)] = "Pending";
         proposalStateName[uint256(ProposalState.Active)] = "Active";
         proposalStateName[uint256(ProposalState.Canceled)] = "Canceled";
@@ -75,7 +75,7 @@ contract Governance {
         proposalStateName[uint256(ProposalState.Executed)] = "Executed";
     }
 
-    // ============ 提案创建 ============
+    // ============ proposal creation ============
 
     function propose(
         address[] calldata targets,
@@ -87,7 +87,7 @@ contract Governance {
         require(targets.length > 0, "No actions provided");
         require(bytes(description).length > 0, "No description");
 
-        // 检查提案者是否有足够投票权重
+        // check proposer has enough voting weight
         uint256 proposerVotes = getPriorVotes(msg.sender, block.number);
         require(proposerVotes >= proposalThreshold, "Insufficient proposal power");
 
@@ -114,7 +114,7 @@ contract Governance {
         return proposal.id;
     }
 
-    // ============ 投票 ============
+    // ============ voting ============
 
     function vote(uint256 proposalId, uint8 support) external override {
         require(proposalId < proposals.length, "Invalid proposal ID");
@@ -132,7 +132,7 @@ contract Governance {
         vote.weight = voteWeight;
         hasVoted[proposalId][msg.sender] = true;
 
-        // 累加到总投票数
+        // add to total votes
         if (support == 1) {
             proposal.forVotes += voteWeight;
         } else if (support == 0) {
@@ -144,7 +144,7 @@ contract Governance {
         emit VoteCast(msg.sender, proposalId, support, voteWeight);
     }
 
-    // ============ 提案执行 ============
+    // ============ proposal execution ============
 
     function execute(address[] calldata targets, uint256[] calldata values, bytes[] calldata calldatas, bytes32 descriptionHash) external payable override returns (bool) {
         uint256 proposalId = getProposalId(targets, values, calldatas, descriptionHash);
@@ -155,7 +155,7 @@ contract Governance {
         require(proposal.executed == false, "Already executed");
         require(state(proposalId) == ProposalState.Succeeded, "Not succeeded");
 
-        // 执行所有调用
+        // execute all calls
         for (uint256 i = 0; i < targets.length; i++) {
             (bool success, bytes memory returnData) = targets[i].call{value: values[i]}(calldatas[i]);
             require(success, "Transaction execution failed");
@@ -167,7 +167,7 @@ contract Governance {
         return true;
     }
 
-    // ============ 提案取消 ============
+    // ============ proposal cancellation ============
 
     function cancel(uint256 proposalId) external override {
         require(proposalId < proposals.length, "Invalid proposal ID");
@@ -181,7 +181,7 @@ contract Governance {
         emit ProposalCanceled(proposalId);
     }
 
-    // ============ 查询函数 ============
+    // ============ view functions ============
 
     function state(uint256 proposalId) public view override returns (ProposalState) {
         require(proposalId < proposals.length, "Invalid proposal ID");
@@ -215,7 +215,7 @@ contract Governance {
     }
 
     function getVotes(address account) external view override returns (uint256) {
-        // 获取当前投票权重：余额 + 质押 + 收到的委托 - 已委托出的
+        // current voting weight: balance + stake + delegated-in - delegated-out
         return aibToken.getVotes(account);
     }
 
@@ -224,7 +224,7 @@ contract Governance {
         return proposalStateName[s];
     }
 
-    // 获取某提案的投票详情
+    // get vote details of a proposal
     function getProposalVotes(uint256 proposalId) external view returns (
         uint256 totalVotes,
         uint256 forVotes,
@@ -240,11 +240,11 @@ contract Governance {
         abstainVotes = proposal.abstainVotes;
     }
 
-    // ============ 投票权重计算 ============
+    // ============ voting weight ============
 
     function getPriorVotes(address account, uint256 blockNumber) public view returns (uint256) {
-        // 获取指定区块的投票权重
-        // 包括：余额、质押、委托
+        // get voting weight at a given block
+        // includes: balance, stake, delegation
         uint256 balance = aibToken.balanceOf(account);
         uint256 staked = aibToken.getStakedBalance(account);
         uint256 delegated = aibToken.getDelegatedBalance(account);
@@ -264,7 +264,7 @@ contract Governance {
         return uint256(proposalHash);
     }
 
-    // ============ 管理函数 ============
+    // ============ admin functions ============
 
     function setVotingPeriod(uint256 _votingPeriod) external {
         require(msg.sender == parametersManager, "Not authorized");
@@ -291,7 +291,7 @@ contract Governance {
         parametersManager = _manager;
     }
 
-    // ============ 视图辅助函数 ============
+    // ============ view helpers ============
 
     function getProposalsLength() external view returns (uint256) {
         return proposals.length;
@@ -308,7 +308,7 @@ contract Governance {
         return active;
     }
 
-    // 接收 ETH fallback
+    // receive ETH fallback
     receive() external payable {}
     fallback() external payable {}
 }

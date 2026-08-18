@@ -3,34 +3,34 @@ pragma solidity ^0.8.20;
 
 /**
  * @title AIBToken
- * @dev AIB 生态代币合约 - 支持质押和委托功能
- * @dev 发行量: 3,141,592,653 AIB
+ * @dev AIB ecosystem token contract - supports staking and delegation
+ * @dev Total supply: 3,141,592,653 AIB
  */
 contract AIBToken {
     string public constant name = "AIB Token";
     string public constant symbol = "AIB";
     uint8 public constant decimals = 18;
 
-    // 发行量 3,141,592,653 * 10^18
+    // total supply 3,141,592,653 * 10^18
     uint256 public constant TOTAL_SUPPLY = 3141592653 * 10**uint256(decimals);
 
     mapping(address => uint256) private _balances;
     mapping(address => mapping(address => uint256)) private _allowances;
 
-    // 质押相关
+    // staking-related
     mapping(address => uint256) private _stakedBalances;
     uint256 private _totalStaked;
 
-    // 委托相关
+    // delegation-related
     mapping(address => mapping(address => uint256)) private _delegations; // delegator => delegatee => amount
     mapping(address => uint256) private _delegatedToMe; // delegatee => total delegated to them
     mapping(address => address) private _delegation; // address => current delegatee
     mapping(address => uint256) private _totalDelegatedOut; // total amount delegated out by each account
 
-    // 合约部署者
+    // contract deployer
     address public _initialOwner;
 
-    // 修改器
+    // modifiers
     modifier onlyOwner() {
         require(msg.sender == _initialOwner, "Not the owner");
         _;
@@ -47,7 +47,7 @@ contract AIBToken {
         emit Transfer(address(0), _initialOwner, TOTAL_SUPPLY);
     }
 
-    // ============ ERC20 基础函数 ============
+    // ============ ERC20 base functions ============
 
     function totalSupply() external view returns (uint256) {
         return TOTAL_SUPPLY;
@@ -89,13 +89,13 @@ contract AIBToken {
         return true;
     }
 
-    // ============ 质押功能 ============
+    // ============ staking ============
 
     function stake(uint256 amount) external {
         require(amount > 0, "Cannot stake 0");
         require(_balances[msg.sender] >= amount, "Insufficient balance");
 
-        // 解除可能存在的委托
+        // remove any existing delegation
         address currentDelegate = _delegation[msg.sender];
         if (currentDelegate != address(0)) {
             uint256 delegatedAmount = _delegations[msg.sender][currentDelegate];
@@ -116,7 +116,7 @@ contract AIBToken {
     function unstake(uint256 amount) external {
         require(amount > 0, "Cannot unstake 0");
 
-        // 检查不能解除已委托的代币
+        // cannot unstake delegated tokens
         uint256 available = _stakedBalances[msg.sender] - _totalDelegatedOut[msg.sender];
         require(available >= amount, "Cannot unstake delegated tokens");
 
@@ -135,12 +135,12 @@ contract AIBToken {
         return _totalStaked;
     }
 
-    // ============ 委托功能 ============
+    // ============ delegation ============
 
     function delegate(address delegatee) external nonZeroAddress(delegatee) {
         require(_stakedBalances[msg.sender] > 0, "No staked balance to delegate");
 
-        // 先解除之前的委托
+        // first remove previous delegation
         address previousDelegate = _delegation[msg.sender];
         if (previousDelegate != address(0)) {
             uint256 prevAmount = _delegations[msg.sender][previousDelegate];
@@ -152,7 +152,7 @@ contract AIBToken {
             }
         }
 
-        // 计算可委托金额 (质押余额 - 已委托出)
+        // delegatable amount (staked balance - already delegated out)
         uint256 available = _stakedBalances[msg.sender] - _totalDelegatedOut[msg.sender];
         require(available > 0, "No available balance to delegate");
 
@@ -191,7 +191,7 @@ contract AIBToken {
         return _delegation[account];
     }
 
-    // ============ 投票权重计算 ============
+    // ============ voting weight ============
 
     function getVotes(address account) external view returns (uint256) {
         uint256 balance = _balances[account];
@@ -203,7 +203,7 @@ contract AIBToken {
         return balance + (staked - delegatedOut) + delegatedIn;
     }
 
-    // ============ 事件 ============
+    // ============ events ============
 
     event Transfer(address indexed from, address indexed to, uint256 value);
     event Approval(address indexed owner, address indexed spender, uint256 value);

@@ -3,8 +3,8 @@ pragma solidity ^0.8.20;
 
 /**
  * @title UniswapV2Factory
- * @dev Uniswap V2 工厂合约 - 创建交易对
- * @dev 创建并管理代币交易对
+ * @dev Uniswap V2 factory contract - creates pairs
+ * @dev Creates and manages token pairs
  */
 contract UniswapV2Factory {
     event PairCreated(address indexed token0, address indexed token1, address pair, uint256);
@@ -55,8 +55,8 @@ contract UniswapV2Factory {
 
 /**
  * @title UniswapV2Pair
- * @dev Uniswap V2 交易对合约
- * @dev 实现AMM做市商功能
+ * @dev Uniswap V2 pair contract
+ * @dev Implements AMM market-making
  */
 contract UniswapV2Pair {
     string public constant name = "Uniswap V2 Pair";

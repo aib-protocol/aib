@@ -7,7 +7,7 @@ import "./Governance.sol";
 
 /**
  * @title AIBTokenFactory
- * @dev AIB 合约部署辅助工厂
+ * @dev AIB contract deployment helper factory
  */
 contract AIBTokenFactory {
     event TokenDeployed(address indexed tokenAddress, address indexed owner);
@@ -19,28 +19,28 @@ contract AIBTokenFactory {
         return address(token);
     }
 
-    // 批量部署所有合约
+    // deploy all contracts in batch
     function deploySystem() external returns (
         address aibTokenAddr,
         address stakingRewardsAddr,
         address governanceAddr
     ) {
-        // 1. 部署 AIBToken
+        // 1. deploy AIBToken
         AIBToken token = new AIBToken();
         aibTokenAddr = address(token);
 
-        // 2. 部署 StakingRewards
-        uint256 rewardPerBlock = 10000000000000000; // 每区块 0.01 AIB (以 12秒一个区块计算)
+        // 2. deploy StakingRewards
+        uint256 rewardPerBlock = 10000000000000000; // 0.01 AIB per block (12s blocks)
         StakingRewards rewards = new StakingRewards(aibTokenAddr, rewardPerBlock);
         stakingRewardsAddr = address(rewards);
 
-        // 3. 部署 Governance
+        // 3. deploy Governance
         Governance gov = new Governance(
             aibTokenAddr,
-            7200,              // 投票期 7200 个区块 (约 24 小时)
-            65,                // 投票延迟 65 个块 (约 13 分钟)
-            10000 * 10**18,    // 提案门槛 10000 AIB
-            100000 * 10**18    // 法定票数 100000 AIB
+            7200,              // voting period: 7200 blocks (~24h)
+            65,                // voting delay: 65 blocks (~13min)
+            10000 * 10**18,    // proposal threshold: 10000 AIB
+            100000 * 10**18    // quorum: 100000 AIB
         );
         governanceAddr = address(gov);
 

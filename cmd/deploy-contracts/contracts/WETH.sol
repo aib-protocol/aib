@@ -3,8 +3,8 @@ pragma solidity ^0.8.20;
 
 /**
  * @title WETH
- * @dev Wrapped Ether合约 - 用于AIB链上的ETH包装
- * @dev 1:1比例存款和提取
+ * @dev Wrapped Ether contract - wraps ETH on the AIB chain
+ * @dev 1:1 deposit and withdrawal
  */
 contract WETH {
     string public constant name = "Wrapped Ether";

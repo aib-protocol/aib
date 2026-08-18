@@ -1,108 +1,108 @@
 # AIB 2.0 Deployment Configuration
 # Copy this file to config.toml and customize
 
-# ========== 节点配置 ==========
+# ========== node configuration ==========
 [node]
-  # 节点名称
+  # node name
   moniker = "aib-mainnet-validator"
-  # 节点类型: validator, full, light
+  # node type: validator, full, light
   node_type = "validator"
-  # 数据目录
+  # data directory
   data_dir = "./data"
-  # 日志级别: debug, info, warn, error
+  # log level: debug, info, warn, error
   log_level = "info"
 
-# ========== API 配置 ==========
+# ========== API configuration ==========
 [api]
-  # API 监听地址
+  # API listen address
   listen_address = "0.0.0.0:51200"
-  # 启用 API
+  # enable API
   enabled = true
-  # 允许跨域
+  # allow CORS
   enable_cors = true
-  # API 限流 (请求/秒)
+  # API rate limit (req/s)
   rate_limit = 100
-  # 最大请求体大小 (bytes)
+  # max request body size (bytes)
   max_body_size = 1048576
 
-# ========== P2P 配置 ==========
+# ========== P2P configuration ==========
 [p2p]
-  # P2P 监听地址
+  # P2P listen address
   listen_address = "0.0.0.0:26656"
-  # 外部地址 (公网 IP:端口)
+  # external address (public IP:port)
   external_address = ""
-  # 种子节点 (格式: node_id@ip:port)
+  # seed nodes (format: node_id@ip:port)
   seeds = []
-  # 持久节点
+  # persistent nodes
   persistent_peers = []
-  # 最大连接数
+  # max connections
   max_connections = 100
-  # 最大对等节点数
+  # max peers
   max_peers = 50
 
-# ========== 共识配置 ==========
+# ========== consensus configuration ==========
 [consensus]
-  # 区块时间（秒）
+  # block time (seconds)
   block_time = 60
-  # 验证者地址列表
+  # validator address list
   validators = []
-  # 最小质押数量
+  # minimum stake amount
   min_stake = "1000000"
-  # 解绑时间（秒）
+  # unbonding time (seconds)
   unbonding_time = 604800
-  # 提议者奖励比例
+  # proposer reward ratio
   proposer_reward = 0.01
 
-# ========== 创世配置 ==========
+# ========== genesis configuration ==========
 [genesis]
-  # 链 ID
+  # chain ID
   chain_id = "aib-mainnet-1"
-  # Genesis 文件路径
+  # genesis file path
   genesis_file = "./config/genesis.json"
 
-# ========== 监控配置 ==========
+# ========== monitoring configuration ==========
 [telemetry]
-  # 启用遥测
+  # enable telemetry
   enabled = true
-  # Prometheus 端口
+  # Prometheus port
   prometheus_port = 26660
-  # 启用 Pprof
+  # enable Pprof
   pprof_enabled = true
-  # Pprof 端口
+  # Pprof port
   pprof_port = 26661
 
-# ========== RPC 配置 ==========
+# ========== RPC configuration ==========
 [rpc]
-  # RPC 监听地址
+  # RPC listen address
   listen_address = "0.0.0.0:26657"
-  # 允许 RPC
+  # enable RPC
   enabled = true
-  # 允许 CORS
+  # allow CORS
   cors_allowed_origins = ["*"]
 
-# ========== 钱包配置 ==========
+# ========== wallet configuration ==========
 [wallet]
-  # 钱包目录
+  # wallet directory
   keystore_path = "./data/keystore"
-  # 默认账户
+  # default account
   default_account = ""
-  # 解锁超时（秒）
+  # unlock timeout (seconds)
   unlock_timeout = 300
 
-# ========== EVM 配置 ==========
+# ========== EVM configuration ==========
 [evm]
-  # 启用 EVM  enabled = true
+  # enable EVM  enabled = true
 
-  # EVM 链 ID
+  # EVM chain ID
   chain_id = 9527
-  # EVM 网络 ID
+  # EVM network ID
   network_id = 9527
 
-# ========== 性能配置 ==========
+# ========== performance configuration ==========
 [performance]
-  # 缓存大小 (MB)
+  # cache size (MB)
   cache_size = 512
-  # 并发处理数
+  # concurrency
   concurrent_tx = 100
-  # 区块缓冲大小
+  # block buffer size
   block_buffer = 10

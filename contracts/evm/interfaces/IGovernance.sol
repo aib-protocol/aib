@@ -2,7 +2,7 @@
 pragma solidity ^0.8.20;
 
 interface IGovernance {
-    // 提案状态
+    // proposal status
     enum ProposalState {
         Pending,
         Active,
@@ -14,14 +14,14 @@ interface IGovernance {
         Executed
     }
 
-    // 提案类型
+    // proposal type
     enum VoteType {
         Against,
         For,
         Abstain
     }
 
-    // 提案结构
+    // proposal struct
     struct Proposal {
         uint256 id;
         address proposer;
@@ -38,7 +38,7 @@ interface IGovernance {
         bytes[] calldatas;
     }
 
-    // 核心函数
+    // core functions
     function propose(
         address[] memory targets,
         uint256[] memory values,
@@ -56,18 +56,18 @@ interface IGovernance {
 
     function cancel(uint256 proposalId) external;
 
-    // 查询函数
+    // view functions
     function state(uint256 proposalId) external view returns (ProposalState);
     function getProposal(uint256 proposalId) external view returns (Proposal memory);
     function getVotes(address account) external view returns (uint256);
 
-    // 配置参数
+    // config parameters
     function votingPeriod() external view returns (uint256);
     function votingDelay() external view returns (uint256);
     function proposalThreshold() external view returns (uint256);
     function quorumVotes() external view returns (uint256);
 
-    // 事件
+    // events
     event ProposalCreated(uint256 indexed proposalId, address indexed proposer, bytes32 descriptionHash);
     event VoteCast(address indexed voter, uint256 proposalId, uint8 support, uint256 weight);
     event ProposalExecuted(uint256 indexed proposalId);

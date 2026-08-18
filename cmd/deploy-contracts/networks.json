@@ -1,7 +1,7 @@
 {
-  "name": "AIB DeFi 合约",
+  "name": "AIB DeFi Contracts",
   "version": "1.0.0",
-  "description": "AIB区块链DeFi合约套件 - 包含WETH、Uniswap V2工厂和路由",
+  "description": "AIB blockchain DeFi contract suite - includes WETH, Uniswap V2 factory and router",
   "networks": {
     "devnet": {
       "chainId": 314159,
