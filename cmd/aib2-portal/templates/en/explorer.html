@@ -250,11 +250,11 @@
 
 <div class="explorer-container">
     <section class="page-header">
-        <h1 class="page-title">区块浏览器</h1>
-        <p class="page-subtitle">实时查看 AIB 2.0 网络状态和交易</p>
+        <h1 class="page-title">Block Explorer</h1>
+        <p class="page-subtitle">View AIB 2.0 network status and transactions in real time</p>
         <div style="display: flex; gap: 16px; justify-content: center; margin-top: 20px;">
-            <a href="/{{.Lang}}/" class="btn-primary" style="background: #0071e3; color: #fff; padding: 12px 24px; border-radius: 980px; text-decoration: none;">← 返回首页</a>
-            <a href="/{{.Lang}}/quickstart" class="btn-secondary" style="background: #1d1d1f; color: #f5f5f7; padding: 12px 24px; border-radius: 980px; text-decoration: none; border: 1px solid #2d2d2d;">快速开始</a>
+            <a href="/{{.Lang}}/" class="btn-primary" style="background: #0071e3; color: #fff; padding: 12px 24px; border-radius: 980px; text-decoration: none;">← Back to Home</a>
+            <a href="/{{.Lang}}/quickstart" class="btn-secondary" style="background: #1d1d1f; color: #f5f5f7; padding: 12px 24px; border-radius: 980px; text-decoration: none; border: 1px solid #2d2d2d;">Quick Start</a>
         </div>
     </section>
 
@@ -263,64 +263,64 @@
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-value">30s</div>
-                <div class="stat-label">区块时间</div>
+                <div class="stat-label">Block Time</div>
             </div>
             <div class="stat-card">
                 <div class="stat-value">1MB</div>
-                <div class="stat-label">区块大小</div>
+                <div class="stat-label">Block Size</div>
             </div>
             <div class="stat-card">
                 <div class="stat-value">50</div>
-                <div class="stat-label">区块奖励</div>
+                <div class="stat-label">Block Reward</div>
             </div>
             <div class="stat-card">
                 <div class="stat-value">1000</div>
-                <div class="stat-label">最低质押</div>
+                <div class="stat-label">Minimum Stake</div>
             </div>
         </div>
 
         <!-- Search -->
         <div class="search-box">
             <div class="search-input">
-                <input type="text" class="search-field" placeholder="搜索区块高度、交易哈希或地址...">
-                <button class="search-btn">搜索</button>
+                <input type="text" class="search-field" placeholder="Search block height, transaction hash, or address...">
+                <button class="search-btn">Search</button>
             </div>
             <div class="quick-actions">
-                <button class="action-btn">最新区块</button>
-                <button class="action-btn">未确认交易</button>
-                <button class="action-btn">热门地址</button>
-                <button class="action-btn">网络统计</button>
+                <button class="action-btn">Latest Blocks</button>
+                <button class="action-btn">Unconfirmed Transactions</button>
+                <button class="action-btn">Top Addresses</button>
+                <button class="action-btn">Network Stats</button>
             </div>
         </div>
 
         <!-- Recent Blocks -->
         <div class="recent-blocks">
-            <div class="section-header">最新区块</div>
+            <div class="section-header">Latest Blocks</div>
             <div class="block-list">
                 <div class="block-item">
                     <div class="block-number">#123456</div>
                     <div class="block-hash">0x8f2a...9c3e</div>
-                    <div class="block-time">2分钟前</div>
-                    <div class="block-txn">23 笔交易</div>
+                    <div class="block-time">2 min ago</div>
+                    <div class="block-txn">23 txns</div>
                 </div>
                 <div class="block-item">
                     <div class="block-number">#123455</div>
                     <div class="block-hash">0x7c9b...1a8f</div>
-                    <div class="block-time">3分钟前</div>
-                    <div class="block-txn">18 笔交易</div>
+                    <div class="block-time">3 min ago</div>
+                    <div class="block-txn">18 txns</div>
                 </div>
                 <div class="block-item">
                     <div class="block-number">#123454</div>
                     <div class="block-hash">0x2a4e...7f9c</div>
-                    <div class="block-time">3分钟前</div>
-                    <div class="block-txn">15 笔交易</div>
+                    <div class="block-time">3 min ago</div>
+                    <div class="block-txn">15 txns</div>
                 </div>
             </div>
         </div>
 
         <!-- API Documentation -->
         <div class="api-docs">
-            <h3>API 接口</h3>
+            <h3>API Endpoints</h3>
             <div class="api-list">
                 <div class="api-item">
                     <span>GET</span>
@@ -355,8 +355,8 @@
 document.querySelector('.search-btn').addEventListener('click', function() {
     const query = document.querySelector('.search-field').value.trim();
     if (query) {
-        // 模拟搜索功能
-        alert('搜索: ' + query);
+        // Simulated search functionality
+        alert('Search: ' + query);
     }
 });
 </script>
