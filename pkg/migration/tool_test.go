@@ -11,7 +11,7 @@ import (
 )
 
 // ============================================================================
-// 测试辅助函数
+// Test helper functions
 // ============================================================================
 
 // createtestaddress
@@ -21,7 +21,7 @@ func createTestAddress(i byte) interfaces.Address {
 	return addr
 }
 
-// 创建测试快照记录
+// Create a test snapshot record
 func createTestSnapshot(count int) []SnapshotRecord {
 	records := make([]SnapshotRecord, count)
 	for i := 0; i < count; i++ {
@@ -34,7 +34,7 @@ func createTestSnapshot(count int) []SnapshotRecord {
 }
 
 // ============================================================================
-// MigrationTool 单元测试
+// MigrationTool unit tests
 // ============================================================================
 
 func TestNewMigrationTool(t *testing.T) {
@@ -91,7 +91,7 @@ func TestMigrationTool_GetSnapshot(t *testing.T) {
 		t.Errorf("expected 3 records, got %d", len(result))
 	}
 
-	// 验证是副本
+	// Verify it is a copy
 	result[0].Balance = 99999
 	if snapshot[0].Balance != 1000 {
 		t.Error("GetSnapshot should return a copy")
@@ -114,8 +114,8 @@ func TestMigrationTool_GetRecordByAddress(t *testing.T) {
 	snapshot := createTestSnapshot(3)
 	tool := NewMigrationToolWithSnapshot(snapshot)
 
-	// 查找存在的地址
-	addr := createTestAddress(2) // 余额 2000
+	// Look up an existing address
+	addr := createTestAddress(2) // balance 2000
 	record, found := tool.GetRecordByAddress(addr)
 	if !found {
 		t.Error("should find existing address")
@@ -124,7 +124,7 @@ func TestMigrationTool_GetRecordByAddress(t *testing.T) {
 		t.Errorf("expected balance 2000, got %d", record.Balance)
 	}
 
-	// 查找不存在的地址
+	// Look up a non-existent address
 	emptyAddr := interfaces.Address{}
 	_, found = tool.GetRecordByAddress(emptyAddr)
 	if found {
@@ -156,7 +156,7 @@ func TestMigrationTool_ExportSnapshotJSON(t *testing.T) {
 		t.Errorf("ExportSnapshotJSON failed: %v", err)
 	}
 
-	// 验证 JSON 格式
+	// Verify JSON format
 	var export SnapshotExport
 	if err := json.Unmarshal(buf.Bytes(), &export); err != nil {
 		t.Errorf("failed to parse JSON: %v", err)
@@ -166,7 +166,7 @@ func TestMigrationTool_ExportSnapshotJSON(t *testing.T) {
 		t.Errorf("expected 3 records, got %d", export.TotalRecords)
 	}
 
-	// 验证总余额 1000 + 2000 + 3000 = 6000
+	// Verify total balance 1000 + 2000 + 3000 = 6000
 	if export.TotalBalance != 6000 {
 		t.Errorf("expected total balance 6000, got %d", export.TotalBalance)
 	}
@@ -193,7 +193,7 @@ func TestMigrationTool_ImportSnapshotJSON(t *testing.T) {
 		t.Fatalf("ExportSnapshotJSON failed: %v", err)
 	}
 
-	// 创建新工具并导入
+	// Create a new tool and import
 	tool2 := NewMigrationTool(nil)
 	records, err := tool2.ImportSnapshotJSON(bytes.NewReader(buf.Bytes()))
 	if err != nil {
@@ -204,7 +204,7 @@ func TestMigrationTool_ImportSnapshotJSON(t *testing.T) {
 		t.Errorf("expected 2 records, got %d", len(records))
 	}
 
-	// 验证数据正确
+	// Verify data is correct
 	if records[0].Balance != 1000 {
 		t.Errorf("expected first balance 1000, got %d", records[0].Balance)
 	}
@@ -248,7 +248,7 @@ func TestMigrationTool_ExportSnapshotCSV(t *testing.T) {
 		t.Errorf("expected 4 lines, got %d", len(lines))
 	}
 
-	// 验证表头
+	// Verify the header
 	if !strings.Contains(lines[0], "address") || !strings.Contains(lines[0], "balance") {
 		t.Error("CSV header should contain address and balance")
 	}
@@ -267,7 +267,7 @@ func TestMigrationTool_ImportSnapshotCSV(t *testing.T) {
 		t.Fatalf("ExportSnapshotCSV failed: %v", err)
 	}
 
-	// 创建新工具并导入
+	// Create a new tool and import
 	tool2 := NewMigrationTool(nil)
 	records, err := tool2.ImportSnapshotCSV(bytes.NewReader(buf.Bytes()))
 	if err != nil {
@@ -278,7 +278,7 @@ func TestMigrationTool_ImportSnapshotCSV(t *testing.T) {
 		t.Errorf("expected 2 records, got %d", len(records))
 	}
 
-	// 验证数据正确
+	// Verify data is correct
 	if records[0].Balance != 1000 {
 		t.Errorf("expected first balance 1000, got %d", records[0].Balance)
 	}
@@ -303,7 +303,7 @@ func TestMigrationTool_ImportSnapshotCSV_Invalid(t *testing.T) {
 }
 
 // ============================================================================
-// 验证功能测试
+// Feature verification tests
 // ============================================================================
 
 func TestMigrationTool_ValidateSnapshot(t *testing.T) {
@@ -325,8 +325,8 @@ func TestMigrationTool_ValidateSnapshot(t *testing.T) {
 func TestMigrationTool_ValidateSnapshot_WithInvalid(t *testing.T) {
 	snapshot := []SnapshotRecord{
 		{Address: createTestAddress(1), Balance: 1000},
-		{Address: interfaces.Address{}, Balance: 1000}, // 无效地址
-		{Address: createTestAddress(3), Balance: 0},    // 无效余额
+		{Address: interfaces.Address{}, Balance: 1000}, // Invalid address
+		{Address: createTestAddress(3), Balance: 0},    // Invalid balance
 	}
 	tool := NewMigrationToolWithSnapshot(snapshot)
 
@@ -349,7 +349,7 @@ func TestMigrationTool_ValidateSnapshot_Duplicate(t *testing.T) {
 	addr := createTestAddress(1)
 	snapshot := []SnapshotRecord{
 		{Address: addr, Balance: 1000},
-		{Address: addr, Balance: 2000}, // 重复地址
+		{Address: addr, Balance: 2000}, // duplicate address
 	}
 	tool := NewMigrationToolWithSnapshot(snapshot)
 
@@ -362,13 +362,13 @@ func TestMigrationTool_ValidateSnapshot_Duplicate(t *testing.T) {
 func TestMigrationTool_ValidateAddress(t *testing.T) {
 	tool := NewMigrationTool(nil)
 
-	// 有效地址
+	// Valid address
 	validAddr := createTestAddress(1)
 	if !tool.ValidateAddress(validAddr) {
 		t.Error("should validate non-empty address")
 	}
 
-	// 无效地址
+	// Invalid address
 	emptyAddr := interfaces.Address{}
 	if tool.ValidateAddress(emptyAddr) {
 		t.Error("should not validate empty address")
@@ -378,19 +378,19 @@ func TestMigrationTool_ValidateAddress(t *testing.T) {
 func TestMigrationTool_ValidateBalance(t *testing.T) {
 	tool := NewMigrationTool(nil)
 
-	// 有效余额
+	// Valid balance
 	if !tool.ValidateBalance(1000) {
 		t.Error("should validate positive balance")
 	}
 
-	// 无效余额
+	// Invalid balance
 	if tool.ValidateBalance(0) {
 		t.Error("should not validate zero balance")
 	}
 }
 
 // ============================================================================
-// Merkle 根测试
+// Merkle root tests
 // ============================================================================
 
 func TestMigrationTool_ComputeMerkleRoot(t *testing.T) {
@@ -432,7 +432,7 @@ func TestMigrationTool_GenerateMerkleProof_NonExistent(t *testing.T) {
 	snapshot := createTestSnapshot(3)
 	tool := NewMigrationToolWithSnapshot(snapshot)
 
-	// 使用不存在的地址
+	// Use a non-existent address
 	newAddr := interfaces.Address{0xFF, 0xFF}
 	_, ok := tool.GenerateMerkleProof(newAddr)
 	if ok {
@@ -457,7 +457,7 @@ func TestMigrationTool_VerifyMerkleProof(t *testing.T) {
 		t.Error("VerifyMerkleProof should return true for valid proof")
 	}
 
-	// 验证错误余额应该失败
+	// Verify wrong balance should fail
 	if tool.VerifyMerkleProof(addr, 9999, proof) {
 		t.Error("VerifyMerkleProof should return false for wrong balance")
 	}
@@ -506,7 +506,7 @@ func TestMigrationTool_ExportStatusCSV_NoHub(t *testing.T) {
 }
 
 // ============================================================================
-// 并发测试
+// Concurrency tests
 // ============================================================================
 
 func TestMigrationTool_ConcurrentAccess(t *testing.T) {
@@ -515,7 +515,7 @@ func TestMigrationTool_ConcurrentAccess(t *testing.T) {
 
 	done := make(chan bool, 2)
 
-	// 并发读
+	// Concurrent reads
 	go func() {
 		for i := 0; i < 100; i++ {
 			tool.GetSnapshot()
@@ -525,7 +525,7 @@ func TestMigrationTool_ConcurrentAccess(t *testing.T) {
 		done <- true
 	}()
 
-	// 并发读
+	// Concurrent reads
 	go func() {
 		for i := 0; i < 100; i++ {
 			tool.ValidateSnapshot()
@@ -539,19 +539,19 @@ func TestMigrationTool_ConcurrentAccess(t *testing.T) {
 }
 
 // ============================================================================
-// 边界条件测试
+// Edge case tests
 // ============================================================================
 
 func TestMigrationTool_EmptySnapshot(t *testing.T) {
 	tool := NewMigrationTool(nil)
 
-	// 验证空快照
+	// Verify empty snapshot
 	report := tool.ValidateSnapshot()
 	if report.TotalRecords != 0 {
 		t.Errorf("expected 0 records, got %d", report.TotalRecords)
 	}
 
-	// Merkle 根应该失败
+	// Merkle root should fail
 	_, err := tool.ComputeMerkleRoot()
 	if err != ErrEmptyData {
 		t.Errorf("expected ErrEmptyData, got %v", err)
@@ -561,13 +561,13 @@ func TestMigrationTool_EmptySnapshot(t *testing.T) {
 func TestMigrationTool_ExportToFile(t *testing.T) {
 	tool := NewMigrationTool(nil)
 
-	// 使用不存在的路径
+	// Use a non-existent path
 	err := tool.ExportToFile("/nonexistent/path/file.json", FormatJSON)
 	if err == nil {
 		t.Error("should error on invalid path")
 	}
 
-	// 使用无效格式
+	// Use an invalid format
 	err = tool.ExportToFile("/tmp/test.json", "invalid")
 	if err != ErrInvalidFormat {
 		t.Errorf("expected ErrInvalidFormat, got %v", err)
@@ -577,7 +577,7 @@ func TestMigrationTool_ExportToFile(t *testing.T) {
 func TestMigrationTool_ImportFromFile(t *testing.T) {
 	tool := NewMigrationTool(nil)
 
-	// 不存在的文件
+	// Non-existent file
 	_, err := tool.ImportFromFile("/nonexistent/path/file.csv")
 	if err != ErrFileNotFound {
 		t.Errorf("expected ErrFileNotFound, got %v", err)
@@ -585,7 +585,7 @@ func TestMigrationTool_ImportFromFile(t *testing.T) {
 }
 
 // ============================================================================
-// 工具函数测试
+// Utility function tests
 // ============================================================================
 
 func TestNewSnapshotRecord(t *testing.T) {
@@ -600,47 +600,47 @@ func TestNewSnapshotRecord(t *testing.T) {
 }
 
 func TestHexToAddress(t *testing.T) {
-	// 测试有效的十六进制地址
+	// Test a valid hex address
 	validHex := "0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20"
 	addr, err := HexToAddress(validHex)
 	if err != nil {
 		t.Errorf("HexToAddress failed: %v", err)
 	}
 
-	// 验证地址字节
+	// Verify address bytes
 	if addr[0] != 0x01 || addr[1] != 0x02 {
 		t.Error("address bytes mismatch")
 	}
 }
 
 // ============================================================================
-// 集成测试
+// Integration tests
 // ============================================================================
 
 func TestMigrationTool_JSONRoundTrip(t *testing.T) {
-	// 创建原始快照
+	// Create the original snapshot
 	original := createTestSnapshot(5)
 	tool1 := NewMigrationToolWithSnapshot(original)
 
-	// 导出到 JSON
+	// Export to JSON
 	var jsonBuf bytes.Buffer
 	if err := tool1.ExportSnapshotJSON(&jsonBuf); err != nil {
 		t.Fatalf("ExportSnapshotJSON failed: %v", err)
 	}
 
-	// 从 JSON 导入
+	// Import from JSON
 	tool2 := NewMigrationTool(nil)
 	imported, err := tool2.ImportSnapshotJSON(bytes.NewReader(jsonBuf.Bytes()))
 	if err != nil {
 		t.Fatalf("ImportSnapshotJSON failed: %v", err)
 	}
 
-	// 验证记录数量
+	// Verify record count
 	if len(imported) != 5 {
 		t.Errorf("expected 5 records, got %d", len(imported))
 	}
 
-	// 验证 Merkle 根一致
+	// Verify Merkle root consistency
 	root1, _ := tool1.ComputeMerkleRoot()
 	root2, _ := tool2.ComputeMerkleRoot()
 	if string(root1) != string(root2) {
@@ -649,24 +649,24 @@ func TestMigrationTool_JSONRoundTrip(t *testing.T) {
 }
 
 func TestMigrationTool_CSVRoundTrip(t *testing.T) {
-	// 创建原始快照
+	// Create the original snapshot
 	original := createTestSnapshot(3)
 	tool1 := NewMigrationToolWithSnapshot(original)
 
-	// 导出到 CSV
+	// Export to CSV
 	var csvBuf bytes.Buffer
 	if err := tool1.ExportSnapshotCSV(&csvBuf); err != nil {
 		t.Fatalf("ExportSnapshotCSV failed: %v", err)
 	}
 
-	// 从 CSV 导入
+	// Import from CSV
 	tool2 := NewMigrationTool(nil)
 	imported, err := tool2.ImportSnapshotCSV(bytes.NewReader(csvBuf.Bytes()))
 	if err != nil {
 		t.Fatalf("ImportSnapshotCSV failed: %v", err)
 	}
 
-	// 验证记录数量
+	// Verify record count
 	if len(imported) != 3 {
 		t.Errorf("expected 3 records, got %d", len(imported))
 	}
@@ -679,7 +679,7 @@ func TestMigrationTool_ValidationReportTimestamp(t *testing.T) {
 	report := tool.ValidateSnapshot()
 	after := time.Now()
 
-	// 验证时间戳在测试期间
+	// Verify timestamp is within the test period
 	if report.Timestamp.Before(before) || report.Timestamp.After(after) {
 		t.Error("validation report timestamp should be recent")
 	}
@@ -688,14 +688,14 @@ func TestMigrationTool_ValidationReportTimestamp(t *testing.T) {
 func TestMigrationTool_DifferentToolsSameData(t *testing.T) {
 	snapshot := createTestSnapshot(4)
 
-	// 创建两个工具实例
+	// Create two tool instances
 	tool1 := NewMigrationToolWithSnapshot(snapshot)
 	tool2 := NewMigrationToolWithSnapshot(snapshot)
 
-	// 验证独立操作不影响彼此
+	// Verify independent operations do not affect each other
 	tool1.ValidateSnapshot()
 
-	// tool2 应该仍然有效
+	// tool2 should still be valid
 	if tool2.GetRecordCount() != 4 {
 		t.Error("second tool should not be affected by first tool")
 	}
