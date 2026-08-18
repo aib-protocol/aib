@@ -14,21 +14,21 @@ import (
 )
 
 var (
-	// ErrInvalidGitHubToken 无效的 GitHub token
+	// ErrInvalidGitHubToken invalid GitHub token
 	ErrInvalidGitHubToken = errors.New("invalid github token")
 	// ErrGitHubVerifyFailed GitHub verifyfailure
 	ErrGitHubVerifyFailed = errors.New("github verification failed")
-	// ErrEmailVerifyFailed 邮箱验证失败
+	// ErrEmailVerifyFailed email verification failed
 	ErrEmailVerifyFailed = errors.New("email verification failed")
-	// ErrIPLimitExceeded IP 限制超出
+	// ErrIPLimitExceeded IP limit exceeded
 	ErrIPLimitExceeded = errors.New("ip limit exceeded")
-	// ErrDeviceFingerprintDuplicate 设备指纹重复
+	// ErrDeviceFingerprintDuplicate device fingerprint duplicate
 	ErrDeviceFingerprintDuplicate = errors.New("device fingerprint duplicate")
-	// ErrVerificationPending 验证待处理
+	// ErrVerificationPending verification pending
 	ErrVerificationPending = errors.New("verification pending")
 )
 
-// GitHubUserInfo GitHub 用户信息
+// GitHubUserInfo GitHub user info
 type GitHubUserInfo struct {
 	ID          uint64    `json:"id"`
 	Login       string    `json:"login"`
@@ -57,7 +57,7 @@ type VerificationResult struct {
 	Reasons   []string        `json:"reasons,omitempty"`
 }
 
-// GitHubVerifier GitHub OAuth 验证器
+// GitHubVerifier GitHub OAuth verifier
 type GitHubVerifier struct {
 	clientID     string
 	clientSecret string
@@ -66,7 +66,7 @@ type GitHubVerifier struct {
 	mu           sync.RWMutex
 }
 
-// NewGitHubVerifier 创建 GitHub 验证器
+// NewGitHubVerifier create GitHub verify
 func NewGitHubVerifier(clientID, clientSecret string) *GitHubVerifier {
 	return &GitHubVerifier{
 		clientID:     clientID,
@@ -84,7 +84,7 @@ func (v *GitHubVerifier) VerifyToken(token string) (*GitHubUserInfo, error) {
 		return nil, ErrInvalidGitHubToken
 	}
 
-	// 检查缓存
+	// check cache
 	if cached, ok := v.cache.Get(token); ok {
 		return cached, nil
 	}
@@ -116,13 +116,13 @@ func (v *GitHubVerifier) VerifyToken(token string) (*GitHubUserInfo, error) {
 		return nil, fmt.Errorf("parse response: %w", err)
 	}
 
-	// 缓存结果
+	// cache result
 	v.cache.Set(token, &userInfo, 5*time.Minute)
 
 	return &userInfo, nil
 }
 
-// VerificationCache 验证缓存
+// VerificationCache verifycache
 type VerificationCache struct {
 	items map[string]*cacheItem
 	mu    sync.RWMutex
@@ -134,7 +134,7 @@ type cacheItem struct {
 	expiration time.Time
 }
 
-// NewVerificationCache 创建验证缓存
+// NewVerificationCache createverifycache
 func NewVerificationCache(size int, ttl time.Duration) *VerificationCache {
 	return &VerificationCache{
 		items: make(map[string]*cacheItem),
@@ -142,7 +142,7 @@ func NewVerificationCache(size int, ttl time.Duration) *VerificationCache {
 	}
 }
 
-// Get 获取缓存
+// Get getcache
 func (c *VerificationCache) Get(key string) (*GitHubUserInfo, bool) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
@@ -159,7 +159,7 @@ func (c *VerificationCache) Get(key string) (*GitHubUserInfo, bool) {
 	return item.value, true
 }
 
-// Set 设置缓存
+// Set setcache
 func (c *VerificationCache) Set(key string, value *GitHubUserInfo, ttl time.Duration) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -170,7 +170,7 @@ func (c *VerificationCache) Set(key string, value *GitHubUserInfo, ttl time.Dura
 	}
 }
 
-// EmailVerifier 邮箱验证器
+// EmailVerifier email verifier
 type EmailVerifier struct {
 	domains            map[string]bool
 	allowedDomains     []string
@@ -179,7 +179,7 @@ type EmailVerifier struct {
 	httpClient         *http.Client
 }
 
-// NewEmailVerifier 创建邮箱验证器
+// NewEmailVerifier creates an email verifier
 func NewEmailVerifier(allowedDomains []string, verifyMX bool) *EmailVerifier {
 	ev := &EmailVerifier{
 		allowedDomains:     allowedDomains,
@@ -191,12 +191,12 @@ func NewEmailVerifier(allowedDomains []string, verifyMX bool) *EmailVerifier {
 		},
 	}
 
-	// 预加载允许的域名
+	// preload allowed domains
 	for _, domain := range allowedDomains {
 		ev.domains[strings.ToLower(domain)] = true
 	}
 
-	// 预加载黑名单域名（一次性邮箱等）
+	// preload blacklisted domains (disposable email services, etc.)
 	blacklist := []string{
 		"tempmail.com", "guerrillamail.com", "mailinator.com",
 		"10minutemail.com", "yopmail.com", "maildrop.cc",
@@ -209,11 +209,11 @@ func NewEmailVerifier(allowedDomains []string, verifyMX bool) *EmailVerifier {
 	return ev
 }
 
-// VerifyEmail 验证邮箱
+// VerifyEmail verifies an email address
 func (ev *EmailVerifier) VerifyEmail(email string) (bool, string) {
 	email = strings.ToLower(strings.TrimSpace(email))
 
-	// 基本格式验证
+	// basic format validation
 	parts := strings.Split(email, "@")
 	if len(parts) != 2 {
 		return false, "invalid email format"
@@ -225,33 +225,33 @@ func (ev *EmailVerifier) VerifyEmail(email string) (bool, string) {
 		return false, "invalid email format"
 	}
 
-	// 检查黑名单域名
+	// check blacklisted domains
 	if ev.blacklistedDomains[domain] {
 		return false, "email domain is blacklisted"
 	}
 
-	// 检查允许的域名列表
+	// check allowed domain list
 	if len(ev.allowedDomains) > 0 && !ev.domains[domain] {
 		return false, "email domain not allowed"
 	}
 
-	// 检查 MX 记录（可选）
+	// check MX records (optional)
 	if ev.verifyMX {
-		// TODO: 实现 MX 记录检查
-		// 这需要 DNS 查询功能
+		// TODO: implements MX recordcheck
+		// this requires DNS query support
 	}
 
 	return true, ""
 }
 
-// DeviceFingerprint 设备指纹识别器
+// DeviceFingerprint device fingerprint identifier
 type DeviceFingerprint struct {
 	seen   map[string]time.Time
 	mu     sync.RWMutex
 	maxAge time.Duration
 }
 
-// NewDeviceFingerprint 创建设备指纹识别器
+// NewDeviceFingerprint creates a device fingerprint identifier
 func NewDeviceFingerprint(maxAge time.Duration) *DeviceFingerprint {
 	return &DeviceFingerprint{
 		seen:   make(map[string]time.Time),
@@ -259,39 +259,39 @@ func NewDeviceFingerprint(maxAge time.Duration) *DeviceFingerprint {
 	}
 }
 
-// GenerateFingerprint 生成设备指纹
-// 基于 User-Agent, Accept-Language, 时区等
+// GenerateFingerprint generates a device fingerprint
+// based on User-Agent, Accept-Language, timezone, etc.
 func (df *DeviceFingerprint) GenerateFingerprint(userAgent, acceptLang, timezone string) string {
 	data := fmt.Sprintf("%s|%s|%s", userAgent, acceptLang, timezone)
 	hash := sha256.Sum256([]byte(data))
 	return hex.EncodeToString(hash[:])
 }
 
-// CheckAndRegister 检查并注册设备
+// CheckAndRegister checks and registers a device
 func (df *DeviceFingerprint) CheckAndRegister(fingerprint string) bool {
 	df.mu.Lock()
 	defer df.mu.Unlock()
 
 	now := time.Now()
 
-	// 清理过期条目
+	// clean up expired entries
 	for fp, ts := range df.seen {
 		if now.Sub(ts) > df.maxAge {
 			delete(df.seen, fp)
 		}
 	}
 
-	// 检查是否存在
+	// check if it exists
 	if _, exists := df.seen[fingerprint]; exists {
 		return false
 	}
 
-	// 注册新设备
+	// register new device
 	df.seen[fingerprint] = now
 	return true
 }
 
-// IPLimiter IP 限制器
+// IPLimiter IP limiter
 type IPLimiter struct {
 	claims    map[string]*IPRecord
 	mu        sync.RWMutex
@@ -299,14 +299,14 @@ type IPLimiter struct {
 	window    time.Duration
 }
 
-// IPRecord IP 记录
+// IPRecord IP record
 type IPRecord struct {
 	Count     int
 	LastSeen  time.Time
 	FirstSeen time.Time
 }
 
-// NewIPLimiter 创建 IP 限制器
+// NewIPLimiter create IP limit
 func NewIPLimiter(maxClaims int, window time.Duration) *IPLimiter {
 	return &IPLimiter{
 		claims:    make(map[string]*IPRecord),
@@ -315,21 +315,21 @@ func NewIPLimiter(maxClaims int, window time.Duration) *IPLimiter {
 	}
 }
 
-// CheckAndRecord 检查并记录 IP
+// CheckAndRecord checks and records an IP
 func (il *IPLimiter) CheckAndRecord(ip string) (bool, int) {
 	il.mu.Lock()
 	defer il.mu.Unlock()
 
 	now := time.Now()
 
-	// 清理过期记录
+	// clean up expired records
 	for ipAddr, record := range il.claims {
 		if now.Sub(record.LastSeen) > il.window {
 			delete(il.claims, ipAddr)
 		}
 	}
 
-	// 检查 IP 记录
+	// check IP record
 	record, exists := il.claims[ip]
 	if !exists {
 		il.claims[ip] = &IPRecord{
@@ -340,19 +340,19 @@ func (il *IPLimiter) CheckAndRecord(ip string) (bool, int) {
 		return true, 1
 	}
 
-	// 检查是否超出限制
+	// check if limit is exceeded
 	if record.Count >= il.maxClaims {
 		return false, record.Count
 	}
 
-	// 增加计数
+	// increment count
 	record.Count++
 	record.LastSeen = now
 
 	return true, record.Count
 }
 
-// GetRemaining 获取剩余认领次数
+// GetRemaining returns the remaining claim count
 func (il *IPLimiter) GetRemaining(ip string) int {
 	il.mu.RLock()
 	defer il.mu.RUnlock()
@@ -369,14 +369,14 @@ func (il *IPLimiter) GetRemaining(ip string) int {
 	return remaining
 }
 
-// NormalizeIP 规范化 IP 地址
+// NormalizeIP normalizes an IP address
 func NormalizeIP(ip string) string {
-	// 移除端口
+	// remove port
 	if idx := strings.LastIndex(ip, ":"); idx != -1 {
 		ip = ip[:idx]
 	}
 
-	// 处理 IPv6 映射的 IPv4
+	// handle IPv6-mapped IPv4
 	if strings.HasPrefix(ip, "::ffff:") {
 		ip = strings.TrimPrefix(ip, "::ffff:")
 	}
@@ -384,7 +384,7 @@ func NormalizeIP(ip string) string {
 	return ip
 }
 
-// Validator 综合验证器
+// Validator comprehensive validator
 type Validator struct {
 	githubVerifier        *GitHubVerifier
 	emailVerifier         *EmailVerifier
@@ -397,7 +397,7 @@ type Validator struct {
 	scoreWeightAccountAge int
 }
 
-// ValidatorConfig 验证器配置
+// ValidatorConfig verifyconfig
 type ValidatorConfig struct {
 	GitHubClientID        string
 	GitHubClientSecret    string
@@ -413,7 +413,7 @@ type ValidatorConfig struct {
 	ScoreWeightAccountAge int
 }
 
-// NewValidator 创建综合验证器
+// NewValidator creates a comprehensive validator
 func NewValidator(config *ValidatorConfig) *Validator {
 	return &Validator{
 		githubVerifier:        NewGitHubVerifier(config.GitHubClientID, config.GitHubClientSecret),
@@ -438,7 +438,7 @@ func (v *Validator) ValidateUser(githubToken, email, deviceFingerprint, ipAddres
 		Reasons:   make([]string, 0),
 	}
 
-	// 1. GitHub 验证（如果需要）
+	// 1. GitHub verification (if required)
 	if v.requireGitHub {
 		if githubToken == "" {
 			return nil, ErrInvalidGitHubToken
@@ -450,18 +450,18 @@ func (v *Validator) ValidateUser(githubToken, email, deviceFingerprint, ipAddres
 		}
 		result.UserInfo = userInfo
 
-		// 计算账户年龄分数
+		// calculate account age score
 		accountAge := time.Since(userInfo.CreatedAt)
 		ageScore := v.calculateAccountAgeScore(accountAge)
 		result.Score += ageScore * v.scoreWeightAccountAge / 100
-		result.Reasons = append(result.Reasons, fmt.Sprintf("账户年龄: %d 天", int(accountAge.Hours()/24)))
+		result.Reasons = append(result.Reasons, fmt.Sprintf("account age: %d days", int(accountAge.Hours()/24)))
 
-		// GitHub 基础分数
+		// GitHub base score
 		result.Score += v.scoreWeightGitHub
-		result.Reasons = append(result.Reasons, "GitHub 验证通过")
+		result.Reasons = append(result.Reasons, "GitHub verification passed")
 	}
 
-	// 2. 邮箱验证（如果需要）
+	// 2. Email verification (if required)
 	if v.requireEmail && email != "" {
 		valid, reason := v.emailVerifier.VerifyEmail(email)
 		if !valid {
@@ -469,56 +469,56 @@ func (v *Validator) ValidateUser(githubToken, email, deviceFingerprint, ipAddres
 		}
 		result.Email = email
 		result.Score += v.scoreWeightEmail
-		result.Reasons = append(result.Reasons, "邮箱验证通过")
+		result.Reasons = append(result.Reasons, "email verification passed")
 	}
 
-	// 3. 设备指纹检查
+	// 3. Device fingerprint check
 	isNew := v.deviceFingerprint.CheckAndRegister(deviceFingerprint)
 	if !isNew {
-		result.Reasons = append(result.Reasons, "设备已注册")
+		result.Reasons = append(result.Reasons, "device already registered")
 		return result, ErrDeviceFingerprintDuplicate
 	}
-	result.Reasons = append(result.Reasons, "新设备")
+	result.Reasons = append(result.Reasons, "new device")
 
-	// 4. IP 限制检查
+	// 4. IP limit check
 	allowed, count := v.ipLimiter.CheckAndRecord(ipAddress)
 	if !allowed {
-		result.Reasons = append(result.Reasons, fmt.Sprintf("IP 已认领 %d 次", count))
+		result.Reasons = append(result.Reasons, fmt.Sprintf("IP already claimed %d times", count))
 		return result, ErrIPLimitExceeded
 	}
-	result.Reasons = append(result.Reasons, fmt.Sprintf("IP 认领次数: %d/%d", count, v.ipLimiter.maxClaims))
+	result.Reasons = append(result.Reasons, fmt.Sprintf("IP claim count: %d/%d", count, v.ipLimiter.maxClaims))
 
 	result.Success = true
 	return result, nil
 }
 
-// calculateAccountAgeScore 计算账户年龄分数
+// calculateAccountAgeScore calculates account age score
 func (v *Validator) calculateAccountAgeScore(age time.Duration) int {
 	days := int(age.Hours() / 24)
 
-	// 评分规则
+	// scoring rules
 	switch {
 	case days < 30:
-		return 10 // 新账户
+		return 10 // new account
 	case days < 90:
-		return 30 // 3个月内
+		return 30 // within 3 months
 	case days < 180:
-		return 50 // 6个月内
+		return 50 // within 6 months
 	case days < 365:
-		return 70 // 1年内
+		return 70 // within 1 year
 	default:
-		return 100 // 1年以上
+		return 100 // over 1 year
 	}
 }
 
-// GetIPLimitStatus 获取 IP 限制状态
+// GetIPLimitStatus get IP limitstatus
 func (v *Validator) GetIPLimitStatus(ip string) (remaining int, resetTime time.Time) {
 	remaining = v.ipLimiter.GetRemaining(ip)
-	// TODO: 实现重置时间计算
+	// TODO: implement reset time calculation
 	return remaining, time.Now()
 }
 
-// jsonDecode JSON 解码辅助函数
+// jsonDecode JSON decode helper function
 func jsonDecode(r io.Reader, v interface{}) error {
 	return json.NewDecoder(r).Decode(v)
 }
