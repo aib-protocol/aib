@@ -12,7 +12,7 @@ import (
 func TestScorer(t *testing.T) {
 	scorer := NewScorer(DefaultScoringConfig())
 
-	// 创建测试用户信息
+	// Create test user info
 	userInfo := &GitHubUserInfo{
 		ID:          12345,
 		Login:       "testuser",
@@ -20,13 +20,13 @@ func TestScorer(t *testing.T) {
 		Email:       "test@example.com",
 		Bio:         "A test user",
 		Location:    "San Francisco",
-		CreatedAt:   time.Now().Add(-365 * 24 * time.Hour), // 1年前
+		CreatedAt:   time.Now().Add(-365 * 24 * time.Hour), // 1 year ago
 		PublicRepos: 10,
 		Followers:   50,
 		Following:   30,
 	}
 
-	// 测试评分
+	// Test scoring
 	score := scorer.ScoreUser(userInfo, nil)
 
 	if score == nil {
@@ -42,11 +42,11 @@ func TestScorer(t *testing.T) {
 	t.Logf("Sybil score: %.2f", score.SybilScore)
 }
 
-// TestScorer_NewAccount 测试新账户评分
+// TestScorer_NewAccount tests new account scoring
 func TestScorer_NewAccount(t *testing.T) {
 	scorer := NewScorer(DefaultScoringConfig())
 
-	// 创建新账户（7天前创建）
+	// Create a new account (created 7 days ago)
 	userInfo := &GitHubUserInfo{
 		ID:          12346,
 		Login:       "newuser",
@@ -66,17 +66,17 @@ func TestScorer_NewAccount(t *testing.T) {
 	t.Logf("Is eligible: %v", score.IsEligible)
 	t.Logf("Sybil score: %.2f", score.SybilScore)
 
-	// 新账户应该分数较低或不可资格
+	// New accounts should have a low score or be ineligible
 	if score.IsEligible && score.SybilScore > 0.5 {
 		t.Log("New account with suspicious profile correctly flagged")
 	}
 }
 
-// TestSybilDetector 测试女巫攻击检测
+// TestSybilDetector tests sybil attack detection
 func TestSybilDetector(t *testing.T) {
 	detector := NewSybilDetector(0.7)
 
-	// 创建一组相似账户（疑似女巫）
+	// Create a group of similar accounts (suspected sybils)
 	baseTime := time.Now().Add(-30 * 24 * time.Hour)
 
 	for i := 0; i < 10; i++ {
@@ -93,7 +93,7 @@ func TestSybilDetector(t *testing.T) {
 		t.Logf("User %d: Suspicion score = %.2f", i, suspicionScore)
 	}
 
-	// 查找集群
+	// Find clusters
 	clusters := detector.FindClusters()
 	t.Logf("Found %d clusters", len(clusters))
 
@@ -105,7 +105,7 @@ func TestSybilDetector(t *testing.T) {
 	t.Logf("Found %d suspicious clusters (size >= 3)", len(suspiciousClusters))
 }
 
-// TestEmailVerifier 测试邮箱验证
+// TestEmailVerifier tests email verification
 func TestEmailVerifier(t *testing.T) {
 	verifier := NewEmailVerifier([]string{"example.com", "test.org"}, false)
 
@@ -119,7 +119,7 @@ func TestEmailVerifier(t *testing.T) {
 		{"invalid-email", false},
 		{"@example.com", false},
 		{"user@", false},
-		{"user@tempmail.com", false}, // 黑名单域名
+		{"user@tempmail.com", false}, // blacklisted domain
 	}
 
 	for _, tt := range tests {
@@ -130,11 +130,11 @@ func TestEmailVerifier(t *testing.T) {
 	}
 }
 
-// TestDeviceFingerprint 测试设备指纹
+// TestDeviceFingerprint tests device fingerprinting
 func TestDeviceFingerprint(t *testing.T) {
 	df := NewDeviceFingerprint(24 * time.Hour)
 
-	// 生成指纹
+	// Generate fingerprints
 	fp1 := df.GenerateFingerprint("Mozilla/5.0", "en-US", "America/New_York")
 	fp2 := df.GenerateFingerprint("Mozilla/5.0", "en-US", "America/New_York")
 	fp3 := df.GenerateFingerprint("Different/Agent", "fr-FR", "Europe/Paris")
@@ -164,11 +164,11 @@ func TestDeviceFingerprint(t *testing.T) {
 	}
 }
 
-// TestIPLimiter 测试 IP 限制
+// TestIPLimiter test IP limit
 func TestIPLimiter(t *testing.T) {
 	limiter := NewIPLimiter(3, 24*time.Hour)
 
-	// 测试认领
+	// Test claims
 	for i := 0; i < 3; i++ {
 		allowed, count := limiter.CheckAndRecord("192.168.1.1")
 		if !allowed {
@@ -179,7 +179,7 @@ func TestIPLimiter(t *testing.T) {
 		}
 	}
 
-	// 第4次应该被拒绝
+	// The 4th claim should be denied
 	allowed, count := limiter.CheckAndRecord("192.168.1.1")
 	if allowed {
 		t.Error("4th claim should be denied")
@@ -188,7 +188,7 @@ func TestIPLimiter(t *testing.T) {
 		t.Errorf("Expected count 3, got %d", count)
 	}
 
-	// 不同 IP 应该可以
+	// A different IP should be allowed
 	allowed, count = limiter.CheckAndRecord("192.168.1.2")
 	if !allowed {
 		t.Error("Different IP should be allowed")
@@ -198,9 +198,9 @@ func TestIPLimiter(t *testing.T) {
 	}
 }
 
-// TestDistributor 测试分发器
+// TestDistributor tests the distributor
 func TestDistributor(t *testing.T) {
-	// 生成测试种子
+	// Generate a test seed
 	seed := make([]byte, 32)
 	for i := range seed {
 		seed[i] = byte(i)
@@ -210,7 +210,7 @@ func TestDistributor(t *testing.T) {
 		BaseAmount:         1000000,
 		MaxBonusMultiplier: 2.0,
 		Enabled:            true,
-		RequireSignature:   false, // 禁用签名以便测试
+		RequireSignature:   false, // Disable signature verification for testing
 		MaxTotalAmount:     10000000,
 		MinClaimScore:      50,
 	}
@@ -227,7 +227,7 @@ func TestDistributor(t *testing.T) {
 	}
 	t.Logf("Score 80: Base=%d, Bonus=%d, Total=%d", amount.Base, amount.Bonus, amount.Total)
 
-	// 测试认领
+	// Test claim
 	req := &ClaimRequest{
 		Address:     "0x1234567890abcdef1234567890abcdef12345678",
 		GitHubID:    12345,
@@ -245,13 +245,13 @@ func TestDistributor(t *testing.T) {
 		t.Errorf("Expected amount %d, got %d", amount.Total, record.Amount.Total)
 	}
 
-	// 测试重复认领
+	// Test duplicate claim
 	_, err = distributor.Claim(req)
 	if err != ErrAlreadyClaimed {
 		t.Errorf("Expected ErrAlreadyClaimed, got %v", err)
 	}
 
-	// 测试统计
+	// Test stats
 	stats := distributor.GetStats()
 	t.Logf("Total claims: %d", stats.TotalClaims)
 	t.Logf("Distributed: %d", stats.DistributedAmount)
@@ -260,7 +260,7 @@ func TestDistributor(t *testing.T) {
 
 // TestDistributor_Signature testsignverify
 func TestDistributor_Signature(t *testing.T) {
-	// 生成测试种子
+	// Generate a test seed
 	seed := make([]byte, 32)
 	for i := range seed {
 		seed[i] = byte(i)
@@ -280,7 +280,7 @@ func TestDistributor_Signature(t *testing.T) {
 		t.Fatalf("Failed to create distributor: %v", err)
 	}
 
-	// 创建签名器用于生成签名
+	// Create a signer to generate signatures
 	signer, err := NewAirdropSigner(seed)
 	if err != nil {
 		t.Fatalf("Failed to create signer: %v", err)
@@ -290,7 +290,7 @@ func TestDistributor_Signature(t *testing.T) {
 	amount := uint64(1000000)
 	timestamp := time.Now().Unix()
 
-	// 生成有效签名
+	// Generate a valid signature
 	signature, err := signer.SignClaim(address, amount, timestamp)
 	if err != nil {
 		t.Fatalf("Failed to sign: %v", err)
@@ -302,7 +302,7 @@ func TestDistributor_Signature(t *testing.T) {
 		t.Error("Valid signature should be verified")
 	}
 
-	// 测试无效签名
+	// Test invalid signature
 	invalidSig := make([]byte, len(signature))
 	copy(invalidSig, signature)
 	invalidSig[0] ^= 0xFF
@@ -339,7 +339,7 @@ func TestAirdropSigner(t *testing.T) {
 		t.Errorf("Expected signature length 64, got %d", len(signature))
 	}
 
-	// 测试公钥
+	// Test public key
 	pubKey := signer.PublicKey()
 	if len(pubKey) != 32 {
 		t.Errorf("Expected public key length 32, got %d", len(pubKey))
@@ -353,7 +353,7 @@ func TestAirdropSigner(t *testing.T) {
 	}
 }
 
-// BenchmarkScorer 基准测试评分器
+// BenchmarkScorer benchmarks the scorer
 func BenchmarkScorer(b *testing.B) {
 	scorer := NewScorer(DefaultScoringConfig())
 
@@ -376,7 +376,7 @@ func BenchmarkScorer(b *testing.B) {
 	}
 }
 
-// BenchmarkSybilDetector 基准测试女巫检测
+// BenchmarkSybilDetector benchmarks the sybil detector
 func BenchmarkSybilDetector(b *testing.B) {
 	detector := NewSybilDetector(0.7)
 
