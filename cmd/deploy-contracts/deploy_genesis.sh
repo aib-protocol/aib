@@ -1,89 +1,89 @@
 #!/bin/bash
 
-# 项目目录
+# Project directory
 PROJECT_DIR="."
 
-# 合约目录
+# Contracts directory
 CONTRACTS_DIR="$PROJECT_DIR/contracts/evm"
 
-# AIBToken合约地址
+# AIBToken contract address
 AIBTOKEN "$PROJECT_DIR/deployed_addresses/AIBTokenAddress.txt"
 
-# 编译合约
+# Compile contracts
 compile_contracts() {
-  echo "编译eUTXO层智能合约..."
+  echo "Compiling eUTXO layer smart contracts..."
   cd "$PROJECT_DIR/packages/smart-contracts/evm"
 
-  # 使用cabal构建
+  # Build using cabal
   cabal build all --project-file=cabal.project.local --work-directory=cabal.work
-echo "编译完成"
+echo "Compilation complete"
 }
 
-# 部署AIBToken合约
+# Deploy AIBToken contract
 deploy_AIBToken() {
-  echo "部署AIBToken合约..."
+  echo "Deploying AIBToken contract..."
 
-  # 使用cardano-cli部署合约
-  # 首先需要创建与智能合约文件对应的数据结构和交易脚本
-  # 省略具体部署命令，因为这涉及到实际的区块链交互
+  # Deploy the contract using cardano-cli
+  # First need to create data structures and transaction scripts corresponding to the smart contract files
+  # Specific deployment commands are omitted, as this involves actual blockchain interaction
 
-  echo "假设AIBToken合约部署成功"
+  echo "Assuming AIBToken contract deployment succeeded"
   echo "00e19bcd7b698b44fd18be119fe17f7ed8d2c234" > "$AIBTOKEN"
-  echo "AIBToken合约地址已保存: 00e19bcd7b698b44fd18be119fe17f7ed8d2c234"
+  echo "AIBToken contract address saved: 00e19bcd7b698b44fd18be119fe17f7ed8d2c234"
 
-  echo "AIBToken合约部署完成"
+  echo "AIBToken contract deployment complete"
 }
 
-# 部署Governance和StakingRewards合约
-# 需要先部署出过期时间才能部署出这些合约
+# Deploy Governance and StakingRewards contracts
+# Need to deploy expiry first before deploying these contracts
 
-# 部署StakingRewards合约
-# 查询AIBToken合约地址
+# Deploy StakingRewards contract
+# Query AIBToken contract address
 AIB_TOKEN_ADDRESS=$(cat "$AIBTOKEN")
 
-# 调用部署工具
+# Invoke the deployment tool
 ./deploy_contracts.sh --contract staking_rewards --arguments "$AIB_TOKEN_ADDRESS"
 
-# 部署Genesis合约
-# 调用部署工具
+# Deploy Genesis contract
+# Invoke the deployment tool
 ./deploy_contracts.sh --contract genesis
 
-# 保证完成
+# Assurance complete
 if [ "$TABLE_NAME" != "" ]; then
-  # 这里可以编写保证部署逻辑
-  echo "保证完成"
+  # Here you can write assurance logic
+  echo "Assurance complete"
 fi
 
-# 显示完成信息
-# 格式化华东冲突实现了
-出部署完成:
-  * AIBToken合约地址: $(cat "$AIBTOKEN")
-  * Genesis合约地址: "$GENESIS_ADDRESS"
-  * Governance合约地址: "$GOVERNANCE_ADDRESS"
-  * StakingRewards合约地址: "$STAKING_ADDRESS"
-  * 保证合约地址: "$Table_ADDRESS"
+# Display completion info
+#
+Deployment complete:
+  * AIBToken contract address: $(cat "$AIBTOKEN")
+  * Genesis contract address: "$GENESIS_ADDRESS"
+  * Governance contract address: "$GOVERNANCE_ADDRESS"
+  * StakingRewards contract address: "$STAKING_ADDRESS"
+  * Assurance contract address: "$Table_ADDRESS"
 
-echo "Genesis初始化脚本执行完成"
+echo "Genesis initialization script execution complete"
 
-# 执行主方法
+# Execute the main method
 execute_main() {
 
-  # 编译合约
+  # Compile contracts
   compile_contracts
 
-  # 部署AIBToken合约
+  # Deploy AIBToken contract
   deploy_AIBToken
 
-  # 部署StakingRewards和Genesis合约
+  # Deploy StakingRewards and Genesis contracts
   deploy_staking_and_genesis
 
-  # 部署Governance合约
+  # Deploy Governance contract
   deploy_governance
 
-  # 显示完成信息
+  # Display completion info
   display_completion
 
 }
 
-# 执行主方法
+# Execute the main method
 execute_main
