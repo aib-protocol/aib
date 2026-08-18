@@ -40,7 +40,7 @@ var (
 )
 
 // ============================================================================
-// 节点注册表 - 维护所有已知节点
+// Peer registry - maintains all known nodes
 // ============================================================================
 
 type PeerInfo struct {
@@ -62,7 +62,7 @@ func NewPeerRegistry() *PeerRegistry {
 	return &PeerRegistry{peers: make(map[string]*PeerInfo)}
 }
 
-// Heartbeat 注册或更新节点
+// Heartbeat register or update a node
 func (r *PeerRegistry) Heartbeat(info *PeerInfo) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
@@ -72,7 +72,7 @@ func (r *PeerRegistry) Heartbeat(info *PeerInfo) {
 	r.peers[key] = info
 }
 
-// GetPeers 获取所有活跃节点（60秒内有心跳）
+// GetPeers returns all active nodes (heartbeat within 60 seconds)
 func (r *PeerRegistry) GetPeers() []*PeerInfo {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
@@ -91,7 +91,7 @@ func (r *PeerRegistry) GetPeers() []*PeerInfo {
 	return result
 }
 
-// Cleanup 清理超时节点（5分钟无心跳）
+// Cleanup removes timed-out nodes (no heartbeat for 5 minutes)
 func (r *PeerRegistry) Cleanup() {
 	r.mu.Lock()
 	defer r.mu.Unlock()
@@ -121,7 +121,7 @@ func main() {
 		IdleTimeout:  120 * time.Second,
 	}
 
-	// 定期清理超时节点
+	// Periodically clean up timed-out nodes
 	go func() {
 		for {
 			time.Sleep(60 * time.Second)
@@ -151,25 +151,25 @@ func handler(root string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		path := r.URL.Path
 
-		// 心跳注册: POST /v1/heartbeat
+		// Heartbeat registration: POST /v1/heartbeat
 		if path == "/v1/heartbeat" && r.Method == http.MethodPost {
 			handleHeartbeat(w, r)
 			return
 		}
 
-		// 节点列表: GET /v1/peers (本地注册表)
+		// Peer list: GET /v1/peers (local registry)
 		if path == "/v1/peers" && r.Method == http.MethodGet {
 			handlePeers(w, r)
 			return
 		}
 
-		// API 代理: /v1/* 和 /health* 转发到节点 API (端口 51211)
+		// API proxy: /v1/* and /health* forwarded to node API (port 51211)
 		if strings.HasPrefix(path, "/v1/") || strings.HasPrefix(path, "/health") {
 			proxyToNode(w, r)
 			return
 		}
 
-		// 二进制下载: /downloads/* 直接 serve 文件
+		// Binary downloads: /downloads/* served directly from files
 		if strings.HasPrefix(path, "/downloads/") {
 			w.Header().Set("Content-Type", "application/octet-stream")
 			serveFile(w, r, filepath.Join(root, filepath.Clean(strings.TrimPrefix(path, "/"))))
@@ -223,7 +223,7 @@ func handler(root string) http.HandlerFunc {
 }
 
 // ============================================================================
-// 心跳和节点列表 API
+// Heartbeat and peer list API
 // ============================================================================
 
 func handleHeartbeat(w http.ResponseWriter, r *http.Request) {
@@ -237,7 +237,7 @@ func handleHeartbeat(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 用真实 IP 覆盖上报地址
+	// Override reported address with real IP
 	ip := getRealIP(r)
 	if info.Port == 0 {
 		info.Port = 51211
@@ -279,14 +279,14 @@ func getRealIP(r *http.Request) string {
 	if ip := r.Header.Get("CF-Connecting-IP"); ip != "" {
 		return ip
 	}
-	// 标准代理头
+	// Standard proxy headers
 	if ip := r.Header.Get("X-Real-IP"); ip != "" {
 		return ip
 	}
 	if fwd := r.Header.Get("X-Forwarded-For"); fwd != "" {
 		return strings.TrimSpace(strings.Split(fwd, ",")[0])
 	}
-	// 直连
+	// Direct connection
 	host, _, err := net.SplitHostPort(r.RemoteAddr)
 	if err != nil {
 		return r.RemoteAddr
@@ -295,7 +295,7 @@ func getRealIP(r *http.Request) string {
 }
 
 // ============================================================================
-// 文件服务和代理
+// File serving and proxying
 // ============================================================================
 
 func resolve(root string, segments ...string) string {
@@ -345,7 +345,7 @@ func fileExists(p string) bool {
 	return err == nil && !info.IsDir()
 }
 
-// proxyToNode 将 API 请求代理转发到 AIB 节点 (端口 51211)
+// proxyToNode forwards API requests to the AIB node (port 51211)
 func proxyToNode(w http.ResponseWriter, r *http.Request) {
 	nodeURL := "http://localhost:51211" + r.URL.Path
 	client := &http.Client{Timeout: 5 * time.Second}

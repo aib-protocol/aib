@@ -75,11 +75,11 @@ type NodeConfig struct {
 	Bootstrap string
 	NodeID    string
 	Nickname  string
-	BlockTime int    // 区块时间（秒）
+	BlockTime int    // Block time (seconds)
 	Network   string // "testnet" or "mainnet"
 }
 
-// Node AIB节点 - 生产级别实现
+// Node is a production-grade AIB node implementation
 type Node struct {
 	config     *NodeConfig
 	logger     *log.Logger
@@ -89,14 +89,14 @@ type Node struct {
 	// networkconfig
 	networkCfg *NetworkConfig
 
-	// 核心组件 - 使用持久化存储
+	// Core components - persistent storage
 	chainState *utxoPkg.ChainState
 	utxoStore  *utxoPkg.PersistentUTXOStore
 	consensus  *utxoPkg.ConsensusState
 	mempool    *utxoPkg.Mempool
 	apiServer  *api.Server
 
-	// PoAIW 组件
+	// PoAIW components
 	reputationMgr *utxoPkg.ReputationManager
 
 	// P2P network
@@ -104,18 +104,18 @@ type Node struct {
 	blockSyncer *p2p.ChainBlockSyncer
 	genesisHash string
 
-	// 密钥对
+	// Key pair
 	privateKey ed25519.PrivateKey
 	publicKey  ed25519.PublicKey
 	address    [32]byte
 
-	// 状态追踪
+	// State tracking
 	isRunning bool
 	startTime time.Time
 }
 
 // ======================================================================
-// Adapters (保持不变)
+// Adapters (unchanged)
 // ======================================================================
 
 type chainAdapter struct {
@@ -238,12 +238,12 @@ func (n *Node) Start() error {
 	n.logger.Printf("API Port: %d | P2P Port: %d", n.config.APIPort, n.config.P2PPort)
 	n.logger.Printf("Validator Mode: %v | Block Time: %ds", n.config.Validator, n.config.BlockTime)
 
-	// 创建数据目录
+	// Create data directory
 	if err := os.MkdirAll(n.config.DataDir, 0755); err != nil {
 		return fmt.Errorf("failed to create data dir: %w", err)
 	}
 
-	// 1. 初始化持久化 UTXO 存储
+	// 1. Initialize persistent UTXO store
 	n.logger.Println("[1/7] Initializing persistent UTXO store...")
 	utxoDBPath := filepath.Join(n.config.DataDir, "utxo.db")
 	utxoStore, err := utxoPkg.NewPersistentUTXOStore(utxoDBPath)
@@ -253,7 +253,7 @@ func (n *Node) Start() error {
 	n.utxoStore = utxoStore
 	n.logger.Printf("    ✓ UTXO store opened: %s", utxoDBPath)
 
-	// 2. 初始化持久化区块链状态
+	// 2. Initialize persistent chain state
 	n.logger.Println("[2/7] Initializing persistent chain state...")
 	chainDBPath := filepath.Join(n.config.DataDir, "chain.db")
 	chainState, err := utxoPkg.NewChainState(chainDBPath)
@@ -265,7 +265,7 @@ func (n *Node) Start() error {
 	n.chainState = chainState
 	n.logger.Printf("    ✓ Chain state opened: %s", chainDBPath)
 
-	// 3. 初始化共识引擎
+	// 3. Initialize consensus engine
 	n.logger.Println("[3/7] Initializing PoS consensus engine...")
 	posConfig := utxoPkg.DefaultPoSConfig()
 	posConfig.EpochLength = 314
@@ -277,7 +277,7 @@ func (n *Node) Start() error {
 	n.reputationMgr = utxoPkg.NewReputationManager()
 	n.logger.Println("    ✓ Reputation manager initialized (PoAIW)")
 
-	// 4. 生成或加载节点密钥
+	// 4. Generate or load node keys
 	n.logger.Println("[4/7] Loading node keys...")
 	if err := n.initializeKeys(); err != nil {
 		return fmt.Errorf("failed to initialize keys: %w", err)
@@ -286,20 +286,20 @@ func (n *Node) Start() error {
 	n.logger.Printf("    ✓ Node ID: %s", nodeID)
 	n.logger.Printf("    ✓ Address: %x", n.address[:8])
 
-	// 注册节点为验证者
+	// Register node as validator
 	if err := n.consensus.AddValidator(n.address, 10000*1e8, n.publicKey); err != nil {
 		n.logger.Printf("    ⚠ Validator registration: %v (continuing)", err)
 	} else {
 		n.logger.Printf("    ✓ Registered as validator (10000 AIB stake)")
 	}
 
-	// 5. 初始化交易内存池
+	// 5. Initialize transaction mempool
 	n.logger.Println("[5/7] Initializing transaction mempool...")
 	n.mempool = utxoPkg.NewMempool(10000, 100)
 	chainState.SetMempool(n.mempool)
 	n.logger.Println("    ✓ Mempool initialized")
 
-	// 6. 初始化链状态 (共享 genesis)
+	// 6. Initialize chain state (shared genesis)
 	n.logger.Println("[6/7] Loading chain state...")
 	if err := n.initializeChain(); err != nil {
 		return fmt.Errorf("failed to initialize chain: %w", err)
@@ -311,7 +311,7 @@ func (n *Node) Start() error {
 		n.logger.Printf("    ⚠ P2P network failed: %v (running in standalone mode)", err)
 	}
 
-	// 启动 API 服务器
+	// Start API server
 	n.logger.Printf("\n[API] Starting API server on port %d...", n.config.APIPort)
 	n.apiServer = api.NewServer(n.config.APIPort)
 	n.apiServer.SetChain(&chainAdapter{chainState: n.chainState})
@@ -325,7 +325,7 @@ func (n *Node) Start() error {
 		}
 	}()
 
-	// 如果是验证者，启动出块循环
+	// If validator, start block production loop
 	if n.config.Validator {
 		n.logger.Printf("\n[Validator] Starting block production (%ds interval)...", n.config.BlockTime)
 		n.wg.Add(1)
@@ -345,7 +345,7 @@ func (n *Node) Start() error {
 	n.logger.Printf("║   Peers: %d | Height: %d                ║", peerCount, n.chainState.GetBestBlockHeight())
 	n.logger.Println("╚════════════════════════════════════════╝")
 
-	// 启动种子服务器心跳注册
+	// Start seed server heartbeat registration
 	n.wg.Add(1)
 	go n.runSeedHeartbeat()
 
@@ -362,21 +362,21 @@ func (n *Node) runSeedHeartbeat() {
 	seedURL := "https://www.aib.one/v1/heartbeat"
 	nodeID := hex.EncodeToString(n.publicKey[:16])
 
-	// 获取本机外部 IP
+	// Get this machine's external IP
 	externalIP := n.getExternalIP()
 
 	sendHeartbeat := func() {
 		height, _ := n.chainState.GetBestBlockHeight(), uint64(0)
-		blockHash := "" // 获取最新区块 hash
+		blockHash := "" // latest block hash
 		if block, err := n.chainState.GetBlockByHeight(height); err == nil {
 			blockHash = hex.EncodeToString(block.Hash[:])
 		}
 
-		// 构建签名消息: nodeID + height + blockHash + genesisHash + timestamp
+		// Build signed message: nodeID + height + blockHash + genesisHash + timestamp
 		timestamp := time.Now().Unix()
 		message := fmt.Sprintf("%s:%d:%s:%s:%d", nodeID, height, blockHash, n.genesisHash, timestamp)
 
-		// 用私钥签名
+		// Sign with private key
 		signature := ed25519.Sign(n.privateKey, []byte(message))
 
 		payload := map[string]interface{}{
@@ -405,10 +405,10 @@ func (n *Node) runSeedHeartbeat() {
 		n.logger.Printf("[Heartbeat] Registered with seed (height=%d, hash=%s, ip=%s)", height, blockHash[:16], externalIP)
 	}
 
-	// 首次立即发送
+	// Send immediately on first run
 	sendHeartbeat()
 
-	// 每 60 秒发送一次
+	// Send every 60 seconds
 	ticker := time.NewTicker(60 * time.Second)
 	defer ticker.Stop()
 
@@ -423,7 +423,7 @@ func (n *Node) runSeedHeartbeat() {
 }
 
 func (n *Node) getExternalIP() string {
-	// 尝试通过连接外部地址获取本机 IP
+	// Try to get local IP by dialing an external address
 	conn, err := net.DialTimeout("udp", "8.8.8.8:53", 3*time.Second)
 	if err != nil {
 		return "127.0.0.1"
