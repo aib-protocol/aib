@@ -16,7 +16,7 @@ import (
 )
 
 // ============================================================================
-// 工具错误定义
+// Tool error definitions
 // ============================================================================
 
 var (
@@ -31,7 +31,7 @@ var (
 	ErrInvalidCSV          = errors.New("invalid CSV")
 )
 
-// ExportFormat 定义导出格式
+// ExportFormat defines the export format
 type ExportFormat string
 
 const (
@@ -40,10 +40,10 @@ const (
 )
 
 // ============================================================================
-// 快照导出结构
+// Snapshot export structures
 // ============================================================================
 
-// SnapshotExport 格式快照导出
+// SnapshotExport snapshot export format
 type SnapshotExport struct {
 	Version      string           `json:"version"`
 	Timestamp    time.Time        `json:"timestamp"`
@@ -53,7 +53,7 @@ type SnapshotExport struct {
 	MerkleRoot   string           `json:"merkle_root,omitempty"`
 }
 
-// StatusExport 状态导出格式
+// StatusExport status export format
 type StatusExport struct {
 	Version    string           `json:"version"`
 	Timestamp  time.Time        `json:"timestamp"`
@@ -61,7 +61,7 @@ type StatusExport struct {
 	CrossChain CrossChainStatus `json:"cross_chain"`
 }
 
-// AIB1Status AIB1 迁移状态
+// AIB1Status AIB1 migration status
 type AIB1Status struct {
 	TotalMigrated uint64    `json:"total_migrated"`
 	ClaimOpen     bool      `json:"claim_open"`
@@ -69,14 +69,14 @@ type AIB1Status struct {
 	TotalAccounts int       `json:"total_accounts"`
 }
 
-// CrossChainStatus 跨链迁移状态
+// CrossChainStatus cross-chain migration status
 type CrossChainStatus struct {
 	BTC BTCStatus `json:"btc"`
 	ETH ETHStatus `json:"eth"`
 	SOL SOLStatus `json:"sol"`
 }
 
-// BTCStatus BTC 迁移状态
+// BTCStatus BTC migration status
 type BTCStatus struct {
 	TotalMigrated uint64 `json:"total_migrated"`
 	TotalRewards  uint64 `json:"total_rewards"`
@@ -84,7 +84,7 @@ type BTCStatus struct {
 	CurrentRate   uint64 `json:"current_rate"`
 }
 
-// ETHStatus ETH 迁移状态
+// ETHStatus ETH migration status
 type ETHStatus struct {
 	TotalMigrated uint64 `json:"total_migrated"`
 	TotalRewards  uint64 `json:"total_rewards"`
@@ -92,7 +92,7 @@ type ETHStatus struct {
 	CurrentRate   uint64 `json:"current_rate"`
 }
 
-// SOLStatus SOL 迁移状态
+// SOLStatus SOL migration status
 type SOLStatus struct {
 	TotalMigrated uint64 `json:"total_migrated"`
 	TotalRewards  uint64 `json:"total_rewards"`
@@ -101,10 +101,10 @@ type SOLStatus struct {
 }
 
 // ============================================================================
-// 验证报告
+// Validation report
 // ============================================================================
 
-// ValidationReport 验证报告
+// ValidationReport validation report
 type ValidationReport struct {
 	Timestamp      time.Time           `json:"timestamp"`
 	TotalRecords   int                 `json:"total_records"`
@@ -114,7 +114,7 @@ type ValidationReport struct {
 	Warnings       []ValidationWarning `json:"warnings"`
 }
 
-// ValidationError 验证错误
+// ValidationError validation error
 type ValidationError struct {
 	Index   int    `json:"index"`
 	Address string `json:"address"`
@@ -122,7 +122,7 @@ type ValidationError struct {
 	Message string `json:"message"`
 }
 
-// ValidationWarning 验证警告
+// ValidationWarning validation warning
 type ValidationWarning struct {
 	Index   int    `json:"index"`
 	Address string `json:"address"`
@@ -131,11 +131,11 @@ type ValidationWarning struct {
 }
 
 // ============================================================================
-// MigrationTool 主工具结构
+// MigrationTool main tool structure
 // ============================================================================
 
-// MigrationTool 数据迁移工具
-// 提供快照导出、导入、验证功能
+// MigrationTool data migration tool
+// Provides snapshot export, import, and validation functionality
 type MigrationTool struct {
 	mu        sync.RWMutex
 	migration *MigrationHub
@@ -144,7 +144,7 @@ type MigrationTool struct {
 	hasher    crypto.Hasher
 }
 
-// NewMigrationTool 创建新的迁移工具
+// NewMigrationTool creates a new migration tool
 func NewMigrationTool(hub *MigrationHub) *MigrationTool {
 	return &MigrationTool{
 		migration: hub,
@@ -152,7 +152,7 @@ func NewMigrationTool(hub *MigrationHub) *MigrationTool {
 	}
 }
 
-// NewMigrationToolWithSnapshot 从快照记录创建迁移工具
+// NewMigrationToolWithSnapshot creates a migration tool from snapshot records
 func NewMigrationToolWithSnapshot(records []SnapshotRecord) *MigrationTool {
 	return &MigrationTool{
 		snapshot: records,
@@ -161,10 +161,10 @@ func NewMigrationToolWithSnapshot(records []SnapshotRecord) *MigrationTool {
 }
 
 // ============================================================================
-// 导出功能
+// Export functionality
 // ============================================================================
 
-// ExportSnapshotJSON 导出快照为 JSON 格式
+// ExportSnapshotJSON exports the snapshot in JSON format
 func (t *MigrationTool) ExportSnapshotJSON(w io.Writer) error {
 	t.mu.RLock()
 	defer t.mu.RUnlock()
@@ -177,14 +177,14 @@ func (t *MigrationTool) ExportSnapshotJSON(w io.Writer) error {
 		Records:      records,
 	}
 
-	// 计算总余额
+	// Calculate total balance
 	var totalBalance uint64
 	for _, r := range records {
 		totalBalance += r.Balance
 	}
 	export.TotalBalance = totalBalance
 
-	// 计算 Merkle 根
+	// Compute the Merkle root
 	if len(records) > 0 {
 		merkleRoot, err := t.computeMerkleRoot(records)
 		if err == nil {
@@ -197,7 +197,7 @@ func (t *MigrationTool) ExportSnapshotJSON(w io.Writer) error {
 	return encoder.Encode(export)
 }
 
-// ExportSnapshotCSV 导出快照为 CSV 格式
+// ExportSnapshotCSV exports the snapshot in CSV format
 func (t *MigrationTool) ExportSnapshotCSV(w io.Writer) error {
 	t.mu.RLock()
 	defer t.mu.RUnlock()
@@ -205,12 +205,12 @@ func (t *MigrationTool) ExportSnapshotCSV(w io.Writer) error {
 	writer := csv.NewWriter(w)
 	defer writer.Flush()
 
-	// 写入表头
+	// Write the header
 	if err := writer.Write([]string{"address", "balance"}); err != nil {
 		return fmt.Errorf("failed to write header: %w", err)
 	}
 
-	// 写入数据
+	// Write the data
 	for _, record := range t.snapshot {
 		row := []string{
 			addressToHex(record.Address),
@@ -224,7 +224,7 @@ func (t *MigrationTool) ExportSnapshotCSV(w io.Writer) error {
 	return nil
 }
 
-// ExportStatusJSON 导出迁移状态为 JSON 格式
+// ExportStatusJSON exports migration status in JSON format
 func (t *MigrationTool) ExportStatusJSON(w io.Writer) error {
 	if t.migration == nil {
 		return errors.New("migration hub not initialized")
@@ -270,7 +270,7 @@ func (t *MigrationTool) ExportStatusJSON(w io.Writer) error {
 	return encoder.Encode(export)
 }
 
-// ExportStatusCSV 导出迁移状态为 CSV 格式
+// ExportStatusCSV exports migration status in CSV format
 func (t *MigrationTool) ExportStatusCSV(w io.Writer) error {
 	if t.migration == nil {
 		return errors.New("migration hub not initialized")
@@ -282,14 +282,14 @@ func (t *MigrationTool) ExportStatusCSV(w io.Writer) error {
 	writer := csv.NewWriter(w)
 	defer writer.Flush()
 
-	// 写入表头
+	// Write the header
 	if err := writer.Write([]string{"chain", "total_migrated", "total_rewards", "window_open", "current_rate"}); err != nil {
 		return fmt.Errorf("failed to write header: %w", err)
 	}
 
 	status := t.migration.GetMigrationStatus()
 
-	// 写入 BTC
+	// Write BTC
 	if err := writer.Write([]string{
 		"BTC",
 		fmt.Sprintf("%d", status.BTCTotalMigrated),
@@ -300,7 +300,7 @@ func (t *MigrationTool) ExportStatusCSV(w io.Writer) error {
 		return fmt.Errorf("failed to write BTC record: %w", err)
 	}
 
-	// 写入 ETH
+	// Write ETH
 	if err := writer.Write([]string{
 		"ETH",
 		fmt.Sprintf("%d", status.ETHTotalMigrated),
@@ -311,7 +311,7 @@ func (t *MigrationTool) ExportStatusCSV(w io.Writer) error {
 		return fmt.Errorf("failed to write ETH record: %w", err)
 	}
 
-	// 写入 SOL
+	// Write SOL
 	if err := writer.Write([]string{
 		"SOL",
 		fmt.Sprintf("%d", status.SOLTotalMigrated),
@@ -325,7 +325,7 @@ func (t *MigrationTool) ExportStatusCSV(w io.Writer) error {
 	return nil
 }
 
-// ExportToFile 导出到文件（自动识别格式）
+// ExportToFile exports to a file (format auto-detected)
 func (t *MigrationTool) ExportToFile(filename string, format ExportFormat) error {
 	file, err := os.Create(filename)
 	if err != nil {
@@ -344,10 +344,10 @@ func (t *MigrationTool) ExportToFile(filename string, format ExportFormat) error
 }
 
 // ============================================================================
-// 导入功能
+// Import functionality
 // ============================================================================
 
-// ImportSnapshotJSON 从 JSON 导入快照
+// ImportSnapshotJSON imports a snapshot from JSON
 func (t *MigrationTool) ImportSnapshotJSON(r io.Reader) ([]SnapshotRecord, error) {
 	decoder := json.NewDecoder(r)
 	var export SnapshotExport
@@ -366,17 +366,17 @@ func (t *MigrationTool) ImportSnapshotJSON(r io.Reader) ([]SnapshotRecord, error
 	return export.Records, nil
 }
 
-// ImportSnapshotCSV 从 CSV 导入快照
+// ImportSnapshotCSV imports a snapshot from CSV
 func (t *MigrationTool) ImportSnapshotCSV(r io.Reader) ([]SnapshotRecord, error) {
 	reader := csv.NewReader(r)
 
-	// 读取表头
+	// Read the header
 	header, err := reader.Read()
 	if err != nil {
 		return nil, fmt.Errorf("%w: %v", ErrInvalidCSV, err)
 	}
 
-	// 验证表头
+	// Validate the header
 	if len(header) < 2 {
 		return nil, fmt.Errorf("%w: missing required columns", ErrInvalidCSV)
 	}
@@ -398,13 +398,13 @@ func (t *MigrationTool) ImportSnapshotCSV(r io.Reader) ([]SnapshotRecord, error)
 			continue
 		}
 
-		// 解析地址
+		// Parse the address
 		addr, err := hexToAddress(row[0])
 		if err != nil {
 			return nil, fmt.Errorf("%w: line %d: invalid address: %v", ErrInvalidCSV, lineNum, err)
 		}
 
-		// 解析余额
+		// Parse the balance
 		var balance uint64
 		if _, err := fmt.Sscanf(row[1], "%d", &balance); err != nil {
 			return nil, fmt.Errorf("%w: line %d: invalid balance: %v", ErrInvalidCSV, lineNum, err)
@@ -427,7 +427,7 @@ func (t *MigrationTool) ImportSnapshotCSV(r io.Reader) ([]SnapshotRecord, error)
 	return records, nil
 }
 
-// ImportSnapshot 加载快照记录
+// ImportSnapshot loads snapshot records
 func (t *MigrationTool) ImportSnapshot(records []SnapshotRecord) error {
 	if len(records) == 0 {
 		return ErrEmptyData
@@ -440,7 +440,7 @@ func (t *MigrationTool) ImportSnapshot(records []SnapshotRecord) error {
 	return nil
 }
 
-// ImportFromFile 从文件导入（自动识别格式）
+// ImportFromFile imports from a file (format auto-detected)
 func (t *MigrationTool) ImportFromFile(filename string) ([]SnapshotRecord, error) {
 	file, err := os.Open(filename)
 	if err != nil {
@@ -451,8 +451,8 @@ func (t *MigrationTool) ImportFromFile(filename string) ([]SnapshotRecord, error
 	}
 	defer file.Close()
 
-	// 尝试检测格式
-	// 读取前几个字节来判断
+	// Try to detect the format
+	// by reading the first few bytes
 	header := make([]byte, 4)
 	n, err := file.Read(header)
 	if err != nil {
@@ -462,15 +462,15 @@ func (t *MigrationTool) ImportFromFile(filename string) ([]SnapshotRecord, error
 		return nil, ErrInvalidFormat
 	}
 
-	// 回到文件开头
+	// Seek back to the start of the file
 	file.Seek(0, io.SeekStart)
 
-	// JSON 通常以 { 开始
+	// JSON typically starts with {
 	if header[0] == '{' {
 		return t.ImportSnapshotJSON(file)
 	}
 
-	// CSV 以字母开始
+	// CSV starts with a letter
 	if (header[0] >= 'a' && header[0] <= 'z') || (header[0] >= 'A' && header[0] <= 'Z') {
 		return t.ImportSnapshotCSV(file)
 	}
@@ -479,10 +479,10 @@ func (t *MigrationTool) ImportFromFile(filename string) ([]SnapshotRecord, error
 }
 
 // ============================================================================
-// 验证功能
+// Validation functionality
 // ============================================================================
 
-// ValidateSnapshot 验证快照数据完整性
+// ValidateSnapshot validates snapshot data integrity
 func (t *MigrationTool) ValidateSnapshot() *ValidationReport {
 	t.mu.RLock()
 	defer t.mu.RUnlock()
@@ -492,14 +492,14 @@ func (t *MigrationTool) ValidateSnapshot() *ValidationReport {
 		TotalRecords: len(t.snapshot),
 	}
 
-	// 使用 map 检测重复地址
+	// Use a map to detect duplicate addresses
 	seen := make(map[string]bool)
 
 	for i, record := range t.snapshot {
 		valid := true
 		addrStr := addressToHex(record.Address)
 
-		// 检查地址
+		// Check the address
 		if !t.ValidateAddress(record.Address) {
 			report.Errors = append(report.Errors, ValidationError{
 				Index:   i,
@@ -510,7 +510,7 @@ func (t *MigrationTool) ValidateSnapshot() *ValidationReport {
 			valid = false
 		}
 
-		// 检查余额
+		// Check the balance
 		if !t.ValidateBalance(record.Balance) {
 			report.Errors = append(report.Errors, ValidationError{
 				Index:   i,
@@ -521,7 +521,7 @@ func (t *MigrationTool) ValidateSnapshot() *ValidationReport {
 			valid = false
 		}
 
-		// 检查重复
+		// Check for duplicates
 		if seen[addrStr] {
 			report.Warnings = append(report.Warnings, ValidationWarning{
 				Index:   i,
@@ -542,9 +542,9 @@ func (t *MigrationTool) ValidateSnapshot() *ValidationReport {
 	return report
 }
 
-// ValidateAddress 验证地址格式
+// ValidateAddress validates the address format
 func (t *MigrationTool) ValidateAddress(addr interfaces.Address) bool {
-	// 检查地址是否为空（全零）
+	// Check whether the address is empty (all zeros)
 	empty := true
 	for _, b := range addr {
 		if b != 0 {
@@ -555,37 +555,37 @@ func (t *MigrationTool) ValidateAddress(addr interfaces.Address) bool {
 	return !empty
 }
 
-// ValidateBalance 验证余额
+// ValidateBalance validates the balance
 func (t *MigrationTool) ValidateBalance(balance uint64) bool {
 	return balance > 0
 }
 
-// ComputeMerkleRoot 计算快照的 Merkle 根
+// ComputeMerkleRoot computes the Merkle root of the snapshot
 func (t *MigrationTool) ComputeMerkleRoot() ([]byte, error) {
 	t.mu.RLock()
 	defer t.mu.RUnlock()
 	return t.computeMerkleRoot(t.snapshot)
 }
 
-// computeMerkleRoot 内部计算 Merkle 根
+// computeMerkleRoot internally computes the Merkle root
 func (t *MigrationTool) computeMerkleRoot(records []SnapshotRecord) ([]byte, error) {
 	if len(records) == 0 {
 		return nil, ErrEmptyData
 	}
 
-	// 创建叶子节点
+	// Create leaf nodes
 	leaves := make([][]byte, len(records))
 	for i, record := range records {
 		leaf := make([]byte, 40)
 		copy(leaf[:32], record.Address[:])
-		// 使用大端序存储余额
+		// Store the balance in big-endian order
 		for j := 0; j < 8; j++ {
 			leaf[32+j] = byte(record.Balance >> (56 - j*8))
 		}
 		leaves[i] = leaf
 	}
 
-	// 构建 Merkle 树
+	// Build the Merkle tree
 	tree, err := crypto.NewStandardMerkleTree(t.hasher, leaves)
 	if err != nil {
 		return nil, fmt.Errorf("failed to build Merkle tree: %w", err)
@@ -595,10 +595,10 @@ func (t *MigrationTool) computeMerkleRoot(records []SnapshotRecord) ([]byte, err
 }
 
 // ============================================================================
-// 快照数据查询
+// Snapshot data queries
 // ============================================================================
 
-// GetSnapshot 返回当前快照数据
+// GetSnapshot returns the current snapshot data
 func (t *MigrationTool) GetSnapshot() []SnapshotRecord {
 	t.mu.RLock()
 	defer t.mu.RUnlock()
@@ -608,7 +608,7 @@ func (t *MigrationTool) GetSnapshot() []SnapshotRecord {
 	return result
 }
 
-// GetTotalBalance 返回快照总余额
+// GetTotalBalance returns the total balance of the snapshot
 func (t *MigrationTool) GetTotalBalance() uint64 {
 	t.mu.RLock()
 	defer t.mu.RUnlock()
@@ -620,14 +620,14 @@ func (t *MigrationTool) GetTotalBalance() uint64 {
 	return total
 }
 
-// GetRecordCount 返回记录数量
+// GetRecordCount returns the number of records
 func (t *MigrationTool) GetRecordCount() int {
 	t.mu.RLock()
 	defer t.mu.RUnlock()
 	return len(t.snapshot)
 }
 
-// GetRecordByAddress 根据地址查找记录
+// GetRecordByAddress finds a record by address
 func (t *MigrationTool) GetRecordByAddress(addr interfaces.Address) (*SnapshotRecord, bool) {
 	t.mu.RLock()
 	defer t.mu.RUnlock()
@@ -641,10 +641,10 @@ func (t *MigrationTool) GetRecordByAddress(addr interfaces.Address) (*SnapshotRe
 }
 
 // ============================================================================
-// Merkle 证明
+// Merkle proofs
 // ============================================================================
 
-// GenerateMerkleProof 生成地址的 Merkle 证明
+// GenerateMerkleProof generates a Merkle proof for an address
 func (t *MigrationTool) GenerateMerkleProof(addr interfaces.Address) ([][]byte, bool) {
 	t.mu.RLock()
 	defer t.mu.RUnlock()
@@ -653,7 +653,7 @@ func (t *MigrationTool) GenerateMerkleProof(addr interfaces.Address) ([][]byte, 
 		return nil, false
 	}
 
-	// 创建叶子节点
+	// Create leaf nodes
 	leaves := make([][]byte, len(t.snapshot))
 	leafMap := make(map[string]int)
 	for i, record := range t.snapshot {
@@ -666,13 +666,13 @@ func (t *MigrationTool) GenerateMerkleProof(addr interfaces.Address) ([][]byte, 
 		leafMap[addressToHex(record.Address)] = i
 	}
 
-	// 构建树
+	// Build the tree
 	tree, err := crypto.NewStandardMerkleTree(t.hasher, leaves)
 	if err != nil {
 		return nil, false
 	}
 
-	// 查找索引
+	// Find the index
 	index, exists := leafMap[addressToHex(addr)]
 	if !exists {
 		return nil, false
@@ -685,12 +685,12 @@ func (t *MigrationTool) GenerateMerkleProof(addr interfaces.Address) ([][]byte, 
 	return proof, true
 }
 
-// VerifyMerkleProof 验证 Merkle 证明
+// VerifyMerkleProof verifies a Merkle proof
 func (t *MigrationTool) VerifyMerkleProof(addr interfaces.Address, balance uint64, proof [][]byte) bool {
 	t.mu.RLock()
 	defer t.mu.RUnlock()
 
-	// 查找索引
+	// Find the index
 	index := -1
 	for i, record := range t.snapshot {
 		if record.Address == addr && record.Balance == balance {
@@ -702,13 +702,13 @@ func (t *MigrationTool) VerifyMerkleProof(addr interfaces.Address, balance uint6
 		return false
 	}
 
-	// 计算 Merkle 根
+	// Compute the Merkle root
 	root, err := t.computeMerkleRoot(t.snapshot)
 	if err != nil {
 		return false
 	}
 
-	// 创建叶子节点
+	// Create leaf nodes
 	leaf := make([]byte, 40)
 	copy(leaf[:32], addr[:])
 	for i := 0; i < 8; i++ {
@@ -719,10 +719,10 @@ func (t *MigrationTool) VerifyMerkleProof(addr interfaces.Address, balance uint6
 }
 
 // ============================================================================
-// 辅助函数
+// Helper functions
 // ============================================================================
 
-// NewSnapshotRecord 创建快照记录
+// NewSnapshotRecord creates a snapshot record
 func NewSnapshotRecord(addr interfaces.Address, balance uint64) SnapshotRecord {
 	return SnapshotRecord{
 		Address: addr,
@@ -730,14 +730,14 @@ func NewSnapshotRecord(addr interfaces.Address, balance uint64) SnapshotRecord {
 	}
 }
 
-// HexToAddress 将十六进制字符串转换为地址
+// HexToAddress converts a hex string to an address
 func HexToAddress(hexStr string) (interfaces.Address, error) {
 	return hexToAddress(hexStr)
 }
 
-// hexToAddress 内部函数：将十六进制字符串转换为地址
+// hexToAddress internal function: converts a hex string to an address
 func hexToAddress(hexStr string) (interfaces.Address, error) {
-	// 移除 0x 前缀
+	// Strip the 0x prefix
 	if len(hexStr) >= 2 && hexStr[:2] == "0x" {
 		hexStr = hexStr[2:]
 	}
@@ -756,7 +756,7 @@ func hexToAddress(hexStr string) (interfaces.Address, error) {
 	return addr, nil
 }
 
-// addressToHex 将地址转换为十六进制字符串
+// addressToHex converts an address to a hex string
 func addressToHex(addr interfaces.Address) string {
 	return hex.EncodeToString(addr[:])
 }
