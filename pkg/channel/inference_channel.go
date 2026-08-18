@@ -17,7 +17,7 @@ var (
 	ErrChannelNotOpen       = errors.New("channel is not open")
 )
 
-// 推理接口等级定价（satoshi/次）
+// Inference API tier pricing (satoshi per call)
 var InferencePrices = map[uint8]uint64{
 	1: 100000,   // Level 1: 0.001 AIB
 	2: 1000000,  // Level 2: 0.01 AIB
@@ -25,7 +25,7 @@ var InferencePrices = map[uint8]uint64{
 }
 
 const (
-	// MinDeposit 最小存款金额
+	// MinDeposit is the minimum deposit amount
 	MinDeposit uint64 = 1000000 // 0.01 AIB
 )
 
@@ -33,27 +33,27 @@ const (
 type InferenceChannelStatus uint8
 
 const (
-	// ICOpen 通道开放
+	// ICOpen means the channel is open
 	ICOpen InferenceChannelStatus = iota
-	// ICSettling 结算中
+	// ICSettling means the channel is settling
 	ICSettling
-	// ICClosed 已关闭
+	// ICClosed means the channel is closed
 	ICClosed
-	// ICDisputed 争议中
+	// ICDisputed means the channel is in dispute
 	ICDisputed
 )
 
-// InferenceChannel 推理支付通道
+// InferenceChannel is a payment channel for inference
 type InferenceChannel struct {
 	ChannelID       [32]byte
 	UserPubKey      [32]byte
 	NodePubKey      [32]byte
-	UserBalance     uint64 // 用户余额
-	NodeBalance     uint64 // 节点余额
-	TotalDeposit    uint64 // 总存入金额
-	Level           uint8  // 接口等级 1/2/3
-	InferenceCount  uint64 // 推理次数
-	SequenceNum     uint64 // 序列号（防重放）
+	UserBalance     uint64 // user balance
+	NodeBalance     uint64 // node balance
+	TotalDeposit    uint64 // total deposited amount
+	Level           uint8  // API tier 1/2/3
+	InferenceCount  uint64 // number of inferences
+	SequenceNum     uint64 // sequence number (anti-replay)
 	Status          InferenceChannelStatus
 	CreatedAt       uint64
 	ClosedAt        uint64
@@ -62,20 +62,20 @@ type InferenceChannel struct {
 	mu              sync.Mutex
 }
 
-// InferenceChannelManager 管理所有推理通道
+// InferenceChannelManager manages all inference channels
 type InferenceChannelManager struct {
 	channels map[[32]byte]*InferenceChannel
 	mu       sync.RWMutex
 }
 
-// NewInferenceChannelManager 创建新的推理通道管理器
+// NewInferenceChannelManager creates a new inference channel manager
 func NewInferenceChannelManager() *InferenceChannelManager {
 	return &InferenceChannelManager{
 		channels: make(map[[32]byte]*InferenceChannel),
 	}
 }
 
-// generateInferenceChannelID 生成唯一的通道ID
+// generateInferenceChannelID generates a unique channel ID
 func generateInferenceChannelID(userPubKey, nodePubKey [32]byte, nonce uint64) [32]byte {
 	h := sha256.New()
 	h.Write(userPubKey[:])
@@ -86,23 +86,23 @@ func generateInferenceChannelID(userPubKey, nodePubKey [32]byte, nonce uint64) [
 	return result
 }
 
-// CreateChannel 创建通道（用户预存AIB）
+// CreateChannel creates a channel (user deposits AIB upfront)
 func (m *InferenceChannelManager) CreateChannel(
 	userPubKey, nodePubKey [32]byte,
 	userDeposit uint64,
 	level uint8,
 ) (*InferenceChannel, error) {
-	// 验证等级
+	// Validate the tier
 	if level < 1 || level > 3 {
 		return nil, ErrInvalidLevel
 	}
 
-	// 验证存款
+	// Validate the deposit
 	if userDeposit < MinDeposit {
 		return nil, fmt.Errorf("%w: minimum deposit is %d", ErrInvalidBalance, MinDeposit)
 	}
 
-	// 生成随机nonce
+	// Generate a random nonce
 	nonceBytes := make([]byte, 8)
 	if _, err := rand.Read(nonceBytes); err != nil {
 		return nil, fmt.Errorf("failed to generate nonce: %w", err)
@@ -115,7 +115,7 @@ func (m *InferenceChannelManager) CreateChannel(
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	// 检查通道是否已存在
+	// Check whether the channel already exists
 	if _, exists := m.channels[channelID]; exists {
 		return nil, ErrAlreadyExists
 	}
@@ -141,7 +141,7 @@ func (m *InferenceChannelManager) CreateChannel(
 	return channel, nil
 }
 
-// RecordInference 推理调用后更新余额（链下，不上链）
+// RecordInference updates balances after an inference call (off-chain, not on-chain)
 func (c *InferenceChannel) RecordInference() error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -151,29 +151,29 @@ func (c *InferenceChannel) RecordInference() error {
 		return ErrChannelNotOpen
 	}
 
-	// 获取当前等级的费用
+	// Get the fee for the current tier
 	fee, ok := InferencePrices[c.Level]
 	if !ok {
 		return ErrInvalidLevel
 	}
 
-	// 检查余额是否足够
+	// Check whether the balance is sufficient
 	if c.UserBalance < fee {
 		return ErrInsufficientBalance
 	}
 
-	// 扣除费用
+	// Deduct the fee
 	c.UserBalance -= fee
 	c.NodeBalance += fee
 
-	// 更新计数
+	// Update the counters
 	c.InferenceCount++
 	c.SequenceNum++
 
 	return nil
 }
 
-// Settle 链上结算
+// Settle settles on-chain
 func (c *InferenceChannel) Settle() (*SettlementData, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -183,7 +183,7 @@ func (c *InferenceChannel) Settle() (*SettlementData, error) {
 		return nil, ErrChannelAlreadyClosed
 	}
 
-	// 标记为结算中
+	// Mark as settling
 	c.Status = ICSettling
 
 	// createsettlementdata
@@ -198,7 +198,7 @@ func (c *InferenceChannel) Settle() (*SettlementData, error) {
 	return settlement, nil
 }
 
-// Challenge 挑战（发现作弊时）
+// Challenge raises a dispute (when cheating is detected)
 func (c *InferenceChannel) Challenge(reason string) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -208,18 +208,18 @@ func (c *InferenceChannel) Challenge(reason string) error {
 		return ErrChannelAlreadyClosed
 	}
 
-	// 设置争议状态
+	// Set the dispute status
 	c.Status = ICDisputed
 	c.ChallengeReason = reason
 
-	// 设置挑战结束时间（24小时后）
+	// Set the challenge end time (24 hours from now)
 	challengeEnd := time.Now().Add(24 * time.Hour)
 	c.ChallengeEnd = &challengeEnd
 
 	return nil
 }
 
-// GetChannel 获取通道信息
+// GetChannel getchannelinfo
 func (m *InferenceChannelManager) GetChannel(id [32]byte) (*InferenceChannel, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
@@ -229,7 +229,7 @@ func (m *InferenceChannelManager) GetChannel(id [32]byte) (*InferenceChannel, er
 		return nil, ErrChannelNotFound
 	}
 
-	// 返回副本 (manual field copy: never duplicate a sync.Mutex)
+	// return a copy (manual field copy: never duplicate a sync.Mutex)
 	chCopy := InferenceChannel{
 		ChannelID:      channel.ChannelID,
 		UserPubKey:     channel.UserPubKey,
@@ -252,7 +252,7 @@ func (m *InferenceChannelManager) GetChannel(id [32]byte) (*InferenceChannel, er
 	return &chCopy, nil
 }
 
-// Close 关闭通道
+// Close closes the channel
 func (c *InferenceChannel) Close() error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -262,14 +262,14 @@ func (c *InferenceChannel) Close() error {
 		return ErrChannelAlreadyClosed
 	}
 
-	// 标记为已关闭
+	// Mark as closed
 	c.Status = ICClosed
 	c.ClosedAt = uint64(time.Now().Unix())
 
 	return nil
 }
 
-// GetChannels 返回所有通道
+// GetChannels returnsallchannel
 func (m *InferenceChannelManager) GetChannels() []*InferenceChannel {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
@@ -306,7 +306,7 @@ func (c *InferenceChannel) snapshot() *InferenceChannel {
 	return &cp
 }
 
-// GetChannelCount 返回通道数量
+// GetChannelCount returnschannelcount
 func (m *InferenceChannelManager) GetChannelCount() int {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
@@ -324,7 +324,7 @@ type SettlementData struct {
 
 // IsValid verifysettlementdata
 func (s *SettlementData) IsValid() error {
-	// 验证总余额守恒
+	// Verify total balance conservation
 	total := s.FinalUserBal + s.FinalNodeBal
 	if total == 0 {
 		return errors.New("zero total balance")
@@ -332,17 +332,17 @@ func (s *SettlementData) IsValid() error {
 	return nil
 }
 
-// GetChannelIDString 返回通道ID的字符串形式
+// GetChannelIDString returns the string form of the channel ID
 func (c *InferenceChannel) GetChannelIDString() string {
 	return fmt.Sprintf("%x", c.ChannelID)
 }
 
-// GetFee 返回当前等级的推理费用
+// GetFee returns the inference fee for the current tier
 func (c *InferenceChannel) GetFee() uint64 {
 	return InferencePrices[c.Level]
 }
 
-// GetRemainingInferences 返回剩余可用推理次数
+// GetRemainingInferences returns the number of remaining inferences
 func (c *InferenceChannel) GetRemainingInferences() uint64 {
 	fee := c.GetFee()
 	if fee == 0 {
@@ -351,24 +351,24 @@ func (c *InferenceChannel) GetRemainingInferences() uint64 {
 	return c.UserBalance / fee
 }
 
-// IsExpired 检查通道是否已过期
+// IsExpired checks whether the channel has expired
 func (c *InferenceChannel) IsExpired() bool {
-	// 通道创建后30天过期
+	// Channels expire 30 days after creation
 	expiryTime := time.Unix(int64(c.CreatedAt), 0).Add(30 * 24 * time.Hour)
 	return time.Now().After(expiryTime)
 }
 
-// CanSettle 检查是否可以结算
+// CanSettle checks whether the channel can be settled
 func (c *InferenceChannel) CanSettle() bool {
 	return c.Status == ICOpen || c.Status == ICSettling
 }
 
-// IsInDispute 检查是否在争议中
+// IsInDispute checks whether the channel is in dispute
 func (c *InferenceChannel) IsInDispute() bool {
 	return c.Status == ICDisputed
 }
 
-// IsClosed 检查是否已关闭
+// IsClosed checks whether the channel is closed
 func (c *InferenceChannel) IsClosed() bool {
 	return c.Status == ICClosed
 }

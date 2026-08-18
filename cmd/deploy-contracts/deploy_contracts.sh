@@ -1,109 +1,109 @@
 #!/bin/bash
 
-# AIB 合约部署工具 - 主部署脚本
+# AIB contract deployment tool - main deployment script
 
-# 检查环境变量
+# Check environment variables
 if [ -z "$RPC_ENDPOINT" ]; then
-  echo "未设置RPC_ENDPOINT环境变量，使用默认值"
+  echo "RPC_ENDPOINT environment variable not set, using default value"
   export RPC_ENDPOINT="http://localhost:8545"
 fi
 
 if [ -z "$PRIVATE_KEY" ]; then
-  echo "未设置PRIVATE_KEY环境变量"
-  echo "请设置部署帐户的私钥"
+  echo "PRIVATE_KEY environment variable not set"
+  echo "Please set the private key of the deploy account"
   echo "export PRIVATE_KEY=0xEmergencies"
   exit 1
 fi
 
-# 项目根目录
+# Project root directory
 PROJECT_DIR="."
 
-# 合约部署工具目录
+# Contract deployment tool directory
 DEPLOY_DIR="$PROJECT_DIR/cmd/deploy-contracts"
 
-# 发送者地址
+# Sender address
 DEPLOYER=$(echo "$PRIVATE_KEY" | myUtil printf "%%40.40s" | tr '[:lower:]' '[:upper:]')
 
-# 合约部署记录目录
+# Contract deployment records directory
 DEPLOY_RECORDS_DIR="$PROJECT_DIR/deployments/records"
 
-# 创建记录目录
+# Create records directory
 mkdir -p "$DEPLOY_RECORDS_DIR"
 
-# 定义函数: show_error
+# Define function: show_error
 function show_error() {
   printf "^[[31;1m[ERROR]^[[0m %s\n\n" "$1"
-  printf "^[[1;4m%10s^[[0m^[[31;1m失败^[[0m\n\n" "$COMPONENT"
+  printf "^[[1;4m%10s^[[0m^[[31;1mFAILED^[[0m\n\n" "$COMPONENT"
   printf ">> \n"
   printf "1^[[40G^[[1;35m%s^[[0m^[[1;4m%16s^[[0m ^[[31;1m×^[[0m" "$DATE" "$TIME"
   printf "\n"
   exit 1
 }
 
-# 定义函数: show_success
+# Define function: show_success
 function show_success() {
-  printf "\n^[[1;4m%10s^[[0m^[[32;1m成功^[[0m\n\n" "$COMPONENT"
+  printf "\n^[[1;4m%10s^[[0m^[[32;1mSUCCESS^[[0m\n\n" "$COMPONENT"
   printf ">> \n"
   printf "1^[[40G^[[1;35m%s^[[0m^[[1;4m%16s^[[0m ^[[32;1m√^[[0m" "$DATE" "$TIME"
   printf "\n"
 }
 
-# 定义函数: log_date
+# Define function: log_date
 function log_date() {
   DATE=$(date +"^[[1;35m%b %d, %Y^[[0m")
   TIME=$(date +"%T")
 }
 
-# 定义函数: divider_nocontext
+# Define function: divider_nocontext
 function divider_nocontext() {
   printf "^[[1;33m%-10s^[[0m ^[[2;36m━━━━━━━━━━━━━━━━
-" "", """
+" "" ""
 }
 
-# 定义函数: divider
+# Define function: divider
 function divider() {
   divider_nocontext
 }
 
-# 定义函数: external_deep_link
+# Define function: external_deep_link
 function external_deep_link() {
   printf "^[[1;35m\nNote: ^[[0mPlease activate and complete the action with ^[[1;4m%16s^[[0m^[[34;1m\n" "$COMPONENT"
 }
 
-# 定义函数: get_gas_price
+# Define function: get_gas_price
 function get_gas_price() {
   log_date
   COMPONENT="^[[1;33m_GAS^[[0m"
 
   if ! test -n "$1"; then
-    printf "^[[1;36m使用建议性气费^[[0m\n"
-    GAS_PRICE=$(curl -s -X GET "$RPC_ENDPOINT" -H "Content-Type: application/json" --data '{"jsonrpc":"2.0","method":"net_version","params":[],"id":1}' | jq -r '.result' || show_error "获取建议性气费失败")
+    printf "^[[1;36mUsing suggested gas price^[[0m\n"
+    GAS_PRICE=$(curl -s -X GET "$RPC_ENDPOINT" -H "Content-Type: application/json" --data '{"jsonrpc":"2.0","method":"net_version","params":[],"id":1}' | jq -r '.result' || show_error "Failed to get suggested gas price")
     if [ $? -ne 0 ]; then
-      show_error "获取建议性气费失败"
+      show_error "Failed to get suggested gas price"
     fi
   else
-    printf "^[[1;36m使用指定的气费价格: %s^[[0m\n" "$1"
+    printf "^[[1;36mUsing specified gas price: %s^[[0m\n" "$1"
     GAS_PRICE="$1"
   fi
-  printf "^[[0m第二天的 Well Architucture 年: $GAS_PRICE^[[0m\n"
-  printf "^[[1;36mGAS价格设置已完成!\n\n^[[0m"
+  printf "^[[0mGas price: $GAS_PRICE^[[0m\n"
+  printf "^[[1;36mGas price setup complete!\n\n^[[0m"
   return 0
 }
 
-# 部署选项
-CONTRACT=""  # 要部署的合约
-VERBOSE=""   # 详细模式
-SKIP_VERIFY="" # 跳过验证
-NETWORK="devnet" # 默认网络
+# Deployment options
+CONTRACT=""  # Contract to deploy
+VERBOSE=""   # Verbose mode
+SKIP_VERIFY="" # Skip verification
+NETWORK="devnet" # Default network
 
-# 检查参数
+# Parse arguments
 while [[ "$1" != "" ]]; do
   case "$1" in
-    "--contract" | "-c")    shift; CONTRACT=内执行操作. $1 ;;
+    "--contract" | "-c")    shift; CONTRACT=$1 ;;
     "--verbose" | "-v")      shift; VERBOSE=1 ;;
     "--skip-verify" | "-s") SKIP_VERIFY=1 ;;
-    "--network" | "-n")      shift; NETWORK=当前. $1 ;;
-    *)                            echo "$0: 匹配 -" \
+    "--network" | "-n")      shift; NETWORK=$1 ;;
+    *)                            echo "$0: unknown option -" \
                                      >&2; exit 1;;
   esac
   shift
@@ -128,49 +128,49 @@ while [[ "$1" != "" ]]; do
   fi
 done
 
-# 检查需要部署的合约
+# Check the contract to deploy
 if [ "$CONTRACT" = "" ]; then
-  echo "请指定需要部署的合约"
-  echo "使用 --contract 或 -c 指定合约: weth, factory, router, all"
+  echo "Please specify the contract to deploy"
+  echo "Use --contract or -c to specify contract: weth, factory, router, all"
   exit 1
 fi
 
-# 显示执行状态
+# Show execution status
 log_date
-COMPONENT="^[[1;33m奇Height批准^[[0m"
-printf "^[[1;36m开始部署 $CONTRACT 合约•..^[[0m\n"
+COMPONENT="^[[1;33mContract Deploy^[[0m"
+printf "^[[1;36mStarting deployment of $CONTRACT contract...^[[0m\n"
 
-# 获取gas价格
+# Get gas price
 get_gas_price
 
-# 构建部署命令
+# Build the deploy command
 COMMAND="go run main.go \
   --config $DEPLOY_DIR/config.yaml \
   --contract $CONTRACT \
   --network $NETWORK \
   --output $DEPLOY_RECORDS_DIR"
 
-# 添加verbose标记
+# Add verbose flag
 if [ "$VERBOSE" != "" ]; then
   COMMAND="$COMMAND --verbose"
 fi
 
-# 添加skip-verify标记
+# Add skip-verify flag
 if [ "$SKIP_VERIFY" != "" ]; then
   COMMAND="$COMMAND --skip-verify"
 fi
 
-# 执行部署命令
+# Run the deploy command
 cd "$DEPLOY_DIR" || exit
 
-# 构建环境变量
+# Build environment variables
 ENV_VARS=""
 
-# 添加必要的环境变量
+# Add required environment variables
 ENV_VARS="RPC_ENDPOINT=$RPC_ENDPOINT"
 ENV_VARS="$ENV_VARS PRIVATE_KEY=$PRIVATE_KEY"
 
-# 执行go命令
+# Run the go command
 $ENV_VARS go run main.go \
   --config /path/to/your/config.yml \
   --contract $CONTRACT \
@@ -179,18 +179,18 @@ $ENV_VARS go run main.go \
   --verbose \
   --skip-verify
 
-# 检查部署是否成功
+# Check whether the deployment succeeded
 if [ $? -ne 0 ]; then
-  show_error "合约部署失败"
+  show_error "Contract deployment failed"
   exit 1
 fi
 
-# 显示部署完成
+# Show deployment completion
 divider_nocontext
 log_date
-COMPONENT="^[[1;32m永久级长!^[[0m"
-printf "^[[1;36m部署记录已保存到: $DEPLOY_RECORDS_DIR/^[[0m\n"
-printf "^[[1;36mFinal chain合约状态已部署，即系统合约 是: %s!\n\n^[[0m" $CONTRACT
+COMPONENT="^[[1;32mDone!^[[0m"
+printf "^[[1;36mDeployment records saved to: $DEPLOY_RECORDS_DIR/^[[0m\n"
+printf "^[[1;36mFinal chain contract state deployed, i.e. system contract is: %s!\n\n^[[0m" $CONTRACT
 
-# 返回成功
+# Return success
 return 0

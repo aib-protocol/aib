@@ -450,7 +450,7 @@ func (n *Network) GetPeers() []*PeerInfo {
 	return result
 }
 
-// PeerListEntry 用于 API 的节点信息
+// PeerListEntry for API nodeinfo
 type PeerListEntry struct {
 	ID        string
 	Address   string
@@ -458,7 +458,7 @@ type PeerListEntry struct {
 	Connected bool
 }
 
-// GetPeerList 返回用于 API 的节点列表
+// GetPeerList returnsfor API nodelist
 func (n *Network) GetPeerList() []PeerListEntry {
 	n.mu.RLock()
 	defer n.mu.RUnlock()
