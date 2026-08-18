@@ -380,7 +380,7 @@ func TestHandleGetStake(t *testing.T) {
 		store := s.utxoStore.(*mockUTXOStore)
 		addr := walletSDK.GetAddress()
 
-		// 添加质押 UTXO
+		// addstake UTXO
 		store.AddUTXO(addr, &utxo.UTXO{
 			TxHash:  [32]byte{1},
 			Index:   0,

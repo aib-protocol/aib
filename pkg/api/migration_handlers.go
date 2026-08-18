@@ -16,7 +16,7 @@ import (
 // Migration API Handlers
 // ============================================================================
 
-// handleMigrationSnapshot 处理 GET /api/migration/snapshot
+// handleMigrationSnapshot handle GET /api/migration/snapshot
 // 查询 AIB1 快照信息
 func (s *Server) handleMigrationSnapshot(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
@@ -48,7 +48,7 @@ func (s *Server) handleMigrationSnapshot(w http.ResponseWriter, r *http.Request)
 	})
 }
 
-// handleMigrationRates 处理 GET /api/migration/rates
+// handleMigrationRates handle GET /api/migration/rates
 // 查询当前迁移汇率
 func (s *Server) handleMigrationRates(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
@@ -104,7 +104,7 @@ func (s *Server) handleMigrationRates(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// handleMigrationStatus 处理 GET /api/migration/status/{addr}
+// handleMigrationStatus handle GET /api/migration/status/{addr}
 // 查询用户迁移状态
 func (s *Server) handleMigrationStatus(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
@@ -205,7 +205,7 @@ func (s *Server) handleMigrationClaimable(w http.ResponseWriter, r *http.Request
 	})
 }
 
-// handleClaimAIB1 处理 POST /api/migration/claim-aib1
+// handleClaimAIB1 handle POST /api/migration/claim-aib1
 // 领取 AIB1 快照代币
 func (s *Server) handleClaimAIB1(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
@@ -300,7 +300,7 @@ func (s *Server) handleClaimAIB1(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// handleClaimUnlocked 处理 POST /api/migration/claim-unlocked
+// handleClaimUnlocked handle POST /api/migration/claim-unlocked
 // 领取已解锁代币
 func (s *Server) handleClaimUnlocked(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
@@ -360,7 +360,7 @@ func (s *Server) handleClaimUnlocked(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// handleMigrationEstimate 处理 GET /api/migration/estimate
+// handleMigrationEstimate handle GET /api/migration/estimate
 // 估算迁移收益
 func (s *Server) handleMigrationEstimate(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {

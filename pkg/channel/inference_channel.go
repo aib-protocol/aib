@@ -29,7 +29,7 @@ const (
 	MinDeposit uint64 = 1000000 // 0.01 AIB
 )
 
-// InferenceChannelStatus 通道状态
+// InferenceChannelStatus channelstatus
 type InferenceChannelStatus uint8
 
 const (
@@ -109,7 +109,7 @@ func (m *InferenceChannelManager) CreateChannel(
 	}
 	nonce := binary.BigEndian.Uint64(nonceBytes)
 
-	// 生成通道ID
+	// generatechannelID
 	channelID := generateInferenceChannelID(userPubKey, nodePubKey, nonce)
 
 	m.mu.Lock()
@@ -120,7 +120,7 @@ func (m *InferenceChannelManager) CreateChannel(
 		return nil, ErrAlreadyExists
 	}
 
-	// 创建通道
+	// createchannel
 	now := uint64(time.Now().Unix())
 	channel := &InferenceChannel{
 		ChannelID:      channelID,
@@ -146,7 +146,7 @@ func (c *InferenceChannel) RecordInference() error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	// 检查通道状态
+	// checkchannelstatus
 	if c.Status != ICOpen {
 		return ErrChannelNotOpen
 	}
@@ -178,7 +178,7 @@ func (c *InferenceChannel) Settle() (*SettlementData, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	// 检查通道状态
+	// checkchannelstatus
 	if c.Status != ICOpen && c.Status != ICSettling {
 		return nil, ErrChannelAlreadyClosed
 	}
@@ -186,7 +186,7 @@ func (c *InferenceChannel) Settle() (*SettlementData, error) {
 	// 标记为结算中
 	c.Status = ICSettling
 
-	// 创建结算数据
+	// createsettlementdata
 	settlement := &SettlementData{
 		ChannelID:      c.ChannelID,
 		FinalUserBal:   c.UserBalance,
@@ -203,7 +203,7 @@ func (c *InferenceChannel) Challenge(reason string) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	// 检查通道状态
+	// checkchannelstatus
 	if c.Status == ICClosed {
 		return ErrChannelAlreadyClosed
 	}
@@ -257,7 +257,7 @@ func (c *InferenceChannel) Close() error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	// 检查通道状态
+	// checkchannelstatus
 	if c.Status == ICClosed {
 		return ErrChannelAlreadyClosed
 	}
@@ -313,7 +313,7 @@ func (m *InferenceChannelManager) GetChannelCount() int {
 	return len(m.channels)
 }
 
-// SettlementData 结算数据
+// SettlementData settlementdata
 type SettlementData struct {
 	ChannelID      [32]byte
 	FinalUserBal   uint64
@@ -322,7 +322,7 @@ type SettlementData struct {
 	SequenceNum    uint64
 }
 
-// IsValid 验证结算数据
+// IsValid verifysettlementdata
 func (s *SettlementData) IsValid() error {
 	// 验证总余额守恒
 	total := s.FinalUserBal + s.FinalNodeBal

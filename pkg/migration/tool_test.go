@@ -14,7 +14,7 @@ import (
 // 测试辅助函数
 // ============================================================================
 
-// 创建测试地址
+// createtestaddress
 func createTestAddress(i byte) interfaces.Address {
 	var addr interfaces.Address
 	addr[i%32] = i
@@ -143,7 +143,7 @@ func TestMigrationTool_GetRecordCount(t *testing.T) {
 }
 
 // ============================================================================
-// JSON 导出导入测试
+// JSON exportimporttest
 // ============================================================================
 
 func TestMigrationTool_ExportSnapshotJSON(t *testing.T) {
@@ -183,11 +183,11 @@ func TestMigrationTool_ExportSnapshotJSON(t *testing.T) {
 func TestMigrationTool_ImportSnapshotJSON(t *testing.T) {
 	tool := NewMigrationTool(nil)
 
-	// 创建测试数据
+	// createtestdata
 	snapshot := createTestSnapshot(2)
 	tool.ImportSnapshot(snapshot)
 
-	// 导出
+	// export
 	var buf bytes.Buffer
 	if err := tool.ExportSnapshotJSON(&buf); err != nil {
 		t.Fatalf("ExportSnapshotJSON failed: %v", err)
@@ -229,7 +229,7 @@ func TestMigrationTool_ImportSnapshotJSON_Invalid(t *testing.T) {
 }
 
 // ============================================================================
-// CSV 导出导入测试
+// CSV exportimporttest
 // ============================================================================
 
 func TestMigrationTool_ExportSnapshotCSV(t *testing.T) {
@@ -257,11 +257,11 @@ func TestMigrationTool_ExportSnapshotCSV(t *testing.T) {
 func TestMigrationTool_ImportSnapshotCSV(t *testing.T) {
 	tool := NewMigrationTool(nil)
 
-	// 创建测试数据
+	// createtestdata
 	snapshot := createTestSnapshot(2)
 	tool.ImportSnapshot(snapshot)
 
-	// 导出
+	// export
 	var buf bytes.Buffer
 	if err := tool.ExportSnapshotCSV(&buf); err != nil {
 		t.Fatalf("ExportSnapshotCSV failed: %v", err)
@@ -452,7 +452,7 @@ func TestMigrationTool_VerifyMerkleProof(t *testing.T) {
 		t.Fatal("failed to generate proof")
 	}
 
-	// 验证
+	// verify
 	if !tool.VerifyMerkleProof(addr, balance, proof) {
 		t.Error("VerifyMerkleProof should return true for valid proof")
 	}
@@ -484,7 +484,7 @@ func TestMigrationTool_MerkleRootConsistency(t *testing.T) {
 }
 
 // ============================================================================
-// 导出状态测试
+// exportstatustest
 // ============================================================================
 
 func TestMigrationTool_ExportStatusJSON_NoHub(t *testing.T) {

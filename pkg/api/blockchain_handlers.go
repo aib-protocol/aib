@@ -34,7 +34,7 @@ type UTXOItem struct {
 	Address string `json:"address"`
 }
 
-// handleUTXOByAddress 处理 GET /v1/utxo/{address}
+// handleUTXOByAddress handle GET /v1/utxo/{address}
 func (s *Server) handleUTXOByAddress(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		writeError(w, http.StatusMethodNotAllowed, ErrCodeInvalidRequest, "Method not allowed", "")
@@ -130,7 +130,7 @@ type ValidatorInfo struct {
 	Commission   uint8  `json:"commission,omitempty"`
 }
 
-// handleValidators 处理 GET /v1/validators
+// handleValidators handle GET /v1/validators
 func (s *Server) handleValidators(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		writeError(w, http.StatusMethodNotAllowed, ErrCodeInvalidRequest, "Method not allowed", "")
@@ -217,14 +217,14 @@ type MempoolTxInfo struct {
 	IsCoinbase bool      `json:"is_coinbase"`
 }
 
-// handleMempool 处理 GET /v1/mempool
+// handleMempool handle GET /v1/mempool
 func (s *Server) handleMempool(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		writeError(w, http.StatusMethodNotAllowed, ErrCodeInvalidRequest, "Method not allowed", "")
 		return
 	}
 
-	// 查询参数
+	// queryparameter
 	limit := 100
 	if limitStr := r.URL.Query().Get("limit"); limitStr != "" {
 		fmt.Sscanf(limitStr, "%d", &limit)
@@ -335,14 +335,14 @@ type StakerInfo struct {
 	Share   float64 `json:"share"` // 质押占比
 }
 
-// handleStaking 处理 GET /v1/staking
+// handleStaking handle GET /v1/staking
 func (s *Server) handleStaking(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		writeError(w, http.StatusMethodNotAllowed, ErrCodeInvalidRequest, "Method not allowed", "")
 		return
 	}
 
-	// 查询参数
+	// queryparameter
 	includeStakers := r.URL.Query().Get("include_stakers") == "true"
 
 	stakingInfo := s.getStakingInfo(r.Context(), includeStakers)
@@ -438,14 +438,14 @@ type ProposalInfo struct {
 	Quorum       uint64    `json:"quorum"`
 }
 
-// handleProposals 处理 GET /v1/proposals
+// handleProposals handle GET /v1/proposals
 func (s *Server) handleProposals(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		writeError(w, http.StatusMethodNotAllowed, ErrCodeInvalidRequest, "Method not allowed", "")
 		return
 	}
 
-	// 查询参数
+	// queryparameter
 	status := r.URL.Query().Get("status") // active, passed, rejected, all
 
 	proposals := s.getProposals(r.Context(), status)
@@ -474,7 +474,7 @@ func (s *Server) handleProposals(w http.ResponseWriter, r *http.Request) {
 	writeSuccess(w, response)
 }
 
-// getProposals 获取治理提案
+// getProposals getgovernanceproposal
 func (s *Server) getProposals(ctx context.Context, statusFilter string) []ProposalInfo {
 	var proposals []ProposalInfo
 
@@ -533,7 +533,7 @@ type mempoolInterface interface {
 	GetTransaction(txHash [32]byte) *utxo.Transaction
 }
 
-// consensusConfigInterface 共识状态接口
+// consensusConfigInterface consensusstatusinterface
 type consensusConfigInterface interface {
 	GetConfig() *utxo.PoSConfig
 	GetActiveValidators() []*utxo.Validator

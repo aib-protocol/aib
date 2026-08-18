@@ -35,7 +35,7 @@ func CreateCoinbaseV2(proposer [32]byte, blockHeight uint64) *Transaction {
 	stakingReward := uint64(float64(totalReward) * StakingRewardRatio)
 	inferenceReward := uint64(float64(totalReward) * InferenceRewardRatio)
 
-	// 创建输出
+	// createoutput
 	outputs := []TXOutput{
 		{
 			Value:   stakingReward,
@@ -49,7 +49,7 @@ func CreateCoinbaseV2(proposer [32]byte, blockHeight uint64) *Transaction {
 		},
 	}
 
-	// 创建coinbase交易
+	// createcoinbasetransaction
 	tx := &Transaction{
 		Version: 2,
 		Inputs: []TXInput{

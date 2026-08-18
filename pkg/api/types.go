@@ -23,7 +23,7 @@ type ErrorInfo struct {
 	Details string `json:"details,omitempty"`
 }
 
-// NewSuccessResponse 创建成功响应
+// NewSuccessResponse createsuccessresponse
 func NewSuccessResponse(data interface{}) APIResponse {
 	return APIResponse{
 		Success: true,
@@ -31,7 +31,7 @@ func NewSuccessResponse(data interface{}) APIResponse {
 	}
 }
 
-// NewErrorResponse 创建错误响应
+// NewErrorResponse createerrorresponse
 func NewErrorResponse(code, message, details string) APIResponse {
 	return APIResponse{
 		Success: false,
@@ -70,7 +70,7 @@ type HealthResponse struct {
 	Uptime    string    `json:"uptime"`
 }
 
-// BalanceResponse 余额查询响应
+// BalanceResponse balancequeryresponse
 type BalanceResponse struct {
 	Address   string     `json:"address"`
 	Balance   uint64     `json:"balance"`
@@ -97,7 +97,7 @@ type TransactionRequest struct {
 	Nonce    uint64 `json:"nonce,omitempty"`
 }
 
-// TransactionResponse 交易响应
+// TransactionResponse transactionresponse
 type TransactionResponse struct {
 	TxHash    string    `json:"tx_hash"`
 	From      string    `json:"from"`
@@ -108,7 +108,7 @@ type TransactionResponse struct {
 	Timestamp time.Time `json:"timestamp"`
 }
 
-// BlockResponse 区块响应
+// BlockResponse blockresponse
 type BlockResponse struct {
 	Height    uint64    `json:"height"`
 	Hash      string    `json:"hash"`
@@ -119,14 +119,14 @@ type BlockResponse struct {
 	Size      uint64    `json:"size"`
 }
 
-// BlockListResponse 区块列表响应
+// BlockListResponse blocklistresponse
 type BlockListResponse struct {
 	Blocks []BlockResponse `json:"blocks"`
 	Total  int             `json:"total"`
 }
 
 // ============================================================================
-// 通道 API 类型
+// channel API type
 // ============================================================================
 
 // OpenChannelRequest 开启通道请求
@@ -151,7 +151,7 @@ type PaymentRequest struct {
 	FromA     bool   `json:"from_a"` // true: A支付给B, false: B支付给A
 }
 
-// UpdateChannelRequest 更新通道状态请求
+// UpdateChannelRequest updatechannelstatusrequest
 type UpdateChannelRequest struct {
 	ChannelID string `json:"channel_id"`
 	BalanceA  uint64 `json:"balance_a"`
@@ -176,13 +176,13 @@ type ChannelResponse struct {
 	DisputeEnd *time.Time `json:"dispute_end,omitempty"`
 }
 
-// ChannelListResponse 通道列表响应
+// ChannelListResponse channellistresponse
 type ChannelListResponse struct {
 	Channels []ChannelResponse `json:"channels"`
 	Total    int               `json:"total"`
 }
 
-// ChannelStatusResponse 通道状态响应
+// ChannelStatusResponse channelstatusresponse
 type ChannelStatusResponse struct {
 	ChannelID string `json:"channel_id"`
 	Status    string `json:"status"`
@@ -242,7 +242,7 @@ type AINodeInfoResponse struct {
 	LastSeen   time.Time `json:"last_seen"`
 }
 
-// AINodeListResponse AI 节点列表响应
+// AINodeListResponse AI nodelistresponse
 type AINodeListResponse struct {
 	Nodes []AINodeInfoResponse `json:"nodes"`
 	Total int                  `json:"total"`
@@ -281,7 +281,7 @@ func NewPaginationResponse(page, pageSize, total int) PaginationResponse {
 }
 
 // ============================================================================
-// 配置类型
+// configtype
 // ============================================================================
 
 // Config API 服务器配置
@@ -292,7 +292,7 @@ type Config struct {
 	WriteTimeout time.Duration `json:"write_timeout"`
 	IdleTimeout  time.Duration `json:"idle_timeout"`
 
-	// CORS 配置
+	// CORS config
 	AllowedOrigins []string `json:"allowed_origins"`
 	AllowedMethods []string `json:"allowed_methods"`
 	AllowedHeaders []string `json:"allowed_headers"`
@@ -304,7 +304,7 @@ type Config struct {
 	// 认证配置
 	APIKeys []string `json:"api_keys"`
 
-	// 日志配置
+	// logconfig
 	EnableRequestLog bool `json:"enable_request_log"`
 	EnableErrorLog   bool `json:"enable_error_log"`
 	LogRequestBody   bool `json:"log_request_body"`
@@ -332,10 +332,10 @@ func DefaultConfig() *Config {
 }
 
 // ============================================================================
-// P2P API 类型
+// P2P API type
 // ============================================================================
 
-// PeerResponse 节点响应
+// PeerResponse noderesponse
 type PeerResponse struct {
 	ID        string    `json:"id"`
 	Address   string    `json:"address"`
@@ -344,7 +344,7 @@ type PeerResponse struct {
 }
 
 // ============================================================================
-// Migration API 类型
+// Migration API type
 // ============================================================================
 
 // MigrationStatus 迁移状态（从 migration hub 获取）

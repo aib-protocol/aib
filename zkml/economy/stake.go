@@ -25,7 +25,7 @@ type StakeInfo struct {
 	StakeTime   int64       `json:"stake_time"`   // 质押时间
 }
 
-// StakeStatus 质押状态
+// StakeStatus stakestatus
 type StakeStatus string
 
 const (
@@ -43,7 +43,7 @@ func NewStakeManager(minStake float64) *StakeManager {
 	}
 }
 
-// Stake 质押代币
+// Stake staketoken
 func (sm *StakeManager) Stake(nodeID string, amount float64) error {
 	if nodeID == "" {
 		return errors.New("节点ID不能为空")
@@ -123,7 +123,7 @@ func (sm *StakeManager) Slash(nodeID string, ratio float64) (float64, error) {
 		return 0, fmt.Errorf("节点状态不正确: %s", stake.Status)
 	}
 
-	// 计算罚没金额
+	// computeslashamount
 	slashAmount := stake.Amount * ratio
 	stake.Amount -= slashAmount
 	stake.SlashTotal += slashAmount
@@ -233,14 +233,14 @@ func (sm *StakeManager) Withdraw(nodeID string) (float64, error) {
 	// 计算可提取金额
 	withdrawAmount := stake.Amount
 
-	// 更新状态
+	// updatestatus
 	stake.Status = StakeWithdrawn
 	stake.Amount = 0
 
 	return withdrawAmount, nil
 }
 
-// Export 导出状态
+// Export exportstatus
 func (sm *StakeManager) Export() ([]byte, error) {
 	sm.mu.RLock()
 	defer sm.mu.RUnlock()
@@ -268,7 +268,7 @@ func (sm *StakeManager) Export() ([]byte, error) {
 	return json.Marshal(state)
 }
 
-// Import 导入状态
+// Import importstatus
 func (sm *StakeManager) Import(data []byte) error {
 	var state struct {
 		MinStake float64               `json:"min_stake"`

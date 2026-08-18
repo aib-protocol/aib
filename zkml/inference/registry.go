@@ -189,7 +189,7 @@ func (pm *ProposalManager) Vote(proposalID, voter string, vote bool) error {
 		return nil // 提案不在投票期
 	}
 
-	// 添加投票
+	// addvote
 	governanceVote := &GovernanceVote{
 		ProposalID: proposalID,
 		Voter:      voter,

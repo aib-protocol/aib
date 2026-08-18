@@ -27,7 +27,7 @@ func LoggingMiddleware(next http.Handler) http.Handler {
 			statusCode:     http.StatusOK,
 		}
 
-		// 处理请求
+		// handlerequest
 		next.ServeHTTP(wrapped, r)
 
 		// 记录日志
@@ -297,7 +297,7 @@ func AuthMiddleware(apiKeys []string) func(http.Handler) http.Handler {
 				return
 			}
 
-			// 验证 API Key
+			// verify API Key
 			if _, ok := keySet[apiKey]; !ok {
 				// 也检查哈希版本
 				hash := sha256.Sum256([]byte(apiKey))

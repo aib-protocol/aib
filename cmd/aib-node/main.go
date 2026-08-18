@@ -65,7 +65,7 @@ const (
 	DefaultBootstrap = "www.aib.one:31415"
 )
 
-// NodeConfig 节点配置
+// NodeConfig nodeconfig
 type NodeConfig struct {
 	DataDir   string
 	APIPort   int
@@ -86,7 +86,7 @@ type Node struct {
 	shutdownCh chan struct{}
 	wg         sync.WaitGroup
 
-	// 网络配置
+	// networkconfig
 	networkCfg *NetworkConfig
 
 	// 核心组件 - 使用持久化存储
@@ -99,7 +99,7 @@ type Node struct {
 	// PoAIW 组件
 	reputationMgr *utxoPkg.ReputationManager
 
-	// P2P 网络
+	// P2P network
 	peerManager *p2p.ChainPeerManager
 	blockSyncer *p2p.ChainBlockSyncer
 	genesisHash string
@@ -273,7 +273,7 @@ func (n *Node) Start() error {
 	chainState.SetConsensus(n.consensus)
 	n.logger.Println("    ✓ Consensus engine initialized")
 
-	// 3b. 初始化 ReputationManager (PoAIW)
+	// 3b. initialize ReputationManager (PoAIW)
 	n.reputationMgr = utxoPkg.NewReputationManager()
 	n.logger.Println("    ✓ Reputation manager initialized (PoAIW)")
 
@@ -305,7 +305,7 @@ func (n *Node) Start() error {
 		return fmt.Errorf("failed to initialize chain: %w", err)
 	}
 
-	// 7. 启动 P2P 网络
+	// 7. start P2P network
 	n.logger.Println("[7/7] Starting P2P network...")
 	if err := n.startP2P(nodeID); err != nil {
 		n.logger.Printf("    ⚠ P2P network failed: %v (running in standalone mode)", err)

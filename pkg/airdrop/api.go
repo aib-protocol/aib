@@ -39,7 +39,7 @@ func NewHandler(config *HandlerConfig) (*Handler, error) {
 	// 创建验证器
 	validator := NewValidator(config.ValidatorConfig)
 
-	// 创建评分器
+	// createscorer
 	scorer := NewScorer(config.ScoringConfig)
 
 	// 创建分发器
@@ -70,7 +70,7 @@ func (h *Handler) setupRoutes() {
 	// 认领空投
 	api.HandleFunc("/claim", h.handleClaim).Methods(http.MethodPost, http.MethodOptions)
 
-	// 查询状态
+	// querystatus
 	api.HandleFunc("/status", h.handleStatus).Methods(http.MethodGet, http.MethodOptions)
 
 	// 统计信息
@@ -92,7 +92,7 @@ func (h *Handler) handleEligibility(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 解析查询参数
+	// parsequeryparameter
 	githubToken := r.URL.Query().Get("github_token")
 	email := r.URL.Query().Get("email")
 	address := r.URL.Query().Get("address")
@@ -101,7 +101,7 @@ func (h *Handler) handleEligibility(w http.ResponseWriter, r *http.Request) {
 	deviceID := h.generateDeviceFingerprint(r)
 	ipAddress := h.getClientIP(r)
 
-	// 验证请求
+	// verifyrequest
 	if githubToken == "" && h.validator.requireGitHub {
 		h.writeError(w, http.StatusBadRequest, "MISSING_GITHUB_TOKEN", "GitHub token is required")
 		return
@@ -112,7 +112,7 @@ func (h *Handler) handleEligibility(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 1. 验证用户
+	// 1. verifyuser
 	verifyResult, err := h.validator.ValidateUser(githubToken, email, deviceID, ipAddress)
 	if err != nil {
 		switch {
@@ -166,7 +166,7 @@ func (h *Handler) handleClaim(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 解析请求
+	// parserequest
 	var req ClaimRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		h.writeError(w, http.StatusBadRequest, "INVALID_JSON", "Invalid request body")
@@ -217,7 +217,7 @@ func (h *Handler) handleClaim(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// handleStatus 处理状态查询
+// handleStatus handlestatusquery
 func (h *Handler) handleStatus(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodOptions {
 		h.writeCORS(w)
@@ -238,7 +238,7 @@ func (h *Handler) handleStatus(w http.ResponseWriter, r *http.Request) {
 	if address != "" {
 		record, found = h.distributor.GetClaim(address)
 	} else {
-		// 解析 GitHub ID
+		// parse GitHub ID
 		var id uint64
 		if _, err := fmt.Sscanf(githubID, "%d", &id); err == nil {
 			record, found = h.distributor.GetClaimByGitHub(id)
@@ -283,7 +283,7 @@ func (h *Handler) handlePublicKey(w http.ResponseWriter, r *http.Request) {
 }
 
 // ============================================================================
-// 请求/响应类型
+// request/responsetype
 // ============================================================================
 
 // EligibilityResponse 资格检查响应
@@ -301,7 +301,7 @@ type ClaimResponse struct {
 	Message string       `json:"message,omitempty"`
 }
 
-// StatusResponse 状态响应
+// StatusResponse statusresponse
 type StatusResponse struct {
 	Claimed bool         `json:"claimed"`
 	Record  *ClaimRecord `json:"record,omitempty"`
@@ -313,7 +313,7 @@ type PublicKeyResponse struct {
 	Algorithm string `json:"algorithm"`
 }
 
-// ErrorResponse 错误响应
+// ErrorResponse errorresponse
 type ErrorResponse struct {
 	Code    string `json:"code"`
 	Message string `json:"message"`
@@ -324,7 +324,7 @@ type ErrorResponse struct {
 // 辅助方法
 // ============================================================================
 
-// writeJSON 写入 JSON 响应
+// writeJSON write JSON response
 func (h *Handler) writeJSON(w http.ResponseWriter, status int, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -333,7 +333,7 @@ func (h *Handler) writeJSON(w http.ResponseWriter, status int, data interface{})
 	json.NewEncoder(w).Encode(data)
 }
 
-// writeError 写入错误响应
+// writeError writeerrorresponse
 func (h *Handler) writeError(w http.ResponseWriter, status int, code, message string) {
 	h.writeJSON(w, status, &ErrorResponse{
 		Code:    code,
@@ -341,7 +341,7 @@ func (h *Handler) writeError(w http.ResponseWriter, status int, code, message st
 	})
 }
 
-// writeCORS 写入 CORS 响应
+// writeCORS write CORS response
 func (h *Handler) writeCORS(w http.ResponseWriter) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
@@ -364,7 +364,7 @@ func (h *Handler) generateDeviceFingerprint(r *http.Request) string {
 
 // getClientIP 获取客户端 IP
 func (h *Handler) getClientIP(r *http.Request) string {
-	// 检查 X-Forwarded-For
+	// check X-Forwarded-For
 	xff := r.Header.Get("X-Forwarded-For")
 	if xff != "" {
 		ips := strings.Split(xff, ",")
@@ -373,7 +373,7 @@ func (h *Handler) getClientIP(r *http.Request) string {
 		}
 	}
 
-	// 检查 X-Real-IP
+	// check X-Real-IP
 	xri := r.Header.Get("X-Real-IP")
 	if xri != "" {
 		return NormalizeIP(xri)
@@ -393,7 +393,7 @@ func (h *Handler) GetValidator() *Validator {
 	return h.validator
 }
 
-// GetScorer 获取评分器
+// GetScorer getscorer
 func (h *Handler) GetScorer() *Scorer {
 	return h.scorer
 }

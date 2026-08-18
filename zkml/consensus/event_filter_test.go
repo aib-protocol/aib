@@ -426,7 +426,7 @@ func TestFilterCombination_OrWithNot(t *testing.T) {
 	}
 }
 
-// ==================== 事件过滤测试 ====================
+// ==================== eventfiltertest ====================
 
 func TestEventBuffer_NewAndAdd(t *testing.T) {
 	buf := NewEventBuffer(10)

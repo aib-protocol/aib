@@ -12,13 +12,13 @@ func TestCreateInferenceChannel(t *testing.T) {
 	userPubKey := [32]byte{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32}
 	nodePubKey := [32]byte{2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33}
 
-	// 创建通道
+	// createchannel
 	channel, err := manager.CreateChannel(userPubKey, nodePubKey, 10000000, 2)
 	if err != nil {
 		t.Fatalf("CreateChannel failed: %v", err)
 	}
 
-	// 验证通道创建成功
+	// verifychannelcreatesuccess
 	if channel.UserBalance != 10000000 {
 		t.Errorf("Expected UserBalance 10000000, got %d", channel.UserBalance)
 	}
@@ -96,7 +96,7 @@ func TestRecordInference(t *testing.T) {
 		t.Fatalf("RecordInference failed: %v", err)
 	}
 
-	// 验证余额更新
+	// verifybalanceupdate
 	fee := InferencePrices[2] // 1000000
 	expectedBalance := initialBalance - fee
 	if channel.UserBalance != expectedBalance {
@@ -186,13 +186,13 @@ func TestSettle(t *testing.T) {
 	_ = channel.RecordInference()
 	_ = channel.RecordInference()
 
-	// 结算
+	// settlement
 	settlement, err := channel.Settle()
 	if err != nil {
 		t.Fatalf("Settle failed: %v", err)
 	}
 
-	// 验证结算数据
+	// verifysettlementdata
 	if settlement.FinalUserBal != channel.UserBalance {
 		t.Errorf("FinalUserBal mismatch: %d vs %d", settlement.FinalUserBal, channel.UserBalance)
 	}
@@ -252,7 +252,7 @@ func TestChallenge(t *testing.T) {
 		t.Fatalf("Challenge failed: %v", err)
 	}
 
-	// 验证通道状态
+	// verifychannelstatus
 	if channel.Status != ICDisputed {
 		t.Errorf("Expected status ICDisputed, got %d", channel.Status)
 	}
@@ -270,7 +270,7 @@ func TestChallenge(t *testing.T) {
 		}
 	}
 
-	// 验证 IsInDispute
+	// verify IsInDispute
 	if !channel.IsInDispute() {
 		t.Error("Expected IsInDispute to return true")
 	}
@@ -306,7 +306,7 @@ func TestCloseChannel(t *testing.T) {
 	userPubKey := [32]byte{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32}
 	nodePubKey := [32]byte{2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33}
 
-	// 创建通道
+	// createchannel
 	channel, err := manager.CreateChannel(userPubKey, nodePubKey, 100000000, 2)
 	if err != nil {
 		t.Fatalf("CreateChannel failed: %v", err)
@@ -318,7 +318,7 @@ func TestCloseChannel(t *testing.T) {
 		t.Fatalf("Close failed: %v", err)
 	}
 
-	// 验证状态
+	// verifystatus
 	if channel.Status != ICClosed {
 		t.Errorf("Expected status ICClosed, got %d", channel.Status)
 	}
@@ -326,12 +326,12 @@ func TestCloseChannel(t *testing.T) {
 		t.Error("ClosedAt should be set")
 	}
 
-	// 验证 IsClosed
+	// verify IsClosed
 	if !channel.IsClosed() {
 		t.Error("Expected IsClosed to return true")
 	}
 
-	// 验证 CanSettle
+	// verify CanSettle
 	if channel.CanSettle() {
 		t.Error("Expected CanSettle to return false for closed channel")
 	}
@@ -425,7 +425,7 @@ func TestMultipleChannels(t *testing.T) {
 		t.Errorf("Expected 5 channels, got %d", count)
 	}
 
-	// 验证 GetChannels
+	// verify GetChannels
 	channels := manager.GetChannels()
 	if len(channels) != 5 {
 		t.Errorf("Expected 5 channels, got %d", len(channels))

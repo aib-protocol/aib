@@ -65,7 +65,7 @@ func TestNewOllamaProvider(t *testing.T) {
 func TestOllamaProvider_Infer(t *testing.T) {
 	// 创建模拟 Ollama 服务器
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// 验证请求方法
+		// verifyrequestmethod
 		if r.Method != http.MethodPost {
 			t.Errorf("期望 POST 请求，得到 %s", r.Method)
 		}
@@ -75,7 +75,7 @@ func TestOllamaProvider_Infer(t *testing.T) {
 			t.Errorf("期望路径 /api/generate，得到 %s", r.URL.Path)
 		}
 
-		// 验证 Content-Type
+		// verify Content-Type
 		if r.Header.Get("Content-Type") != "application/json" {
 			t.Errorf("期望 Content-Type: application/json，得到 %s", r.Header.Get("Content-Type"))
 		}
@@ -168,7 +168,7 @@ func TestOllamaProvider_Infer_ContextTimeout(t *testing.T) {
 	}
 }
 
-// TestOllamaProvider_Infer_HTTPError test HTTP error处理
+// TestOllamaProvider_Infer_HTTPError test HTTP errorhandle
 func TestOllamaProvider_Infer_HTTPError(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -269,7 +269,7 @@ func TestOllamaProvider_ListModels(t *testing.T) {
 	}
 }
 
-// TestNewMockProvider test创建 MockProvider
+// TestNewMockProvider testcreate MockProvider
 func TestNewMockProvider(t *testing.T) {
 	config := &MockConfig{
 		ModelName: "test-model",
@@ -310,7 +310,7 @@ func TestMockProvider_Infer(t *testing.T) {
 
 	ctx := context.Background()
 
-	// test默认响应
+	// testdefaultresponse
 	result, err := p.Infer(ctx, "任意提示词")
 	if err != nil {
 		t.Fatalf("Infer() 失败: %v", err)

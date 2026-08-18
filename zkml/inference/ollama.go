@@ -113,7 +113,7 @@ func (p *OllamaProvider) Infer(ctx context.Context, prompt string) (string, erro
 		return "", fmt.Errorf("ollama: 序列化请求失败: %w", err)
 	}
 
-	// 创建 HTTP 请求
+	// create HTTP request
 	url := p.baseURL + "/api/generate"
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(bodyBytes))
 	if err != nil {
@@ -121,7 +121,7 @@ func (p *OllamaProvider) Infer(ctx context.Context, prompt string) (string, erro
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	// 发送请求
+	// sendrequest
 	resp, err := p.httpClient.Do(req)
 	if err != nil {
 		return "", fmt.Errorf("ollama: 请求失败: %w", err)
@@ -139,7 +139,7 @@ func (p *OllamaProvider) Infer(ctx context.Context, prompt string) (string, erro
 		return "", fmt.Errorf("ollama: 服务器返回error状态码 %d: %s", resp.StatusCode, string(respBody))
 	}
 
-	// 解析响应
+	// parseresponse
 	var result ollamaGenerateResponse
 	if err := json.Unmarshal(respBody, &result); err != nil {
 		return "", fmt.Errorf("ollama: 解析响应失败: %w", err)
@@ -207,7 +207,7 @@ func (p *OllamaProvider) ListModels(ctx context.Context) ([]string, error) {
 		return nil, fmt.Errorf("ollama: 解析模型列表失败: %w", err)
 	}
 
-	// 提取model name列表
+	// withdrawmodel namelist
 	models := make([]string, 0, len(tagsResp.Models))
 	for _, m := range tagsResp.Models {
 		models = append(models, m.Name)

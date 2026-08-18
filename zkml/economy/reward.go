@@ -19,7 +19,7 @@ type RewardDistributor struct {
 	maxHistory     int                // 最大历史记录数
 }
 
-// RewardEvent 奖励事件
+// RewardEvent rewardevent
 type RewardEvent struct {
 	ID        string     `json:"id"`
 	NodeID    string     `json:"node_id"`
@@ -29,7 +29,7 @@ type RewardEvent struct {
 	Timestamp int64      `json:"timestamp"`
 }
 
-// RewardType 奖励类型
+// RewardType rewardtype
 type RewardType string
 
 const (
@@ -101,7 +101,7 @@ func (rd *RewardDistributor) DistributeTaskReward(taskID string, nodeIDs []strin
 	return nil
 }
 
-// DistributeValidationReward 分发验证奖励
+// DistributeValidationReward distributeverifyreward
 func (rd *RewardDistributor) DistributeValidationReward(nodeID string, taskID string) error {
 	if nodeID == "" {
 		return errors.New("节点ID不能为空")
@@ -132,7 +132,7 @@ func (rd *RewardDistributor) DistributeValidationReward(nodeID string, taskID st
 	return nil
 }
 
-// DistributeReporterReward 分发举报奖励
+// DistributeReporterReward distributereportreward
 func (rd *RewardDistributor) DistributeReporterReward(nodeID string, amount float64, taskID string) error {
 	if nodeID == "" {
 		return errors.New("节点ID不能为空")
@@ -161,7 +161,7 @@ func (rd *RewardDistributor) DistributeReporterReward(nodeID string, amount floa
 	return nil
 }
 
-// GetBalance 查询余额
+// GetBalance querybalance
 func (rd *RewardDistributor) GetBalance(nodeID string) float64 {
 	rd.mu.RLock()
 	defer rd.mu.RUnlock()
@@ -224,7 +224,7 @@ func (rd *RewardDistributor) generateEventID(nodeID, taskID string, timestamp in
 	return fmt.Sprintf("%x", hash[:16])
 }
 
-// Export 导出状态
+// Export exportstatus
 func (rd *RewardDistributor) Export() ([]byte, error) {
 	rd.mu.RLock()
 	defer rd.mu.RUnlock()
@@ -243,7 +243,7 @@ func (rd *RewardDistributor) Export() ([]byte, error) {
 		MaxHistory:     rd.maxHistory,
 	}
 
-	// 复制余额
+	// copybalance
 	for k, v := range rd.balances {
 		state.Balances[k] = v
 	}
@@ -263,7 +263,7 @@ func (rd *RewardDistributor) Export() ([]byte, error) {
 	return json.Marshal(state)
 }
 
-// Import 导入状态
+// Import importstatus
 func (rd *RewardDistributor) Import(data []byte) error {
 	var state struct {
 		Balances       map[string]float64 `json:"balances"`

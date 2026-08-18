@@ -68,7 +68,7 @@ func NewUnifiedProvider(config *UnifiedConfig) (*UnifiedProvider, error) {
 		config = DefaultUnifiedConfig()
 	}
 
-	// 验证必需参数
+	// verifyrequiredparameter
 	if config.BaseURL == "" {
 		return nil, fmt.Errorf("unified: base URL is required")
 	}
@@ -141,7 +141,7 @@ func (p *UnifiedProvider) inferOpenAICompatible(ctx context.Context, prompt stri
 		return "", fmt.Errorf("unified: failed to marshal request: %w", err)
 	}
 
-	// 创建 HTTP 请求
+	// create HTTP request
 	req, err := http.NewRequestWithContext(ctx, "POST",
 		fmt.Sprintf("%s/chat/completions", p.config.BaseURL),
 		bytes.NewBuffer(body))
@@ -153,14 +153,14 @@ func (p *UnifiedProvider) inferOpenAICompatible(ctx context.Context, prompt stri
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+p.config.APIKey)
 
-	// 发送请求
+	// sendrequest
 	resp, err := p.httpClient.Do(req)
 	if err != nil {
 		return "", fmt.Errorf("unified: request failed: %w", err)
 	}
 	defer resp.Body.Close()
 
-	// 读取响应
+	// readresponse
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", fmt.Errorf("unified: failed to read response: %w", err)
@@ -171,7 +171,7 @@ func (p *UnifiedProvider) inferOpenAICompatible(ctx context.Context, prompt stri
 			resp.StatusCode, string(respBody))
 	}
 
-	// 解析响应
+	// parseresponse
 	var result struct {
 		Choices []struct {
 			Message struct {
@@ -232,7 +232,7 @@ func (p *UnifiedProvider) inferOllama(ctx context.Context, prompt string) (strin
 			resp.StatusCode, string(respBody))
 	}
 
-	// 解析 Ollama 响应
+	// parse Ollama response
 	var ollamaResp struct {
 		Response string `json:"response"`
 	}
@@ -288,7 +288,7 @@ func (p *UnifiedProvider) inferAnthropic(ctx context.Context, prompt string) (st
 			resp.StatusCode, string(respBody))
 	}
 
-	// 解析 Claude 响应
+	// parse Claude response
 	var claudeResp struct {
 		Content []struct {
 			Text string `json:"text"`
@@ -350,7 +350,7 @@ type ModelPerformance struct {
 	ReliabilityScore   float64       `json:"reliability_score"`    // 可靠性评分
 }
 
-// GetWeight 获取model weight
+// GetWeight getmodel weight
 
 // 权重计算公式：
 // weight = base_weight * (1 + performance_bonus - cost_penalty)
@@ -464,7 +464,7 @@ func (p *UnifiedProvider) ProposeWeightAdjustment(
 	return proposal, nil
 }
 
-// GovernanceVote 治理投票
+// GovernanceVote governancevote
 
 // 任何持币者可以投票
 type GovernanceVote struct {
@@ -495,7 +495,7 @@ func (p *UnifiedProvider) ExecuteProposal(proposal *GovernanceProposal) error {
 			return fmt.Errorf("unified: missing proposed_weight in evidence")
 		}
 
-		// 更新model weight
+		// updatemodel weight
 		if p.modelRegistry != nil {
 			info := p.modelRegistry.GetModelInfo(modelID)
 			if info != nil {

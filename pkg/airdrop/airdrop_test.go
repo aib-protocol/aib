@@ -8,7 +8,7 @@ import (
 	"github.com/aib-protocol/aib/core/crypto"
 )
 
-// TestScorer 测试评分器
+// TestScorer testscorer
 func TestScorer(t *testing.T) {
 	scorer := NewScorer(DefaultScoringConfig())
 
@@ -147,7 +147,7 @@ func TestDeviceFingerprint(t *testing.T) {
 		t.Error("Different inputs should produce different fingerprints")
 	}
 
-	// 测试注册
+	// testregister
 	ok1 := df.CheckAndRegister(fp1)
 	if !ok1 {
 		t.Error("First registration should succeed")
@@ -220,7 +220,7 @@ func TestDistributor(t *testing.T) {
 		t.Fatalf("Failed to create distributor: %v", err)
 	}
 
-	// 测试金额计算
+	// testamountcompute
 	amount := distributor.CalculateAmount(80, 100)
 	if amount.Total == 0 {
 		t.Error("Amount should not be zero for score 80")
@@ -258,7 +258,7 @@ func TestDistributor(t *testing.T) {
 	t.Logf("Remaining: %d", stats.RemainingAmount)
 }
 
-// TestDistributor_Signature 测试签名验证
+// TestDistributor_Signature testsignverify
 func TestDistributor_Signature(t *testing.T) {
 	// 生成测试种子
 	seed := make([]byte, 32)
@@ -296,7 +296,7 @@ func TestDistributor_Signature(t *testing.T) {
 		t.Fatalf("Failed to sign: %v", err)
 	}
 
-	// 验证签名
+	// verifysign
 	valid := distributor.VerifyClaimSignature(address, amount, timestamp, signature)
 	if !valid {
 		t.Error("Valid signature should be verified")
@@ -313,7 +313,7 @@ func TestDistributor_Signature(t *testing.T) {
 	}
 }
 
-// TestAirdropSigner 测试签名器
+// TestAirdropSigner testsigner
 func TestAirdropSigner(t *testing.T) {
 	seed := make([]byte, 32)
 	for i := range seed {
@@ -325,7 +325,7 @@ func TestAirdropSigner(t *testing.T) {
 		t.Fatalf("Failed to create signer: %v", err)
 	}
 
-	// 测试签名
+	// testsign
 	address := "0x1234567890abcdef1234567890abcdef12345678"
 	amount := uint64(1000000)
 	timestamp := time.Now().Unix()
@@ -345,7 +345,7 @@ func TestAirdropSigner(t *testing.T) {
 		t.Errorf("Expected public key length 32, got %d", len(pubKey))
 	}
 
-	// 验证签名
+	// verifysign
 	message := fmt.Sprintf("%s:%d:%d", address, amount, timestamp)
 	valid := crypto.Ed25519Verify(pubKey, []byte(message), signature)
 	if !valid {

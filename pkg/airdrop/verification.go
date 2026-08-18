@@ -16,7 +16,7 @@ import (
 var (
 	// ErrInvalidGitHubToken 无效的 GitHub token
 	ErrInvalidGitHubToken = errors.New("invalid github token")
-	// ErrGitHubVerifyFailed GitHub 验证失败
+	// ErrGitHubVerifyFailed GitHub verifyfailure
 	ErrGitHubVerifyFailed = errors.New("github verification failed")
 	// ErrEmailVerifyFailed 邮箱验证失败
 	ErrEmailVerifyFailed = errors.New("email verification failed")
@@ -45,7 +45,7 @@ type GitHubUserInfo struct {
 	Following   int       `json:"following"`
 }
 
-// VerificationResult 验证结果
+// VerificationResult verifyresult
 type VerificationResult struct {
 	Success   bool            `json:"success"`
 	UserInfo  *GitHubUserInfo `json:"user_info,omitempty"`
@@ -78,7 +78,7 @@ func NewGitHubVerifier(clientID, clientSecret string) *GitHubVerifier {
 	}
 }
 
-// VerifyToken 验证 GitHub OAuth token
+// VerifyToken verify GitHub OAuth token
 func (v *GitHubVerifier) VerifyToken(token string) (*GitHubUserInfo, error) {
 	if token == "" {
 		return nil, ErrInvalidGitHubToken
@@ -89,7 +89,7 @@ func (v *GitHubVerifier) VerifyToken(token string) (*GitHubUserInfo, error) {
 		return cached, nil
 	}
 
-	// 创建请求
+	// createrequest
 	req, err := http.NewRequest("GET", "https://api.github.com/user", nil)
 	if err != nil {
 		return nil, fmt.Errorf("create request: %w", err)
@@ -99,7 +99,7 @@ func (v *GitHubVerifier) VerifyToken(token string) (*GitHubUserInfo, error) {
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("User-Agent", "AIB-Airdrop-Verifier/1.0")
 
-	// 发送请求
+	// sendrequest
 	resp, err := v.httpClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("send request: %w", err)
@@ -110,7 +110,7 @@ func (v *GitHubVerifier) VerifyToken(token string) (*GitHubUserInfo, error) {
 		return nil, ErrGitHubVerifyFailed
 	}
 
-	// 解析响应
+	// parseresponse
 	var userInfo GitHubUserInfo
 	if err := jsonDecode(resp.Body, &userInfo); err != nil {
 		return nil, fmt.Errorf("parse response: %w", err)
@@ -428,7 +428,7 @@ func NewValidator(config *ValidatorConfig) *Validator {
 	}
 }
 
-// ValidateUser 验证用户
+// ValidateUser verifyuser
 func (v *Validator) ValidateUser(githubToken, email, deviceFingerprint, ipAddress string) (*VerificationResult, error) {
 	result := &VerificationResult{
 		Timestamp: time.Now(),

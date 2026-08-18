@@ -216,7 +216,7 @@ func (d *Distributor) CanClaim(address string, githubID uint64, score int) (*Air
 		return nil, ErrTeamAddress
 	}
 
-	// 检查合约地址
+	// checkcontractaddress
 	if d.isContractAddress(address) {
 		return nil, ErrContractAddress
 	}
@@ -241,7 +241,7 @@ func (d *Distributor) Claim(req *ClaimRequest) (*ClaimRecord, error) {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 
-	// 1. 验证签名
+	// 1. verifysign
 	if d.config.RequireSignature {
 		if req.Signature == nil {
 			return nil, ErrInvalidSignature
@@ -273,7 +273,7 @@ func (d *Distributor) Claim(req *ClaimRequest) (*ClaimRecord, error) {
 		record.Signature = sigHex
 	}
 
-	// 5. 更新状态
+	// 5. updatestatus
 	d.claimedAddresses[req.Address] = record
 	d.claimedGitHubIDs[req.GitHubID] = record
 	d.distributedAmount += amount.Total
@@ -306,7 +306,7 @@ type ClaimRequest struct {
 	SignatureHex string `json:"signature_hex,omitempty"`
 }
 
-// verifySignature 验证签名
+// verifySignature verifysign
 func (d *Distributor) verifySignature(req *ClaimRequest) bool {
 	message := fmt.Sprintf("%s:%d:%d", req.Address, req.CalculateAmount(req.Score, 100).Total, req.Timestamp)
 
@@ -522,7 +522,7 @@ func (d *Distributor) ImportClaims(claims []*ClaimRecord) error {
 		}
 	}
 
-	// 导入
+	// import
 	for _, record := range claims {
 		d.claimedAddresses[record.Address] = record
 		d.claimedGitHubIDs[record.GitHubID] = record

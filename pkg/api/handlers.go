@@ -27,7 +27,7 @@ func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
 }
 
 // ============================================================================
-// 节点状态
+// nodestatus
 // ============================================================================
 
 func (s *Server) handleStatus(w http.ResponseWriter, r *http.Request) {
@@ -60,7 +60,7 @@ func (s *Server) handleStatus(w http.ResponseWriter, r *http.Request) {
 }
 
 // ============================================================================
-// 余额查询
+// balancequery
 // ============================================================================
 
 func (s *Server) handleGetBalance(w http.ResponseWriter, r *http.Request) {
@@ -84,7 +84,7 @@ func (s *Server) handleGetBalance(w http.ResponseWriter, r *http.Request) {
 }
 
 // ============================================================================
-// 交易
+// transaction
 // ============================================================================
 
 func (s *Server) handleSubmitTransaction(w http.ResponseWriter, r *http.Request) {
@@ -118,7 +118,7 @@ func (s *Server) handleSubmitTransaction(w http.ResponseWriter, r *http.Request)
 }
 
 // ============================================================================
-// 区块
+// block
 // ============================================================================
 
 func (s *Server) handleGetLatestBlock(w http.ResponseWriter, r *http.Request) {
@@ -191,7 +191,7 @@ func (s *Server) handleGetBlock(w http.ResponseWriter, r *http.Request) {
 }
 
 // ============================================================================
-// P2P 节点列表
+// P2P nodelist
 // ============================================================================
 
 func (s *Server) handlePeers(w http.ResponseWriter, r *http.Request) {

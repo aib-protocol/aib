@@ -35,13 +35,13 @@ const (
 // 请求/响应结构
 // ============================================================================
 
-// StakeRequest 质押请求
+// StakeRequest stakerequest
 type StakeRequest struct {
 	PrivateKey string `json:"private_key"`
 	Amount     string `json:"amount"` // 字符串格式的金额（最小单位）
 }
 
-// StakeResponse 质押响应
+// StakeResponse stakeresponse
 type StakeResponse struct {
 	TxHash       string `json:"tx_hash"`
 	StakeID      string `json:"stake_id"`
@@ -100,7 +100,7 @@ type WalletStakeResponse struct {
 // 质押处理器
 // ============================================================================
 
-// handleStake 处理质押请求
+// handleStake handlestakerequest
 // POST /v1/stake
 func (s *Server) handleStake(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
@@ -114,7 +114,7 @@ func (s *Server) handleStake(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 验证请求参数
+	// verifyrequestparameter
 	if req.PrivateKey == "" {
 		writeError(w, http.StatusBadRequest, ErrCodeInvalidRequest, "Private key is required", "")
 		return
@@ -145,7 +145,7 @@ func (s *Server) handleStake(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 解析金额
+	// parseamount
 	amount, err := strconv.ParseUint(req.Amount, 10, 64)
 	if err != nil {
 		writeError(w, http.StatusBadRequest, ErrCodeInvalidRequest, "Invalid amount format", err.Error())
@@ -175,7 +175,7 @@ func (s *Server) handleStake(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 获取用户地址
+	// getuseraddress
 	address := walletSDK.GetAddress()
 	addressHex := hex.EncodeToString(address[:])
 
@@ -194,7 +194,7 @@ func (s *Server) handleStake(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 构建交易输入
+	// buildtransactioninput
 	inputs := make([]utxo.TXInput, len(selectedUTXOs))
 	for i, u := range selectedUTXOs {
 		inputs[i] = utxo.TXInput{
@@ -203,7 +203,7 @@ func (s *Server) handleStake(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// 构建交易输出
+	// buildtransactionoutput
 	// 输出 0: 质押输出（特殊脚本类型）
 	// 输出 1: 找零（如果有）
 	outputs := []utxo.TXOutput{
@@ -226,7 +226,7 @@ func (s *Server) handleStake(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	// 创建交易
+	// createtransaction
 	tx := utxo.NewTransaction(inputs, outputs)
 
 	// 设置质押输出索引 0 的脚本为质押类型
@@ -256,7 +256,7 @@ func (s *Server) handleStake(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 获取 UTXOProvider
+	// get UTXOProvider
 	utxoProvider, ok := s.utxoStore.(utxo.UTXOProvider)
 	if !ok {
 		writeError(w, http.StatusInternalServerError, ErrCodeInternalError, "UTXO store does not implement UTXOProvider", "")
@@ -272,7 +272,7 @@ func (s *Server) handleStake(w http.ResponseWriter, r *http.Request) {
 	// 计算交易哈希
 	txHash := tx.Hash()
 
-	// 构建响应
+	// buildresponse
 	response := StakeResponse{
 		TxHash:       hex.EncodeToString(txHash[:]),
 		StakeID:      hex.EncodeToString(txHash[:]),
@@ -300,7 +300,7 @@ func (s *Server) handleUnstake(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 验证请求参数
+	// verifyrequestparameter
 	if req.PrivateKey == "" {
 		writeError(w, http.StatusBadRequest, ErrCodeInvalidRequest, "Private key is required", "")
 		return
@@ -331,7 +331,7 @@ func (s *Server) handleUnstake(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 解析金额
+	// parseamount
 	amount, err := strconv.ParseUint(req.Amount, 10, 64)
 	if err != nil {
 		writeError(w, http.StatusBadRequest, ErrCodeInvalidRequest, "Invalid amount format", err.Error())
@@ -344,7 +344,7 @@ func (s *Server) handleUnstake(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 获取用户地址
+	// getuseraddress
 	address := walletSDK.GetAddress()
 	addressHex := hex.EncodeToString(address[:])
 
@@ -383,7 +383,7 @@ func (s *Server) handleUnstake(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 构建交易输入
+	// buildtransactioninput
 	inputs := make([]utxo.TXInput, len(selectedUTXOs))
 	for i, u := range selectedUTXOs {
 		inputs[i] = utxo.TXInput{
@@ -397,7 +397,7 @@ func (s *Server) handleUnstake(w http.ResponseWriter, r *http.Request) {
 	estimatedTxSize := uint64(200)
 	actualFee := feePerByte * estimatedTxSize
 
-	// 构建交易输出
+	// buildtransactionoutput
 	// 输出 0: 解质押输出
 	outputs := []utxo.TXOutput{
 		{
@@ -426,7 +426,7 @@ func (s *Server) handleUnstake(w http.ResponseWriter, r *http.Request) {
 	// 计算解锁高度
 	unlockHeight := currentHeight + UnstakeUnlockBlocks
 
-	// 创建交易
+	// createtransaction
 	tx := utxo.NewTransaction(inputs, outputs)
 	tx.LockTime = uint32(unlockHeight) // 设置解锁时间
 
@@ -457,7 +457,7 @@ func (s *Server) handleUnstake(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 获取 UTXOProvider
+	// get UTXOProvider
 	utxoProvider, ok := s.utxoStore.(utxo.UTXOProvider)
 	if !ok {
 		writeError(w, http.StatusInternalServerError, ErrCodeInternalError, "UTXO store does not implement UTXOProvider", "")
@@ -473,7 +473,7 @@ func (s *Server) handleUnstake(w http.ResponseWriter, r *http.Request) {
 	// 计算交易哈希
 	txHash := tx.Hash()
 
-	// 构建响应
+	// buildresponse
 	response := UnstakeResponse{
 		TxHash:       hex.EncodeToString(txHash[:]),
 		UnstakeID:    hex.EncodeToString(txHash[:]),
@@ -487,7 +487,7 @@ func (s *Server) handleUnstake(w http.ResponseWriter, r *http.Request) {
 	writeSuccess(w, response)
 }
 
-// handleGetStake 查询质押状态
+// handleGetStake querystakestatus
 // GET /v1/wallet/stake?address=0x...
 func (s *Server) handleGetStake(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
@@ -495,14 +495,14 @@ func (s *Server) handleGetStake(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 获取地址参数
+	// getaddressparameter
 	addressStr := r.URL.Query().Get("address")
 	if addressStr == "" {
 		writeError(w, http.StatusBadRequest, ErrCodeInvalidRequest, "Address parameter is required", "")
 		return
 	}
 
-	// 解码地址
+	// decodeaddress
 	var address interfaces.Address
 	addrBytes, err := hex.DecodeString(addressStr)
 	if err != nil {
@@ -601,7 +601,7 @@ func (s *Server) handleGetStake(w http.ResponseWriter, r *http.Request) {
 	// 注意：由于接口限制，这里暂时返回 0
 	var pendingRewards uint64
 
-	// 构建响应
+	// buildresponse
 	response := WalletStakeResponse{
 		Address:        addressStr,
 		TotalStaked:    strconv.FormatUint(totalStaked, 10),

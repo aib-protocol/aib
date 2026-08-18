@@ -90,13 +90,13 @@ func (s *Server) handleHealthDetailed(w http.ResponseWriter, r *http.Request) {
 		AllocatedMemory: m.Alloc,
 	}
 
-	// API 状态
+	// API status
 	apiHealth := APIHealth{
 		Status: "healthy",
 		Uptime: s.Uptime().String(),
 	}
 
-	// 构建响应
+	// buildresponse
 	response := DetailedHealthResponse{
 		Status:     "healthy",
 		Timestamp:  time.Now().UTC(),
@@ -110,7 +110,7 @@ func (s *Server) handleHealthDetailed(w http.ResponseWriter, r *http.Request) {
 	writeSuccess(w, response)
 }
 
-// handleLiveness 处理 Kubernetes liveness probe
+// handleLiveness handle Kubernetes liveness probe
 func (s *Server) handleLiveness(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		writeError(w, http.StatusMethodNotAllowed, ErrCodeInvalidRequest, "Method not allowed", "")
@@ -120,7 +120,7 @@ func (s *Server) handleLiveness(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("OK"))
 }
 
-// handleReadiness 处理 Kubernetes readiness probe
+// handleReadiness handle Kubernetes readiness probe
 func (s *Server) handleReadiness(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		writeError(w, http.StatusMethodNotAllowed, ErrCodeInvalidRequest, "Method not allowed", "")

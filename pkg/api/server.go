@@ -65,7 +65,7 @@ type Server struct {
 	apiKeys        []string // API keys for authentication
 }
 
-// p2pNetworkInterface P2P 网络接口
+// p2pNetworkInterface P2P networkinterface
 type p2pNetworkInterface interface {
 	GetPeerList() []PeerEntry
 }
@@ -88,7 +88,7 @@ func NewP2PNetworkAdapter(getPeerList func() []PeerEntry) *P2PNetworkAdapter {
 	return &P2PNetworkAdapter{getPeerList: getPeerList}
 }
 
-// GetPeerList 获取节点列表
+// GetPeerList getnodelist
 func (a *P2PNetworkAdapter) GetPeerList() []PeerEntry {
 	return a.getPeerList()
 }
@@ -258,7 +258,7 @@ func (s *Server) RegisterRoutes() {
 	s.mux.HandleFunc("/health", s.handleHealth)
 	s.mux.HandleFunc("/v1/status", s.handleStatus)
 
-	// P2P 节点列表
+	// P2P nodelist
 	s.mux.HandleFunc("/v1/peers", s.handlePeers)
 
 	// 健康检查 - 增强版

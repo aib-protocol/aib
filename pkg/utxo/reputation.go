@@ -92,7 +92,7 @@ func VerifyScoreSignature(score *ReputationScore) bool {
 	// 序列化内容
 	data := serializeContent(&score.Content)
 
-	// 验证签名
+	// verifysign
 	return ed25519.Verify(ed25519.PublicKey(score.Signer[:]), data, score.Signature)
 }
 
@@ -102,7 +102,7 @@ func (rm *ReputationManager) SubmitScore(score *ReputationScore) error {
 		return fmt.Errorf("score is nil")
 	}
 
-	// 验证签名
+	// verifysign
 	if !VerifyScoreSignature(score) {
 		return fmt.Errorf("invalid score signature")
 	}
