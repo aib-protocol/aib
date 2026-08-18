@@ -1,44 +1,44 @@
 #!/bin/bash
 #
-# AIB 2.0 节点升级脚本
-# 用法: ./upgrade.sh [选项]
-# 选项:
-#   -v, --version VERSION    指定升级版本 (默认: latest)
-#   -b, --backup-dir DIR     备份目录 (默认: ./backups)
-#   -s, --skip-backup        跳过备份步骤 (不推荐)
-#   -f, --force              强制升级，跳过确认
-#   -d, --dry-run            模拟运行，不执行实际升级
-#   -h, --help               显示帮助信息
+# AIB 2.0 node upgrade script
+# Usage: ./upgrade.sh [options]
+# Options:
+#   -v, --version VERSION    specify the upgrade version (default: latest)
+#   -b, --backup-dir DIR     backup directory (default: ./backups)
+#   -s, --skip-backup        skip backup step (not recommended)
+#   -f, --force              force upgrade, skip confirmation
+#   -d, --dry-run            dry run, no actual upgrade performed
+#   -h, --help               show help information
 #
-# 功能:
-#   1. 备份当前节点数据和配置
-#   2. 下载并验证新版本二进制
-#   3. 更新配置文件
-#   4. 重启节点服务
-#   5. 验证升级成功
+# Features:
+#   1. back up current node data and config
+#   2. download and verify the new binary
+#   3. update the config file
+#   4. restart the node service
+#   5. validate upgrade success
 #
-# 作者: AIB Protocol Team
-# 更新: 2026-03
+# Author: AIB Protocol Team
+# Updated: 2026-03
 #
 
-set -e  # 遇到错误立即退出
-set -u  # 使用未定义变量时退出
-set -o pipefail  # 管道命令失败时退出
+set -e  # exit immediately on errors
+set -u  # exit on undefined variables
+set -o pipefail  # exit on failed pipe commands
 
-# ========== 脚本元数据 ==========
+# ========== script metadata ==========
 SCRIPT_NAME="$(basename "$0")"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 VERSION="2.0.0"
 
-# ========== 颜色输出 ==========
+# ========== colored output ==========
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# ========== 日志函数 ==========
+# ========== logging functions ==========
 log_info() {
     echo -e "${BLUE}[INFO]${NC} $(date '+%Y-%m-%d %H:%M:%S') - $*"
 }
@@ -55,7 +55,7 @@ log_error() {
     echo -e "${RED}[ERROR]${NC} $(date '+%Y-%m-%d %H:%M:%S') - $*" >&2
 }
 
-# ========== 默认配置 ==========
+# ========== default config ==========
 DEFAULT_VERSION="latest"
 DEFAULT_BACKUP_DIR="${SCRIPT_DIR}/backups"
 DEFAULT_DATA_DIR="${PROJECT_DIR}/data"
@@ -64,7 +64,7 @@ BINARY_DIR="${PROJECT_DIR}/bin"
 LOG_DIR="${SCRIPT_DIR}/logs"
 DOWNLOAD_CACHE="/tmp/aib-upgrade"
 
-# 运行时配置
+# runtime config
 VERSION="${DEFAULT_VERSION}"
 BACKUP_DIR="${DEFAULT_BACKUP_DIR}"
 DATA_DIR="${DEFAULT_DATA_DIR}"
@@ -74,45 +74,45 @@ FORCE=false
 DRY_RUN=false
 SERVICE_NAME="aib2-mainnet"
 
-# ========== 帮助信息 ==========
+# ========== help information ==========
 show_help() {
     cat << EOF
-AIB 2.0 节点升级脚本 v${VERSION}
+AIB 2.0 node upgrade script v${VERSION}
 
-用法: ${SCRIPT_NAME} [选项]
+Usage: ${SCRIPT_NAME} [options]
 
-选项:
-  -v, --version VERSION    指定升级版本 (默认: ${DEFAULT_VERSION})
-  -b, --backup-dir DIR     备份目录 (默认: ${DEFAULT_BACKUP_DIR})
-  -d, --data-dir DIR       数据目录 (默认: ${DEFAULT_DATA_DIR})
-  -s, --skip-backup        跳过备份步骤 (不推荐)
-  -f, --force              强制升级，跳过确认
-  -n, --dry-run            模拟运行，不执行实际升级
-  -h, --help               显示此帮助信息
+Options:
+  -v, --version VERSION    specify the upgrade version (default: ${DEFAULT_VERSION})
+  -b, --backup-dir DIR     backup directory (default: ${DEFAULT_BACKUP_DIR})
+  -d, --data-dir DIR       data directory (default: ${DEFAULT_DATA_DIR})
+  -s, --skip-backup        skip backup step (not recommended)
+  -f, --force              force upgrade, skip confirmation
+  -n, --dry-run            dry run, no actual upgrade performed
+  -h, --help               show this help message
 
-示例:
-  ${SCRIPT_NAME}                              # 升级到最新版本
-  ${SCRIPT_NAME} -v 2.1.0                     # 升级到指定版本
-  ${SCRIPT_NAME} -n                           # 模拟运行
-  ${SCRIPT_NAME} -b /custom/backup/path       # 使用自定义备份目录
+Examples:
+  ${SCRIPT_NAME}                              # upgrade to the latest version
+  ${SCRIPT_NAME} -v 2.1.0                     # upgrade to a specified version
+  ${SCRIPT_NAME} -n                           # dry run
+  ${SCRIPT_NAME} -b /custom/backup/path       # use a custom backup directory
 
-升级步骤:
-  1. 检查当前节点状态
-  2. 备份数据和配置
-  3. 下载新版本二进制
-  4. 验证二进制完整性
-  5. 更新配置文件
-  6. 停止当前服务
-  7. 部署新版本
-  8. 启动服务
-  9. 验证升级成功
+upgrade steps:
+  1. check current node status
+  2. back up data and config
+  3. download the new binary
+  4. validate binary integrity
+  5. update the config file
+  6. stop the current service
+  7. deploy the new version
+  8. start the service
+  9. validate upgrade success
 
-更多信息请访问: https://docs.aib.network/upgrade
+for more information visit: https://docs.aib.network/upgrade
 EOF
     exit 0
 }
 
-# ========== 参数解析 ==========
+# ========== parse arguments ==========
 parse_args() {
     while [[ $# -gt 0 ]]; do
         case $1 in
@@ -144,45 +144,45 @@ parse_args() {
                 show_help
                 ;;
             *)
-                log_error "未知参数: $1"
+                log_error "unknown argument: $1"
                 show_help
                 ;;
         esac
     done
 }
 
-# ========== 环境检查 ==========
+# ========== environment check ==========
 check_environment() {
-    log_info "检查运行环境..."
+    log_info "check the runtime environment..."
 
-    # 检查是否为 root 用户
+    # check whether it is root user
     if [[ $EUID -eq 0 ]]; then
-        log_warning "不建议使用 root 用户运行此脚本"
+        log_warning "not recommended root user runs this script"
     fi
 
-    # 检查必要的命令
+    # check required commands
     local required_commands=("curl" "jq" "sha256sum" "systemctl")
     for cmd in "${required_commands[@]}"; do
         if ! command -v "$cmd" &> /dev/null; then
-            log_error "缺少必要命令: $cmd"
+            log_error "missing required command: $cmd"
             return 1
         fi
     done
 
-    # 检查目录权限
+    # check directory permissions
     if [[ ! -w "${PROJECT_DIR}" ]]; then
-        log_error "没有项目目录写权限: ${PROJECT_DIR}"
+        log_error "no write permission on the project directory: ${PROJECT_DIR}"
         return 1
     fi
 
-    # 创建必要的目录
+    # create necessary directories
     mkdir -p "${BACKUP_DIR}" "${LOG_DIR}" "${DOWNLOAD_CACHE}"
 
-    log_success "环境检查通过"
+    log_success "environment check passed"
     return 0
 }
 
-# ========== 获取当前版本 ==========
+# ========== get the current version ==========
 get_current_version() {
     if [[ -f "${BINARY_DIR}/aib-node" ]]; then
         "${BINARY_DIR}/aib-node" --version 2>/dev/null || echo "unknown"
@@ -191,9 +191,9 @@ get_current_version() {
     fi
 }
 
-# ========== 获取最新版本 ==========
+# ========== get the latest version ==========
 get_latest_version() {
-    log_info "检查最新可用版本..."
+    log_info "check the latest available version..."
 
     local api_url="https://api.github.com/repos/aib-protocol/aib/releases/latest"
     local version
@@ -211,30 +211,30 @@ get_latest_version() {
     echo "${version}"
 }
 
-# ========== 检查节点状态 ==========
+# ========== check node status ==========
 check_node_status() {
-    log_info "检查节点状态..."
+    log_info "check node status..."
 
     local is_running=false
 
     if systemctl is-active --quiet "${SERVICE_NAME}" 2>/dev/null; then
         is_running=true
-        log_success "节点服务正在运行"
+        log_success "node service is running"
     elif pgrep -f "aib-node" > /dev/null; then
         is_running=true
-        log_warning "检测到 aib-node 进程，但未通过 systemd 管理"
+        log_warning "detected aib-node process, but not managed by systemd"
     else
-        log_warning "节点服务未运行"
+        log_warning "node service is not running"
     fi
 
-    # 检查节点健康状态
+    # check node health status
     if [[ "${is_running}" == "true" ]]; then
         local health_url="http://localhost:51200/health"
         if command -v curl &> /dev/null; then
             if curl -sf "${health_url}" > /dev/null 2>&1; then
-                log_success "节点健康检查通过"
+                log_success "node health check passed"
             else
-                log_warning "节点健康检查失败，可能存在问题"
+                log_warning "node health check failed, there may be issues"
             fi
         fi
     fi
@@ -242,14 +242,14 @@ check_node_status() {
     return 0
 }
 
-# ========== 备份数据 ==========
+# ========== backup data ==========
 backup_data() {
     if [[ "${SKIP_BACKUP}" == "true" ]]; then
-        log_warning "已跳过备份步骤 (不推荐)"
+        log_warning "backup step skipped (not recommended)"
         return 0
     fi
 
-    log_info "开始备份数据..."
+    log_info "start backing up data..."
 
     local timestamp=$(date '+%Y%m%d_%H%M%S')
     local backup_path="${BACKUP_DIR}/upgrade_${timestamp}"
@@ -257,57 +257,57 @@ backup_data() {
 
     mkdir -p "${backup_path}"
 
-    # 备份数据目录
+    # back up the data directory
     if [[ -d "${DATA_DIR}" ]]; then
-        log_info "备份数据目录..."
+        log_info "back up the data directory..."
         tar -czf "${backup_path}/data.tar.gz" -C "${DATA_DIR}" . || {
-            log_error "数据目录备份失败"
+            log_error "failed to back up the data directory"
             return 1
         }
     fi
 
-    # 备份配置目录
+    # back up the config directory
     if [[ -d "${CONFIG_DIR}" ]]; then
-        log_info "备份配置目录..."
+        log_info "back up the config directory..."
         tar -czf "${backup_path}/config.tar.gz" -C "${CONFIG_DIR}" . || {
-            log_error "配置目录备份失败"
+            log_error "failed to back up the config directory"
             return 1
         }
     fi
 
-    # 备份当前二进制
+    # back up the current binary
     if [[ -f "${BINARY_DIR}/aib-node" ]]; then
-        log_info "备份当前二进制..."
+        log_info "back up the current binary..."
         cp "${BINARY_DIR}/aib-node" "${backup_path}/aib-node.backup" || {
-            log_error "二进制备份失败"
+            log_error "binary backup failed"
             return 1
         }
     fi
 
-    # 记录版本信息
+    # record version info
     cat > "${backup_path}/backup_info.txt" << EOF
-备份时间: ${timestamp}
-当前版本: ${current_version}
-目标版本: ${VERSION}
-数据目录: ${DATA_DIR}
-配置目录: ${CONFIG_DIR}
+backup time: ${timestamp}
+current version: ${current_version}
+target version: ${VERSION}
+data directory: ${DATA_DIR}
+config directory: ${CONFIG_DIR}
 EOF
 
-    # 创建备份校验和
+    # create backup checksum
     cd "${backup_path}"
     sha256sum *.tar.gz *.backup > checksums.txt 2>/dev/null || true
     cd - > /dev/null
 
-    log_success "备份完成: ${backup_path}"
+    log_success "backupcomplete: ${backup_path}"
     echo "${backup_path}" > "${BACKUP_DIR}/.last_backup"
 
     return 0
 }
 
-# ========== 下载新版本 ==========
+# ========== download the new version ==========
 download_version() {
     local target_version="$1"
-    log_info "下载版本 ${target_version}..."
+    log_info "download version ${target_version}..."
 
     local download_url="https://github.com/aib-protocol/aib/releases/download/v${target_version}/aib-node-linux-amd64"
     local checksum_url="https://github.com/aib-protocol/aib/releases/download/v${target_version}/checksums.txt"
@@ -317,151 +317,151 @@ download_version() {
         download_url="https://github.com/aib-protocol/aib/releases/latest/download/aib-node-linux-amd64"
     fi
 
-    log_info "下载地址: ${download_url}"
+    log_info "download URL: ${download_url}"
 
-    # 下载二进制
+    # download binary
     if [[ "${DRY_RUN}" == "true" ]]; then
-        log_info "[DRY-RUN] 将下载: ${download_url}"
+        log_info "[DRY-RUN] will download: ${download_url}"
         return 0
     fi
 
     curl -L -o "${DOWNLOAD_CACHE}/aib-node" "${download_url}" || {
-        log_error "下载失败"
+        log_error "download failed"
         return 1
     }
 
-    # 下载校验和
+    # download checksum
     curl -L -o "${DOWNLOAD_CACHE}/checksums.txt" "${checksum_url}" || {
-        log_warning "校验和文件下载失败，跳过验证"
+        log_warning "checksum file download failed, skipping validation"
     }
 
-    # 设置执行权限
+    # set executable permissions
     chmod +x "${DOWNLOAD_CACHE}/aib-node"
 
-    log_success "下载完成"
+    log_success "download complete"
     return 0
 }
 
-# ========== 验证二进制 ==========
+# ========== validatebinary ==========
 verify_binary() {
-    log_info "验证二进制文件..."
+    log_info "validate the binary file..."
 
     local downloaded="${DOWNLOAD_CACHE}/aib-node"
 
     if [[ ! -f "${downloaded}" ]]; then
-        log_error "下载的文件不存在"
+        log_error "downloaded file does not exist"
         return 1
     fi
 
-    # 检查文件大小
+    # check file size
     local size=$(stat -f%z "${downloaded}" 2>/dev/null || stat -c%s "${downloaded}" 2>/dev/null)
     if [[ ${size} -lt 1000000 ]]; then
-        log_error "文件大小异常: ${size} bytes"
+        log_error "abnormal file size: ${size} bytes"
         return 1
     fi
 
-    # 验证校验和（如果可用）
+    # validate checksum (if available)
     if [[ -f "${DOWNLOAD_CACHE}/checksums.txt" ]]; then
         local calculated=$(sha256sum "${downloaded}" | awk '{print $1}')
         local expected=$(grep "aib-node-linux-amd64" "${DOWNLOAD_CACHE}/checksums.txt" | awk '{print $1}')
 
         if [[ -n "${expected}" && "${calculated}" != "${expected}" ]]; then
-            log_error "校验和不匹配"
-            log_error "期望: ${expected}"
-            log_error "实际: ${calculated}"
+            log_error "checksum mismatch"
+            log_error "expected: ${expected}"
+            log_error "actual: ${calculated}"
             return 1
         fi
-        log_success "校验和验证通过"
+        log_success "checksum validation passed"
     else
-        log_warning "未找到校验和文件，跳过校验和验证"
+        log_warning "checksum file not found, skipping checksum validation"
     fi
 
-    # 检查二进制是否可执行
+    # check whether the binary is executable
     if ! "${downloaded}" --version &> /dev/null; then
-        log_error "二进制文件无法执行或损坏"
+        log_error "binary not executable or corrupted"
         return 1
     fi
 
-    log_success "二进制验证通过"
+    log_success "binaryvalidatepassed"
     return 0
 }
 
-# ========== 更新配置文件 ==========
+# ========== update the config file ==========
 update_config() {
-    log_info "检查配置文件更新..."
+    log_info "check config file updates..."
 
     local config_file="${CONFIG_DIR}/config.toml"
 
     if [[ ! -f "${config_file}" ]]; then
-        log_warning "配置文件不存在: ${config_file}"
+        log_warning "config file does not exist: ${config_file}"
         return 0
     fi
 
-    # 配置迁移逻辑（根据版本变化）
-    # 示例：添加新的配置项
-    log_info "配置文件无需更新"
+    # config migration logic (per version changes）
+    # example: add a new config item
+    log_info "config file needs no update"
 
     return 0
 }
 
-# ========== 停止服务 ==========
+# ========== Stop Service ==========
 stop_service() {
-    log_info "停止节点服务..."
+    log_info "stop the node service..."
 
     if systemctl is-active --quiet "${SERVICE_NAME}" 2>/dev/null; then
         if [[ "${DRY_RUN}" == "true" ]]; then
-            log_info "[DRY-RUN] 将停止服务: ${SERVICE_NAME}"
+            log_info "[DRY-RUN] will stop the service: ${SERVICE_NAME}"
             return 0
         fi
 
         systemctl stop "${SERVICE_NAME}" || {
-            log_error "停止服务失败"
+            log_error "failed to stop service"
             return 1
         }
 
-        # 等待服务完全停止
+        # wait for the service to fully stop
         local count=0
         while systemctl is-active --quiet "${SERVICE_NAME}" 2>/dev/null; do
             sleep 1
             count=$((count + 1))
             if [[ ${count} -gt 30 ]]; then
-                log_error "服务停止超时"
+                log_error "service stop timed out"
                 return 1
             fi
         done
 
-        log_success "服务已停止"
+        log_success "service stopped"
     else
-        log_info "服务未在运行"
+        log_info "service is not running"
     fi
 
     return 0
 }
 
-# ========== 部署新版本 ==========
+# ========== deploy the new version ==========
 deploy_binary() {
-    log_info "部署新版本二进制..."
+    log_info "deploy the new binary..."
 
     local source="${DOWNLOAD_CACHE}/aib-node"
     local target="${BINARY_DIR}/aib-node"
 
     if [[ "${DRY_RUN}" == "true" ]]; then
-        log_info "[DRY-RUN] 将部署: ${source} -> ${target}"
+        log_info "[DRY-RUN] will deploy: ${source} -> ${target}"
         return 0
     fi
 
-    # 备份旧版本
+    # back up the old version
     if [[ -f "${target}" ]]; then
         mv "${target}" "${target}.old" || {
-            log_error "备份旧版本失败"
+            log_error "failed to back up the old version"
             return 1
         }
     fi
 
-    # 部署新版本
+    # deploy the new version
     cp "${source}" "${target}" || {
-        log_error "部署新版本失败"
-        # 尝试恢复
+        log_error "failed to deploy the new version"
+        # attempt to restore
         if [[ -f "${target}.old" ]]; then
             mv "${target}.old" "${target}"
         fi
@@ -470,216 +470,216 @@ deploy_binary() {
 
     chmod +x "${target}"
 
-    log_success "新版本部署完成"
+    log_success "new version deployed"
     return 0
 }
 
-# ========== 启动服务 ==========
+# ========== start the service ==========
 start_service() {
-    log_info "启动节点服务..."
+    log_info "start the node service..."
 
     if [[ "${DRY_RUN}" == "true" ]]; then
-        log_info "[DRY-RUN] 将启动服务: ${SERVICE_NAME}"
+        log_info "[DRY-RUN] will start the service: ${SERVICE_NAME}"
         return 0
     fi
 
     systemctl start "${SERVICE_NAME}" || {
-        log_error "启动服务失败"
+        log_error "failed to start service"
         return 1
     }
 
-    # 等待服务启动
+    # wait for the service to start
     local count=0
     while ! systemctl is-active --quiet "${SERVICE_NAME}" 2>/dev/null; do
         sleep 1
         count=$((count + 1))
         if [[ ${count} -gt 30 ]]; then
-            log_error "服务启动超时"
+            log_error "service start timed out"
             return 1
         fi
     done
 
-    log_success "服务已启动"
+    log_success "service started"
     return 0
 }
 
-# ========== 验证升级 ==========
+# ========== validate upgrade ==========
 verify_upgrade() {
-    log_info "验证升级结果..."
+    log_info "validate upgrade result..."
 
-    sleep 5  # 等待服务完全启动
+    sleep 5  # wait for the service to fully start
 
-    # 检查服务状态
+    # check service status
     if ! systemctl is-active --quiet "${SERVICE_NAME}" 2>/dev/null; then
-        log_error "服务未运行"
+        log_error "service is not running"
         return 1
     fi
 
-    # 检查版本
+    # check version
     local new_version=$("${BINARY_DIR}/aib-node" --version 2>/dev/null)
-    log_success "当前版本: ${new_version}"
+    log_success "current version: ${new_version}"
 
-    # 检查节点同步状态
+    # check node sync status
     local health_url="http://localhost:51200/health"
     if curl -sf "${health_url}" > /dev/null 2>&1; then
-        log_success "节点健康检查通过"
+        log_success "node health check passed"
     else
-        log_warning "节点健康检查失败，请手动验证"
+        log_warning "node health check failed, please verify manually"
     fi
 
     return 0
 }
 
-# ========== 清理 ==========
+# ========== Cleanup ==========
 cleanup() {
-    log_info "清理临时文件..."
+    log_info "clean up temporary files..."
 
     rm -rf "${DOWNLOAD_CACHE}"
 
-    log_success "清理完成"
+    log_success "cleanup complete"
 }
 
-# ========== 回滚 ==========
+# ========== rollback ==========
 rollback() {
     local backup_path="$1"
 
-    log_error "升级失败，开始回滚..."
+    log_error "upgrade failed, starting rollback..."
 
     if [[ -z "${backup_path}" || ! -d "${backup_path}" ]]; then
-        log_error "备份路径无效: ${backup_path}"
+        log_error "invalid backup path: ${backup_path}"
         return 1
     fi
 
-    # 恢复二进制
+    # restore binary
     if [[ -f "${backup_path}/aib-node.backup" ]]; then
         cp "${backup_path}/aib-node.backup" "${BINARY_DIR}/aib-node"
         chmod +x "${BINARY_DIR}/aib-node"
-        log_info "已恢复二进制文件"
+        log_info "binary restored"
     fi
 
-    # 恢复数据（可选，需要用户确认）
-    log_warning "数据恢复需要手动执行，请使用 rollback.sh 脚本"
+    # restore data (optional, requires user confirmation）
+    log_warning "data restore must be run manually, use rollback.sh script"
 
     return 0
 }
 
-# ========== 主流程 ==========
+# ========== main flow ==========
 main() {
-    log_info "AIB 2.0 节点升级脚本启动"
-    log_info "项目目录: ${PROJECT_DIR}"
+    log_info "AIB 2.0 node upgrade script started"
+    log_info "Project directory: ${PROJECT_DIR}"
 
-    # 解析参数
+    # parse arguments
     parse_args "$@"
 
-    # 环境检查
+    # environment check
     check_environment || exit 1
 
-    # 检查节点状态
+    # check node status
     check_node_status || exit 1
 
-    # 获取版本信息
+    # get version info
     local current_version=$(get_current_version)
-    log_info "当前版本: ${current_version}"
+    log_info "current version: ${current_version}"
 
     if [[ "${VERSION}" == "latest" ]]; then
         VERSION=$(get_latest_version)
     fi
-    log_info "目标版本: ${VERSION}"
+    log_info "target version: ${VERSION}"
 
-    # 确认升级
+    # confirm upgrade
     if [[ "${FORCE}" != "true" && "${DRY_RUN}" != "true" ]]; then
         echo
-        echo -e "${YELLOW}即将从 ${current_version} 升级到 ${VERSION}${NC}"
-        read -p "确认继续? (y/N) " -n 1 -r
+        echo -e "${YELLOW}about to ${current_version} upgrade to ${VERSION}${NC}"
+        read -p "Continue? (y/N) " -n 1 -r
         echo
         if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-            log_info "升级已取消"
+            log_info "upgrade cancelled"
             exit 0
         fi
     fi
 
-    # 执行升级流程
+    # execute the upgrade flow
     local backup_path=""
     local step=0
     local total_steps=8
 
-    # 1. 备份
+    # 1. backup
     step=$((step + 1))
-    log_info "[${step}/${total_steps}] 备份数据..."
+    log_info "[${step}/${total_steps}] backup data..."
     backup_data || {
-        log_error "备份失败，升级中止"
+        log_error "backup failed, upgrade aborted"
         exit 1
     }
     backup_path=$(cat "${BACKUP_DIR}/.last_backup" 2>/dev/null)
 
-    # 2. 下载
+    # 2. download
     step=$((step + 1))
-    log_info "[${step}/${total_steps}] 下载新版本..."
+    log_info "[${step}/${total_steps}] download the new version..."
     download_version "${VERSION}" || {
-        log_error "下载失败"
+        log_error "download failed"
         rollback "${backup_path}"
         exit 1
     }
 
-    # 3. 验证
+    # 3. validate
     step=$((step + 1))
-    log_info "[${step}/${total_steps}] 验证二进制..."
+    log_info "[${step}/${total_steps}] validatebinary..."
     verify_binary || {
-        log_error "验证失败"
+        log_error "validatefailed"
         exit 1
     }
 
-    # 4. 更新配置
+    # 4. update config
     step=$((step + 1))
-    log_info "[${step}/${total_steps}] 更新配置..."
+    log_info "[${step}/${total_steps}] update config..."
     update_config || {
-        log_warning "配置更新失败，继续升级"
+        log_warning "config update failed, continuing upgrade"
     }
 
-    # 5. 停止服务
+    # 5. Stop service
     step=$((step + 1))
-    log_info "[${step}/${total_steps}] 停止服务..."
+    log_info "[${step}/${total_steps}] Stopping service..."
     stop_service || {
-        log_error "停止服务失败"
+        log_error "failed to stop service"
         exit 1
     }
 
-    # 6. 部署
+    # 6. deploy
     step=$((step + 1))
-    log_info "[${step}/${total_steps}] 部署新版本..."
+    log_info "[${step}/${total_steps}] deploy the new version..."
     deploy_binary || {
-        log_error "部署失败，尝试回滚..."
+        log_error "deploy failed, attempting rollback..."
         rollback "${backup_path}"
         exit 1
     }
 
-    # 7. 启动服务
+    # 7. start the service
     step=$((step + 1))
-    log_info "[${step}/${total_steps}] 启动服务..."
+    log_info "[${step}/${total_steps}] start the service..."
     start_service || {
-        log_error "启动失败，尝试回滚..."
+        log_error "start failed, attempting rollback..."
         rollback "${backup_path}"
         exit 1
     }
 
-    # 8. 验证
+    # 8. validate
     step=$((step + 1))
-    log_info "[${step}/${total_steps}] 验证升级..."
+    log_info "[${step}/${total_steps}] validate upgrade..."
     verify_upgrade || {
-        log_warning "升级验证失败，请手动检查节点状态"
+        log_warning "upgrade validation failed, please check node status manually"
     }
 
-    # 清理
+    # Cleanup
     cleanup
 
-    # 完成
+    # complete
     echo
-    log_success "====== 升级完成 ======"
-    log_success "备份位置: ${backup_path}"
-    log_success "如遇问题，请使用 rollback.sh 脚本回滚"
+    log_success "====== upgrade complete ======"
+    log_success "backup location: ${backup_path}"
+    log_success "if issues arise, use rollback.sh script rollback"
 
     exit 0
 }
 
-# ========== 入口 ==========
+# ========== Entry Point ==========
 main "$@"

@@ -1,37 +1,37 @@
 #!/bin/bash
 #
-# AIB 2.0 紧急回滚脚本
-# 用法: ./rollback.sh [选项]
-# 选项:
-#   -b, --backup BACKUP_PATH    指定备份路径
-#   -l, --list                  列出可用备份
-#   -s, --service SERVICE       服务名 (默认: aib2-mainnet)
-#   -f, --force                 强制回滚，跳过确认
-#   -h, --help                  显示帮助信息
+# AIB 2.0 emergency rollback script
+# Usage: ./rollback.sh [options]
+# Options:
+#   -b, --backup BACKUP_PATH    specify backup path
+#   -l, --list                  list available backups
+#   -s, --service SERVICE       service name (default: aib2-mainnet)
+#   -f, --force                 force rollback, skip confirmation
+#   -h, --help                  show help information
 #
-# 功能:
-#   1. 列出可用备份
-#   2. 恢复二进制文件
-#   3. 恢复配置文件
-#   4. 恢复数据目录
-#   5. 重启节点服务
-#   6. 验证回滚结果
+# Features:
+#   1. list available backups
+#   2. restore binary file
+#   3. restore the config file
+#   4. restore the data directory
+#   5. restart the node service
+#   6. validate rollback result
 #
-# 作者: AIB Protocol Team
-# 更新: 2026-03
+# Author: AIB Protocol Team
+# Updated: 2026-03
 #
 
 set -e
 set -u
 set -o pipefail
 
-# ========== 脚本元数据 ==========
+# ========== script metadata ==========
 SCRIPT_NAME="$(basename "$0")"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 VERSION="2.0.0"
 
-# ========== 颜色输出 ==========
+# ========== colored output ==========
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -39,7 +39,7 @@ BLUE='\033[0;34m'
 CYAN='\033[0;36m'
 NC='\033[0m'
 
-# ========== 日志函数 ==========
+# ========== logging functions ==========
 log_info() {
     echo -e "${BLUE}[INFO]${NC} $*"
 }
@@ -60,7 +60,7 @@ log_critical() {
     echo -e "${RED}[CRITICAL]${NC} $*" >&2
 }
 
-# ========== 配置变量 ==========
+# ========== config variables ==========
 BACKUP_DIR="${SCRIPT_DIR}/backups"
 SERVICE_NAME="aib2-mainnet"
 FORCE_ROLLBACK=false
@@ -68,51 +68,51 @@ BINARY_DIR="${PROJECT_DIR}/bin"
 DATA_DIR="${PROJECT_DIR}/data"
 CONFIG_DIR="${PROJECT_DIR}/config"
 
-# ========== 帮助信息 ==========
+# ========== help information ==========
 show_help() {
     cat << EOF
-AIB 2.0 紧急回滚脚本 v${VERSION}
+AIB 2.0 emergency rollback script v${VERSION}
 
-用法: ${SCRIPT_NAME} [选项]
+Usage: ${SCRIPT_NAME} [options]
 
-选项:
-  -b, --backup BACKUP_PATH    指定备份路径
-  -l, --list                  列出可用备份
-  -s, --service SERVICE       服务名 (默认: ${SERVICE_NAME})
-  -f, --force                 强制回滚，跳过确认
-  -h, --help                  显示帮助信息
+Options:
+  -b, --backup BACKUP_PATH    specify backup path
+  -l, --list                  list available backups
+  -s, --service SERVICE       service name (default: ${SERVICE_NAME})
+  -f, --force                 force rollback, skip confirmation
+  -h, --help                  show help information
 
-示例:
-  # 列出可用备份
+Examples:
+  # list available backups
   ${SCRIPT_NAME} -l
 
-  # 回滚到指定备份
+  # roll back to the specified backup
   ${SCRIPT_NAME} -b /path/to/backup
 
-  # 强制回滚
+  # force rollback
   ${SCRIPT_NAME} -b backup_path -f
 
-  # 回滚到最近的备份
+  # roll back to the most recent backup
   ${SCRIPT_NAME} -b latest
 
-回滚流程:
-  1. 停止节点服务
-  2. 恢复二进制文件
-  3. 恢复数据目录
-  4. 恢复配置文件
-  5. 启动节点服务
-  6. 验证回滚结果
+rollback flow:
+  1. stop the node service
+  2. restore binary file
+  3. restore the data directory
+  4. restore the config file
+  5. start the node service
+  6. validate rollback result
 
-警告:
-  - 回滚会停止节点服务
-  - 数据恢复是破坏性操作
-  - 回滚后需要重新同步
-  - 建议在紧急情况下使用
+warning:
+  - rollback will stop the node service
+  - data restore is a destructive operation
+  - re-sync may be needed after rollback
+  - recommended for emergency use
 EOF
     exit 0
 }
 
-# ========== 参数解析 ==========
+# ========== parse arguments ==========
 parse_args() {
     while [[ $# -gt 0 ]]; do
         case $1 in
@@ -136,19 +136,19 @@ parse_args() {
                 show_help
                 ;;
             *)
-                log_error "未知参数: $1"
+                log_error "unknown argument: $1"
                 show_help
                 ;;
         esac
     done
 }
 
-# ========== 列出备份 ==========
+# ========== list backups ==========
 list_backups() {
-    log_info "列出可用备份..."
+    log_info "list available backups..."
 
     if [[ ! -d "${BACKUP_DIR}" ]]; then
-        log_error "备份目录不存在: ${BACKUP_DIR}"
+        log_error "backup directory does not exist: ${BACKUP_DIR}"
         return 1
     fi
 
@@ -158,12 +158,12 @@ list_backups() {
     done < <(find "${BACKUP_DIR}" -type d -name "upgrade_*" -print0 2>/dev/null | sort -rz)
 
     if [[ ${#backups[@]} -eq 0 ]]; then
-        log_warning "未找到备份"
+        log_warning "backup not found"
         return 0
     fi
 
     echo
-    echo "可用备份列表:"
+    echo "available backup list:"
     echo "==============="
 
     local i=0
@@ -174,50 +174,50 @@ list_backups() {
 
         echo
         echo "${i}. ${timestamp}"
-        echo "   路径: ${backup}"
+        echo "   path: ${backup}"
 
         if [[ -f "${info_file}" ]]; then
-            echo "   详情:"
+            echo "   details:"
             while IFS= read -r line; do
                 echo "     ${line}"
             done < "${info_file}"
         fi
 
-        # 检查备份完整性
-        local integrity="未知"
+        # check backup integrity
+        local integrity="unknown"
         if [[ -f "${backup}/checksums.txt" ]]; then
-            integrity="已验证"
+            integrity="verified"
         elif [[ -f "${backup}/data.tar.gz" && -f "${backup}/config.tar.gz" ]]; then
-            integrity="完整"
+            integrity="complete"
         else
-            integrity="不完整"
+            integrity="incomplete"
         fi
-        echo "   状态: ${integrity}"
+        echo "   status: ${integrity}"
     done
 
     echo
-    echo "使用: ${SCRIPT_NAME} -b <路径> 进行回滚"
+    echo "Usage: ${SCRIPT_NAME} -b <path> perform rollback"
     return 0
 }
 
-# ========== 获取备份信息 ==========
+# ========== get backup info ==========
 get_backup_info() {
     local backup_path="$1"
     local info_file="${backup_path}/backup_info.txt"
 
     if [[ ! -f "${info_file}" ]]; then
-        echo "备份信息文件不存在"
+        echo "backup info file does not exist"
         return 1
     fi
 
     cat "${info_file}"
 }
 
-# ========== 检查备份完整性 ==========
+# ========== check backup integrity ==========
 check_backup_integrity() {
     local backup_path="$1"
 
-    log_info "检查备份完整性: ${backup_path}"
+    log_info "check backup integrity: ${backup_path}"
 
     local files=(
         "data.tar.gz"
@@ -234,217 +234,217 @@ check_backup_integrity() {
     done
 
     if [[ ${#missing[@]} -gt 0 ]]; then
-        log_error "备份不完整，缺少文件:"
+        log_error "backup incomplete, missing files:"
         for file in "${missing[@]}"; do
             echo "  - ${file}"
         done
         return 1
     fi
 
-    # 验证校验和
+    # validatechecksum
     if [[ -f "${backup_path}/checksums.txt" ]]; then
         cd "${backup_path}"
         if sha256sum -c checksums.txt > /dev/null 2>&1; then
-            log_success "备份完整性验证通过"
+            log_success "backup integrity validation passed"
         else
-            log_error "备份完整性验证失败"
+            log_error "backup integrity validation failed"
             return 1
         fi
         cd - > /dev/null
     else
-        log_warning "未找到校验和文件，跳过完整性验证"
+        log_warning "notchecksum file not found, skipping integrity validation"
     fi
 
     return 0
 }
 
-# ========== 停止服务 ==========
+# ========== Stop Service ==========
 stop_service() {
-    log_info "停止节点服务..."
+    log_info "stop the node service..."
 
     if systemctl is-active --quiet "${SERVICE_NAME}" 2>/dev/null; then
-        log_info "停止服务: ${SERVICE_NAME}"
+        log_info "Stop service: ${SERVICE_NAME}"
         systemctl stop "${SERVICE_NAME}" || {
-            log_error "停止服务失败"
+            log_error "failed to stop service"
             return 1
         }
 
-        # 等待服务完全停止
+        # wait for the service to fully stop
         local count=0
         while systemctl is-active --quiet "${SERVICE_NAME}" 2>/dev/null; do
             sleep 1
             count=$((count + 1))
             if [[ ${count} -gt 30 ]]; then
-                log_error "服务停止超时"
+                log_error "service stop timed out"
                 return 1
             fi
         done
 
-        log_success "服务已停止"
+        log_success "service stopped"
     else
-        log_info "服务未在运行"
+        log_info "service is not running"
     fi
 
     return 0
 }
 
-# ========== 恢复二进制 ==========
+# ========== restore binary ==========
 restore_binary() {
     local backup_path="$1"
     local backup_binary="${backup_path}/aib-node.backup"
     local target_binary="${BINARY_DIR}/aib-node"
 
-    log_info "恢复二进制文件..."
+    log_info "restore binary file..."
 
     if [[ ! -f "${backup_binary}" ]]; then
-        log_error "备份二进制文件不存在: ${backup_binary}"
+        log_error "backup binary does not exist: ${backup_binary}"
         return 1
     fi
 
-    # 检查当前二进制
+    # check the current binary
     if [[ -f "${target_binary}" ]]; then
-        log_info "备份当前二进制: ${target_binary}.old"
+        log_info "back up the current binary: ${target_binary}.old"
         mv "${target_binary}" "${target_binary}.old" || {
-            log_error "备份当前二进制失败"
+            log_error "failed to back up the current binary"
             return 1
         }
     fi
 
-    # 恢复备份二进制
+    # restore the backup binary
     cp "${backup_binary}" "${target_binary}" || {
-        log_error "恢复二进制失败"
+        log_error "failed to restore the binary"
         return 1
     }
 
     chmod +x "${target_binary}"
 
-    log_success "二进制恢复完成"
+    log_success "binary restore complete"
     return 0
 }
 
-# ========== 恢复数据 ==========
+# ========== Restore Data ==========
 restore_data() {
     local backup_path="$1"
     local backup_data="${backup_path}/data.tar.gz"
 
-    log_info "恢复数据目录..."
+    log_info "restore the data directory..."
 
     if [[ ! -f "${backup_data}" ]]; then
-        log_error "备份数据不存在: ${backup_data}"
+        log_error "backup data does not exist: ${backup_data}"
         return 1
     fi
 
-    # 检查当前数据
+    # check current data
     if [[ -d "${DATA_DIR}" ]]; then
-        log_info "备份当前数据: ${DATA_DIR}.old"
+        log_info "back up current data: ${DATA_DIR}.old"
         mv "${DATA_DIR}" "${DATA_DIR}.old" || {
-            log_error "备份当前数据失败"
+            log_error "failed to back up current data"
             return 1
         }
     fi
 
-    # 创建数据目录
+    # create the data directory
     mkdir -p "${DATA_DIR}"
 
-    # 恢复数据
+    # Restore data
     tar -xzf "${backup_data}" -C "${DATA_DIR}" || {
-        log_error "恢复数据失败"
+        log_error "failed to restore data"
         return 1
     }
 
-    log_success "数据恢复完成"
+    log_success "data restore complete"
     return 0
 }
 
-# ========== 恢复配置 ==========
+# ========== Restore Config ==========
 restore_config() {
     local backup_path="$1"
     local backup_config="${backup_path}/config.tar.gz"
 
-    log_info "恢复配置文件..."
+    log_info "restore the config file..."
 
     if [[ ! -f "${backup_config}" ]]; then
-        log_error "备份配置不存在: ${backup_config}"
+        log_error "backup config does not exist: ${backup_config}"
         return 1
     fi
 
-    # 检查当前配置
+    # check current config
     if [[ -d "${CONFIG_DIR}" ]]; then
-        log_info "备份当前配置: ${CONFIG_DIR}.old"
+        log_info "back up the current config: ${CONFIG_DIR}.old"
         mv "${CONFIG_DIR}" "${CONFIG_DIR}.old" || {
-            log_error "备份当前配置失败"
+            log_error "failed to back up the current config"
             return 1
         }
     fi
 
-    # 创建配置目录
+    # create the config directory
     mkdir -p "${CONFIG_DIR}"
 
-    # 恢复配置
+    # Restore config
     tar -xzf "${backup_config}" -C "${CONFIG_DIR}" || {
-        log_error "恢复配置失败"
+        log_error "failed to restore the config"
         return 1
     }
 
-    log_success "配置恢复完成"
+    log_success "config restore complete"
     return 0
 }
 
-# ========== 启动服务 ==========
+# ========== start the service ==========
 start_service() {
-    log_info "启动节点服务..."
+    log_info "start the node service..."
 
     systemctl start "${SERVICE_NAME}" || {
-        log_error "启动服务失败"
+        log_error "failed to start service"
         return 1
     }
 
-    # 等待服务启动
+    # wait for the service to start
     local count=0
     while ! systemctl is-active --quiet "${SERVICE_NAME}" 2>/dev/null; do
         sleep 1
         count=$((count + 1))
         if [[ ${count} -gt 30 ]]; then
-            log_error "服务启动超时"
+            log_error "service start timed out"
             return 1
         fi
     done
 
-    log_success "服务已启动"
+    log_success "service started"
     return 0
 }
 
-# ========== 验证回滚 ==========
+# ========== validate rollback ==========
 verify_rollback() {
-    log_info "验证回滚结果..."
+    log_info "validate rollback result..."
 
     sleep 5
 
-    # 检查服务状态
+    # check service status
     if ! systemctl is-active --quiet "${SERVICE_NAME}" 2>/dev/null; then
-        log_error "服务未运行"
+        log_error "service is not running"
         return 1
     fi
 
-    # 检查版本
+    # check version
     local version
     version=$("${BINARY_DIR}/aib-node" --version 2>/dev/null || echo "unknown")
-    log_success "当前版本: ${version}"
+    log_success "current version: ${version}"
 
-    # 基本健康检查
+    # basic health check
     local health_url="http://localhost:51200/health"
     if command -v curl &> /dev/null; then
         if curl -sf "${health_url}" > /dev/null 2>&1; then
-            log_success "节点健康检查通过"
+            log_success "node health check passed"
         else
-            log_warning "节点健康检查失败，请手动验证"
+            log_warning "node health check failed, please verify manually"
         fi
     fi
 
     return 0
 }
 
-# ========== 创建回滚记录 ==========
+# ========== create rollback record ==========
 create_rollback_record() {
     local backup_path="$1"
     local rollback_dir="${BACKUP_DIR}/rollbacks"
@@ -455,30 +455,30 @@ create_rollback_record() {
     local record_file="${rollback_dir}/rollback_${timestamp}.txt"
 
     cat > "${record_file}" << EOF
-回滚记录
+rollback record
 ========
-时间: $(date)
-备份路径: ${backup_path}
-服务名: ${SERVICE_NAME}
-回滚原因: 紧急回滚
-当前版本: $(get_current_version)
-备份版本: $(get_backup_info "${backup_path}" | grep "当前版本" | cut -d: -f2- | xargs)
-操作人员: $(whoami)
+time: $(date)
+backup path: ${backup_path}
+service name: ${SERVICE_NAME}
+rollback reason: emergency rollback
+current version: $(get_current_version)
+backup version: $(get_backup_info "${backup_path}" | grep "current version" | cut -d: -f2- | xargs)
+operator: $(whoami)
 
-备份信息:
+backup info:
 $(get_backup_info "${backup_path}")
 
-回滚后的状态:
-- 二进制: 已恢复
-- 配置: 已恢复
-- 数据: 已恢复
-- 服务: 已启动
+post-rollback status:
+- binary: restored
+- config: restored
+- Data: restored
+- service: started
 EOF
 
-    log_info "回滚记录已保存: ${record_file}"
+    log_info "rollback record saved: ${record_file}"
 }
 
-# ========== 获取当前版本 ==========
+# ========== get the current version ==========
 get_current_version() {
     if [[ -f "${BINARY_DIR}/aib-node" ]]; then
         "${BINARY_DIR}/aib-node" --version 2>/dev/null || echo "unknown"
@@ -487,147 +487,147 @@ get_current_version() {
     fi
 }
 
-# ========== 主流程 ==========
+# ========== main flow ==========
 main() {
     echo
-    echo -e "${RED}AIB 2.0 紧急回滚脚本${NC}"
-    echo -e "${YELLOW}版本: ${VERSION}${NC}"
+    echo -e "${RED}AIB 2.0 emergency rollback script${NC}"
+    echo -e "${YELLOW}version: ${VERSION}${NC}"
     echo
 
-    # 解析参数
+    # parse arguments
     parse_args "$@"
 
-    # 列出备份
+    # list backups
     if [[ "${LIST_BACKUPS}" == "true" ]]; then
         list_backups
         exit 0
     fi
 
-    # 检查备份路径
+    # check the backup path
     if [[ -z "${BACKUP_PATH}" ]]; then
-        log_error "必须指定备份路径 (-b, --backup)"
+        log_error "backup path must be specified (-b, --backup)"
         show_help
     fi
 
-    # 处理 latest
+    # process latest
     if [[ "${BACKUP_PATH}" == "latest" ]]; then
         local latest_backup
         latest_backup=$(find "${BACKUP_DIR}" -type d -name "upgrade_*" -exec stat -c "%Y %n" {} \; 2>/dev/null | sort -nr | head -1 | cut -d' ' -f2-)
         if [[ -n "${latest_backup}" ]]; then
             BACKUP_PATH="${latest_backup}"
-            log_info "使用最新备份: ${BACKUP_PATH}"
+            log_info "use the latest backup: ${BACKUP_PATH}"
         else
-            log_error "未找到可用备份"
+            log_error "no usable backup found"
             exit 1
         fi
     fi
 
-    # 检查备份路径
+    # check the backup path
     if [[ ! -d "${BACKUP_PATH}" ]]; then
-        log_error "备份路径不存在: ${BACKUP_PATH}"
+        log_error "backup path does not exist: ${BACKUP_PATH}"
         exit 1
     fi
 
-    # 确认回滚
+    # confirm rollback
     if [[ "${FORCE_ROLLBACK}" != "true" ]]; then
         echo
-        echo -e "${YELLOW}即将回滚到备份:${NC}"
-        echo "路径: ${BACKUP_PATH}"
+        echo -e "${YELLOW}about to roll back to backup:${NC}"
+        echo "path: ${BACKUP_PATH}"
         echo
         get_backup_info "${BACKUP_PATH}"
         echo
-        echo -e "${RED}警告: 回滚是破坏性操作，将覆盖当前数据!${NC}"
-        read -p "确认继续? (y/N) " -n 1 -r
+        echo -e "${RED}warning: rollback is destructive and will overwrite current data!${NC}"
+        read -p "Continue? (y/N) " -n 1 -r
         echo
         if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-            log_info "回滚已取消"
+            log_info "rollback cancelled"
             exit 0
         fi
     fi
 
-    # 检查备份完整性
+    # check backup integrity
     check_backup_integrity "${BACKUP_PATH}" || {
-        log_error "备份完整性检查失败"
+        log_error "backup integrity check failed"
         exit 1
     }
 
-    # 确认操作
+    # Confirm operation
     echo
-    log_critical "开始回滚操作..."
+    log_critical "starting rollback..."
     echo
 
-    # 执行回滚步骤
+    # execute rollback steps
     local step=0
     local total_steps=6
 
     step=$((step + 1))
-    log_info "[${step}/${total_steps}] 停止服务..."
+    log_info "[${step}/${total_steps}] Stopping service..."
     stop_service || {
-        log_error "停止服务失败"
+        log_error "failed to stop service"
         exit 1
     }
 
     step=$((step + 1))
-    log_info "[${step}/${total_steps}] 恢复二进制..."
+    log_info "[${step}/${total_steps}] restore binary..."
     restore_binary "${BACKUP_PATH}" || {
-        log_error "恢复二进制失败"
+        log_error "failed to restore the binary"
         exit 1
     }
 
     step=$((step + 1))
-    log_info "[${step}/${total_steps}] 恢复数据目录..."
+    log_info "[${step}/${total_steps}] restore the data directory..."
     restore_data "${BACKUP_PATH}" || {
-        log_error "恢复数据失败"
+        log_error "failed to restore data"
         exit 1
     }
 
     step=$((step + 1))
-    log_info "[${step}/${total_steps}] 恢复配置文件..."
+    log_info "[${step}/${total_steps}] restore the config file..."
     restore_config "${BACKUP_PATH}" || {
-        log_error "恢复配置失败"
+        log_error "failed to restore the config"
         exit 1
     }
 
     step=$((step + 1))
-    log_info "[${step}/${total_steps}] 启动服务..."
+    log_info "[${step}/${total_steps}] start the service..."
     start_service || {
-        log_error "启动服务失败"
+        log_error "failed to start service"
         exit 1
     }
 
     step=$((step + 1))
-    log_info "[${step}/${total_steps}] 验证回滚..."
+    log_info "[${step}/${total_steps}] validate rollback..."
     verify_rollback || {
-        log_warning "回滚验证失败，请手动检查节点状态"
+        log_warning "rollback validation failed, please check node status manually"
     }
 
-    # 创建回滚记录
+    # create rollback record
     create_rollback_record "${BACKUP_PATH}"
 
-    # 完成
+    # complete
     echo
     echo "========================================"
-    echo "  回滚完成"
+    echo "  rollback complete"
     echo "========================================"
     echo
-    echo "备份路径: ${BACKUP_PATH}"
-    echo "当前版本: $(get_current_version)"
+    echo "backup path: ${BACKUP_PATH}"
+    echo "current version: $(get_current_version)"
     echo
-    echo "注意事项:"
-    echo "  - 当前数据已备份到: ${DATA_DIR}.old"
-    echo "  - 当前配置已备份到: ${CONFIG_DIR}.old"
-    echo "  - 节点可能需要重新同步"
-    echo "  - 请监控节点状态"
+    echo "notes:"
+    echo "  - current data backed up to: ${DATA_DIR}.old"
+    echo "  - current config backed up to: ${CONFIG_DIR}.old"
+    echo "  - node may need to re-sync"
+    echo "  - please monitor node status"
     echo
-    echo "常用命令:"
-    echo "  状态: systemctl status ${SERVICE_NAME}"
-    echo "  日志: journalctl -u ${SERVICE_NAME} -f"
-    echo "  健康: curl http://localhost:51200/health"
+    echo "common commands:"
+    echo "  status: systemctl status ${SERVICE_NAME}"
+    echo "  logs: journalctl -u ${SERVICE_NAME} -f"
+    echo "  Health: curl http://localhost:51200/health"
     echo "========================================"
 
-    log_success "回滚操作完成!"
+    log_success "rollback complete!"
     exit 0
 }
 
-# ========== 入口 ==========
+# ========== Entry Point ==========
 main "$@"

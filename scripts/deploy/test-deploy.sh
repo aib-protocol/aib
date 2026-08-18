@@ -1,14 +1,14 @@
 #!/bin/bash
 #
-# AIB 2.0 部署脚本测试工具
-# 用法: ./test-deploy.sh
+# AIB 2.0 deploy script test tool
+# Usage: ./test-deploy.sh
 #
-# 功能: 验证所有部署脚本的语法和基本功能
+# Features: validate syntax and basic functionality of all deploy scripts
 #
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-# 颜色输出
+# colored output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -24,12 +24,12 @@ log_error() { echo -e "${RED}[FAIL]${NC} $*" >&2; }
 log_warning() { echo -e "${YELLOW}[WARN]${NC} $*"; }
 
 echo "========================================="
-echo "  AIB 2.0 部署脚本测试"
+echo "  AIB 2.0 deploy script tests"
 echo "========================================="
 echo
 
-# ========== 测试 1: 文件存在性 ==========
-log_info "测试 1: 检查文件存在性..."
+# ========== test 1: file existence ==========
+log_info "test 1: check file existence..."
 
 scripts=(
     "${SCRIPT_DIR}/upgrade.sh"
@@ -45,83 +45,83 @@ templates=(
 
 for script in "${scripts[@]}"; do
     if [[ -f "${script}" ]]; then
-        log_success "${script} 存在"
+        log_success "${script} exists"
         PASS_COUNT=$((PASS_COUNT + 1))
     else
-        log_error "${script} 不存在"
+        log_error "${script} does not exist"
         FAIL_COUNT=$((FAIL_COUNT + 1))
     fi
 done
 
 for template in "${templates[@]}"; do
     if [[ -f "${template}" ]]; then
-        log_success "${template} 存在"
+        log_success "${template} exists"
         PASS_COUNT=$((PASS_COUNT + 1))
     else
-        log_error "${template} 不存在"
+        log_error "${template} does not exist"
         FAIL_COUNT=$((FAIL_COUNT + 1))
     fi
 done
 
-# ========== 测试 2: 执行权限 ==========
+# ========== test 2: executable permission ==========
 echo
-log_info "测试 2: 检查执行权限..."
+log_info "test 2: check executable permissions..."
 
 for script in "${scripts[@]}"; do
     if [[ -x "${script}" ]]; then
-        log_success "${script} 可执行"
+        log_success "${script} executable"
         PASS_COUNT=$((PASS_COUNT + 1))
     else
-        log_error "${script} 不可执行"
+        log_error "${script} not executable"
         FAIL_COUNT=$((FAIL_COUNT + 1))
     fi
 done
 
-# ========== 测试 3: 语法检查 ==========
+# ========== test 3: syntax check ==========
 echo
-log_info "测试 3: 检查脚本语法..."
+log_info "test 3: check script syntax..."
 
 for script in "${scripts[@]}"; do
     if bash -n "${script}" 2>/dev/null; then
-        log_success "${script} 语法正确"
+        log_success "${script} syntax OK"
         PASS_COUNT=$((PASS_COUNT + 1))
     else
-        log_error "${script} 语法错误"
+        log_error "${script} syntax error"
         FAIL_COUNT=$((FAIL_COUNT + 1))
     fi
 done
 
-# ========== 测试 4: 帮助信息 ==========
+# ========== test 4: help information ==========
 echo
-log_info "测试 4: 检查帮助信息..."
+log_info "test 4: check help output..."
 
 for script in "${scripts[@]}"; do
     if "${script}" -h &>/dev/null || "${script}" --help &>/dev/null; then
-        log_success "${script} 帮助信息可用"
+        log_success "${script} help output available"
         PASS_COUNT=$((PASS_COUNT + 1))
     else
-        log_warning "${script} 帮助信息测试跳过"
+        log_warning "${script} help output test skipped"
     fi
 done
 
-# ========== 测试 5: 依赖检查 ==========
+# ========== test 5: dependency check ==========
 echo
-log_info "测试 5: 检查依赖命令..."
+log_info "test 5: check dependency commands..."
 
 dependencies=("bash" "curl" "jq" "sha256sum" "systemctl" "openssl" "nc")
 
 for cmd in "${dependencies[@]}"; do
     if command -v "${cmd}" &>/dev/null; then
-        log_success "${cmd} 已安装"
+        log_success "${cmd} installed"
         PASS_COUNT=$((PASS_COUNT + 1))
     else
-        log_warning "${cmd} 未安装（可选）"
+        log_warning "${cmd} not installed (optional）"
     fi
 done
 
-# ========== 测试 6: 目录结构 ==========
+# ========== test 6: directory structure ==========
 echo
-log_info "测试 6: 检查目录结构..."
+log_info "test 6: check directory structure..."
 
 dirs=(
     "${SCRIPT_DIR}/backups"
@@ -131,28 +131,28 @@ dirs=(
 
 for dir in "${dirs[@]}"; do
     if [[ -d "${dir}" ]]; then
-        log_success "${dir} 目录存在"
+        log_success "${dir} directory exists"
         PASS_COUNT=$((PASS_COUNT + 1))
     else
-        log_error "${dir} 目录不存在"
+        log_error "${dir} directory does not exist"
         FAIL_COUNT=$((FAIL_COUNT + 1))
     fi
 done
 
-# ========== 结果摘要 ==========
+# ========== result summary ==========
 echo
 echo "========================================="
-echo "  测试结果"
+echo "  test results"
 echo "========================================="
 echo
-echo "通过: ${PASS_COUNT}"
-echo "失败: ${FAIL_COUNT}"
+echo "passed: ${PASS_COUNT}"
+echo "failed: ${FAIL_COUNT}"
 echo
 
 if [[ ${FAIL_COUNT} -eq 0 ]]; then
-    echo -e "${GREEN}所有测试通过!${NC}"
+    echo -e "${GREEN}all tests passed!${NC}"
     exit 0
 else
-    echo -e "${RED}部分测试失败${NC}"
+    echo -e "${RED}some tests failed${NC}"
     exit 1
 fi

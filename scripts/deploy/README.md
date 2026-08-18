@@ -1,226 +1,226 @@
-# AIB 2.0 部署自动化脚本
+# AIB 2.0 deployment automation scripts
 
-本目录包含 AIB 2.0 主网上线和节点升级的自动化脚本。
+This directory contains AIB 2.0 automation scripts for mainnet launch and node upgrades。
 
-## 目录结构
+## directory structure
 
 ```
 scripts/deploy/
-├── upgrade.sh              # 节点升级脚本
-├── mainnet-init.sh         # 主网初始化脚本
-├── validate-upgrade.sh     # 升级验证脚本
-├── rollback.sh             # 紧急回滚脚本
-├── templates/              # 配置模板
-│   ├── config.toml         # 节点配置模板
-│   └── aib2-mainnet.service # systemd 服务模板
-├── backups/                # 备份目录
-├── logs/                   # 日志目录
-└── README.md              # 本文档
+├── upgrade.sh              # node upgrade script
+├── mainnet-init.sh         # mainnet initialization script
+├── validate-upgrade.sh     # upgrade validation script
+├── rollback.sh             # emergency rollback script
+├── templates/              # config template
+│   ├── config.toml         # node config template
+│   └── aib2-mainnet.service # systemd service template
+├── backups/                # backup directory
+├── logs/                   # log directory
+└── README.md              # This document
 ```
 
-## 脚本说明
+## script description
 
-### 1. upgrade.sh - 节点升级脚本
+### 1. upgrade.sh - node upgrade script
 
-自动将节点从当前版本升级到新版本。
+automatically upgrade the node from the current version to a new version。
 
-**用法:**
+**Usage:**
 ```bash
-./upgrade.sh [选项]
+./upgrade.sh [options]
 ```
 
-**选项:**
-- `-v, --version VERSION` - 指定升级版本 (默认: latest)
-- `-b, --backup-dir DIR` - 备份目录 (默认: ./backups)
-- `-s, --skip-backup` - 跳过备份步骤 (不推荐)
-- `-f, --force` - 强制升级，跳过确认
-- `-d, --dry-run` - 模拟运行，不执行实际升级
-- `-h, --help` - 显示帮助信息
+**Options:**
+- `-v, --version VERSION` - specify the upgrade version (default: latest)
+- `-b, --backup-dir DIR` - backup directory (default: ./backups)
+- `-s, --skip-backup` - skip backup step (not recommended)
+- `-f, --force` - force upgrade, skip confirmation
+- `-d, --dry-run` - dry run, no actual upgrade performed
+- `-h, --help` - show help information
 
-**示例:**
+**Examples:**
 ```bash
-# 升级到最新版本
+# upgrade to the latest version
 ./upgrade.sh
 
-# 升级到指定版本
+# upgrade to a specified version
 ./upgrade.sh -v 2.1.0
 
-# 模拟运行
+# dry run
 ./upgrade.sh -n
 
-# 使用自定义备份目录
+# use a custom backup directory
 ./upgrade.sh -b /custom/backup/path
 ```
 
-**升级流程:**
-1. 检查当前节点状态
-2. 备份数据和配置
-3. 下载新版本二进制
-4. 验证二进制完整性
-5. 更新配置文件
-6. 停止当前服务
-7. 部署新版本
-8. 启动服务
-9. 验证升级成功
+**upgrade flow:**
+1. check current node status
+2. back up data and config
+3. download the new binary
+4. validate binary integrity
+5. update the config file
+6. stop the current service
+7. deploy the new version
+8. start the service
+9. validate upgrade success
 
-### 2. mainnet-init.sh - 主网初始化脚本
+### 2. mainnet-init.sh - mainnet initialization script
 
-初始化新节点加入主网或测试网。
+initialize a new node to join mainnet or testnet。
 
-**用法:**
+**Usage:**
 ```bash
-./mainnet-init.sh [选项]
+./mainnet-init.sh [options]
 ```
 
-**选项:**
-- `-n, --network NETWORK` - 指定网络: mainnet|testnet (默认: mainnet)
-- `-i, --node-id NODE_ID` - 指定节点 ID (可选，自动生成)
-- `-p, --port PORT` - 指定 API 端口 (默认: 51200)
-- `-m, --moniker NODE_NAME` - 指定节点名称 (必需)
-- `-s, --stake AMOUNT` - 质押金额 (默认: 1000000)
-- `-d, --data-dir DIR` - 数据目录
-- `-f, --force` - 强制初始化（覆盖现有数据）
-- `-h, --help` - 显示帮助信息
+**Options:**
+- `-n, --network NETWORK` - specify the network: mainnet|testnet (default: mainnet)
+- `-i, --node-id NODE_ID` - specify the node ID (optional, auto-generated)
+- `-p, --port PORT` - specify API port (default: 51200)
+- `-m, --moniker NODE_NAME` - specify the node name (required)
+- `-s, --stake AMOUNT` - stake amount (default: 1000000)
+- `-d, --data-dir DIR` - data directory
+- `-f, --force` - force initialization (overwrites existing data）
+- `-h, --help` - show help information
 
-**示例:**
+**Examples:**
 ```bash
-# 初始化主网验证者节点
+# initialize a mainnet validator node
 ./mainnet-init.sh -m "my-validator" -s 1000000
 
-# 初始化测试网节点
+# initialize a testnet node
 ./mainnet-init.sh -n testnet -m "test-validator"
 
-# 指定自定义端口
+# specify a custom port
 ./mainnet-init.sh -p 51201 -m "secondary-node"
 ```
 
-### 3. validate-upgrade.sh - 升级验证脚本
+### 3. validate-upgrade.sh - upgrade validation script
 
-验证升级后的节点状态和功能。
+validate node status and functionality after upgrade。
 
-**用法:**
+**Usage:**
 ```bash
-./validate-upgrade.sh [选项]
+./validate-upgrade.sh [options]
 ```
 
-**选项:**
-- `-c, --check CHECKS` - 指定检查项: all|version|consensus|api|p2p|sync (默认: all)
-- `-s, --service SERVICE` - 指定服务名 (默认: aib2-mainnet)
-- `-p, --port PORT` - API 端口 (默认: 51200)
-- `-t, --timeout SECONDS` - 超时时间 (默认: 30)
-- `-v, --verbose` - 详细输出
-- `-h, --help` - 显示帮助信息
+**Options:**
+- `-c, --check CHECKS` - specify checks: all|version|consensus|api|p2p|sync (default: all)
+- `-s, --service SERVICE` - specify service name (default: aib2-mainnet)
+- `-p, --port PORT` - API port (default: 51200)
+- `-t, --timeout SECONDS` - timeout (default: 30)
+- `-v, --verbose` - verbose output
+- `-h, --help` - show help information
 
-**检查项:**
-- `version` - 验证节点版本
-- `consensus` - 验证共识状态
-- `api` - 验证 API 可用性
-- `p2p` - 验证 P2P 网络连接
-- `sync` - 验证同步状态
-- `chain` - 验证链上活动
+**check item:**
+- `version` - validate node version
+- `consensus` - validate consensus status
+- `api` - validate API availability
+- `p2p` - validate P2P network connection
+- `sync` - validatesync status
+- `chain` - validate on-chain activity
 
-**示例:**
+**Examples:**
 ```bash
-# 验证所有项目
+# validate all items
 ./validate-upgrade.sh
 
-# 仅验证版本
+# validate version only
 ./validate-upgrade.sh -c version
 
-# 验证多个项目
+# validate multiple items
 ./validate-upgrade.sh -c version,consensus,api
 
-# 详细输出
+# verbose output
 ./validate-upgrade.sh -v
 ```
 
-### 4. rollback.sh - 紧急回滚脚本
+### 4. rollback.sh - emergency rollback script
 
-在升级失败时回滚到之前的版本。
+roll back to the previous version if the upgrade fails。
 
-**用法:**
+**Usage:**
 ```bash
-./rollback.sh [选项]
+./rollback.sh [options]
 ```
 
-**选项:**
-- `-b, --backup BACKUP_PATH` - 指定备份路径
-- `-l, --list` - 列出可用备份
-- `-s, --service SERVICE` - 服务名 (默认: aib2-mainnet)
-- `-f, --force` - 强制回滚，跳过确认
-- `-h, --help` - 显示帮助信息
+**Options:**
+- `-b, --backup BACKUP_PATH` - specify backup path
+- `-l, --list` - list available backups
+- `-s, --service SERVICE` - service name (default: aib2-mainnet)
+- `-f, --force` - force rollback, skip confirmation
+- `-h, --help` - show help information
 
-**示例:**
+**Examples:**
 ```bash
-# 列出可用备份
+# list available backups
 ./rollback.sh -l
 
-# 回滚到指定备份
+# roll back to the specified backup
 ./rollback.sh -b /path/to/backup
 
-# 强制回滚
+# force rollback
 ./rollback.sh -b backup_path -f
 
-# 回滚到最近的备份
+# roll back to the most recent backup
 ./rollback.sh -b latest
 ```
 
-## 使用流程
+## usage flow
 
-### 首次部署
+### initial deployment
 
-1. 初始化节点:
+1. Initialize node:
 ```bash
 ./mainnet-init.sh -m "my-validator" -s 1000000
 ```
 
-2. 验证节点状态:
+2. validate node status:
 ```bash
 ./validate-upgrade.sh -c all -v
 ```
 
-### 节点升级
+### node upgrade
 
-1. 模拟升级:
+1. simulated upgrade:
 ```bash
 ./upgrade.sh -d
 ```
 
-2. 执行升级:
+2. perform the upgrade:
 ```bash
 ./upgrade.sh -v 2.1.0
 ```
 
-3. 验证升级:
+3. validate upgrade:
 ```bash
 ./validate-upgrade.sh -c all -v
 ```
 
-### 紧急回滚
+### emergency rollback
 
-1. 列出备份:
+1. list backups:
 ```bash
 ./rollback.sh -l
 ```
 
-2. 执行回滚:
+2. execute rollback:
 ```bash
 ./rollback.sh -b latest -f
 ```
 
-3. 验证回滚:
+3. validate rollback:
 ```bash
 ./validate-upgrade.sh -c all
 ```
 
-## 权限要求
+## permission requirements
 
-所有脚本需要设置为可执行:
+All scripts need to be made executable:
 ```bash
 chmod +x scripts/deploy/*.sh
 ```
 
-## 依赖要求
+## dependency requirements
 
 - Bash 4.0+
 - systemctl (systemd)
@@ -229,34 +229,34 @@ chmod +x scripts/deploy/*.sh
 - sha256sum
 - openssl
 
-## 注意事项
+## notes
 
-1. **备份**: 所有操作都会自动备份，建议定期检查备份目录
-2. **测试**: 在生产环境前，先在测试环境验证
-3. **监控**: 升级后持续监控节点状态
-4. **日志**: 检查日志以排查问题
-5. **回滚**: 如遇问题，及时使用回滚脚本
+1. **backup**: all operations back up automatically; check the backup directory regularly
+2. **test**: validate in a test environment before production
+3. **monitoring**: continuously monitor node status after upgrade
+4. **logs**: check logs to troubleshoot
+5. **rollback**: if issues arise, use the rollback script promptly
 
-## 日志位置
+## log location
 
-- 节点日志: `./logs/mainnet.log`
-- 错误日志: `./logs/mainnet.error.log`
-- Systemd 日志: `journalctl -u aib2-mainnet -f`
+- node logs: `./logs/mainnet.log`
+- error logs: `./logs/mainnet.error.log`
+- Systemd logs: `journalctl -u aib2-mainnet -f`
 
-## 常见问题
+## FAQ
 
-### Q: 升级后节点无法启动
-A: 检查日志，确认版本兼容性，必要时使用回滚脚本
+### Q: node fails to start after upgrade
+A: check logs to confirm version compatibility; use the rollback script if needed
 
-### Q: 同步进度慢
-A: 正常现象，等待同步完成
+### Q: slow sync progress
+A: normal, wait for sync to complete
 
-### Q: P2P 连接失败
-A: 检查防火墙设置和端口开放
+### Q: P2P connection failed
+A: check firewall settings and open ports
 
-### Q: API 无法访问
-A: 确认端口配置和防火墙规则
+### Q: API inaccessible
+A: confirm port config and firewall rules
 
-## 联系支持
+## contact support
 
-如有问题，请访问: https://docs.aib.network
+if you have issues, visit: https://docs.aib.network

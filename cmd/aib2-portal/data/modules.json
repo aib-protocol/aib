@@ -1,282 +1,282 @@
 [
   {
     "id": "CORE_01",
-    "name": "密码学原语",
+    "name": "cryptographic primitives",
     "category": "Core Infrastructure",
     "status": "completed",
     "package": "core/crypto",
     "dependencies": [],
     "deliverables": ["secp256k1 ECDSA", "Ed25519", "SHA-256d", "BLAKE3", "ECVRF", "Merkle Trees", "ZK Verifier"],
-    "description": "基础密码学操作：签名、哈希、VRF、Merkle 树、零知识证明验证"
+    "description": "basic cryptographic operations: signatures, hashing, VRF, Merkle trees, zero-knowledge proof verification"
   },
   {
     "id": "CORE_02",
-    "name": "地址系统",
+    "name": "address system",
     "category": "Core Infrastructure",
     "status": "planned",
     "package": "core/address",
     "dependencies": ["CORE_01"],
-    "deliverables": ["Bech32m 编码", "地址类型", "多签地址"],
-    "description": "地址生成、编码、验证，支持多种地址类型"
+    "deliverables": ["Bech32m encoding", "address type", "multisig address"],
+    "description": "address generation, encoding and validation with multiple address types"
   },
   {
     "id": "CORE_03",
-    "name": "交易结构",
+    "name": "transaction structure",
     "category": "Core Infrastructure",
     "status": "planned",
     "package": "core/tx",
     "dependencies": ["CORE_01", "CORE_02"],
-    "deliverables": ["交易格式", "序列化", "签名验证"],
-    "description": "UTXO 交易模型定义、序列化与反序列化"
+    "deliverables": ["transaction format", "serialization", "signature verification"],
+    "description": "UTXO transaction model definition, serialization and deserialization"
   },
   {
     "id": "CORE_04",
-    "name": "区块结构",
+    "name": "block structure",
     "category": "Core Infrastructure",
     "status": "planned",
     "package": "core/block",
     "dependencies": ["CORE_03"],
-    "deliverables": ["区块头", "区块体", "Merkle 根计算"],
-    "description": "区块格式定义，包含交易打包和验证逻辑"
+    "deliverables": ["block header", "block body", "Merkle root computation"],
+    "description": "block format definition, including transaction packing and validation logic"
   },
   {
     "id": "CONS_01",
-    "name": "PoW 挖矿引擎",
+    "name": "PoW mining engine",
     "category": "Consensus",
     "status": "planned",
     "package": "consensus/pow",
     "dependencies": ["CORE_04"],
-    "deliverables": ["挖矿算法", "难度调整", "Nonce 搜索"],
-    "description": "工作量证明挖矿引擎，支持 BLAKE3 哈希算法"
+    "deliverables": ["mining algorithm", "difficulty adjustment", "Nonce search"],
+    "description": "PoW mining engine supporting BLAKE3 hash algorithm"
   },
   {
     "id": "CONS_02",
-    "name": "POAI 验证器",
+    "name": "POAI validator",
     "category": "Consensus",
     "status": "planned",
     "package": "consensus/poai",
     "dependencies": ["CONS_01", "AI_01"],
-    "deliverables": ["AI 验证", "共识投票", "否决机制"],
-    "description": "AI 证明（Proof of AI）验证器，AI 节点参与共识但不持币"
+    "deliverables": ["AI validate", "consensus voting", "veto mechanism"],
+    "description": "AI proofs（Proof of AI）validator，AI node participates in consensus without holding coins"
   },
   {
     "id": "CONS_03",
-    "name": "混合共识协调器",
+    "name": "hybrid consensus coordinator",
     "category": "Consensus",
     "status": "planned",
     "package": "consensus/hybrid",
     "dependencies": ["CONS_01", "CONS_02"],
-    "deliverables": ["PoW+POAI 协调", "最终性判定", "分叉选择"],
-    "description": "协调 PoW 和 POAI 的混合共识机制"
+    "deliverables": ["PoW+POAI coordination", "finality determination", "fork choice"],
+    "description": "coordination PoW and POAI hybrid consensus mechanism"
   },
   {
     "id": "CONS_04",
-    "name": "难度调整算法",
+    "name": "difficulty adjustment algorithm",
     "category": "Consensus",
     "status": "planned",
     "package": "consensus/difficulty",
     "dependencies": ["CONS_01"],
-    "deliverables": ["自适应难度", "时间戳验证", "平滑调整"],
-    "description": "动态难度调整，确保出块时间稳定"
+    "deliverables": ["adaptive difficulty", "timestamp validation", "smooth adjustment"],
+    "description": "dynamic difficulty adjustment for stable block times"
   },
   {
     "id": "STOR_01",
-    "name": "区块链存储",
+    "name": "blockchain storage",
     "category": "Storage",
     "status": "planned",
     "package": "storage/chain",
     "dependencies": ["CORE_04"],
-    "deliverables": ["区块存储", "链状态", "索引"],
-    "description": "区块和链状态的持久化存储引擎"
+    "deliverables": ["block storage", "chain state", "indexing"],
+    "description": "persistent storage engine for blocks and chain state"
   },
   {
     "id": "STOR_02",
-    "name": "UTXO 集合",
+    "name": "UTXO set",
     "category": "Storage",
     "status": "planned",
     "package": "storage/utxo",
     "dependencies": ["CORE_03", "STOR_01"],
-    "deliverables": ["UTXO 数据库", "快速查询", "修剪"],
-    "description": "未花费交易输出集合管理，支持高效查询"
+    "deliverables": ["UTXO database", "fast query", "pruning"],
+    "description": "UTXO set management with efficient queries"
   },
   {
     "id": "STOR_03",
-    "name": "内存池",
+    "name": "mempool",
     "category": "Storage",
     "status": "planned",
     "package": "storage/mempool",
     "dependencies": ["CORE_03"],
-    "deliverables": ["交易缓存", "优先级排序", "驱逐策略"],
-    "description": "未确认交易的内存池管理"
+    "deliverables": ["transaction cache", "priority ranking", "eviction policy"],
+    "description": "mempool management for unconfirmed transactions"
   },
   {
     "id": "STOR_04",
-    "name": "状态数据库",
+    "name": "state database",
     "category": "Storage",
     "status": "planned",
     "package": "storage/state",
     "dependencies": ["STOR_01"],
-    "deliverables": ["键值存储", "快照", "回滚"],
-    "description": "通用状态存储，支持快照和原子操作"
+    "deliverables": ["key-value store", "snapshot", "rollback"],
+    "description": "general-purpose state store with snapshots and atomic operations"
   },
   {
     "id": "SC_01",
-    "name": "虚拟机核心",
+    "name": "VM core",
     "category": "Smart Contracts",
     "status": "planned",
     "package": "contracts/vm",
     "dependencies": ["CORE_03", "STOR_04"],
-    "deliverables": ["字节码解释器", "Gas 计量", "沙箱执行"],
-    "description": "智能合约虚拟机，安全隔离的执行环境"
+    "deliverables": ["bytecode interpreter", "Gas metering", "sandboxed execution"],
+    "description": "smart contract VM, a securely isolated execution environment"
   },
   {
     "id": "SC_02",
-    "name": "合约编译器",
+    "name": "contract compiler",
     "category": "Smart Contracts",
     "status": "planned",
     "package": "contracts/compiler",
     "dependencies": ["SC_01"],
-    "deliverables": ["合约语言", "编译器", "ABI 生成"],
-    "description": "合约高级语言到字节码的编译器"
+    "deliverables": ["contract language", "compiler", "ABI generate"],
+    "description": "compiler from high-level contract language to bytecode"
   },
   {
     "id": "SC_03",
-    "name": "标准合约库",
+    "name": "standard contract library",
     "category": "Smart Contracts",
     "status": "planned",
     "package": "contracts/stdlib",
     "dependencies": ["SC_01"],
-    "deliverables": ["Token 标准", "投票合约", "多签合约"],
-    "description": "预置标准合约模板和库函数"
+    "deliverables": ["Token standard", "voting contract", "multisig contract"],
+    "description": "bundled standard contract templates and library functions"
   },
   {
     "id": "SC_04",
-    "name": "合约部署与管理",
+    "name": "contract deployment and management",
     "category": "Smart Contracts",
     "status": "planned",
     "package": "contracts/deploy",
     "dependencies": ["SC_01", "STOR_04"],
-    "deliverables": ["部署流程", "升级机制", "权限控制"],
-    "description": "合约生命周期管理：部署、升级、冻结"
+    "deliverables": ["deployflow", "upgrade mechanism", "permission control"],
+    "description": "contract lifecycle management: deploy, upgrade, freeze"
   },
   {
     "id": "AI_01",
-    "name": "AI 节点框架",
+    "name": "AI node framework",
     "category": "AI Integration",
     "status": "planned",
     "package": "ai/node",
     "dependencies": ["CORE_01"],
-    "deliverables": ["节点注册", "身份验证", "能力声明"],
-    "description": "AI 节点的注册、认证和生命周期管理框架"
+    "deliverables": ["node registration", "identity validation", "capability declaration"],
+    "description": "AI framework for node registration, authentication and lifecycle management"
   },
   {
     "id": "AI_02",
-    "name": "AI 任务调度",
+    "name": "AI task scheduling",
     "category": "AI Integration",
     "status": "planned",
     "package": "ai/scheduler",
     "dependencies": ["AI_01"],
-    "deliverables": ["任务分配", "负载均衡", "结果验证"],
-    "description": "AI 计算任务的分发、调度和结果聚合"
+    "deliverables": ["task assignment", "load balancing", "result validation"],
+    "description": "AI distribution, scheduling and result aggregation of compute tasks"
   },
   {
     "id": "AI_03",
-    "name": "AI 否决委员会",
+    "name": "AI veto committee",
     "category": "AI Integration",
     "status": "planned",
     "package": "ai/veto",
     "dependencies": ["AI_01", "CONS_02"],
-    "deliverables": ["否决协议", "投票聚合", "人类覆写"],
-    "description": "AI 否决权行使机制（受人类主权约束）"
+    "deliverables": ["veto protocol", "vote aggregation", "human override"],
+    "description": "AI veto enforcement mechanism (subject to human sovereignty）"
   },
   {
     "id": "AI_04",
-    "name": "AI 模型注册表",
+    "name": "AI model registry",
     "category": "AI Integration",
     "status": "planned",
     "package": "ai/registry",
     "dependencies": ["AI_01", "STOR_04"],
-    "deliverables": ["模型哈希", "版本管理", "性能基准"],
-    "description": "AI 模型版本注册和性能追踪"
+    "deliverables": ["model hash", "version management", "performance benchmarks"],
+    "description": "AI model version registry and performance tracking"
   },
   {
     "id": "APP_01",
-    "name": "P2P 网络层",
+    "name": "P2P network layer",
     "category": "Applications",
     "status": "planned",
     "package": "apps/p2p",
     "dependencies": ["CORE_01"],
-    "deliverables": ["节点发现", "消息传播", "NAT 穿透"],
-    "description": "点对点网络通信层，节点发现和消息广播"
+    "deliverables": ["node discovery", "message propagation", "NAT traversal"],
+    "description": "peer-to-peer networking layer with node discovery and message broadcast"
   },
   {
     "id": "APP_02",
-    "name": "RPC 接口",
+    "name": "RPC interface",
     "category": "Applications",
     "status": "planned",
     "package": "apps/rpc",
     "dependencies": ["CORE_04", "STOR_01"],
-    "deliverables": ["JSON-RPC", "WebSocket", "认证"],
-    "description": "外部 API 接口，支持 JSON-RPC 和 WebSocket"
+    "deliverables": ["JSON-RPC", "WebSocket", "authentication"],
+    "description": "external API interface, supports JSON-RPC and WebSocket"
   },
   {
     "id": "APP_03",
-    "name": "钱包核心",
+    "name": "wallet core",
     "category": "Applications",
     "status": "planned",
     "package": "apps/wallet",
     "dependencies": ["CORE_02", "CORE_03", "APP_02"],
-    "deliverables": ["密钥管理", "交易构建", "余额查询"],
-    "description": "钱包核心逻辑：密钥派生、交易签名、UTXO 管理"
+    "deliverables": ["key management", "transaction construction", "balance query"],
+    "description": "core wallet logic: key derivation, transaction signing, UTXO management"
   },
   {
     "id": "APP_04",
-    "name": "区块浏览器后端",
+    "name": "block explorer backend",
     "category": "Applications",
     "status": "planned",
     "package": "apps/explorer",
     "dependencies": ["STOR_01", "APP_02"],
-    "deliverables": ["区块查询", "交易追踪", "统计分析"],
-    "description": "区块链数据查询和分析服务"
+    "deliverables": ["block query", "transaction tracing", "statistical analysis"],
+    "description": "blockchain data query and analytics service"
   },
   {
     "id": "EVO_01",
-    "name": "治理框架",
+    "name": "governance framework",
     "category": "Evolution",
     "status": "planned",
     "package": "evolution/governance",
     "dependencies": ["SC_03", "AI_03"],
-    "deliverables": ["提案系统", "投票机制", "执行引擎"],
-    "description": "链上治理：提案提交、投票、自动执行"
+    "deliverables": ["proposal system", "voting mechanism", "execution engine"],
+    "description": "on-chain governance: proposal submission, voting, automatic execution"
   },
   {
     "id": "EVO_02",
-    "name": "协议升级",
+    "name": "protocol upgrade",
     "category": "Evolution",
     "status": "planned",
     "package": "evolution/upgrade",
     "dependencies": ["EVO_01", "CONS_03"],
-    "deliverables": ["版本管理", "信号机制", "激活逻辑"],
-    "description": "协议软/硬分叉升级机制（遵守 Rule 6）"
+    "deliverables": ["version management", "signaling mechanism", "activation logic"],
+    "description": "protocol soft/hard fork upgrade mechanism (complying with Rule 6）"
   },
   {
     "id": "EVO_03",
-    "name": "激励机制",
+    "name": "incentive mechanism",
     "category": "Evolution",
     "status": "planned",
     "package": "evolution/incentive",
     "dependencies": ["CONS_03", "CORE_03"],
-    "deliverables": ["出块奖励", "手续费分配", "减半计划"],
-    "description": "挖矿奖励和手续费分配机制（遵守 Rule 1,2）"
+    "deliverables": ["block reward", "fee distribution", "halving schedule"],
+    "description": "mining reward and fee distribution mechanism(complying with Rule 1,2）"
   },
   {
     "id": "EVO_04",
-    "name": "隐私增强",
+    "name": "privacy enhancements",
     "category": "Evolution",
     "status": "planned",
     "package": "evolution/privacy",
     "dependencies": ["CORE_01", "CORE_03"],
-    "deliverables": ["机密交易", "零知识证明", "环签名"],
-    "description": "默认隐私保护实现（遵守 Rule 7）"
+    "deliverables": ["confidential transactions", "zero-knowledge proofs", "ring signatures"],
+    "description": "default privacy implementation (complying with Rule 7）"
   }
 ]

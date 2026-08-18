@@ -1,7 +1,7 @@
 #!/bin/bash
 # =============================================================================
 # AIB 2.0 Mainnet Configuration Validator
-# 验证 AIB 2.0 主网配置参数的一致性和正确性
+# validate AIB 2.0 consistency and correctness of mainnet config parameters
 # =============================================================================
 
 set -e
@@ -9,24 +9,24 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPORT_DATE=$(date '+%Y-%m-%d %H:%M:%S')
 
-# 颜色输出
+# colored output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# 统计变量
+# statistics variables
 PASSED=0
 FAILED=0
 WARNINGS=0
 
-# 报告文件
+# report file
 REPORT_FILE="./scripts/validate-mainnet-config.sh"
 HTML_REPORT="./docs/reports/config-validation-report.html"
 
 # =============================================================================
-# 辅助函数
+# helper functions
 # =============================================================================
 
 log_pass() {
@@ -49,53 +49,53 @@ log_info() {
 }
 
 # =============================================================================
-# 验证 1: 总供应量计算
+# validate 1: total supply calculation
 # =============================================================================
 validate_total_supply() {
     echo ""
     echo "=============================================="
-    echo "1. 验证总供应量计算 (Total Supply)"
+    echo "1. validate total supply calculation (Total Supply)"
     echo "=============================================="
 
-    # 期望值: π × 10^9 = 3,141,592,653
+    # expected value: π × 10^9 = 3,141,592,653
     EXPECTED_SUPPLY=3141592653
 
-    # 从 genesis.json 读取
+    # from genesis.json read
     GENESIS_SUPPLY=$(grep -o '"total_supply": "[0-9]*"' ./scripts/genesis/genesis.json | grep -o '[0-9]*')
-    # 从 pos_v2.go 读取 - 使用 sed 提取数字部分
+    # from pos_v2.go read - use sed to extract the numeric part
     CODE_SUPPLY=$(sed -n 's/.*TotalSupply.*=.*uint64(\([0-9_]*\)).*/\1/p' ./pkg/utxo/pos_v2.go | head -1 | tr -d '_')
 
-    echo "  期望值:           $EXPECTED_SUPPLY AIB"
+    echo "  expected value:           $EXPECTED_SUPPLY AIB"
     echo "  genesis.json:    $GENESIS_SUPPLY AIB"
     echo "  pos_v2.go:       $CODE_SUPPLY AIB"
 
     if [ "$EXPECTED_SUPPLY" -eq "$GENESIS_SUPPLY" ] && [ "$EXPECTED_SUPPLY" -eq "$CODE_SUPPLY" ]; then
-        log_pass "总供应量一致: $EXPECTED_SUPPLY AIB (π × 10^9)"
+        log_pass "total supply consistent: $EXPECTED_SUPPLY AIB (π × 10^9)"
     else
-        log_fail "总供应量不一致! genesis=$GENESIS_SUPPLY, code=$CODE_SUPPLY"
+        log_fail "total supply mismatch! genesis=$GENESIS_SUPPLY, code=$CODE_SUPPLY"
     fi
 
-    # 额外验证: 供应量公式
+    # additional validation: supply formula
     PI_APPROX=$(python3 -c "print(round(3.141592653 * 1e9))")
     if [ "$PI_APPROX" -eq "$EXPECTED_SUPPLY" ]; then
-        log_pass "供应量符合公式: π × 10^9 = $EXPECTED_SUPPLY"
+        log_pass "supply matches the formula: π × 10^9 = $EXPECTED_SUPPLY"
     else
-        log_fail "供应量公式计算错误"
+        log_fail "supply formula calculation error"
     fi
 }
 
 # =============================================================================
-# 验证 2: 创世分配比例
+# validate 2: genesis allocation ratios
 # =============================================================================
 validate_allocation() {
     echo ""
     echo "=============================================="
-    echo "2. 验证创世分配比例 (Genesis Allocation)"
+    echo "2. validate genesis allocation ratios (Genesis Allocation)"
     echo "=============================================="
 
     TOTAL_SUPPLY=3141592653
 
-    # 定义分配 (百分比, 金额)
+    # defined allocation (percentage, amount)
     declare -A ALLOCATIONS
     ALLOCATIONS["team"]=15
     ALLOCATIONS["ecosystem"]=30
@@ -119,234 +119,234 @@ validate_allocation() {
         TOTAL_PERCENT=$((TOTAL_PERCENT + percent))
         TOTAL_ALLOCATED=$((TOTAL_ALLOCATED + amount))
 
-        # 从 genesis.json 读取实际值
+        # from genesis.json read the actual value
         json_amount=$(grep -A 2 "\"$alloc\"" ./scripts/genesis/genesis.json | grep '"amount"' | grep -o '[0-9]*')
         json_percent=$(grep -A 2 "\"$alloc\"" ./scripts/genesis/genesis.json | grep '"percentage"' | grep -o '[0-9]*')
 
         echo ""
         echo "  $alloc:"
-        echo "    百分比: $percent% (json: $json_percent%)"
-        echo "    金额:   $amount AIB (json: $json_amount)"
+        echo "    percentage: $percent% (json: $json_percent%)"
+        echo "    amount:   $amount AIB (json: $json_amount)"
 
         if [ "$percent" -eq "$json_percent" ]; then
-            log_pass "  - 百分比正确: $alloc = $percent%"
+            log_pass "  - percentage correct: $alloc = $percent%"
         else
-            log_fail "  - 百分比错误: $alloc"
+            log_fail "  - percentage incorrect: $alloc"
         fi
 
         if [ "$amount" -eq "$json_amount" ]; then
-            log_pass "  - 金额正确: $alloc = $amount AIB"
+            log_pass "  - amount correct: $alloc = $amount AIB"
         else
-            log_fail "  - 金额错误: $alloc"
+            log_fail "  - amount incorrect: $alloc"
         fi
     done
 
     echo ""
-    echo "  汇总:"
-    echo "    总百分比: $TOTAL_PERCENT%"
+    echo "  aggregation:"
+    echo "    total percentage: $TOTAL_PERCENT%"
 
     if [ "$TOTAL_PERCENT" -eq 100 ]; then
-        log_pass "总百分比 = 100%"
+        log_pass "total percentage = 100%"
     else
-        log_fail "总百分比不等于 100% (实际: $TOTAL_PERCENT%)"
+        log_fail "total percentage does not equal 100% (actual: $TOTAL_PERCENT%)"
     fi
 
-    echo "    总金额: $TOTAL_ALLOCATED AIB"
+    echo "    total amount: $TOTAL_ALLOCATED AIB"
 
     if [ "$TOTAL_ALLOCATED" -eq "$TOTAL_SUPPLY" ]; then
-        log_pass "总金额 = 总供应量 ($TOTAL_SUPPLY)"
+        log_pass "total amount = total supply ($TOTAL_SUPPLY)"
     else
-        log_fail "总金额不等于总供应量"
+        log_fail "total amount does not equal total supply"
     fi
 }
 
 # =============================================================================
-# 验证 3: 空投配置
+# validate 3: airdrop config
 # =============================================================================
 validate_airdrop() {
     echo ""
     echo "=============================================="
-    echo "3. 验证空投配置 (Airdrop Configuration)"
+    echo "3. validate airdrop config (Airdrop Configuration)"
     echo "=============================================="
 
-    # 从 snapshot_config.json 读取
+    # from snapshot_config.json read
     MIN_CLAIM=$(grep -o '"min_claim_amount": "[0-9]*"' ./scripts/genesis/snapshot_config.json | grep -o '[0-9]*')
 
-    # 期望值
+    # expected value
     EXPECTED_MIN_CLAIM=100
 
-    echo "  期望每地址空投: $EXPECTED_MIN_CLAIM AIB"
+    echo "  expected airdrop per address: $EXPECTED_MIN_CLAIM AIB"
     echo "  snapshot_config.json: $MIN_CLAIM AIB"
 
     if [ "$MIN_CLAIM" -eq "$EXPECTED_MIN_CLAIM" ]; then
-        log_pass "每地址空投数量正确: $MIN_CLAIM AIB"
+        log_pass "per-address airdrop amount correct: $MIN_CLAIM AIB"
     else
-        log_fail "每地址空投数量错误: 期望 $EXPECTED_MIN_CLAIM, 实际 $MIN_CLAIM"
+        log_fail "per-address airdrop amount incorrect: expected $EXPECTED_MIN_CLAIM, actual $MIN_CLAIM"
     fi
 
-    # 检查认领窗口
+    # check claim window
     CLAIM_DEADLINE=$(grep -o '"claim_deadline": "[^"]*"' ./scripts/genesis/snapshot_config.json | cut -d'"' -f4)
-    echo "  认领截止日期: $CLAIM_DEADLINE"
+    echo "  claim deadline: $CLAIM_DEADLINE"
 
     if [ -n "$CLAIM_DEADLINE" ]; then
-        log_pass "认领截止日期已配置"
+        log_pass "claim deadline configured"
     else
-        log_fail "认领截止日期未配置"
+        log_fail "claim deadline not configured"
     fi
 
-    # 计算窗口天数
+    # calculate window days
     SNAPSHOT_TIME=$(grep -o '"snapshot_time": "[^"]*"' ./scripts/genesis/snapshot_config.json | cut -d'"' -f4)
-    echo "  快照时间: $SNAPSHOT_TIME"
+    echo "  snapshot time: $SNAPSHOT_TIME"
 
-    # 从 genesis.json 读取
+    # from genesis.json read
     AIRDROP_POOL=$(grep -A 2 "airdrop_pool" ./scripts/genesis/genesis.json | grep '"amount"' | grep -o '[0-9]*')
-    echo "  空投池金额: $AIRDROP_POOL AIB"
+    echo "  airdrop pool amount: $AIRDROP_POOL AIB"
 
-    # 理论可覆盖地址数
+    # theoretical number of coverable addresses
     MAX_ADDRESSES=$((AIRDROP_POOL / MIN_CLAIM))
-    echo "  理论可覆盖地址数: $MAX_ADDRESSES"
+    echo "  theoretical number of coverable addresses: $MAX_ADDRESSES"
 
     if [ "$MAX_ADDRESSES" -gt 0 ]; then
-        log_pass "空投池配置可覆盖 $MAX_ADDRESSES 个地址"
+        log_pass "airdrop pool config can cover $MAX_ADDRESSES addresses"
     else
-        log_warn "空投池金额可能不足"
+        log_warn "airdrop pool amount may be insufficient"
     fi
 }
 
 # =============================================================================
-# 验证 4: 区块奖励经济学
+# validate 4: block reward economics
 # =============================================================================
 validate_block_rewards() {
     echo ""
     echo "=============================================="
-    echo "4. 验证区块奖励经济学 (Block Reward Economics)"
+    echo "4. validate block reward economics (Block Reward Economics)"
     echo "=============================================="
 
-    # 从 pos_v2.go 读取 - 使用 sed 提取
+    # from pos_v2.go read - use sed to extract
     BLOCK_REWARD=$(sed -n 's/.*BlockRewardV2.*=.*uint64(\([0-9]*\)).*/\1/p' ./pkg/utxo/pos_v2.go | head -1)
     STAKING_RATIO=$(sed -n 's/.*StakingRewardRatio\s*=\s*\([0-9.]*\).*/\1/p' ./pkg/utxo/pos_v2.go | head -1)
     INFERENCE_RATIO=$(sed -n 's/.*InferenceRewardRatio\s*=\s*\([0-9.]*\).*/\1/p' ./pkg/utxo/pos_v2.go | head -1)
 
-    # 从 genesis.json 读取
+    # from genesis.json read
     GENESIS_BLOCK_REWARD=$(grep -o '"block_reward": [0-9]*' ./scripts/genesis/genesis.json | grep -o '[0-9]*')
 
-    echo "  区块奖励 (代码):   $BLOCK_REWARD AIB"
-    echo "  区块奖励 (genesis): $GENESIS_BLOCK_REWARD AIB"
+    echo "  block reward (code):   $BLOCK_REWARD AIB"
+    echo "  block reward (genesis): $GENESIS_BLOCK_REWARD AIB"
     STAKING_PCT=$(python3 -c "print(int($STAKING_RATIO * 100))")
     INFERENCE_PCT=$(python3 -c "print(int($INFERENCE_RATIO * 100))")
-    echo "  质押奖励比例:     $STAKING_RATIO (${STAKING_PCT}%)"
-    echo "  推理奖励比例:     $INFERENCE_RATIO (${INFERENCE_PCT}%)"
+    echo "  staking reward ratio:     $STAKING_RATIO (${STAKING_PCT}%)"
+    echo "  inference reward ratio:     $INFERENCE_RATIO (${INFERENCE_PCT}%)"
 
     if [ "$BLOCK_REWARD" -eq "$GENESIS_BLOCK_REWARD" ]; then
-        log_pass "区块奖励一致: $BLOCK_REWARD AIB"
+        log_pass "block rewards consistent: $BLOCK_REWARD AIB"
     else
-        log_fail "区块奖励不一致"
+        log_fail "block rewards inconsistent"
     fi
 
-    # 验证比例总和
+    # validate the sum of ratios
     RATIO_SUM=$(python3 -c "print($STAKING_RATIO + $INFERENCE_RATIO)")
     if python3 -c "import sys; sys.exit(0 if $RATIO_SUM == 1.0 else 1)" 2>/dev/null; then
-        log_pass "奖励比例总和 = 100%"
+        log_pass "sum of reward ratios = 100%"
     else
-        log_fail "奖励比例总和不等于 100% (实际: $RATIO_SUM)"
+        log_fail "sum of reward ratios does not equal 100% (actual: $RATIO_SUM)"
     fi
 
-    # 验证 PoAIW 分配: 30% 质押 + 70% 推理
-    # 注意: 需求说 30% 质押 + 70% 推理，但代码中是 60% 质押 + 40% 推理
+    # validate PoAIW allocation: 30% staking + 70% inference
+    # Note: requirements spec says 30% staking + 70% inference, but the code uses 60% staking + 40% inference
     echo ""
-    echo "  PoAIW 奖励分配检查:"
-    echo "    需求规范: 30% 质押 + 70% 推理"
-    echo "    代码实现: ${STAKING_PCT}% 质押 + ${INFERENCE_PCT}% 推理"
+    echo "  PoAIW reward allocation check:"
+    echo "    requirements spec: 30% staking + 70% inference"
+    echo "    code implementation: ${STAKING_PCT}% staking + ${INFERENCE_PCT}% inference"
 
     if python3 -c "import sys; sys.exit(0 if abs($STAKING_RATIO - 0.3) < 0.01 and abs($INFERENCE_RATIO - 0.7) < 0.01 else 1)" 2>/dev/null; then
-        log_pass "PoAIW 奖励分配符合规范 (30% 质押 + 70% 推理)"
+        log_pass "PoAIW reward allocation matches the spec (30% staking + 70% inference)"
     else
-        log_warn "PoAIW 奖励分配与需求规范不符 (当前: ${STAKING_PCT}% 质押 + ${INFERENCE_PCT}% 推理)"
+        log_warn "PoAIW reward allocation does not match the requirements spec (current: ${STAKING_PCT}% staking + ${INFERENCE_PCT}% inference)"
     fi
 
-    # 计算年通胀率
-    BLOCKS_PER_YEAR=$((365 * 24 * 60 * 60 / 30))  # 30秒区块时间
+    # calculate annual inflation rate
+    BLOCKS_PER_YEAR=$((365 * 24 * 60 * 60 / 30))  # 30second block time
     ANNUAL_INFLATION=$((BLOCK_REWARD * BLOCKS_PER_YEAR))
     INFLATION_RATE=$(python3 -c "print(round($ANNUAL_INFLATION / 3141592653 * 100, 4))")
 
     echo ""
-    echo "  年通胀率分析:"
-    echo "    每年区块数: $BLOCKS_PER_YEAR"
-    echo "    年发行量: $ANNUAL_INFLATION AIB"
-    echo "    通胀率: $INFLATION_RATE%"
+    echo "  annual inflation rate analysis:"
+    echo "    blocks per year: $BLOCKS_PER_YEAR"
+    echo "    annual issuance: $ANNUAL_INFLATION AIB"
+    echo "    inflation rate: $INFLATION_RATE%"
 
     if python3 -c "import sys; sys.exit(0 if $INFLATION_RATE < 10 else 1)" 2>/dev/null; then
-        log_pass "年通胀率合理 (< 10%)"
+        log_pass "annual inflation rate reasonable (< 10%)"
     else
-        log_warn "年通胀率较高: $INFLATION_RATE%"
+        log_warn "annual inflation rate is high: $INFLATION_RATE%"
     fi
 }
 
 # =============================================================================
-# 验证 5: 质押参数
+# validate 5: staking parameters
 # =============================================================================
 validate_staking_params() {
     echo ""
     echo "=============================================="
-    echo "5. 验证质押参数 (Staking Parameters)"
+    echo "5. validate staking parameters (Staking Parameters)"
     echo "=============================================="
 
-    # 搜索最低质押金额
+    # search for the minimum stake amount
     MIN_STAKE=$(grep -rE "MinStake|MinStakeAmount|minimum.*stake" ./pkg/utxo/*.go 2>/dev/null | grep -E '[0-9]+' | head -5)
 
-    echo "  最低质押搜索结果:"
+    echo "  minimum stake search result:"
     echo "$MIN_STAKE" | head -5
 
-    # 尝试从 consensus.go 读取
+    # try to consensus.go read
     if grep -q "MinStake" ./pkg/utxo/consensus.go; then
         MIN_STAKE_VALUE=$(grep -E "MinStake\s*=|MinStakeAmount\s*=" ./pkg/utxo/consensus.go | grep -o '[0-9]*' | head -1)
-        echo "  从 consensus.go 读取最低质押: $MIN_STAKE_VALUE AIB"
+        echo "  from consensus.go read the minimum stake: $MIN_STAKE_VALUE AIB"
 
         if [ "$MIN_STAKE_VALUE" -eq 1000 ]; then
-            log_pass "最低质押 = 1000 AIB"
+            log_pass "minimum stake = 1000 AIB"
         else
-            log_warn "最低质押不等于 1000 AIB (实际: $MIN_STAKE_VALUE)"
+            log_warn "minimum stake does not equal 1000 AIB (actual: $MIN_STAKE_VALUE)"
         fi
     else
-        log_warn "未在 consensus.go 中找到最低质押配置"
+        log_warn "not in consensus.go found minimum staking config in"
     fi
 
-    # 检查解锁期
+    # check unbonding period
     echo ""
-    echo "  解锁期检查:"
+    echo "  Unbonding period check:"
 
     if grep -q "UnbondingPeriod\|UnbondingTime\|UnlockPeriod" ./pkg/utxo/*.go; then
         UNBONDING=$(grep -E "UnbondingPeriod|UnbondingTime|UnlockPeriod" ./pkg/utxo/*.go | head -3)
         echo "$UNBONDING"
 
-        # 检查是否配置了合理的解锁期 (21天 = 1814400 秒)
+        # check whether a reasonable unbonding period is configured (21 days = 1814400 sec)
         if echo "$UNBONDING" | grep -qE "[2-3][0-9]"; then
-            log_pass "解锁期配置存在 (21-30天)"
+            log_pass "unbonding period config exists (21-30 days)"
         else
-            log_warn "解锁期可能配置异常"
+            log_warn "unbonding period may be misconfigured"
         fi
     else
-        log_warn "未找到解锁期配置"
+        log_warn "unbonding period config not found"
     fi
 
-    # 验证质押奖励池是否足够
+    # validate whether the staking reward pool is sufficient
     STAKING_POOL=$(grep -A 2 "staking_rewards" ./scripts/genesis/genesis.json | grep '"amount"' | grep -o '[0-9]*')
     echo ""
-    echo "  质押奖励池: $STAKING_POOL AIB"
+    echo "  staking reward pool: $STAKING_POOL AIB"
 
-    # 估算可支持质押者数量 (假设每人质押 1000 AIB)
+    # estimate the number of supportable stakers (assuming 1000 AIB staked per person)
     EST_VALIDATORS=$((STAKING_POOL / 1000))
-    echo "  估算可支持验证者数量: $EST_VALIDATORS"
+    echo "  estimate the number of supportable validators: $EST_VALIDATORS"
 
     if [ "$EST_VALIDATORS" -gt 10000 ]; then
-        log_pass "质押奖励池充足，可支持 $EST_VALIDATORS 个验证者"
+        log_pass "staking reward pool sufficient to support $EST_VALIDATORS validators"
     else
-        log_warn "质押奖励池可能不足 (仅支持 $EST_VALIDATORS 个验证者)"
+        log_warn "staking reward pool may be insufficient (supports only $EST_VALIDATORS validators)"
     fi
 }
 
 # =============================================================================
-# 生成 HTML 报告
+# generate HTML report
 # =============================================================================
 generate_html_report() {
     cat > "$HTML_REPORT" << EOF
@@ -355,7 +355,7 @@ generate_html_report() {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AIB 2.0 主网配置验证报告</title>
+    <title>AIB 2.0 Mainnet Config Validation Report</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -448,140 +448,140 @@ generate_html_report() {
 </head>
 <body>
     <div class="header">
-        <h1>AIB 2.0 主网配置验证报告</h1>
-        <div class="date">生成时间: $REPORT_DATE</div>
+        <h1>AIB 2.0 Mainnet Config Validation Report</h1>
+        <div class="date">generated at: $REPORT_DATE</div>
     </div>
 
     <div class="summary">
         <div class="summary-card pass">
             <div class="number">$PASSED</div>
-            <div>通过</div>
+            <div>passed</div>
         </div>
         <div class="summary-card fail">
             <div class="number">$FAILED</div>
-            <div>失败</div>
+            <div>failed</div>
         </div>
         <div class="summary-card warn">
             <div class="number">$WARNINGS</div>
-            <div>警告</div>
+            <div>warning</div>
         </div>
     </div>
 
     <div class="section">
-        <h2>1. 总供应量验证</h2>
+        <h2>1. total supply validation</h2>
         <div class="formula">
-            供应量 = &pi; &times; 10<sup>9</sup> = 3,141,592,653 AIB
+            supply = &pi; &times; 10<sup>9</sup> = 3,141,592,653 AIB
         </div>
         <table>
-            <tr><th>配置源</th><th>数值</th><th>状态</th></tr>
-            <tr><td>genesis.json</td><td>3,141,592,653 AIB</td><td class="pass">正确</td></tr>
-            <tr><td>pos_v2.go</td><td>3,141,592,653 AIB</td><td class="pass">正确</td></tr>
+            <tr><th>config source</th><th>value</th><th>status</th></tr>
+            <tr><td>genesis.json</td><td>3,141,592,653 AIB</td><td class="pass">correct</td></tr>
+            <tr><td>pos_v2.go</td><td>3,141,592,653 AIB</td><td class="pass">correct</td></tr>
         </table>
     </div>
 
     <div class="section">
-        <h2>2. 创世分配验证</h2>
+        <h2>2. genesis allocation validation</h2>
         <table>
-            <tr><th>分配池</th><th>百分比</th><th>金额 (AIB)</th><th>状态</th></tr>
-            <tr><td>Team (团队)</td><td>15%</td><td>471,238,897</td><td class="pass">正确</td></tr>
-            <tr><td>Ecosystem (生态)</td><td>30%</td><td>942,477,795</td><td class="pass">正确</td></tr>
-            <tr><td>Staking Rewards (质押奖励)</td><td>40%</td><td>1,256,637,061</td><td class="pass">正确</td></tr>
-            <tr><td>Community (社区)</td><td>10%</td><td>314,159,265</td><td class="pass">正确</td></tr>
-            <tr><td>Airdrop Pool (空投)</td><td>5%</td><td>157,079,635</td><td class="pass">正确</td></tr>
-            <tr><td><strong>总计</strong></td><td><strong>100%</strong></td><td><strong>3,141,592,653</strong></td><td class="pass">正确</td></tr>
+            <tr><th>allocation pool</th><th>percentage</th><th>amount (AIB)</th><th>status</th></tr>
+            <tr><td>Team (Team)</td><td>15%</td><td>471,238,897</td><td class="pass">correct</td></tr>
+            <tr><td>Ecosystem (Ecosystem)</td><td>30%</td><td>942,477,795</td><td class="pass">correct</td></tr>
+            <tr><td>Staking Rewards (staking rewards)</td><td>40%</td><td>1,256,637,061</td><td class="pass">correct</td></tr>
+            <tr><td>Community (Community)</td><td>10%</td><td>314,159,265</td><td class="pass">correct</td></tr>
+            <tr><td>Airdrop Pool (airdrop)</td><td>5%</td><td>157,079,635</td><td class="pass">correct</td></tr>
+            <tr><td><strong>Total</strong></td><td><strong>100%</strong></td><td><strong>3,141,592,653</strong></td><td class="pass">correct</td></tr>
         </table>
     </div>
 
     <div class="section">
-        <h2>3. 空投配置验证</h2>
+        <h2>3. airdrop config validation</h2>
         <table>
-            <tr><th>参数</th><th>值</th><th>状态</th></tr>
-            <tr><td>每地址空投</td><td>100 AIB</td><td class="pass">正确</td></tr>
-            <tr><td>认领窗口</td><td>已配置 (2027-12-31)</td><td class="pass">正确</td></tr>
-            <tr><td>空投池金额</td><td>157,079,635 AIB</td><td class="pass">正确</td></tr>
-            <tr><td>理论可覆盖地址数</td><td>1,570,796</td><td class="pass">充足</td></tr>
+            <tr><th>Parameter</th><th>Value</th><th>status</th></tr>
+            <tr><td>airdrop per address</td><td>100 AIB</td><td class="pass">correct</td></tr>
+            <tr><td>claim window</td><td>configured (2027-12-31)</td><td class="pass">correct</td></tr>
+            <tr><td>airdrop pool amount</td><td>157,079,635 AIB</td><td class="pass">correct</td></tr>
+            <tr><td>theoretical number of coverable addresses</td><td>1,570,796</td><td class="pass">sufficient</td></tr>
         </table>
     </div>
 
     <div class="section">
-        <h2>4. 区块奖励经济学</h2>
+        <h2>4. block reward economics</h2>
         <table>
-            <tr><th>参数</th><th>值</th><th>状态</th></tr>
-            <tr><td>区块奖励</td><td>50 AIB/块</td><td class="pass">正确</td></tr>
-            <tr><td>区块时间</td><td>30 秒</td><td class="pass">正确</td></tr>
-            <tr><td>质押奖励比例</td><td>60%</td><td class="warn">与规范不符*</td></tr>
-            <tr><td>推理奖励比例</td><td>40%</td><td class="warn">与规范不符*</td></tr>
-            <tr><td>年通胀率</td><td>约 1.66%</td><td class="pass">合理</td></tr>
+            <tr><th>Parameter</th><th>Value</th><th>status</th></tr>
+            <tr><td>block reward</td><td>50 AIB/blocks</td><td class="pass">correct</td></tr>
+            <tr><td>block time</td><td>30 sec</td><td class="pass">correct</td></tr>
+            <tr><td>staking reward ratio</td><td>60%</td><td class="warn">does not match the spec*</td></tr>
+            <tr><td>inference reward ratio</td><td>40%</td><td class="warn">does not match the spec*</td></tr>
+            <tr><td>annual inflation rate</td><td>approx. 1.66%</td><td class="pass">reasonable</td></tr>
         </table>
-        <p style="color: #ff9800; font-size: 14px;">* 注意: 需求规范要求 30% 质押 + 70% 推理，但代码实现为 60% 质押 + 40% 推理</p>
+        <p style="color: #ff9800; font-size: 14px;">* Note: requirements spec requires 30% staking + 70% inference, but the code implementation uses 60% staking + 40% inference</p>
     </div>
 
     <div class="section">
-        <h2>5. 质押参数</h2>
+        <h2>5. staking parameters</h2>
         <table>
-            <tr><th>参数</th><th>值</th><th>状态</th></tr>
-            <tr><td>最低质押</td><td>1000 AIB</td><td class="pass">正确</td></tr>
-            <tr><td>解锁期</td><td>已配置</td><td class="pass">正确</td></tr>
-            <tr><td>质押奖励池</td><td>1,256,637,061 AIB</td><td class="pass">充足</td></tr>
-            <tr><td>可支持验证者数</td><td>> 1,256,637</td><td class="pass">充足</td></tr>
+            <tr><th>Parameter</th><th>Value</th><th>status</th></tr>
+            <tr><td>minimum stake</td><td>1000 AIB</td><td class="pass">correct</td></tr>
+            <tr><td>Unbonding period</td><td>configured</td><td class="pass">correct</td></tr>
+            <tr><td>staking reward pool</td><td>1,256,637,061 AIB</td><td class="pass">sufficient</td></tr>
+            <tr><td>Supportable validator count</td><td>> 1,256,637</td><td class="pass">sufficient</td></tr>
         </table>
     </div>
 
     <div class="section">
-        <h2>验证结论</h2>
+        <h2>validation conclusion</h2>
         <div class="validation-item $([ $FAILED -eq 0 ] && echo 'pass' || echo 'fail')">
             <span class="icon">$([ $FAILED -eq 0 ] && echo '✓' || echo '✗')</span>
-            <span>主网配置验证 $([ $FAILED -eq 0 ] && echo '通过' || echo '未通过')</span>
+            <span>mainnet config validation $([ $FAILED -eq 0 ] && echo 'passed' || echo 'not passed')</span>
         </div>
-        <p>本次验证共检查 <strong>$((PASSED+FAILED+WARNINGS))</strong> 项配置，其中 <strong>$PASSED</strong> 项通过，<strong>$FAILED</strong> 项失败，<strong>$WARNINGS</strong> 项警告。</p>
-        $([ $WARNINGS -gt 0 ] && echo '<p style="color: #ff9800;">请注意检查警告项，确保配置符合需求规范。</p>')
+        <p>this validation checked <strong>$((PASSED+FAILED+WARNINGS))</strong> config items, of which <strong>$PASSED</strong> passed，<strong>$FAILED</strong> failed，<strong>$WARNINGS</strong> warnings。</p>
+        $([ $WARNINGS -gt 0 ] && echo '<p style="color: #ff9800;">please review warning items and ensure the config matches the requirements spec spec。</p>')
     </div>
 </body>
 </html>
 EOF
     echo ""
-    echo "HTML 报告已生成: $HTML_REPORT"
+    echo "HTML report generated: $HTML_REPORT"
 }
 
 # =============================================================================
-# 主函数
+# main function
 # =============================================================================
 main() {
     echo ""
     echo "╔════════════════════════════════════════════════════════════════╗"
-    echo "║       AIB 2.0 主网配置验证工具 v1.0                            ║"
+    echo "║       AIB 2.0 mainnet config validation tool v1.0                            ║"
     echo "║       Mainnet Configuration Validator                          ║"
     echo "╚════════════════════════════════════════════════════════════════╝"
     echo ""
-    echo "验证时间: $REPORT_DATE"
+    echo "validation time: $REPORT_DATE"
     echo ""
 
-    # 执行所有验证
+    # run all validations
     validate_total_supply
     validate_allocation
     validate_airdrop
     validate_block_rewards
     validate_staking_params
 
-    # 生成摘要
+    # generate summary
     echo ""
     echo "=============================================="
-    echo "验证摘要"
+    echo "validatesummary"
     echo "=============================================="
-    echo -e "${GREEN}通过: $PASSED${NC}"
-    echo -e "${RED}失败: $FAILED${NC}"
-    echo -e "${YELLOW}警告: $WARNINGS${NC}"
+    echo -e "${GREEN}passed: $PASSED${NC}"
+    echo -e "${RED}failed: $FAILED${NC}"
+    echo -e "${YELLOW}warning: $WARNINGS${NC}"
 
-    # 生成 HTML 报告
+    # generate HTML report
     generate_html_report
 
     echo ""
     echo "=============================================="
-    echo "验证完成"
+    echo "validatecomplete"
     echo "=============================================="
-    echo "详细报告: $HTML_REPORT"
+    echo "detailed report: $HTML_REPORT"
     echo ""
 }
 
-# 执行主函数
+# execute the main function
 main

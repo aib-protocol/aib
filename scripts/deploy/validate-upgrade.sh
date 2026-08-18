@@ -1,38 +1,38 @@
 #!/bin/bash
 #
-# AIB 2.0 升级验证脚本
-# 用法: ./validate-upgrade.sh [选项]
-# 选项:
-#   -c, --check CHECKS       指定检查项: all|version|consensus|api|p2p|sync (默认: all)
-#   -s, --service SERVICE   指定服务名 (默认: aib2-mainnet)
-#   -p, --port PORT         API 端口 (默认: 51200)
-#   -t, --timeout SECONDS   超时时间 (默认: 30)
-#   -v, --verbose           详细输出
-#   -h, --help              显示帮助信息
+# AIB 2.0 upgrade validation script
+# Usage: ./validate-upgrade.sh [options]
+# Options:
+#   -c, --check CHECKS       specify checks: all|version|consensus|api|p2p|sync (default: all)
+#   -s, --service SERVICE   specify service name (default: aib2-mainnet)
+#   -p, --port PORT         API port (default: 51200)
+#   -t, --timeout SECONDS   timeout (default: 30)
+#   -v, --verbose           verbose output
+#   -h, --help              show help information
 #
-# 功能:
-#   1. 验证版本升级
-#   2. 验证共识状态
-#   3. 验证 API 可用性
-#   4. 验证 P2P 网络
-#   5. 验证同步状态
-#   6. 验证链上活动
+# Features:
+#   1. validate the version upgrade
+#   2. validate consensus status
+#   3. validate API availability
+#   4. validate P2P network
+#   5. validatesync status
+#   6. validate on-chain activity
 #
-# 作者: AIB Protocol Team
-# 更新: 2026-03
+# Author: AIB Protocol Team
+# Updated: 2026-03
 #
 
 set -e
 set -u
 set -o pipefail
 
-# ========== 脚本元数据 ==========
+# ========== script metadata ==========
 SCRIPT_NAME="$(basename "$0")"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 VERSION="2.0.0"
 
-# ========== 颜色输出 ==========
+# ========== colored output ==========
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -40,7 +40,7 @@ BLUE='\033[0;34m'
 CYAN='\033[0;36m'
 NC='\033[0m'
 
-# ========== 日志函数 ==========
+# ========== logging functions ==========
 log_info() {
     echo -e "${BLUE}[INFO]${NC} $*"
 }
@@ -64,7 +64,7 @@ log_section() {
     echo -e "${CYAN}========================================${NC}"
 }
 
-# ========== 配置变量 ==========
+# ========== config variables ==========
 CHECKS="all"
 SERVICE_NAME="aib2-mainnet"
 API_PORT="51200"
@@ -73,56 +73,56 @@ TIMEOUT=30
 VERBOSE=false
 BINARY_PATH="${PROJECT_DIR}/bin/aib-node"
 
-# 检查结果
+# check results
 declare -A CHECK_RESULTS
 PASS_COUNT=0
 FAIL_COUNT=0
 
-# ========== 帮助信息 ==========
+# ========== help information ==========
 show_help() {
     cat << EOF
-AIB 2.0 升级验证脚本 v${VERSION}
+AIB 2.0 upgrade validation script v${VERSION}
 
-用法: ${SCRIPT_NAME} [选项]
+Usage: ${SCRIPT_NAME} [options]
 
-选项:
-  -c, --check CHECKS       指定检查项: all|version|consensus|api|p2p|sync (默认: all)
-  -s, --service SERVICE   指定服务名 (默认: aib2-mainnet)
-  -p, --port PORT         API 端口 (默认: 51200)
-  -t, --timeout SECONDS   超时时间 (默认: 30)
-  -v, --verbose           详细输出
-  -h, --help              显示帮助信息
+Options:
+  -c, --check CHECKS       specify checks: all|version|consensus|api|p2p|sync (default: all)
+  -s, --service SERVICE   specify service name (default: aib2-mainnet)
+  -p, --port PORT         API port (default: 51200)
+  -t, --timeout SECONDS   timeout (default: 30)
+  -v, --verbose           verbose output
+  -h, --help              show help information
 
-检查项:
-  version     - 验证节点版本
-  consensus   - 验证共识状态
-  api         - 验证 API 可用性
-  p2p         - 验证 P2P 网络连接
-  sync        - 验证同步状态
-  chain       - 验证链上活动
+check item:
+  version     - validate node version
+  consensus   - validate consensus status
+  api         - validate API availability
+  p2p         - validate P2P network connection
+  sync        - validatesync status
+  chain       - validate on-chain activity
 
-示例:
-  # 验证所有项目
+Examples:
+  # validate all items
   ${SCRIPT_NAME}
 
-  # 仅验证版本
+  # validate version only
   ${SCRIPT_NAME} -c version
 
-  # 验证多个项目
+  # validate multiple items
   ${SCRIPT_NAME} -c version,consensus,api
 
-  # 自定义端口
+  # custom port
   ${SCRIPT_NAME} -p 51201
 
-  # 详细输出
+  # verbose output
   ${SCRIPT_NAME} -v
 
-注意: 需要节点服务正在运行才能进行验证
+Note: the node service must be running to validate
 EOF
     exit 0
 }
 
-# ========== 参数解析 ==========
+# ========== parse arguments ==========
 parse_args() {
     while [[ $# -gt 0 ]]; do
         case $1 in
@@ -150,14 +150,14 @@ parse_args() {
                 show_help
                 ;;
             *)
-                log_error "未知参数: $1"
+                log_error "unknown argument: $1"
                 show_help
                 ;;
         esac
     done
 }
 
-# ========== API 调用 ==========
+# ========== API invoke ==========
 api_call() {
     local endpoint="$1"
     local url="http://localhost:${API_PORT}${endpoint}"
@@ -165,12 +165,12 @@ api_call() {
     if command -v curl &> /dev/null; then
         curl -sf --connect-timeout "${TIMEOUT}" "${url}" 2>/dev/null
     else
-        log_error "curl 未安装"
+        log_error "curl not installed"
         return 1
     fi
 }
 
-# ========== 记录结果 ==========
+# ========== record result ==========
 record_result() {
     local check_name="$1"
     local result="$2"
@@ -189,11 +189,11 @@ record_result() {
     fi
 }
 
-# ========== 检查 1: 版本验证 ==========
+# ========== check 1: version validation ==========
 check_version() {
-    log_section "检查: 版本验证"
+    log_section "check: version validation"
 
-    # 检查二进制版本
+    # check binary version
     local binary_version
     if [[ -f "${BINARY_PATH}" ]]; then
         binary_version=$("${BINARY_PATH}" --version 2>&1 | head -1)
@@ -201,37 +201,37 @@ check_version() {
         binary_version="binary_not_found"
     fi
 
-    [[ "${VERBOSE}" == "true" ]] && log_info "二进制版本: ${binary_version}"
+    [[ "${VERBOSE}" == "true" ]] && log_info "binaryversion: ${binary_version}"
 
-    # 获取 API 版本
+    # get API version
     local api_version
     api_version=$(api_call "/version" 2>/dev/null || echo "api_error")
 
-    [[ "${VERBOSE}" == "true" ]] && log_info "API 版本: ${api_version}"
+    [[ "${VERBOSE}" == "true" ]] && log_info "API version: ${api_version}"
 
-    # 检查一致性
+    # check consistency
     if [[ "${binary_version}" != *"not_found"* ]] && [[ "${api_version}" != "api_error" ]]; then
-        # 简单的版本检查
+        # simple version check
         if [[ -n "${api_version}" ]]; then
-            record_result "version" "PASS" "版本正常 (${binary_version})"
+            record_result "version" "PASS" "version OK (${binary_version})"
         else
-            record_result "version" "WARN" "API 版本获取失败"
+            record_result "version" "WARN" "API failed to get version"
         fi
     else
-        record_result "version" "FAIL" "版本检查失败"
+        record_result "version" "FAIL" "version check failed"
     fi
 }
 
-# ========== 检查 2: 共识状态 ==========
+# ========== check 2: consensus status ==========
 check_consensus() {
-    log_section "检查: 共识状态"
+    log_section "check: consensus status"
 
-    # 检查服务状态
+    # check service status
     local service_status
     if command -v systemctl &> /dev/null; then
         service_status=$(systemctl is-active "${SERVICE_NAME}" 2>/dev/null || echo "inactive")
     else
-        # 尝试检测进程
+        # try to detect the process
         if pgrep -f "aib-node" > /dev/null; then
             service_status="running"
         else
@@ -239,45 +239,45 @@ check_consensus() {
         fi
     fi
 
-    [[ "${VERBOSE}" == "true" ]] && log_info "服务状态: ${service_status}"
+    [[ "${VERBOSE}" == "true" ]] && log_info "service status: ${service_status}"
 
     if [[ "${service_status}" == "active" || "${service_status}" == "running" ]]; then
-        record_result "consensus" "PASS" "节点服务运行中"
+        record_result "consensus" "PASS" "node service running"
     else
-        record_result "consensus" "FAIL" "节点服务未运行: ${service_status}"
+        record_result "consensus" "FAIL" "node service is not running: ${service_status}"
         return 1
     fi
 
-    # 检查共识参数
+    # check consensus parameters
     local consensus_params
     consensus_params=$(api_call "/consensus/params" 2>/dev/null || echo "")
 
-    [[ "${VERBOSE}" == "true" ]] && log_info "共识参数: ${consensus_params}"
+    [[ "${VERBOSE}" == "true" ]] && log_info "consensus parameters: ${consensus_params}"
 
     if [[ -n "${consensus_params}" ]]; then
-        record_result "consensus_params" "PASS" "共识参数可查询"
+        record_result "consensus_params" "PASS" "consensus parameters queryable"
     else
-        record_result "consensus_params" "WARN" "共识参数获取失败"
+        record_result "consensus_params" "WARN" "failed to get consensus parameters"
     fi
 }
 
-# ========== 检查 3: API 可用性 ==========
+# ========== check 3: API availability ==========
 check_api() {
-    log_section "检查: API 可用性"
+    log_section "check: API available "
 
-    # 检查健康端点
+    # check health endpoint
     local health
     health=$(api_call "/health" 2>/dev/null || echo "error")
 
-    [[ "${VERBOSE}" == "true" ]] && log_info "健康状态: ${health}"
+    [[ "${VERBOSE}" == "true" ]] && log_info "health status: ${health}"
 
     if [[ "${health}" != "error" ]]; then
-        record_result "api_health" "PASS" "健康检查通过"
+        record_result "api_health" "PASS" "health check passed"
     else
-        record_result "api_health" "FAIL" "健康检查失败"
+        record_result "api_health" "FAIL" "health check failed"
     fi
 
-    # 检查关键端点
+    # check key endpoints
     local endpoints=(
         "/node_info"
         "/status"
@@ -294,105 +294,105 @@ check_api() {
 
         if [[ -n "${response}" ]]; then
             endpoint_success=$((endpoint_success + 1))
-            [[ "${VERBOSE}" == "true" ]] && log_info "端点 ${endpoint}: OK"
+            [[ "${VERBOSE}" == "true" ]] && log_info "endpoint ${endpoint}: OK"
         else
-            [[ "${VERBOSE}" == "true" ]] && log_info "端点 ${endpoint}: FAIL"
+            [[ "${VERBOSE}" == "true" ]] && log_info "endpoint ${endpoint}: FAIL"
         fi
     done
 
     if [[ ${endpoint_success} -eq ${endpoint_count} ]]; then
-        record_result "api_endpoints" "PASS" "所有关键端点可用"
+        record_result "api_endpoints" "PASS" "all key endpoints available"
     elif [[ ${endpoint_success} -gt 0 ]]; then
-        record_result "api_endpoints" "WARN" "${endpoint_success}/${endpoint_count} 端点可用"
+        record_result "api_endpoints" "WARN" "${endpoint_success}/${endpoint_count} endpoint available"
     else
-        record_result "api_endpoints" "FAIL" "所有端点不可用"
+        record_result "api_endpoints" "FAIL" "all endpoints unavailable"
     fi
 }
 
-# ========== 检查 4: P2P 网络 ==========
+# ========== check 4: P2P network ==========
 check_p2p() {
-    log_section "检查: P2P 网络"
+    log_section "check: P2P network"
 
-    # 获取网络信息
+    # get network info
     local net_info
     net_info=$(api_call "/net_info" 2>/dev/null || echo "")
 
-    [[ "${VERBOSE}" == "true" ]] && log_info "网络信息: ${net_info}"
+    [[ "${VERBOSE}" == "true" ]] && log_info "network info: ${net_info}"
 
     if [[ -n "${net_info}" ]]; then
-        # 尝试提取连接数
+        # try to extract connection count
         local n_peers
         n_peers=$(echo "${net_info}" | jq -r '.n_peers' 2>/dev/null || echo "0")
 
-        [[ "${VERBOSE}" == "true" ]] && log_info "对等节点数: ${n_peers}"
+        [[ "${VERBOSE}" == "true" ]] && log_info "peer count: ${n_peers}"
 
         if [[ "${n_peers}" -gt 0 ]]; then
-            record_result "p2p_peers" "PASS" "已连接 ${n_peers} 个对等节点"
+            record_result "p2p_peers" "PASS" "connected ${n_peers} peers"
         elif [[ "${n_peers}" == "0" ]]; then
-            record_result "p2p_peers" "WARN" "没有连接的对等节点"
+            record_result "p2p_peers" "WARN" "no connected peers"
         else
-            record_result "p2p_peers" "FAIL" "无法获取对等节点信息"
+            record_result "p2p_peers" "FAIL" "failed to get peer info"
         fi
     else
-        record_result "p2p_peers" "FAIL" "无法连接到 P2P 网络"
+        record_result "p2p_peers" "FAIL" "cannot connect to P2P network"
     fi
 
-    # 检查 P2P 端口
+    # check P2P port
     if command -v nc &> /dev/null || command -v timeout &> /dev/null; then
         if nc -z localhost "${P2P_PORT}" 2>/dev/null || timeout 1 bash -c "echo > /dev/tcp/localhost/${P2P_PORT}" 2>/dev/null; then
-            record_result "p2p_port" "PASS" "P2P 端口 ${P2P_PORT} 可访问"
+            record_result "p2p_port" "PASS" "P2P port ${P2P_PORT} accessible"
         else
-            record_result "p2p_port" "FAIL" "P2P 端口 ${P2P_PORT} 不可访问"
+            record_result "p2p_port" "FAIL" "P2P port ${P2P_PORT} inaccessible"
         fi
     else
-        [[ "${VERBOSE}" == "true" ]] && log_info "跳过端口检查 (nc/timeout 不可用)"
+        [[ "${VERBOSE}" == "true" ]] && log_info "skip port check (nc/timeout unavailable)"
     fi
 }
 
-# ========== 检查 5: 同步状态 ==========
+# ========== check 5: sync status ==========
 check_sync() {
-    log_section "检查: 同步状态"
+    log_section "check: sync status"
 
-    # 获取状态
+    # getstatus
     local status
     status=$(api_call "/status" 2>/dev/null || echo "")
 
     if [[ -n "${status}" ]]; then
-        # 检查同步状态
+        # check sync status
         local syncing
         syncing=$(echo "${status}" | jq -r '.syncing' 2>/dev/null || echo "unknown")
 
-        [[ "${VERBOSE}" == "true" ]] && log_info "同步状态: ${syncing}"
+        [[ "${VERBOSE}" == "true" ]] && log_info "sync status: ${syncing}"
 
         if [[ "${syncing}" == "false" ]]; then
-            record_result "sync_status" "PASS" "节点已同步"
+            record_result "sync_status" "PASS" "node synced"
         elif [[ "${syncing}" == "true" ]]; then
-            record_result "sync_status" "WARN" "节点正在同步"
+            record_result "sync_status" "WARN" "node is syncing"
         else
-            record_result "sync_status" "WARN" "无法确定同步状态"
+            record_result "sync_status" "WARN" "unable to determine sync status"
         fi
 
-        # 获取区块高度
+        # get block height
         local block_height
         block_height=$(echo "${status}" | jq -r '.latest_block_height' 2>/dev/null || echo "0")
 
-        [[ "${VERBOSE}" == "true" ]] && log_info "区块高度: ${block_height}"
+        [[ "${VERBOSE}" == "true" ]] && log_info "block height: ${block_height}"
 
         if [[ "${block_height}" -gt 0 ]]; then
-            record_result "sync_height" "PASS" "当前高度: ${block_height}"
+            record_result "sync_height" "PASS" "current height: ${block_height}"
         else
-            record_result "sync_height" "FAIL" "无法获取区块高度"
+            record_result "sync_height" "FAIL" "failed to get block height"
         fi
     else
-        record_result "sync_status" "FAIL" "无法获取同步状态"
+        record_result "sync_status" "FAIL" "failed to get sync status"
     fi
 }
 
-# ========== 检查 6: 链上活动 ==========
+# ========== check 6: on-chain activity ==========
 check_chain() {
-    log_section "检查: 链上活动"
+    log_section "check: on-chain activity"
 
-    # 获取最新区块
+    # get the latest block
     local block
     block=$(api_call "/blocks/latest" 2>/dev/null || echo "")
 
@@ -403,30 +403,30 @@ check_chain() {
         local block_time
         block_time=$(echo "${block}" | jq -r '.block.header.timestamp' 2>/dev/null || echo "")
 
-        [[ "${VERBOSE}" == "true" ]] && log_info "最新区块: ${block_height} (${block_time})"
+        [[ "${VERBOSE}" == "true" ]] && log_info "latest block: ${block_height} (${block_time})"
 
         if [[ "${block_height}" -gt 0 ]]; then
-            record_result "chain_block" "PASS" "最新区块: ${block_height}"
+            record_result "chain_block" "PASS" "latest block: ${block_height}"
         else
-            record_result "chain_block" "FAIL" "无法获取区块信息"
+            record_result "chain_block" "FAIL" "failed to get block info"
         fi
 
-        # 检查交易数量
+        # check transaction count
         local tx_count
         tx_count=$(echo "${block}" | jq -r '.block.data.txs | length' 2>/dev/null || echo "0")
 
-        [[ "${VERBOSE}" == "true" ]] && log_info "交易数: ${tx_count}"
+        [[ "${VERBOSE}" == "true" ]] && log_info "transaction count: ${tx_count}"
 
         if [[ "${tx_count}" -gt 0 ]]; then
-            record_result "chain_txs" "PASS" "区块包含 ${tx_count} 笔交易"
+            record_result "chain_txs" "PASS" "block contains ${tx_count} transactions"
         else
-            record_result "chain_txs" "WARN" "区块无交易"
+            record_result "chain_txs" "WARN" "block has no transactions"
         fi
     else
-        record_result "chain_block" "FAIL" "无法获取链上数据"
+        record_result "chain_block" "FAIL" "failed to get on-chain data"
     fi
 
-    # 检查验证者集
+    # check the validator set
     local validators
     validators=$(api_call "/validators" 2>/dev/null || echo "")
 
@@ -434,65 +434,65 @@ check_chain() {
         local validator_count
         validator_count=$(echo "${validators}" | jq -r '.validators | length' 2>/dev/null || echo "0")
 
-        [[ "${VERBOSE}" == "true" ]] && log_info "验证者数量: ${validator_count}"
+        [[ "${VERBOSE}" == "true" ]] && log_info "validator count: ${validator_count}"
 
         if [[ "${validator_count}" -gt 0 ]]; then
-            record_result "chain_validators" "PASS" "验证者数量: ${validator_count}"
+            record_result "chain_validators" "PASS" "validator count: ${validator_count}"
         else
-            record_result "chain_validators" "WARN" "未找到验证者"
+            record_result "chain_validators" "WARN" "no validators found"
         fi
     else
-        record_result "chain_validators" "FAIL" "无法获取验证者信息"
+        record_result "chain_validators" "FAIL" "failed to get validator info"
     fi
 }
 
-# ========== 检查服务日志 ==========
+# ========== check service logs ==========
 check_logs() {
-    log_section "检查: 服务日志"
+    log_section "check: service logs"
 
     if command -v journalctl &> /dev/null; then
-        # 检查最近错误
+        # check recent errors
         local errors
         errors=$(journalctl -u "${SERVICE_NAME}" --no-pager -n 100 --priority=err 2>/dev/null | wc -l)
 
         if [[ ${errors} -gt 0 ]]; then
-            record_result "log_errors" "WARN" "发现 ${errors} 条错误日志"
+            record_result "log_errors" "WARN" "found ${errors} error log entries"
             [[ "${VERBOSE}" == "true" ]] && journalctl -u "${SERVICE_NAME}" --no-pager -n 5 --priority=err
         else
-            record_result "log_errors" "PASS" "无错误日志"
+            record_result "log_errors" "PASS" "no error logs"
         fi
 
-        # 检查最近警告
+        # check recent warnings
         local warnings
         warnings=$(journalctl -u "${SERVICE_NAME}" --no-pager -n 100 --priority=warning 2>/dev/null | wc -l)
 
-        [[ "${VERBOSE}" == "true" ]] && log_info "警告日志数量: ${warnings}"
+        [[ "${VERBOSE}" == "true" ]] && log_info "warning log count: ${warnings}"
 
         if [[ ${warnings} -gt 10 ]]; then
-            record_result "log_warnings" "WARN" "发现 ${warnings} 条警告日志"
+            record_result "log_warnings" "WARN" "found ${warnings} warning log entries"
         else
-            record_result "log_warnings" "PASS" "警告日志数量正常"
+            record_result "log_warnings" "PASS" "warning log count normal"
         fi
     else
-        [[ "${VERBOSE}" == "true" ]] && log_info "跳过日志检查 (journalctl 不可用)"
+        [[ "${VERBOSE}" == "true" ]] && log_info "skip log check (journalctl unavailable)"
     fi
 }
 
-# ========== 打印摘要 ==========
+# ========== print summary ==========
 print_summary() {
     echo
     echo "========================================"
-    echo "  验证结果摘要"
+    echo "  validation result summary"
     echo "========================================"
     echo
 
-    echo "通过: ${PASS_COUNT}"
-    echo "失败: ${FAIL_COUNT}"
+    echo "passed: ${PASS_COUNT}"
+    echo "failed: ${FAIL_COUNT}"
     echo
 
-    # 列出失败项
+    # list failed items
     if [[ ${FAIL_COUNT} -gt 0 ]]; then
-        echo -e "${RED}失败检查项:${NC}"
+        echo -e "${RED}failed checks:${NC}"
         for key in "${!CHECK_RESULTS[@]}"; do
             if [[ "${CHECK_RESULTS[${key}]}" == "FAIL" ]]; then
                 echo "  - ${key}"
@@ -502,30 +502,30 @@ print_summary() {
     fi
 
     if [[ ${FAIL_COUNT} -eq 0 ]]; then
-        echo -e "${GREEN}所有检查通过!${NC}"
+        echo -e "${GREEN}all checks passed!${NC}"
         return 0
     else
-        echo -e "${RED}部分检查失败，请检查上述错误${NC}"
+        echo -e "${RED}some checks failed, review the errors above${NC}"
         return 1
     fi
 }
 
-# ========== 主流程 ==========
+# ========== main flow ==========
 main() {
     echo
-    echo -e "${GREEN}AIB 2.0 升级验证脚本${NC}"
-    echo -e "${YELLOW}版本: ${VERSION}${NC}"
+    echo -e "${GREEN}AIB 2.0 upgrade validation script${NC}"
+    echo -e "${YELLOW}version: ${VERSION}${NC}"
     echo
 
-    # 解析参数
+    # parse arguments
     parse_args "$@"
 
-    log_info "API 端口: ${API_PORT}"
-    log_info "服务名: ${SERVICE_NAME}"
-    log_info "检查项: ${CHECKS}"
+    log_info "API port: ${API_PORT}"
+    log_info "service name: ${SERVICE_NAME}"
+    log_info "check item: ${CHECKS}"
     echo
 
-    # 执行检查
+    # run checks
     case "${CHECKS}" in
         all)
             check_version
@@ -555,7 +555,7 @@ main() {
             check_chain
             ;;
         *)
-            # 支持逗号分隔的多个检查
+            # supports comma-separated checks
             IFS=',' read -ra CHECK_ARRAY <<< "${CHECKS}"
             for check in "${CHECK_ARRAY[@]}"; do
                 case "${check}" in
@@ -566,17 +566,17 @@ main() {
                     sync) check_sync ;;
                     chain) check_chain ;;
                     logs) check_logs ;;
-                    *) log_warning "未知检查项: ${check}" ;;
+                    *) log_warning "unknown check: ${check}" ;;
                 esac
             done
             ;;
     esac
 
-    # 打印摘要
+    # print summary
     print_summary
 
     exit $?
 }
 
-# ========== 入口 ==========
+# ========== Entry Point ==========
 main "$@"
