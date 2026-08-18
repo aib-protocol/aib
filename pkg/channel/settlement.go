@@ -21,46 +21,46 @@ import (
 type SettlementType int
 
 const (
-	SettlementCooperative SettlementType = iota // 正常结算（双方签名）
-	SettlementForce                             // 强制结算（单边发起）
-	SettlementDispute                           // 争议结算（仲裁后）
+	SettlementCooperative SettlementType = iota // cooperative settlement (both parties signed)
+	SettlementForce                             // force settlement (unilaterally initiated)
+	SettlementDispute                           // dispute settlement (after arbitration)
 )
 
 // SettlementStatus represents the status of a settlement
 type SettlementStatus int
 
 const (
-	SettlementPending    SettlementStatus = iota // 待处理
-	SettlementConfirming                         // 确认中
-	SettlementComplete                           // 已完成
-	SettlementFailed                             // 失败
-	SettlementCancelled                          // 已取消
+	SettlementPending    SettlementStatus = iota // pending
+	SettlementConfirming                         // confirming
+	SettlementComplete                           // complete
+	SettlementFailed                             // failed
+	SettlementCancelled                          // cancelled
 )
 
 // Settlement represents a channel settlement record
 type Settlement struct {
-	ID           [32]byte           // 结算交易唯一ID
-	ChannelID    [32]byte           // 关联的通道ID
-	StateHash    [32]byte           // 最终状态哈希
-	BalanceA     uint64             // PartyA 最终余额
-	BalanceB     uint64             // PartyB 最终余额
-	Sequence     uint64             // 结算时的序列号
-	Type         SettlementType     // 结算类型
-	Status       SettlementStatus   // 结算状态
-	Initiator    interfaces.Address // 结算发起方
-	Timestamp    time.Time          // 结算时间戳
-	BlockNumber  uint64             // 结算所在区块
-	TxHash       [32]byte           // 链上交易哈希
-	SigA         []byte             // PartyA 签名
-	SigB         []byte             // PartyB 签名
-	ChallengeEnd *time.Time         // 争议期结束时间（强制结算时使用）
+	ID           [32]byte           // unique settlement transaction ID
+	ChannelID    [32]byte           // associated channel ID
+	StateHash    [32]byte           // final state hash
+	BalanceA     uint64             // PartyA final balance
+	BalanceB     uint64             // PartyB final balance
+	Sequence     uint64             // sequence number at settlement
+	Type         SettlementType     // settlement type
+	Status       SettlementStatus   // settlement status
+	Initiator    interfaces.Address // settlement initiator
+	Timestamp    time.Time          // settlement timestamp
+	BlockNumber  uint64             // block number containing the settlement
+	TxHash       [32]byte           // on-chain transaction hash
+	SigA         []byte             // PartyA signature
+	SigB         []byte             // PartyB signature
+	ChallengeEnd *time.Time         // challenge period end time (used for force settlement)
 }
 
 // SettlementConfig holds configuration for the settlement manager
 type SettlementConfig struct {
-	ChallengePeriod     time.Duration // 争议等待期
-	ConfirmationDepth   uint64        // 确认深度
-	MinSettlementAmount uint64        // 最小结算金额
+	ChallengePeriod     time.Duration // challenge waiting period
+	ConfirmationDepth   uint64        // confirmation depth
+	MinSettlementAmount uint64        // minimum settlement amount
 	MultiSigLocker      interfaces.MultiSigLocker
 }
 
@@ -820,7 +820,7 @@ func (css *CryptoSettlementSigner) VerifySettlement(settlement *Settlement, pubK
 }
 
 // ============================================================
-// 批量结算功能
+// Batch Settlement
 // ============================================================
 
 // BatchSettlementRequest represents a batch settlement request
@@ -945,7 +945,7 @@ func (bsh *BatchSettlementHandler) ValidateBatchSettlement(req *BatchSettlementR
 }
 
 // ============================================================
-// 结算证明验证功能
+// Settlement Proof Verification
 // ============================================================
 
 // SettlementProof represents a proof for settlement verification

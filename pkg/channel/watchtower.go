@@ -36,12 +36,12 @@ var (
 type FraudType int
 
 const (
-	FraudTypeInvalidClose        FraudType = iota // 违规关闭（使用过期状态）
-	FraudTypeDoubleClose                          // 双重关闭尝试
-	FraudTypeStateReversion                       // 状态回滚
-	FraudTypeBalanceManipulation                  // 余额操纵
-	FraudTypeSequenceRollback                     // 序列号回滚
-	FraudTypeUnauthorizedClose                    // 未授权关闭
+	FraudTypeInvalidClose        FraudType = iota // invalid close (using an outdated state)
+	FraudTypeDoubleClose                          // double close attempt
+	FraudTypeStateReversion                       // state reversion
+	FraudTypeBalanceManipulation                  // balance manipulation
+	FraudTypeSequenceRollback                     // sequence number rollback
+	FraudTypeUnauthorizedClose                    // unauthorized close
 )
 
 // String returns the string representation of FraudType
@@ -102,13 +102,13 @@ func (al AlertLevel) String() string {
 type AlertType int
 
 const (
-	AlertTypeTransactionAnomaly  AlertType = iota // 异常交易
-	AlertTypeChannelAnomaly                       // 通道异常
-	AlertTypeNetworkIssue                         // 网络问题
-	AlertTypeFraudAttempt                         // 欺诈尝试
-	AlertTypePunishmentTriggered                  // 惩罚触发
-	AlertTypeChannelFrozen                        // 通道冻结
-	AlertTypeStateChange                          // 状态变更
+	AlertTypeTransactionAnomaly  AlertType = iota // abnormal transaction
+	AlertTypeChannelAnomaly                       // channel anomaly
+	AlertTypeNetworkIssue                         // network issue
+	AlertTypeFraudAttempt                         // fraud attempt
+	AlertTypePunishmentTriggered                  // punishment triggered
+	AlertTypeChannelFrozen                        // channel frozen
+	AlertTypeStateChange                          // state change
 )
 
 // ============================================================================
@@ -118,39 +118,39 @@ const (
 // WatchtowerConfig holds configuration for the Watchtower service
 type WatchtowerConfig struct {
 	// Monitoring intervals
-	MonitorInterval    time.Duration // 监控检查间隔
-	StateCheckInterval time.Duration // 状态检查间隔
+	MonitorInterval    time.Duration // monitoring check interval
+	StateCheckInterval time.Duration // state check interval
 
 	// Challenge period
-	ChallengePeriod time.Duration // 争议期时长
+	ChallengePeriod time.Duration // challenge period duration
 
 	// Fraud detection thresholds
-	MaxStateAge           time.Duration // 最大状态年龄
-	MaxSequenceDiff       uint64        // 最大序列号差异
-	MinConfirmationBlocks uint64        // 最小确认块数
+	MaxStateAge           time.Duration // maximum state age
+	MaxSequenceDiff       uint64        // maximum sequence number difference
+	MinConfirmationBlocks uint64        // minimum confirmation blocks
 
 	// Penalty settings
-	PenaltyEnabled         bool               // 是否启用惩罚
-	PenaltyRecipient       interfaces.Address // 惩罚接收地址
-	FraudPenaltyMultiplier float64            // 欺诈惩罚倍数
+	PenaltyEnabled         bool               // whether penalties are enabled
+	PenaltyRecipient       interfaces.Address // penalty recipient address
+	FraudPenaltyMultiplier float64            // fraud penalty multiplier
 
 	// Alert settings
-	AlertBufferSize int              // 告警缓冲区大小
-	AlertThresholds *AlertThresholds // 告警阈值
+	AlertBufferSize int              // alert buffer size
+	AlertThresholds *AlertThresholds // alert thresholds
 
 	// External dependencies
-	BlockChecker BlockChecker // 区块检查器
+	BlockChecker BlockChecker // block checker
 
 	// Network settings
-	P2PPeers []string // P2P 节点列表
+	P2PPeers []string // list of P2P peers
 }
 
 // AlertThresholds holds alert threshold configuration
 type AlertThresholds struct {
-	MaxPendingHTLCs      int           // 最大待处理 HTLC 数量
-	MaxChannelInactivity time.Duration // 最大通道不活动时间
-	MaxFailedAttempts    int           // 最大失败尝试次数
-	StateStaleness       time.Duration // 状态过期时间
+	MaxPendingHTLCs      int           // maximum number of pending HTLCs
+	MaxChannelInactivity time.Duration // maximum channel inactivity duration
+	MaxFailedAttempts    int           // maximum failed attempts
+	StateStaleness       time.Duration // state staleness threshold
 }
 
 // DefaultWatchtowerConfig returns the default Watchtower configuration
