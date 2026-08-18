@@ -11,36 +11,36 @@ import (
 )
 
 var (
-	// ErrScoreBelowThreshold 分数低于阈值
+	// ErrScoreBelowThreshold is returned when the score is below the threshold
 	ErrScoreBelowThreshold = errors.New("score below threshold")
-	// ErrSybilDetected 检测到女巫攻击
+	// ErrSybilDetected indicates a sybil attack was detected
 	ErrSybilDetected = errors.New("sybil attack detected")
 )
 
-// ScoringConfig 评分配置
+// ScoringConfig holds the scoring configuration.
 type ScoringConfig struct {
-	// 最低合格分数
+	// Minimum qualifying score
 	MinThreshold int
-	// 最大分数
+	// Maximum score
 	MaxScore int
 
-	// 账户年龄权重 (0-100)
+	// Account age weight (0-100)
 	AccountAgeWeight int
-	// 社交活动权重 (0-100)
+	// Social activity weight (0-100)
 	SocialActivityWeight int
-	// 仓库活跃度权重 (0-100)
+	// Repository activity weight (0-100)
 	RepoActivityWeight int
-	// 代码贡献权重 (0-100)
+	// Code contribution weight (0-100)
 	CodeContributionWeight int
 
-	// 女巫检测阈值
+	// Sybil detection threshold
 	SybilThreshold float64
 
-	// 最小账户年龄
+	// Minimum account age
 	MinAccountAge time.Duration
 }
 
-// DefaultScoringConfig 默认评分配置
+// DefaultScoringConfig returns the default scoring configuration.
 func DefaultScoringConfig() *ScoringConfig {
 	return &ScoringConfig{
 		MinThreshold:           50,
@@ -50,11 +50,11 @@ func DefaultScoringConfig() *ScoringConfig {
 		RepoActivityWeight:     25,
 		CodeContributionWeight: 30,
 		SybilThreshold:         0.7,
-		MinAccountAge:          30 * 24 * time.Hour, // 30天
+		MinAccountAge:          30 * 24 * time.Hour, // 30 days
 	}
 }
 
-// Score 评分结果
+// Score holds the scoring result.
 type Score struct {
 	Total        int `json:"total"`
 	AccountAge   int `json:"account_age"`
@@ -63,21 +63,21 @@ type Score struct {
 	Contribution int `json:"contribution"`
 	Bonus        int `json:"bonus"`
 
-	// 细节
+	// Details
 	AccountAgeDays int     `json:"account_age_days"`
 	SybilScore     float64 `json:"sybil_score"`
 	IsEligible     bool    `json:"is_eligible"`
 	Reason         string  `json:"reason,omitempty"`
 }
 
-// Scorer 评分系统
+// Scorer is the scoring system.
 type Scorer struct {
 	config        *ScoringConfig
 	sybilDetector *SybilDetector
 	mu            sync.RWMutex
 }
 
-// NewScorer 创建评分器
+// NewScorer creates a new Scorer.
 func NewScorer(config *ScoringConfig) *Scorer {
 	if config == nil {
 		config = DefaultScoringConfig()
@@ -88,7 +88,7 @@ func NewScorer(config *ScoringConfig) *Scorer {
 	}
 }
 
-// ScoreUser 对用户评分
+// ScoreUser scores a user.
 func (s *Scorer) ScoreUser(userInfo *GitHubUserInfo, additionalData *AdditionalData) *Score {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -99,51 +99,51 @@ func (s *Scorer) ScoreUser(userInfo *GitHubUserInfo, additionalData *AdditionalD
 		IsEligible:     false,
 	}
 
-	// 1. 账户年龄评分
+	// 1. Account age score
 	score.AccountAge = s.scoreAccountAge(userInfo.CreatedAt)
 
-	// 2. 社交活动评分
+	// 2. Social activity score
 	score.Social = s.scoreSocialActivity(userInfo, additionalData)
 
-	// 3. 仓库活动评分
+	// 3. Repository activity score
 	score.Repo = s.scoreRepoActivity(userInfo, additionalData)
 
-	// 4. 代码贡献评分
+	// 4. Code contribution score
 	score.Contribution = s.scoreCodeContribution(userInfo, additionalData)
 
-	// 5. 计算总分
+	// 5. Calculate the total score
 	score.Total = s.calculateTotal(score)
 
-	// 6. 女巫检测
+	// 6. Sybil detection
 	score.SybilScore = s.sybilDetector.Detect(userInfo, additionalData)
 
-	// 7. 判断是否合格
+	// 7. Determine eligibility
 	score.IsEligible = s.isEligible(score)
 	if !score.IsEligible {
 		if score.Total < s.config.MinThreshold {
-			score.Reason = "分数低于阈值"
+			score.Reason = "score below threshold"
 		} else if score.SybilScore > s.config.SybilThreshold {
-			score.Reason = "疑似女巫攻击"
+			score.Reason = "suspected sybil attack"
 		} else {
-			score.Reason = "不满足资格条件"
+			score.Reason = "eligibility criteria not met"
 		}
 	}
 
 	return score
 }
 
-// scoreAccountAge 账户年龄评分
+// scoreAccountAge computes the account age score.
 func (s *Scorer) scoreAccountAge(createdAt time.Time) int {
 	age := time.Since(createdAt)
 	days := int(age.Hours() / 24)
 
-	// 最低年龄要求
+	// Minimum age requirement
 	if age < s.config.MinAccountAge {
 		return 0
 	}
 
-	// 评分曲线（对数增长）
-	// 30天 = 20%, 180天 = 60%, 365天 = 80%, 730天+ = 100%
+	// Scoring curve (logarithmic growth)
+	// 30 days = 20%, 180 days = 60%, 365 days = 80%, 730+ days = 100%
 	switch {
 	case days < 60:
 		return 20
@@ -160,15 +160,15 @@ func (s *Scorer) scoreAccountAge(createdAt time.Time) int {
 	}
 }
 
-// scoreSocialActivity 社交活动评分
+// scoreSocialActivity computes the social activity score.
 func (s *Scorer) scoreSocialActivity(userInfo *GitHubUserInfo, data *AdditionalData) int {
 	score := 0
 
-	// Followers 评分（对数）
+	// Followers score (logarithmic)
 	followerScore := s.logScore(userInfo.Followers, 1, 1000, 30)
 	score += followerScore
 
-	// Following 评分（适度即可）
+	// Following score (moderation suffices)
 	followingScore := 0
 	switch {
 	case userInfo.Following == 0:
@@ -178,11 +178,11 @@ func (s *Scorer) scoreSocialActivity(userInfo *GitHubUserInfo, data *AdditionalD
 	case userInfo.Following <= 200:
 		followingScore = 30
 	default:
-		followingScore = 10 // 关注太多可能是机器人
+		followingScore = 10 // Following too many accounts may indicate a bot
 	}
 	score += followingScore
 
-	// 有名字、bio、location 等完整性加分
+	// Profile completeness bonus for name, bio, location, etc.
 	if userInfo.Name != "" {
 		score += 10
 	}
@@ -196,7 +196,7 @@ func (s *Scorer) scoreSocialActivity(userInfo *GitHubUserInfo, data *AdditionalD
 		score += 10
 	}
 
-	// 限制最大值
+	// Cap at the maximum value
 	if score > 100 {
 		score = 100
 	}
@@ -204,7 +204,7 @@ func (s *Scorer) scoreSocialActivity(userInfo *GitHubUserInfo, data *AdditionalD
 	return score
 }
 
-// scoreRepoActivity 仓库活动评分
+// scoreRepoActivity computes the repository activity score.
 func (s *Scorer) scoreRepoActivity(userInfo *GitHubUserInfo, data *AdditionalData) int {
 	if data == nil {
 		return s.baseRepoScore(userInfo.PublicRepos)
@@ -212,22 +212,22 @@ func (s *Scorer) scoreRepoActivity(userInfo *GitHubUserInfo, data *AdditionalDat
 
 	score := s.baseRepoScore(userInfo.PublicRepos)
 
-	// 有组织成员加分
+	// Bonus for organization membership
 	if len(data.Organizations) > 0 {
 		score += 10
 	}
 
-	// 有星标仓库加分
+	// Bonus for starred repositories
 	if data.StarredCount > 0 {
 		score += min(data.StarredCount, 20)
 	}
 
-	// 有受关注仓库加分
+	// Bonus for repositories with forks
 	if data.HasForks > 0 {
 		score += min(data.HasForks*2, 20)
 	}
 
-	// 限制最大值
+	// Cap at the maximum value
 	if score > 100 {
 		score = 100
 	}
@@ -235,7 +235,7 @@ func (s *Scorer) scoreRepoActivity(userInfo *GitHubUserInfo, data *AdditionalDat
 	return score
 }
 
-// baseRepoScore 基础仓库评分
+// baseRepoScore computes the base repository score.
 func (s *Scorer) baseRepoScore(publicRepos int) int {
 	switch {
 	case publicRepos == 0:
@@ -251,7 +251,7 @@ func (s *Scorer) baseRepoScore(publicRepos int) int {
 	}
 }
 
-// scoreCodeContribution 代码贡献评分
+// scoreCodeContribution computes the code contribution score.
 func (s *Scorer) scoreCodeContribution(userInfo *GitHubUserInfo, data *AdditionalData) int {
 	if data == nil {
 		return 0
@@ -259,27 +259,27 @@ func (s *Scorer) scoreCodeContribution(userInfo *GitHubUserInfo, data *Additiona
 
 	score := 0
 
-	// 最近活跃度加分
+	// Recent activity bonus
 	if data.RecentCommits > 0 {
 		score += min(data.RecentCommits*5, 40)
 	}
 
-	// PR 贡献加分
+	// Pull request contribution bonus
 	if data.PullRequests > 0 {
 		score += min(data.PullRequests*10, 30)
 	}
 
-	// Issue 贡献加分
+	// Issue contribution bonus
 	if data.Issues > 0 {
 		score += min(data.Issues*5, 15)
 	}
 
-	// Gist 贡献加分
+	// Gist contribution bonus
 	if data.Gists > 0 {
 		score += min(data.Gists*2, 15)
 	}
 
-	// 限制最大值
+	// Cap at the maximum value
 	if score > 100 {
 		score = 100
 	}
@@ -287,7 +287,7 @@ func (s *Scorer) scoreCodeContribution(userInfo *GitHubUserInfo, data *Additiona
 	return score
 }
 
-// calculateTotal 计算总分
+// calculateTotal computes the total score.
 func (s *Scorer) calculateTotal(score *Score) int {
 	total := 0
 
@@ -305,14 +305,14 @@ func (s *Scorer) calculateTotal(score *Score) int {
 	return total
 }
 
-// isEligible 判断是否合格
+// isEligible determines eligibility.
 func (s *Scorer) isEligible(score *Score) bool {
-	// 最低分数检查
+	// Minimum score check
 	if score.Total < s.config.MinThreshold {
 		return false
 	}
 
-	// 女巫检测检查
+	// Sybil detection check
 	if score.SybilScore > s.config.SybilThreshold {
 		return false
 	}
@@ -320,7 +320,7 @@ func (s *Scorer) isEligible(score *Score) bool {
 	return true
 }
 
-// logScore 对数评分
+// logScore computes a logarithmic score.
 func (s *Scorer) logScore(value, min, max, maxScore int) int {
 	if value <= min {
 		return 0
@@ -329,32 +329,32 @@ func (s *Scorer) logScore(value, min, max, maxScore int) int {
 		return maxScore
 	}
 
-	// 对数曲线
+	// Logarithmic curve
 	ratio := math.Log(float64(value-min+1)) / math.Log(float64(max-min+1))
 	return int(ratio * float64(maxScore))
 }
 
-// AdditionalData 额外数据（需要额外 API 调用获取）
+// AdditionalData holds extra data (requires additional API calls to fetch).
 type AdditionalData struct {
-	// 组织成员
+	// Organization memberships
 	Organizations []string
-	// 最近活跃提交
+	// Recent commits
 	RecentCommits int
-	// PR 数量
+	// Number of pull requests
 	PullRequests int
-	// Issue 数量
+	// Number of issues
 	Issues int
-	// Gist 数量
+	// Number of gists
 	Gists int
-	// 星标数量
+	// Number of starred repositories
 	StarredCount int
-	// 被复刻仓库数
+	// Number of forked repositories
 	HasForks int
-	// 语言使用
+	// Language usage
 	Languages map[string]int
 }
 
-// min 返回最小值
+// min returns the smaller of two values.
 func min(a, b int) int {
 	if a < b {
 		return a
@@ -363,23 +363,23 @@ func min(a, b int) int {
 }
 
 // ============================================================================
-// Sybil 女巫攻击检测
+// Sybil Attack Detection
 // ============================================================================
 
-// SybilDetector 女巫攻击检测器
+// SybilDetector detects sybil attacks.
 type SybilDetector struct {
 	threshold float64
 
-	// 已见账户特征
+	// Seen profile features
 	seenProfiles map[string]*ProfileFeatures
 	mu           sync.RWMutex
 
-	// 聚类分析
+	// Cluster analysis
 	clusters       []*Cluster
 	clusterCounter int
 }
 
-// ProfileFeatures 账户特征
+// ProfileFeatures holds account features.
 type ProfileFeatures struct {
 	GitHubID    uint64
 	Login       string
@@ -393,16 +393,16 @@ type ProfileFeatures struct {
 	HasLocation bool
 	HasName     bool
 
-	// 行为特征
+	// Behavioral features
 	AvgCommitsPerWeek float64
 	ActiveDays        int
 
-	// 网络特征
+	// Network features
 	FollowersMap map[uint64]bool
 	FollowingMap map[uint64]bool
 }
 
-// Cluster 聚类
+// Cluster represents a cluster of accounts.
 type Cluster struct {
 	ID      int
 	Members []uint64
@@ -411,7 +411,7 @@ type Cluster struct {
 	Created time.Time
 }
 
-// NewSybilDetector 创建女巫检测器
+// NewSybilDetector creates a new SybilDetector.
 func NewSybilDetector(threshold float64) *SybilDetector {
 	return &SybilDetector{
 		threshold:    threshold,
@@ -420,15 +420,15 @@ func NewSybilDetector(threshold float64) *SybilDetector {
 	}
 }
 
-// Detect 检测女巫攻击
+// Detect checks for a sybil attack.
 func (sd *SybilDetector) Detect(userInfo *GitHubUserInfo, data *AdditionalData) float64 {
-	// 提取特征
+	// Extract features
 	features := sd.extractFeatures(userInfo, data)
 
-	// 计算可疑度分数
+	// Calculate the suspicion score
 	suspicionScore := sd.calculateSuspicion(features)
 
-	// 记录特征
+	// Record features
 	sd.mu.Lock()
 	key := fmt.Sprintf("%d", userInfo.ID)
 	sd.seenProfiles[key] = features
@@ -437,7 +437,7 @@ func (sd *SybilDetector) Detect(userInfo *GitHubUserInfo, data *AdditionalData) 
 	return suspicionScore
 }
 
-// extractFeatures 提取账户特征
+// extractFeatures extracts account features.
 func (sd *SybilDetector) extractFeatures(userInfo *GitHubUserInfo, data *AdditionalData) *ProfileFeatures {
 	features := &ProfileFeatures{
 		GitHubID:    userInfo.ID,
@@ -460,19 +460,19 @@ func (sd *SybilDetector) extractFeatures(userInfo *GitHubUserInfo, data *Additio
 	return features
 }
 
-// calculateSuspicion 计算可疑度分数
+// calculateSuspicion computes the suspicion score.
 func (sd *SybilDetector) calculateSuspicion(features *ProfileFeatures) float64 {
 	score := 0.0
 
-	// 1. 账户年龄检查
+	// 1. Account age check
 	age := time.Since(features.CreatedAt).Hours() / 24
 	if age < 7 {
-		score += 0.3 // 一周内创建
+		score += 0.3 // Created within a week
 	} else if age < 30 {
-		score += 0.1 // 一月内创建
+		score += 0.1 // Created within a month
 	}
 
-	// 2. 资料完整性检查
+	// 2. Profile completeness check
 	completeness := 0
 	if features.HasName {
 		completeness++
@@ -491,29 +491,29 @@ func (sd *SybilDetector) calculateSuspicion(features *ProfileFeatures) float64 {
 	}
 
 	if completeness <= 1 {
-		score += 0.2 // 资料不完整
+		score += 0.2 // Incomplete profile
 	}
 
-	// 3. 社交模式检查
+	// 3. Social pattern check
 	if features.Followers == 0 && features.Following == 0 {
-		score += 0.15 // 无社交活动
+		score += 0.15 // No social activity
 	}
 
 	if features.Following > 500 && features.Followers < 10 {
-		score += 0.1 // 关注很多人但几乎没有粉丝
+		score += 0.1 // Follows many but has almost no followers
 	}
 
-	// 4. 仓库模式检查
+	// 4. Repository pattern check
 	if features.PublicRepos == 0 {
-		score += 0.15 // 无公开仓库
+		score += 0.15 // No public repositories
 	}
 
-	// 5. 名字模式检查（简单检查）
+	// 5. Name pattern check (simple check)
 	if isBotLikeName(features.Login) {
 		score += 0.2
 	}
 
-	// 限制在 0-1 范围内
+	// Clamp to the 0-1 range
 	if score > 1.0 {
 		score = 1.0
 	}
@@ -521,9 +521,9 @@ func (sd *SybilDetector) calculateSuspicion(features *ProfileFeatures) float64 {
 	return score
 }
 
-// isBotLikeName 检查是否像机器人名字
+// isBotLikeName checks whether the login looks like a bot.
 func isBotLikeName(login string) bool {
-	// 检查常见机器人模式
+	// Check common bot patterns
 	botPatterns := []string{
 		"bot", "test", "demo", "tmp", "temp",
 	}
@@ -538,25 +538,25 @@ func isBotLikeName(login string) bool {
 	return false
 }
 
-// FindClusters 发现女巫集群
+// FindClusters discovers sybil clusters.
 func (sd *SybilDetector) FindClusters() []*Cluster {
 	sd.mu.Lock()
 	defer sd.mu.Unlock()
 
-	// 简单聚类算法：基于账户创建时间和行为相似度
+	// Simple clustering algorithm: based on account creation time and behavioral similarity
 	profiles := make([]*ProfileFeatures, 0, len(sd.seenProfiles))
 	for _, p := range sd.seenProfiles {
 		profiles = append(profiles, p)
 	}
 
-	// 按创建时间排序
+	// Sort by creation time
 	sort.Slice(profiles, func(i, j int) bool {
 		return profiles[i].CreatedAt.Before(profiles[j].CreatedAt)
 	})
 
 	clusters := make([]*Cluster, 0)
 
-	// 时间窗口聚类（24小时内创建的相似账户）
+	// Time-window clustering (similar accounts created within 24 hours)
 	window := 24 * time.Hour
 	currentCluster := &Cluster{
 		ID:      sd.clusterCounter,
@@ -600,15 +600,15 @@ func (sd *SybilDetector) FindClusters() []*Cluster {
 	return clusters
 }
 
-// similar 检查两个特征是否相似
+// similar checks whether two feature sets are similar.
 func (sd *SybilDetector) similar(a, b *ProfileFeatures) bool {
-	// 检查账户创建时间差
+	// Check account creation time difference
 	timeDiff := a.CreatedAt.Sub(b.CreatedAt)
 	if timeDiff < 0 {
 		timeDiff = -timeDiff
 	}
 
-	// 检查资料相似度
+	// Check profile similarity
 	similarBio := a.BioLength == 0 && b.BioLength == 0
 	similarSocial := a.Followers < 10 && b.Followers < 10
 	similarRepos := a.PublicRepos == b.PublicRepos
@@ -624,11 +624,11 @@ func (sd *SybilDetector) similar(a, b *ProfileFeatures) bool {
 		matchCount++
 	}
 
-	// 至少两个特征相似
+	// At least two matching features
 	return matchCount >= 2 || timeDiff < time.Hour
 }
 
-// GetSuspiciousClusters 获取可疑集群
+// GetSuspiciousClusters returns suspicious clusters.
 func (sd *SybilDetector) GetSuspiciousClusters(minSize int) []*Cluster {
 	sd.mu.RLock()
 	defer sd.mu.RUnlock()
@@ -643,7 +643,7 @@ func (sd *SybilDetector) GetSuspiciousClusters(minSize int) []*Cluster {
 	return suspicious
 }
 
-// IsInCluster 检查用户是否在可疑集群中
+// IsInCluster checks whether the user is in a suspicious cluster.
 func (sd *SybilDetector) IsInCluster(githubID uint64) bool {
 	sd.mu.RLock()
 	defer sd.mu.RUnlock()
@@ -659,7 +659,7 @@ func (sd *SybilDetector) IsInCluster(githubID uint64) bool {
 	return false
 }
 
-// Clear 清除缓存
+// Clear clears the cache.
 func (sd *SybilDetector) Clear() {
 	sd.mu.Lock()
 	defer sd.mu.Unlock()
@@ -669,7 +669,7 @@ func (sd *SybilDetector) Clear() {
 	sd.clusterCounter = 0
 }
 
-// GetProfileCount 获取已分析的配置文件数量
+// GetProfileCount returns the number of analyzed profiles.
 func (sd *SybilDetector) GetProfileCount() int {
 	sd.mu.RLock()
 	defer sd.mu.RUnlock()
