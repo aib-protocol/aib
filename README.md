@@ -9,12 +9,7 @@
 [![GoReportCard](https://goreportcard.com/badge/github.com/aib-protocol/aib)](https://goreportcard.com/report/github.com/aib-protocol/aib)
 
 ```
-    ██████╗██╗      ██████╗ ██╗   ██╗██████╗  ██████╗ ██╗   ██╗
-   ██╔════╝██║     ██╔═══██╗██║   ██║██╔══██╗██╔═══██╗██║   ██║
-   ██║     ██║     ██║   ██║██║   ██║██████╔╝██║   ██║██║   ██║
-   ██║     ██║     ██║   ██║██║   ██║██╔══██╗██║   ██║██║   ██║
-   ╚██████╗███████╗╚██████╔╝╚██████╔╝██████╔╝╚██████╔╝╚██████╔╝
-    ╚═════╝╚══════╝ ╚═════╝  ╚═════╝ ╚═════╝  ╚═════╝  ╚═════╝
+ASCII-Art for AIB here
 
             Where AI meets Blockchain
 ```
@@ -180,17 +175,17 @@ go test -cover ./...
 | Parameter | Value |
 |-----------|-------|
 | Chain ID | `aib-mainnet-1` |
-| P2P Port | `51200` - `51239` |
-| RPC Port | `51200` (default) |
-| Explorer | https://explorer.aib.one |
+| P2P Port | 31415 |
+| RPC Port | 51413 (default) |
+| Explorer | https://explorer.aib.one  (not ready yet)
 
 ### Testnet
 
 | Parameter | Value |
 |-----------|-------|
 | Chain ID | `aib-testnet-1` |
-| P2P Ports | `51210` - `51212` (3-node testnet) |
-| Faucet | https://faucet.aib.one |
+| P2P Port | 31414
+| Faucet | https://faucet.aib.one |  (not ready yet)
 
 ## Tokenomics
 
@@ -213,7 +208,7 @@ go test -cover ./...
 > AIB is minted exclusively by mining. Community programs, if ever funded,
 > must come from voluntarily donated mined coins — never from genesis.
 
-### Block Reward Schedule
+### Block Reward Schedule (TODO: re-calculated again!)
 
 ```
 Year 1-4:   3.14 AIB per block (halving at year 4)
