@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PoAIW 简化版 - 无需JUDGE的共识</title>
+    <title>PoAIW Simplified — Consensus Without JUDGE</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -87,90 +87,90 @@
 </head>
 <body>
     <div class="container">
-        <h1>⚡ PoAIW 简化版：无需JUDGE的共识</h1>
+        <h1>⚡ PoAIW Simplified: Consensus Without JUDGE</h1>
 
         <div class="problem">
-            <h2>❌ 复杂版本的致命缺陷</h2>
+            <h2>❌ Fatal Flaws of the Complex Version</h2>
             <table>
                 <tr>
-                    <th>需要的功能</th>
-                    <th>谁来JUDGE？</th>
-                    <th>问题</th>
+                    <th>Required Function</th>
+                    <th>Who Judges?</th>
+                    <th>Problem</th>
                 </tr>
                 <tr>
-                    <td>推理质量评分</td>
-                    <td>??? 谁定义"好"？ </td>
-                    <td class="warning">主观判断 → 可贿赂</td>
+                    <td>Inference quality scoring</td>
+                    <td>??? Who defines "good"? </td>
+                    <td class="warning">Subjective judgment → bribeable</td>
                 </tr>
                 <tr>
-                    <td>交叉验证</td>
-                    <td>选谁验证？</td>
-                    <td class="warning">验证者合谋</td>
+                    <td>Cross-validation</td>
+                    <td>Who gets picked to verify?</td>
+                    <td class="warning">Verifier collusion</td>
                 </tr>
                 <tr>
-                    <td>争议仲裁</td>
-                    <td>21个委员？</td>
-                    <td class="warning">寡头统治</td>
+                    <td>Dispute arbitration</td>
+                    <td>21 committee members?</td>
+                    <td class="warning">Oligarchy</td>
                 </tr>
                 <tr>
-                    <td>声誉系统</td>
-                    <td>谁打分？</td>
-                    <td class="warning">报复性打分</td>
+                    <td>Reputation system</td>
+                    <td>Who scores?</td>
+                    <td class="warning">Retaliatory scoring</td>
                 </tr>
             </table>
 
             <p style="margin-top: 20px; font-size: 1.1em;">
-                <span class="warning">结论：引入"判断" = 引入"人治" = 中心化</span>
+                <span class="warning">Conclusion: introducing "judgment" = introducing "rule by man" = centralization</span>
             </p>
         </div>
 
-        <h2>✅ 比特币的成功密码：简单</h2>
+        <h2>✅ Bitcoin's Success Formula: Simplicity</h2>
 
         <div class="solution">
             <div class="formula">
-                比特币PoW： Hash(Block) < Target？
+                Bitcoin PoW: Hash(Block) < Target?
             </div>
             <div class="arrow">↓</div>
             <div class="formula">
-                ✓ 是 → 有效<br>
-                ✗ 否 → 无效
+                ✓ Yes → valid<br>
+                ✗ No → invalid
             </div>
             <p style="margin-top: 20px; text-align: center;">
-                <span class="success">数学自己说话，无人可作弊</span>
+                <span class="success">The math speaks for itself — nobody can cheat</span>
             </p>
         </div>
 
-        <h2>🎯 简化PoAIW：只保留可数学验证的部分</h2>
+        <h2>🎯 Simplified PoAIW: Keep Only What Is Mathematically Verifiable</h2>
 
         <div class="compare">
             <div class="card problem">
-                <h3>❌ 复杂版本（放弃）</h3>
+                <h3>❌ Complex version (dropped)</h3>
                 <ul>
-                    <li>质量评分（主观）</li>
-                    <li>交叉验证（谁？）</li>
-                    <li>争议仲裁（中心化）</li>
-                    <li>声誉系统（可操纵）</li>
-                    <li>挑战机制（复杂）</li>
+                    <li>Quality scoring (subjective)</li>
+                    <li>Cross-validation (who?)</li>
+                    <li>Dispute arbitration (centralized)</li>
+                    <li>Reputation system (manipulable)</li>
+                    <li>Challenge mechanism (complex)</li>
                 </ul>
-                <p class="warning">→ 需要JUDGE → 会失败</p>
+                <p class="warning">→ Requires JUDGE → will fail</p>
             </div>
 
             <div class="card solution">
-                <h3>✅ 简化版本（保留）</h3>
+                <h3>✅ Simplified version (kept)</h3>
                 <ul>
-                    <li>证明做了推理（PoW）</li>
-                    <li>证明消耗能源（难度）</li>
-                    <li>证明持有质押（Stake）</li>
-                    <li>证明时间顺序（Timestamp）</li>
+                    <li>Proves inference was done (PoW)</li>
+                    <li>Proves energy was consumed (difficulty)</li>
+                    <li>Proves stake is held (Stake)</li>
+                    <li>Proves time ordering (Timestamp)</li>
                 </ul>
-                <p class="success">→ 数学可验证 → 可行</p>
+                <p class="success">→ Mathematically verifiable → feasible</p>
             </div>
         </div>
 
-        <h2>🔐 简化PoAIW：核心公式</h2>
+        <h2>🔐 Simplified PoAIW: Core Formulas</h2>
 
         <div class="solution">
-            <h3>唯一的验证条件（无需JUDGE）：</h3>
+            <h3>The only validation condition (no JUDGE needed):</h3>
 
             <div class="formula">
                 Valid(Block) = PoW_Check AND Stake_Check AND Energy_Check
@@ -189,152 +189,152 @@
             </div>
 
             <p style="margin-top: 20px;">
-                <span class="highlight">所有条件都是数学判断，无需任何人"裁决"</span>
+                <span class="highlight">All conditions are mathematical judgments — no one needs to "adjudicate"</span>
             </p>
         </div>
 
-        <h2>🎲 为什么这就够了？</h2>
+        <h2>🎲 Why Is This Enough?</h2>
 
         <div class="solution">
-            <h3>经济学角度：作弊不划算</h3>
+            <h3>Economic view: cheating doesn't pay</h3>
 
             <table>
                 <tr>
-                    <th>行为</th>
-                    <th>成本</th>
-                    <th>收益</th>
+                    <th>Behavior</th>
+                    <th>Cost</th>
+                    <th>Reward</th>
                 </tr>
                 <tr>
-                    <td>诚实推理</td>
-                    <td>GPU成本 + 电费</td>
-                    <td>区块奖励</td>
+                    <td>Honest inference</td>
+                    <td>GPU cost + electricity</td>
+                    <td>Block reward</td>
                 </tr>
                 <tr>
-                    <td>伪造推理（不计算）</td>
-                    <td>❓ 不可能（必须满足PoW）</td>
+                    <td>Fake inference (no computation)</td>
+                    <td>❓ Impossible (must satisfy PoW)</td>
                     <td>-</td>
                 </tr>
                 <tr>
-                    <td>复用旧结果</td>
-                    <td>❓ 不可能（Input+Salt唯一）</td>
+                    <td>Reuse old results</td>
+                    <td>❓ Impossible (Input+Salt is unique)</td>
                     <td>-</td>
                 </tr>
                 <tr>
-                    <td>垃圾输出</td>
-                    <td>GPU成本 + 电费（同诚实）</td>
-                    <td>??? 没有质量惩罚（不评判）</td>
+                    <td>Garbage output</td>
+                    <td>GPU cost + electricity (same as honest)</td>
+                    <td>??? No quality penalty (no judging)</td>
                 </tr>
             </table>
 
             <p class="highlight" style="margin-top: 20px;">
-                关键洞察：如果"垃圾输出"的成本和"诚实推理"一样，
-                而且收益也一样，那为什么要作弊？
+                Key insight: if "garbage output" costs the same as "honest inference",
+                and pays the same, why cheat?
             </p>
         </div>
 
-        <h2>🤔 但是...用户怎么获得好的推理结果？</h2>
+        <h2>🤔 But... how do users get good inference results?</h2>
 
         <div class="problem">
-            <h3>这是一个<strong>市场问题</strong>，不是<strong>共识问题</strong></h3>
+            <h3>This is a <strong>market problem</strong>, not a <strong>consensus problem</strong></h3>
 
             <div class="arrow">↓</div>
 
             <div class="formula">
-                共识层 = 保证"真的做了推理"<br>
-                应用层 = 选择"谁推理得好"
+                Consensus layer = guarantees "inference really happened"<br>
+                Application layer = chooses "who infers well"
             </div>
 
             <div class="arrow">↓</div>
 
             <div class="formula">
-                用户可以：<br>
-                1. 选择特定节点（声誉系统在应用层）<br>
-                2. 多节点对比（取共识结果）<br>
-                3. 付费验证（单独验证服务）<br>
-                4. 社区评分（开源声誉系统）
+                Users can:<br>
+                1. Choose specific nodes (reputation lives at the application layer)<br>
+                2. Compare multiple nodes (take the consensus result)<br>
+                3. Pay for verification (standalone verification service)<br>
+                4. Community ratings (open-source reputation system)
             </div>
         </div>
 
-        <h2>📊 架构分离</h2>
+        <h2>📊 Architecture Separation</h2>
 
         <div class="compare">
             <div class="card">
-                <h3>共识层（链上）</h3>
+                <h3>Consensus layer (on-chain)</h3>
                 <ul>
-                    <li>✓ 证明做了推理</li>
-                    <li>✓ 证明消耗能源</li>
-                    <li>✓ 防止双花</li>
-                    <li>✓ 最终性</li>
+                    <li>✓ Proves inference was done</li>
+                    <li>✓ Proves energy was consumed</li>
+                    <li>✓ Prevents double-spending</li>
+                    <li>✓ Finality</li>
                 </ul>
-                <p class="success">简单、数学、无需JUDGE</p>
+                <p class="success">Simple, mathematical, no JUDGE needed</p>
             </div>
 
             <div class="card">
-                <h3>市场层（链下）</h3>
+                <h3>Market layer (off-chain)</h3>
                 <ul>
-                    <li>✓ 推理质量评估</li>
-                    <li>✓ 节点声誉跟踪</li>
-                    <li>✓ 用户选择机制</li>
-                    <li>✓ 争议解决</li>
+                    <li>✓ Inference quality assessment</li>
+                    <li>✓ Node reputation tracking</li>
+                    <li>✓ User selection mechanism</li>
+                    <li>✓ Dispute resolution</li>
                 </ul>
-                <p class="success">竞争、演化、市场选择</p>
+                <p class="success">Competition, evolution, market selection</p>
             </div>
         </div>
 
-        <h2>💡 类比：比特币的UTXO也是"垃圾"</h2>
+        <h2>💡 Analogy: Bitcoin's UTXO is also "garbage"</h2>
 
         <div class="solution">
             <table>
                 <tr>
-                    <th>系统</th>
-                    <th>共识层保证</th>
-                    <th>市场层解决</th>
+                    <th>System</th>
+                    <th>Consensus layer guarantees</th>
+                    <th>Market layer solves</th>
                 </tr>
                 <tr>
-                    <td>比特币</td>
-                    <td>交易有效、余额正确</td>
-                    <td>地址对吗？金额对吗？</td>
+                    <td>Bitcoin</td>
+                    <td>Transaction is valid, balance is correct</td>
+                    <td>Is the address right? Is the amount right?</td>
                 </tr>
                 <tr>
                     <td>PoAIW</td>
-                    <td>真的做了推理、消耗能源</td>
-                    <td>推理结果对吗？质量好吗？</td>
+                    <td>Inference really happened, energy consumed</td>
+                    <td>Is the inference result right? Is quality good?</td>
                 </tr>
             </table>
 
             <p style="margin-top: 20px;">
-                比特币不会阻止你发钱到错误的地址，<br>
-                PoAIW也不应该阻止节点做垃圾推理。
+                Bitcoin doesn't stop you from sending money to a wrong address,<br>
+                and PoAIW shouldn't stop nodes from doing garbage inference.
                 <br><br>
-                <span class="highlight">这是用户的责任，不是共识的责任。</span>
+                <span class="highlight">That's the user's responsibility, not consensus's.</span>
             </p>
         </div>
 
-        <h2>🎯 最终简化方案</h2>
+        <h2>🎯 Final Simplified Design</h2>
 
         <div class="solution">
-            <h3>共识奖励（70%）：</h3>
+            <h3>Consensus rewards (70%):</h3>
             <div class="formula">
-                条件：Hash(Output) < Difficulty<br>
-                奖励：按能源消耗成正比
+                Condition: Hash(Output) < Difficulty<br>
+                Reward: proportional to energy consumed
             </div>
 
-            <h3>质押奖励（30%）：</h3>
+            <h3>Staking rewards (30%):</h3>
             <div class="formula">
-                条件：Stake >= 1000 AIB<br>
-                奖励：按质押份额成正比
+                Condition: Stake >= 1000 AIB<br>
+                Reward: proportional to stake share
             </div>
 
-            <h3>没有（移到应用层）：</h3>
+            <h3>Dropped (moved to the application layer):</h3>
             <ul>
-                <li>~~质量评分~~ → 开源声誉系统</li>
-                <li>~~交叉验证~~ → 用户自选验证者</li>
-                <li>~~争议仲裁~~ → 市场竞争</li>
-                <li>~~链上声誉~~ → 链下索引</li>
+                <li>~~Quality scoring~~ → open-source reputation system</li>
+                <li>~~Cross-validation~~ → user-chosen verifiers</li>
+                <li>~~Dispute arbitration~~ → market competition</li>
+                <li>~~On-chain reputation~~ → off-chain indexing</li>
             </ul>
         </div>
 
-        <h2>📝 总结</h2>
+        <h2>📝 Summary</h2>
 
         <div class="big-number">
             K.I.S.S.<br>
@@ -342,17 +342,17 @@
         </div>
 
         <div class="solution">
-            <h3>简化版PoAIW的承诺：</h3>
+            <h3>What simplified PoAIW promises:</h3>
             <ul>
-                <li>✓ 证明节点真的做了AI推理（而不是伪造）</li>
-                <li>✓ 证明节点消耗了真实能源（可验证成本）</li>
-                <li>✓ 按能源消耗分配奖励（公平）</li>
-                <li>✓ 无需任何中心化JUDGE</li>
-                <li>✗ 不保证推理质量（市场解决）</li>
+                <li>✓ Proves nodes really performed AI inference (not faked)</li>
+                <li>✓ Proves nodes consumed real energy (verifiable cost)</li>
+                <li>✓ Distributes rewards by energy consumed (fair)</li>
+                <li>✓ No centralized JUDGE needed</li>
+                <li>✗ Does not guarantee inference quality (the market handles it)</li>
             </ul>
 
             <p class="success highlight" style="margin-top: 20px; text-align: center;">
-                这才是能真正去中心化运行的方案。
+                This is a design that can truly run decentralized.
             </p>
         </div>
     </div>

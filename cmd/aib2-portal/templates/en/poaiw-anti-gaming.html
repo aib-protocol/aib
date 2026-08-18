@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PoAIW 抗刷量攻击机制</title>
+    <title>PoAIW Anti-Gaming Mechanism</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html { scroll-behavior: smooth; }
@@ -92,82 +92,82 @@
 </head>
 <body>
     <div class="container">
-        <h1>🛡️ PoAIW 抗刷量攻击机制</h1>
+        <h1>🛡️ PoAIW Anti-Gaming Mechanism</h1>
 
-        <h2>一、攻击向量分析</h2>
+        <h2>1. Attack Vector Analysis</h2>
 
         <div class="comparison">
             <div class="card attack-box">
-                <h3>⚠️ 攻击方式</h3>
-                <div class="layer"><strong>1. 缓存攻击</strong><br>返回缓存的旧推理结果</div>
-                <div class="layer"><strong>2. 垃圾推理</strong><br>用最小模型/随机输出凑数</div>
-                <div class="layer"><strong>3. 结果合谋</strong><br>多个节点串通互相验证</div>
-                <div class="layer"><strong>4. 女巫攻击</strong><br>创建大量虚假节点</div>
-                <div class="layer"><strong>5. 提前终止</strong><br>推理中途返回结果</div>
+                <h3>⚠️ Attack Vectors</h3>
+                <div class="layer"><strong>1. Cache attack</strong><br>Return stale cached inference results</div>
+                <div class="layer"><strong>2. Garbage inference</strong><br>Pad volume with the smallest model / random output</div>
+                <div class="layer"><strong>3. Result collusion</strong><br>Multiple nodes collude to verify each other</div>
+                <div class="layer"><strong>4. Sybil attack</strong><br>Create large numbers of fake nodes</div>
+                <div class="layer"><strong>5. Early termination</strong><br>Return a result mid-inference</div>
             </div>
             <div class="card">
-                <h3>💰 攻击动机</h3>
-                <p>推理奖励占区块奖励的 <span class="highlight">70%</span>，攻击者有强烈动机刷取：</p>
+                <h3>💰 Attack Motivation</h3>
+                <p>Inference rewards make up <span class="highlight">70%</span>of the block reward, so attackers have a strong incentive to farm:</p>
                 <div class="formula">
-                    假设: 50 AIB/块, 30秒/块<br>
-                    日区块数: 2,880<br>
-                    日推理奖励: 100,800 AIB ≈ $10,000+
+                    Assumption: 50 AIB/block, 30s/block<br>
+                    Daily blocks: 2,880<br>
+                    Daily inference rewards: 100,800 AIB ≈ $10,000+
                 </div>
             </div>
         </div>
 
-        <h2>二、七层防御体系</h2>
+        <h2>2. Seven-Layer Defense System</h2>
 
-        <h3>Layer 1: 工作量证明 (PoW 基础)</h3>
+        <h3>Layer 1: Proof of Work (PoW Foundation)</h3>
         <div class="defense-box">
-            <p><strong>原理：</strong>强制执行实际推理计算，无法伪造</p>
+            <p><strong>Principle:</strong> enforces real inference computation that cannot be faked</p>
             <div class="formula">
                 ProofOfWork = Hash(Model+Input+Salt+Nonce) &lt; Difficulty
             </div>
-            <p>每个推理请求包含随机 Salt，必须用实际推理结果计算 PoW 才能提交</p>
+            <p>Every inference request includes a random Salt; the PoW must be computed over the actual inference result to submit</p>
             <ul>
-                <li><span class="metric">计算成本</span> 预期推理时间 = GPU实际耗时</li>
-                <li><span class="metric">验证成本</span> 复核节点抽样验证</li>
+                <li><span class="metric">Compute cost</span> Expected inference time = actual GPU time</li>
+                <li><span class="metric">Verification cost</span> review nodes verify by sampling</li>
             </ul>
         </div>
 
-        <h3>Layer 2: 多重验证交叉验证</h3>
+        <h3>Layer 2: Multi-Layer Cross-Verification</h3>
         <div class="defense-box">
             <table>
                 <tr>
-                    <th>验证类型</th>
-                    <th>参与节点</th>
-                    <th>奖励/惩罚</th>
+                    <th>Verification Type</th>
+                    <th>Participating Nodes</th>
+                    <th>Reward/Penalty</th>
                 </tr>
                 <tr>
-                    <td>主验证</td>
-                    <td>3个随机节点 (K=3)</td>
-                    <td>✓ 正确: +3% | ✗ 错误: -10%</td>
+                    <td>Primary verification</td>
+                    <td>3 random nodes (K=3)</td>
+                    <td>✓ Correct: +3% | ✗ Wrong: -10%</td>
                 </tr>
                 <tr>
-                    <td>交叉验证</td>
-                    <td>5个额外节点</td>
-                    <td>✓ 一致: +1% | ✗ 偏差: -5%</td>
+                    <td>Cross-validation</td>
+                    <td>5 additional nodes</td>
+                    <td>✓ Consistent: +1% | ✗ Deviation: -5%</td>
                 </tr>
                 <tr>
-                    <td>争议仲裁</td>
-                    <td>21个委员会节点</td>
-                    <td>✓ 举报成功: +50% 惩罚金</td>
+                    <td>Dispute arbitration</td>
+                    <td>21 committee nodes</td>
+                    <td>✓ Successful report: +50% of the penalty</td>
                 </tr>
             </table>
         </div>
 
-        <h3>Layer 3: 模型质量证明</h3>
+        <h3>Layer 3: Model Quality Proof</h3>
         <div class="defense-box">
-            <p>防止用最小模型/随机输出刷量：</p>
+            <p>Prevents farming with minimal models / random output:</p>
             <div class="formula">
                 QualityScore = F1_Score × Semantic_Similarity × Model_Size_Weight
             </div>
             <table>
                 <tr>
-                    <th>模型规模</th>
-                    <th>质量权重</th>
-                    <th>最低 F1 要求</th>
+                    <th>Model Size</th>
+                    <th>Quality Weight</th>
+                    <th>Minimum F1 Requirement</th>
                 </tr>
                 <tr>
                     <td>&lt; 1B</td>
@@ -190,166 +190,166 @@
                     <td>0.94</td>
                 </tr>
             </table>
-            <p class="warning">低于质量阈值的推理 = 0 奖励 + 声誉惩罚</p>
+            <p class="warning">Inference below the quality threshold = 0 reward + reputation penalty</p>
         </div>
 
-        <h3>Layer 4: 挑战-响应博弈</h3>
+        <h3>Layer 4: Challenge-Response Game</h3>
         <div class="defense-box">
-            <p>任何节点可以挑战已提交的推理结果：</p>
+            <p>Any node can challenge a submitted inference result:</p>
             <div class="formula">
-                挑战成本 = 100 AIB (抵押)<br>
-                挑战成功 = 获得 50% 惩罚金 + 返还抵押<br>
-                挑战失败 = 没收抵押 → 挑战者奖励池
+                Challenge cost = 100 AIB (deposit)<br>
+                Successful challenge = 50% of the penalty + deposit returned<br>
+                Failed challenge = deposit forfeited → challenger reward pool
             </div>
             <ul>
-                <li><strong>黄金样本集：</strong>10,000+ 已知答案的基准问题</li>
-                <li><strong>随机抽查：</strong>5% 的推理被发送验证请求重算</li>
-                <li><strong>语义一致性：</strong>相同输入必须产生语义相似结果</li>
+                <li><strong>Golden sample set:</strong>10,000+ benchmark questions with known answers</li>
+                <li><strong>Random spot checks:</strong>5% of inferences get re-computed on verification request</li>
+                <li><strong>Semantic consistency:</strong>The same input must produce semantically similar results</li>
             </ul>
         </div>
 
-        <h3>Layer 5: 声誉系统</h3>
+        <h3>Layer 5: Reputation System</h3>
         <div class="defense-box">
             <div class="formula">
                 Reputation = Σ(Reward_i × e^(-λ×age_i)) / (1 + Penalty_Count^2)
             </div>
-            <p>声誉影响奖励权重：</p>
+            <p>Reputation affects reward weight:</p>
             <table>
                 <tr>
-                    <th>声誉等级</th>
-                    <th>奖励系数</th>
-                    <th>验证优先级</th>
+                    <th>Reputation Tier</th>
+                    <th>Reward Multiplier</th>
+                    <th>Verification Priority</th>
                 </tr>
                 <tr>
-                    <td>新手 (&lt;100)</td>
+                    <td>Novice (&lt;100)</td>
                     <td>0.5×</td>
-                    <td>低</td>
+                    <td>Low</td>
                 </tr>
                 <tr>
-                    <td>信任 (100-500)</td>
+                    <td>Trusted (100-500)</td>
                     <td>1.0×</td>
-                    <td>中</td>
+                    <td>Medium</td>
                 </tr>
                 <tr>
-                    <td>优质 (500-1000)</td>
+                    <td>Quality (500-1000)</td>
                     <td>1.3×</td>
-                    <td>高</td>
+                    <td>High</td>
                 </tr>
                 <tr>
-                    <td>旗舰 (&gt;1000)</td>
+                    <td>Flagship (&gt;1000)</td>
                     <td>1.5×</td>
-                    <td>最高</td>
+                    <td>Highest</td>
                 </tr>
             </table>
-            <p class="warning">单次作弊 = 声誉 -50%，多次 = 永久封禁</p>
+            <p class="warning">One cheat = reputation -50%; repeat offenses = permanent ban</p>
         </div>
 
-        <h3>Layer 6: 经济约束</h3>
+        <h3>Layer 6: Economic Constraints</h3>
         <div class="defense-box">
             <div class="formula">
-                净收益 = 推理奖励 - Gas成本 - 质押机会成本 - 预期惩罚
+                Net revenue = inference reward − gas cost − staking opportunity cost − expected penalty
             </div>
             <table>
                 <tr>
-                    <th>约束</th>
-                    <th>数值</th>
-                    <th>作用</th>
+                    <th>Constraint</th>
+                    <th>Value</th>
+                    <th>Effect</th>
                 </tr>
                 <tr>
-                    <td>节点最低质押</td>
+                    <td>Minimum node stake</td>
                     <td>1,000 AIB</td>
-                    <td>提高女巫成本</td>
+                    <td>Raises Sybil cost</td>
                 </tr>
                 <tr>
-                    <td>每次推理 Gas</td>
+                    <td>Gas per inference</td>
                     <td>0.01 AIB</td>
-                    <td>垃圾推理成本</td>
+                    <td>Cost of garbage inference</td>
                 </tr>
                 <tr>
-                    <td>错误惩罚倍数</td>
+                    <td>Error penalty multiplier</td>
                     <td>10×</td>
-                    <td>高风险震慑</td>
+                    <td>High-risk deterrence</td>
                 </tr>
                 <tr>
-                    <td>挑战抵押</td>
+                    <td>Challenge deposit</td>
                     <td>100 AIB</td>
-                    <td>减少恶意挑战</td>
+                    <td>Reduces malicious challenges</td>
                 </tr>
             </table>
         </div>
 
-        <h3>Layer 7: 速率限制与配额</h3>
+        <h3>Layer 7: Rate Limiting & Quotas</h3>
         <div class="defense-box">
-            <p>防止单点刷量：</p>
+            <p>Prevents farming from a single point:</p>
             <div class="formula">
                 DailyQuota = Staking_Amount × Base_Rate × Reputation_Multiplier
             </div>
             <table>
                 <tr>
-                    <th>质押等级</th>
-                    <th>日推理上限</th>
+                    <th>Stake Tier</th>
+                    <th>Daily Inference Cap</th>
                 </tr>
                 <tr>
                     <td>1,000 AIB</td>
-                    <td>1,000 次</td>
+                    <td>1,000</td>
                 </tr>
                 <tr>
                     <td>10,000 AIB</td>
-                    <td>15,000 次</td>
+                    <td>15,000</td>
                 </tr>
                 <tr>
                     <td>100,000 AIB</td>
-                    <td>200,000 次</td>
+                    <td>200,000</td>
                 </tr>
             </table>
-            <p class="warning">超出配额 = 奖励衰减 90%</p>
+            <p class="warning">Exceeding quota = 90% reward decay</p>
         </div>
 
-        <h2>三、攻击成本-收益分析</h2>
+        <h2>3. Attack Cost-Benefit Analysis</h2>
 
         <table>
             <tr>
-                <th>攻击类型</th>
-                <th>攻击成本</th>
-                <th>预期收益</th>
-                <th>盈利性</th>
+                <th>Attack Type</th>
+                <th>Attack Cost</th>
+                <th>Expected Gain</th>
+                <th>Profitability</th>
             </tr>
             <tr>
-                <td>缓存攻击</td>
+                <td>Cache attack</td>
                 <td>0 AIB</td>
-                <td>-1000 AIB/次 (被捕获)</td>
-                <td class="warning">❌ 亏损</td>
+                <td>-1000 AIB/attempt (caught)</td>
+                <td class="warning">❌ Loss</td>
             </tr>
             <tr>
-                <td>垃圾推理</td>
-                <td>~50 AIB/GPU天</td>
-                <td>0 AIB (质量不达标)</td>
-                <td class="warning">❌ 亏损</td>
+                <td>Garbage inference</td>
+                <td>~50 AIB/GPU-day</td>
+                <td>0 AIB (below quality bar)</td>
+                <td class="warning">❌ Loss</td>
             </tr>
             <tr>
-                <td>3节点合谋</td>
-                <td>3000 AIB 质押</td>
-                <td>+500 AIB 后被惩罚</td>
-                <td class="warning">❌ 亏损</td>
+                <td>3-node collusion</td>
+                <td>3000 AIB stake</td>
+                <td>+500 AIB then penalized</td>
+                <td class="warning">❌ Loss</td>
             </tr>
             <tr>
-                <td>女巫攻击</td>
-                <td>1000 AIB/节点 × 100节点</td>
-                <td>0 (配额限制)</td>
-                <td class="warning">❌ 亏损</td>
+                <td>Sybil attack</td>
+                <td>1000 AIB/node × 100 nodes</td>
+                <td>0 (quota limited)</td>
+                <td class="warning">❌ Loss</td>
             </tr>
             <tr>
-                <td>诚实推理</td>
-                <td>~200 AIB/GPU天</td>
-                <td>~300 AIB/天</td>
-                <td class="success">✅ 盈利</td>
+                <td>Honest inference</td>
+                <td>~200 AIB/GPU-day</td>
+                <td>~300 AIB/day</td>
+                <td class="success">✅ Profitable</td>
             </tr>
         </table>
 
-        <h2>四、关键公式总结</h2>
+        <h2>4. Key Formula Summary</h2>
 
         <div class="formula">
-            最终推理奖励 = Base_Reward × Quality_Score × Reputation_Multiplier<br>
+            Final inference reward = Base_Reward × Quality_Score × Reputation_Multiplier<br>
                             × (1 - Penalty_Rate) × Anti_Gaming_Factor
         </div>
 
@@ -357,20 +357,20 @@
             Anti_Gaming_Factor = min(1, Daily_Quota / Actual_Requests)
         </div>
 
-        <h2>五、实施建议</h2>
+        <h2>5. Implementation Recommendations</h2>
 
         <div class="defense-box">
             <ol>
-                <li><strong>主网启动：</strong>启用 Layer 1, 2, 6, 7 (基础防御)</li>
-                <li><strong>3个月后：</strong>启用 Layer 3 (模型质量) + Layer 5 (声誉)</li>
-                <li><strong>6个月后：</strong>启用 Layer 4 (挑战系统) + 完整经济模型</li>
+                <li><strong>Mainnet launch:</strong>enable Layers 1, 2, 6, 7 (basic defenses)</li>
+                <li><strong>After 3 months:</strong>enable Layer 3 (model quality) + Layer 5 (reputation)</li>
+                <li><strong>After 6 months:</strong>enable Layer 4 (challenge system) + the full economic model</li>
             </ol>
         </div>
 
-        <h2 style="margin-top: 50px;">结论</h2>
+        <h2 style="margin-top: 50px;">Conclusion</h2>
         <p style="font-size: 1.2em; text-align: center; padding: 20px;">
-            通过 <span class="highlight">七层防御</span>，使攻击成本远超诚实参与收益，<br>
-            确保系统的 <span class="highlight">纳什均衡</span> 是诚实推理。
+            The <span class="highlight">Seven-layer defense</span> pushes attack costs far above the returns of honest participation,<br>
+            ensuring the system's <span class="highlight">Nash equilibrium</span>  is honest inference.
         </p>
     </div>
 </body>
