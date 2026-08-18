@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PoAIW 升级验证报告 - AIB 2.0</title>
+    <title>PoAIW Upgrade Validation Report - AIB 2.0</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html { scroll-behavior: smooth; }
@@ -196,190 +196,190 @@
 <body>
     <nav class="nav-menu">
         <div class="container">
-            <a href="#summary">执行摘要</a>
-            <a href="#tests">测试结果</a>
-            <a href="#features">新特性</a>
-            <a href="#compatibility">兼容性</a>
-            <a href="#next">后续步骤</a>
+            <a href="#summary">Executive Summary</a>
+            <a href="#tests">Test Results</a>
+            <a href="#features">New Features</a>
+            <a href="#compatibility">Compatibility</a>
+            <a href="#next">Next Steps</a>
         </div>
     </nav>
 
     <div class="container">
-        <h1>PoAIW 升级验证报告</h1>
-        <p class="subtitle">AIB 2.0 - Proof of AI Work 共识机制升级验证</p>
+        <h1>PoAIW Upgrade Validation Report</h1>
+        <p class="subtitle">AIB 2.0 - Proof of AI Work Consensus Upgrade Validation</p>
 
         <div class="status-banner status-success">
-            ✅ 升级验证通过 - 所有核心测试成功
+            ✅ Upgrade Validation Passed - All Core Tests Successful
         </div>
 
         <div class="summary-grid" id="summary">
             <div class="summary-card">
                 <div class="value">100%</div>
-                <div class="label">PoAIW 测试通过率</div>
+                <div class="label">PoAIW Test Pass Rate</div>
             </div>
             <div class="summary-card">
                 <div class="value">100%</div>
-                <div class="label">UTXO 测试通过率</div>
+                <div class="label">UTXO Test Pass Rate</div>
             </div>
             <div class="summary-card">
                 <div class="value">100%</div>
-                <div class="label">DeFi 兼容性</div>
+                <div class="label">DeFi Compatibility</div>
             </div>
             <div class="summary-card">
                 <div class="value">0</div>
-                <div class="label">破坏性变更</div>
+                <div class="label">Breaking Changes</div>
             </div>
         </div>
 
-        <h2>执行摘要</h2>
+        <h2>Executive Summary</h2>
         <div class="feature-box">
-            <h4>升级状态</h4>
-            <p>PoAIW (Proof of AI Work) 简化版共识机制已成功集成到 AIB 2.0。此次升级采用版本化设计，无需硬分叉即可平滑过渡。</p>
+            <h4>Upgrade Status</h4>
+            <p>The PoAIW (Proof of AI Work) simplified consensus mechanism has been successfully integrated into AIB 2.0. This upgrade uses a versioned design, enabling a smooth transition without a hard fork.</p>
         </div>
 
-        <h2 id="tests">测试结果详情</h2>
+        <h2 id="tests">Detailed Test Results</h2>
 
-        <h3>PoAIW 核心测试</h3>
+        <h3>PoAIW Core Tests</h3>
         <table class="test-table">
             <thead>
                 <tr>
-                    <th>测试名称</th>
-                    <th>状态</th>
-                    <th>描述</th>
+                    <th>Test Name</th>
+                    <th>Status</th>
+                    <th>Description</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
                     <td>TestSimplifiedPoAIWBasicFunctionality</td>
                     <td><span class="badge badge-pass">PASS</span></td>
-                    <td>PoW 验证、质押验证、完整区块验证</td>
+                    <td>PoW verification, staking verification, full block validation</td>
                 </tr>
                 <tr>
                     <td>TestSimplifiedPoAIWEconomics</td>
                     <td><span class="badge badge-pass">PASS</span></td>
-                    <td>经济激励、诚实节点 vs 攻击者</td>
+                    <td>Economic incentives, honest nodes vs attackers</td>
                 </tr>
                 <tr>
                     <td>TestSimplifiedPoAIWNoJudge</td>
                     <td><span class="badge badge-pass">PASS</span></td>
-                    <td>无需 JUDGE 的纯数学验证</td>
+                    <td>Pure mathematical verification without JUDGE</td>
                 </tr>
                 <tr>
                     <td>TestSimplifiedPoAIWRealWorldScenario</td>
                     <td><span class="badge badge-pass">PASS</span></td>
-                    <td>真实场景模拟</td>
+                    <td>Real-world scenario simulation</td>
                 </tr>
             </tbody>
         </table>
 
-        <h3>PoAIW 集成测试</h3>
+        <h3>PoAIW Integration Tests</h3>
         <table class="test-table">
             <thead>
                 <tr>
-                    <th>测试场景</th>
-                    <th>状态</th>
-                    <th>覆盖范围</th>
+                    <th>Test Scenario</th>
+                    <th>Status</th>
+                    <th>Coverage</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
                     <td>VersionCompatibility</td>
                     <td><span class="badge badge-pass">PASS</span></td>
-                    <td>V1/V2 区块兼容性</td>
+                    <td>V1/V2 block compatibility</td>
                 </tr>
                 <tr>
                     <td>TransferFunctionality</td>
                     <td><span class="badge badge-pass">PASS</span></td>
-                    <td>基础转账功能</td>
+                    <td>Basic transfer functionality</td>
                 </tr>
                 <tr>
                     <td>DIFIIntegration</td>
                     <td><span class="badge badge-pass">PASS</span></td>
-                    <td>DeFi 应用集成</td>
+                    <td>DeFi application integration</td>
                 </tr>
                 <tr>
                     <td>DAOIntegration</td>
                     <td><span class="badge badge-pass">PASS</span></td>
-                    <td>DAO 治理集成</td>
+                    <td>DAO governance integration</td>
                 </tr>
                 <tr>
                     <td>UpgradePath</td>
                     <td><span class="badge badge-pass">PASS</span></td>
-                    <td>升级路径验证</td>
+                    <td>Upgrade path validation</td>
                 </tr>
                 <tr>
                     <td>BackwardCompatibility</td>
                     <td><span class="badge badge-pass">PASS</span></td>
-                    <td>向后兼容性</td>
+                    <td>Backward compatibility</td>
                 </tr>
             </tbody>
         </table>
 
-        <h3>UTXO 模块测试</h3>
-        <p><span class="badge badge-pass">全部通过</span> - 100+ 测试用例，覆盖率 > 70%</p>
+        <h3>UTXO Module Tests</h3>
+        <p><span class="badge badge-pass">All Passed</span> - 100+ test cases, coverage > 70%</p>
 
-        <h3>DeFi 兼容性测试</h3>
+        <h3>DeFi Compatibility Tests</h3>
         <table class="test-table">
             <thead>
                 <tr>
-                    <th>组件</th>
-                    <th>状态</th>
-                    <th>验证项</th>
+                    <th>Component</th>
+                    <th>Status</th>
+                    <th>Verified Items</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
                     <td>Matrix Precompile</td>
                     <td><span class="badge badge-pass">PASS</span></td>
-                    <td>矩阵运算预编译合约</td>
+                    <td>Matrix operation precompile contract</td>
                 </tr>
                 <tr>
                     <td>Staking Rewards</td>
                     <td><span class="badge badge-pass">PASS</span></td>
-                    <td>质押奖励合约</td>
+                    <td>Staking reward contract</td>
                 </tr>
                 <tr>
                     <td>Chain Config</td>
                     <td><span class="badge badge-pass">PASS</span></td>
-                    <td>链配置独立性</td>
+                    <td>Chain configuration independence</td>
                 </tr>
                 <tr>
                     <td>Token Transfer</td>
                     <td><span class="badge badge-pass">PASS</span></td>
-                    <td>ERC20 代币转账</td>
+                    <td>ERC20 token transfers</td>
                 </tr>
             </tbody>
         </table>
 
-        <h2 id="features">PoAIW 2.0 新特性</h2>
+        <h2 id="features">PoAIW 2.0 New Features</h2>
 
         <div class="comparison-table">
             <div class="comparison-col v1">
                 <h4>Version 1 (PoS)</h4>
                 <ul>
-                    <li>纯权益证明</li>
-                    <li>50 AIB 区块奖励</li>
-                    <li>基于质押的提议人选择</li>
-                    <li>无 AI 推理验证</li>
+                    <li>Pure proof of stake</li>
+                    <li>50 AIB block reward</li>
+                    <li>Stake-based proposer selection</li>
+                    <li>No AI inference verification</li>
                 </ul>
             </div>
             <div class="comparison-col v2">
                 <h4>Version 2 (PoAIW)</h4>
                 <ul>
-                    <li>AI 推理证明</li>
-                    <li>50 AIB 区块奖励</li>
-                    <li>30% 质押 + 70% 推理</li>
-                    <li>纯数学验证（无 JUDGE）</li>
-                    <li>反寡头机制</li>
+                    <li>AI inference proof</li>
+                    <li>50 AIB block reward</li>
+                    <li>30% staking + 70% inference</li>
+                    <li>Pure mathematical verification (no JUDGE)</li>
+                    <li>Anti-oligopoly mechanism</li>
                 </ul>
             </div>
         </div>
 
-        <h3>区块结构扩展</h3>
+        <h3>Block Structure Extension</h3>
         <div class="code-block">
-// BlockHeader V2 扩展字段
+// BlockHeader V2 extension fields
 type BlockHeader struct {
-    // ... V1 字段 ...
+    // ... V1 fields ...
     Version       uint32
     PrevBlockHash [32]byte
     MerkleRoot    [32]byte
@@ -388,73 +388,73 @@ type BlockHeader struct {
     Proposer      [32]byte
     Signature     []byte
 
-    // V2 新增字段 (Version >= 2)
-    InferencePoW  []byte  // AI 推理工作量证明
-    ModelID       string  // 使用的模型 ID
-    EnergyClaim   uint64  // 声称的推理能耗
+    // New V2 fields (Version >= 2)
+    InferencePoW  []byte  // AI inference proof of work
+    ModelID       string  // Model ID used
+    EnergyClaim   uint64  // Claimed inference energy consumption
 }
         </div>
 
-        <h3>奖励分配</h3>
+        <h3>Reward Distribution</h3>
         <div class="feature-box">
-            <h4>区块奖励分配 (V2)</h4>
+            <h4>Block Reward Distribution (V2)</h4>
             <ul>
-                <li><strong>质押奖励 (30%)</strong>: 15 AIB → 区块提议人</li>
-                <li><strong>推理奖励 (70%)</strong>: 35 AIB → 顶级推理节点</li>
-                <li><strong>总计</strong>: 50 AIB/块 (与 V1 相同)</li>
+                <li><strong>Staking Reward (30%)</strong>: 15 AIB → block proposer</li>
+                <li><strong>Inference Reward (70%)</strong>: 35 AIB → top inference nodes</li>
+                <li><strong>Total</strong>: 50 AIB/block (same as V1)</li>
             </ul>
         </div>
 
-        <h2 id="compatibility">兼容性保证</h2>
+        <h2 id="compatibility">Compatibility Guarantees</h2>
 
         <div class="feature-box">
-            <h4>✅ 无破坏性变更</h4>
+            <h4>✅ No Breaking Changes</h4>
             <ul>
-                <li>所有现有转账功能正常工作</li>
-                <li>DeFi 应用完全兼容</li>
-                <li>DAO 治理不受影响</li>
-                <li>旧节点可以处理 V2 区块（忽略新字段）</li>
-                <li>新节点完全向后兼容 V1 区块</li>
+                <li>All existing transfer functionality works normally</li>
+                <li>DeFi applications fully compatible</li>
+                <li>DAO governance unaffected</li>
+                <li>Old nodes can process V2 blocks (ignore new fields)</li>
+                <li>New nodes fully backward compatible with V1 blocks</li>
             </ul>
         </div>
 
-        <h3>升级路径</h3>
+        <h3>Upgrade Path</h3>
         <div class="code-block">
-// 区块版本检测
+// Block version detection
 if block.Header.Version >= 2 {
-    // 使用 PoAIW 验证
+    // Verify with PoAIW
     err = validator.validatePoAIW(block)
 } else {
-    // 使用传统 PoS 验证
+    // Verify with legacy PoS
     err = validator.validatePoS(block)
 }
         </div>
 
-        <h2 id="next">后续步骤</h2>
+        <h2 id="next">Next Steps</h2>
 
         <div class="feature-box">
-            <h4>部署清单</h4>
+            <h4>Deployment Checklist</h4>
             <ul>
-                <li><input type="checkbox" checked> PoAIW 核心代码集成</li>
-                <li><input type="checkbox" checked> 单元测试验证</li>
-                <li><input type="checkbox" checked> 集成测试验证</li>
-                <li><input type="checkbox" checked> DeFi 兼容性验证</li>
-                <li><input type="checkbox" checked> 白皮书更新</li>
-                <li><input type="checkbox"> 部署自动化脚本 (待定)</li>
-                <li><input type="checkbox"> 主网配置分析 (待定)</li>
+                <li><input type="checkbox" checked> PoAIW core code integration</li>
+                <li><input type="checkbox" checked> Unit test verification</li>
+                <li><input type="checkbox" checked> Integration test verification</li>
+                <li><input type="checkbox" checked> DeFi compatibility verification</li>
+                <li><input type="checkbox" checked> Whitepaper update</li>
+                <li><input type="checkbox"> Deployment automation scripts (pending)</li>
+                <li><input type="checkbox"> Mainnet configuration analysis (pending)</li>
             </ul>
         </div>
 
-        <h3>文档资源</h3>
+        <h3>Documentation Resources</h3>
         <ul>
-            <li><a href="/templates/en/whitepaper.html" style="color: #74b9ff;">PoAIW 白皮书</a></li>
-            <li><a href="/templates/en/upgrade_guide.html" style="color: #74b9ff;">升级指南</a></li>
-            <li><a href="/docs/mainnet/" style="color: #74b9ff;">主网文档</a></li>
+            <li><a href="/templates/en/whitepaper.html" style="color: #74b9ff;">PoAIW Whitepaper</a></li>
+            <li><a href="/templates/en/upgrade_guide.html" style="color: #74b9ff;">Upgrade Guide</a></li>
+            <li><a href="/docs/mainnet/" style="color: #74b9ff;">Mainnet Documentation</a></li>
         </ul>
 
         <div class="footer">
-            <p>AIB 2.0 - PoAIW 升级验证报告</p>
-            <p>生成时间: 2026-03-08 | 协议版本: V2.0</p>
+            <p>AIB 2.0 - PoAIW Upgrade Validation Report</p>
+            <p>Generated: 2026-03-08 | Protocol Version: V2.0</p>
         </div>
     </div>
 </body>

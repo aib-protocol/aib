@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PoAIW 升级路径分析</title>
+    <title>PoAIW Upgrade Path Analysis</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -84,73 +84,73 @@
 </head>
 <body>
     <div class="container">
-        <h1>🔄 PoAIW 升级路径分析</h1>
+        <h1>🔄 PoAIW Upgrade Path Analysis</h1>
 
-        <h2>一、当前测试网状态</h2>
+        <h2>1. Current Testnet Status</h2>
 
         <div class="box before">
-            <h3>当前共识：纯 PoS (Proof of Stake)</h3>
+            <h3>Current consensus: Pure PoS (Proof of Stake)</h3>
             <table>
                 <tr>
-                    <th>模块</th>
-                    <th>文件</th>
-                    <th>状态</th>
+                    <th>Module</th>
+                    <th>File</th>
+                    <th>Status</th>
                 </tr>
                 <tr>
-                    <td>共识配置</td>
+                    <td>Consensus configuration</td>
                     <td><code>pkg/utxo/consensus.go</code></td>
                     <td>PoS V1</td>
                 </tr>
                 <tr>
-                    <td>V2 参数</td>
+                    <td>V2 parameters</td>
                     <td><code>pkg/utxo/pos_v2.go</code></td>
-                    <td>60% 质押 / 40% 推理 (但无PoW验证)</td>
+                    <td>60% staking / 40% inference (but no PoW verification)</td>
                 </tr>
                 <tr>
-                    <td>区块结构</td>
+                    <td>Block structure</td>
                     <td><code>pkg/utxo/block.go</code></td>
-                    <td>有 VRF，无推理 PoW</td>
+                    <td>Has VRF, no inference PoW</td>
                 </tr>
                 <tr>
-                    <td>验证器</td>
+                    <td>Validator</td>
                     <td><code>pkg/utxo/validator.go</code></td>
-                    <td>标准签名验证</td>
+                    <td>Standard signature verification</td>
                 </tr>
             </table>
         </div>
 
-        <h2>二、升级类型判断</h2>
+        <h2>2. Upgrade Type Assessment</h2>
 
         <div class="box warning">
-            <h3>⚠️ 这是硬分叉 (Hard Fork)</h3>
-            <p>原因：</p>
+            <h3>⚠️ This is a Hard Fork</h3>
+            <p>Reasons:</p>
             <ul>
-                <li>需要修改 <code>BlockHeader</code> 结构（添加推理 PoW 字段）</li>
-                <li>需要修改区块验证逻辑（添加 PoW 检查）</li>
-                <li>旧节点无法验证新区块</li>
+                <li>Requires modifying the <code>BlockHeader</code> structure (adding inference PoW fields)</li>
+                <li>Requires modifying block validation logic (adding PoW check)</li>
+                <li>Old nodes cannot validate new blocks</li>
             </ul>
         </div>
 
-        <h2>三、升级对比</h2>
+        <h2>3. Upgrade Comparison</h2>
 
         <div class="compare">
             <div class="box before">
-                <h3>当前 PoS</h3>
+                <h3>Current PoS</h3>
                 <table>
-                    <tr><th>字段</th><th>值</th></tr>
+                    <tr><th>Field</th><th>Value</th></tr>
                     <tr><td>Version</td><td>1</td></tr>
-                    <tr><td>Proposer</td><td>VRF 选择</td></tr>
+                    <tr><td>Proposer</td><td>VRF selection</td></tr>
                     <tr><td>Signature</td><td>Ed25519</td></tr>
                     <tr><td>VRFProof</td><td>✓</td></tr>
                     <tr><td>InferencePoW</td><td>✗</td></tr>
                 </table>
             </div>
             <div class="box after">
-                <h3>升级后 PoAIW</h3>
+                <h3>PoAIW After Upgrade</h3>
                 <table>
-                    <tr><th>字段</th><th>值</th></tr>
+                    <tr><th>Field</th><th>Value</th></tr>
                     <tr><td>Version</td><td>2</td></tr>
-                    <tr><td>Proposer</td><td>质押权重</td></tr>
+                    <tr><td>Proposer</td><td>Staking weight</td></tr>
                     <tr><td>Signature</td><td>Ed25519</td></tr>
                     <tr><td>InferencePoW</td><td>✓</td></tr>
                     <tr><td>ModelID</td><td>✓</td></tr>
@@ -158,11 +158,11 @@
             </div>
         </div>
 
-        <h2>四、代码变更清单</h2>
+        <h2>4. Code Change List</h2>
 
         <div class="step">
             <span class="step-number">1</span>
-            <strong>BlockHeader 扩展</strong> (<code>pkg/utxo/block.go</code>)
+            <strong>BlockHeader Extension</strong> (<code>pkg/utxo/block.go</code>)
             <pre style="background: rgba(0,0,0,0.3); padding: 10px; margin-top: 10px; border-radius: 5px;">
 type BlockHeader struct {
     Version       uint32
@@ -173,24 +173,24 @@ type BlockHeader struct {
     Proposer      [32]byte
     Signature     []byte
 
-    // PoAIW 新增字段 (Version >= 2)
-    InferencePoW  []byte  // 推理工作量证明
-    ModelID       string  // 使用的模型ID
-    EnergyClaim   uint64  // 声称消耗的能源
+    // New PoAIW fields (Version >= 2)
+    InferencePoW  []byte  // Inference proof of work
+    ModelID       string  // Model ID used
+    EnergyClaim   uint64  // Claimed energy consumption
 }</pre>
         </div>
 
         <div class="step">
             <span class="step-number">2</span>
-            <strong>验证逻辑扩展</strong> (<code>pkg/utxo/validator.go</code>)
+            <strong>Validation Logic Extension</strong> (<code>pkg/utxo/validator.go</code>)
             <pre style="background: rgba(0,0,0,0.3); padding: 10px; margin-top: 10px; border-radius: 5px;">
 func (v *ChainBlockValidator) ValidateBlock(block *Block) error {
-    // 现有验证...
+    // Existing validation...
     if err := v.validateExisting(block); err != nil {
         return err
     }
 
-    // PoAIW 验证 (Version >= 2)
+    // PoAIW verification (Version >= 2)
     if block.Header.Version >= 2 {
         return v.validatePoAIW(block)
     }
@@ -198,11 +198,11 @@ func (v *ChainBlockValidator) ValidateBlock(block *Block) error {
 }
 
 func (v *ChainBlockValidator) validatePoAIW(block *Block) error {
-    // 1. PoW 验证
+    // 1. PoW verification
     if !verifyInferencePoW(block) {
         return fmt.Errorf("inference PoW invalid")
     }
-    // 2. 质押验证
+    // 2. Staking verification
     if !verifyMinStake(block) {
         return fmt.Errorf("insufficient stake")
     }
@@ -212,122 +212,122 @@ func (v *ChainBlockValidator) validatePoAIW(block *Block) error {
 
         <div class="step">
             <span class="step-number">3</span>
-            <strong>共识参数更新</strong> (<code>pkg/utxo/pos_v2.go</code>)
+            <strong>Consensus Parameter Updates</strong> (<code>pkg/utxo/pos_v2.go</code>)
             <pre style="background: rgba(0,0,0,0.3); padding: 10px; margin-top: 10px; border-radius: 5px;">
 const (
     BlockRewardV2        = uint64(50)      // 50 AIB
-    StakingRewardRatio   = 0.3             // 30% 质押
-    InferenceRewardRatio = 0.7             // 70% 推理
+    StakingRewardRatio   = 0.3             // 30% staking
+    InferenceRewardRatio = 0.7             // 70% inference
     MinStakeV2           = 1000 * 1e8      // 1000 AIB
-    PoWDifficultyBase    = 1000            // 基础难度
+    PoWDifficultyBase    = 1000            // Base difficulty
 )</pre>
         </div>
 
-        <h2>五、升级路径选项</h2>
+        <h2>5. Upgrade Path Options</h2>
 
         <table>
             <tr>
-                <th>选项</th>
-                <th>时间</th>
-                <th>复杂度</th>
-                <th>风险</th>
-                <th>推荐度</th>
+                <th>Option</th>
+                <th>Timeline</th>
+                <th>Complexity</th>
+                <th>Risk</th>
+                <th>Recommendation</th>
             </tr>
             <tr>
-                <td><strong>A. 立即硬分叉</strong></td>
-                <td>2-4周</td>
-                <td>高</td>
-                <td>高（网络分裂风险）</td>
-                <td class="danger">❌ 不推荐</td>
+                <td><strong>A. Immediate Hard Fork</strong></td>
+                <td>2-4 weeks</td>
+                <td>High</td>
+                <td>High (network split risk)</td>
+                <td class="danger">❌ Not recommended</td>
             </tr>
             <tr>
-                <td><strong>B. 测试网先行</strong></td>
-                <td>4-6周</td>
-                <td>中</td>
-                <td>低</td>
-                <td class="success">✅ 推荐</td>
+                <td><strong>B. Testnet First</strong></td>
+                <td>4-6 weeks</td>
+                <td>Medium</td>
+                <td>Low</td>
+                <td class="success">✅ Recommended</td>
             </tr>
             <tr>
-                <td><strong>C. 双轨运行</strong></td>
-                <td>6-8周</td>
-                <td>中高</td>
-                <td>中</td>
-                <td class="success">✅ 可行</td>
+                <td><strong>C. Dual-Track Operation</strong></td>
+                <td>6-8 weeks</td>
+                <td>Medium-High</td>
+                <td>Medium</td>
+                <td class="success">✅ Feasible</td>
             </tr>
             <tr>
-                <td><strong>D. 渐进迁移</strong></td>
-                <td>8-12周</td>
-                <td>低</td>
-                <td>低</td>
-                <td class="success">✅ 最稳妥</td>
+                <td><strong>D. Gradual Migration</strong></td>
+                <td>8-12 weeks</td>
+                <td>Low</td>
+                <td>Low</td>
+                <td class="success">✅ Safest</td>
             </tr>
         </table>
 
-        <h2>六、推荐升级方案：测试网先行</h2>
+        <h2>6. Recommended Upgrade Plan: Testnet First</h2>
 
         <div class="box">
-            <h3>阶段 1：准备 (Week 1-2)</h3>
+            <h3>Phase 1: Preparation (Week 1-2)</h3>
             <ul>
-                <li>在测试网部署 PoAIW 代码</li>
-                <li>运行集成测试</li>
-                <li>更新文档和工具</li>
+                <li>Deploy PoAIW code on testnet</li>
+                <li>Run integration tests</li>
+                <li>Update documentation and tooling</li>
             </ul>
         </div>
 
         <div class="box">
-            <h3>阶段 2：测试网验证 (Week 3-4)</h3>
+            <h3>Phase 2: Testnet Validation (Week 3-4)</h3>
             <ul>
-                <li>测试网启用 PoAIW（Version 2 区块）</li>
-                <li>监控网络稳定性</li>
-                <li>收集节点反馈</li>
+                <li>Enable PoAIW on testnet (Version 2 blocks)</li>
+                <li>Monitor network stability</li>
+                <li>Collect node feedback</li>
             </ul>
         </div>
 
         <div class="box">
-            <h3>阶段 3：主网提案 (Week 5-6)</h3>
+            <h3>Phase 3: Mainnet Proposal (Week 5-6)</h3>
             <ul>
-                <li>发布 AIP (AIB Improvement Proposal)</li>
-                <li>社区讨论和投票</li>
-                <li>设定激活高度</li>
+                <li>Publish AIP (AIB Improvement Proposal)</li>
+                <li>Community discussion and voting</li>
+                <li>Set activation height</li>
             </ul>
         </div>
 
         <div class="box">
-            <h3>阶段 4：主网升级 (Week 7+)</h3>
+            <h3>Phase 4: Mainnet Upgrade (Week 7+)</h3>
             <ul>
-                <li>在指定高度激活 PoAIW</li>
-                <li>观察链是否分裂</li>
-                <li>紧急响应预案</li>
+                <li>Activate PoAIW at the designated height</li>
+                <li>Watch for chain splits</li>
+                <li>Emergency response plan</li>
             </ul>
         </div>
 
-        <h2>七、关键决策点</h2>
+        <h2>7. Key Decision Points</h2>
 
         <div class="box warning">
-            <h3>⚠️ 需要社区决定的问题</h3>
+            <h3>⚠️ Questions Requiring Community Decisions</h3>
 
             <ol>
-                <li><strong>激活时机：</strong>主网上线前还是后？</li>
-                <li><strong>创世分配：</strong>PoAIW 如何影响现有质押？</li>
-                <li><strong>参数调整：</strong>30% 质押 / 70% 推理比例是否合适？</li>
-                <li><strong>向后兼容：</strong>是否保留 PoS 作为备用？</li>
+                <li><strong>Activation timing:</strong> before or after mainnet launch?</li>
+                <li><strong>Genesis distribution:</strong> how does PoAIW affect existing stakes?</li>
+                <li><strong>Parameter tuning:</strong> is the 30% staking / 70% inference ratio appropriate?</li>
+                <li><strong>Backward compatibility:</strong> keep PoS as a fallback?</li>
             </ol>
         </div>
 
-        <h2>八、结论</h2>
+        <h2>8. Conclusion</h2>
 
         <div class="box">
             <p class="highlight" style="font-size: 1.2em; text-align: center;">
-                当前测试网 <strong>可以</strong> 升级到简化版 PoAIW
+                The current testnet <strong>can</strong> be upgraded to simplified PoAIW
             </p>
             <p style="margin-top: 20px;">
-                但这需要<strong>硬分叉</strong>，建议采用<strong>测试网先行</strong>的渐进方案：
+                However, this requires a <strong>hard fork</strong>; a gradual <strong>testnet-first</strong> approach is recommended:
             </p>
             <ul style="margin-top: 15px;">
-                <li>✅ 代码已准备就绪（测试通过）</li>
-                <li>✅ 架构支持版本化升级</li>
-                <li>⚠️ 需要社区共识</li>
-                <li>⚠️ 需要谨慎的激活策略</li>
+                <li>✅ Code is ready (tests passing)</li>
+                <li>✅ Architecture supports versioned upgrades</li>
+                <li>⚠️ Requires community consensus</li>
+                <li>⚠️ Requires a cautious activation strategy</li>
             </ul>
         </div>
     </div>
