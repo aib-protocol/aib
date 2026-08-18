@@ -8,34 +8,34 @@ import (
 	"time"
 )
 
-// StakeManager 管理节点质押
+// StakeManager manages node staking
 type StakeManager struct {
 	mu       sync.RWMutex
-	stakes   map[string]*StakeInfo // nodeID -> 质押信息
-	minStake float64               // 最低质押要求
+	stakes   map[string]*StakeInfo // nodeID -> stake info
+	minStake float64               // minimum stake requirement
 }
 
-// StakeInfo 质押信息
+// StakeInfo stake / stakinginfo
 type StakeInfo struct {
 	NodeID      string      `json:"node_id"`
-	Amount      float64     `json:"amount"`       // 质押金额
-	LockedUntil int64       `json:"locked_until"` // 锁定截止时间（Unix timestamp）
-	Status      StakeStatus `json:"status"`       // 质押状态
-	SlashTotal  float64     `json:"slash_total"`  // 累计被罚没金额
-	StakeTime   int64       `json:"stake_time"`   // 质押时间
+	Amount      float64     `json:"amount"`       // staked amount
+	LockedUntil int64       `json:"locked_until"` // lock deadline (Unix timestamp)
+	Status      StakeStatus `json:"status"`       // stake status
+	SlashTotal  float64     `json:"slash_total"`  // total slashed amount
+	StakeTime   int64       `json:"stake_time"`   // stake time
 }
 
 // StakeStatus stakestatus
 type StakeStatus string
 
 const (
-	StakeActive    StakeStatus = "active"    // 活跃状态
-	StakeLocked    StakeStatus = "locked"    // 锁定中（解除质押后）
-	StakeSlashed   StakeStatus = "slashed"   // 已被罚没
-	StakeWithdrawn StakeStatus = "withdrawn" // 已提取
+	StakeActive    StakeStatus = "active"    // active
+	StakeLocked    StakeStatus = "locked"    // locked (after unstaking)
+	StakeSlashed   StakeStatus = "slashed"   // slashed
+	StakeWithdrawn StakeStatus = "withdrawn" // withdrawn
 )
 
-// NewStakeManager 创建新的质押管理器
+// NewStakeManager creates a new stake manager
 func NewStakeManager(minStake float64) *StakeManager {
 	return &StakeManager{
 		stakes:   make(map[string]*StakeInfo),
@@ -46,28 +46,28 @@ func NewStakeManager(minStake float64) *StakeManager {
 // Stake staketoken
 func (sm *StakeManager) Stake(nodeID string, amount float64) error {
 	if nodeID == "" {
-		return errors.New("节点ID不能为空")
+		return errors.New("node ID cannot be empty")
 	}
 	if amount <= 0 {
-		return errors.New("质押金额必须大于0")
+		return errors.New("stake amount must be greater than 0")
 	}
 	if amount < sm.minStake {
-		return fmt.Errorf("质押金额必须大于最低要求: %.2f", sm.minStake)
+		return fmt.Errorf("stake amount must exceed the minimum requirement: %.2f", sm.minStake)
 	}
 
 	sm.mu.Lock()
 	defer sm.mu.Unlock()
 
-	// 检查是否已质押
+	// check if already staked
 	if stake, exists := sm.stakes[nodeID]; exists && stake.Status != StakeWithdrawn {
-		return errors.New("节点已质押，请先解除质押")
+		return errors.New("node already staked; unstake first")
 	}
 
-	// 创建新的质押记录
+	// create a new stake record
 	sm.stakes[nodeID] = &StakeInfo{
 		NodeID:      nodeID,
 		Amount:      amount,
-		LockedUntil: 0, // 质押时不锁定
+		LockedUntil: 0, // not locked at stake time
 		Status:      StakeActive,
 		SlashTotal:  0,
 		StakeTime:   time.Now().Unix(),
@@ -76,10 +76,10 @@ func (sm *StakeManager) Stake(nodeID string, amount float64) error {
 	return nil
 }
 
-// Unstake 解除质押（进入锁定期）
+// Unstake unstake (enters lock period)
 func (sm *StakeManager) Unstake(nodeID string) error {
 	if nodeID == "" {
-		return errors.New("节点ID不能为空")
+		return errors.New("node ID cannot be empty")
 	}
 
 	sm.mu.Lock()
@@ -87,14 +87,14 @@ func (sm *StakeManager) Unstake(nodeID string) error {
 
 	stake, exists := sm.stakes[nodeID]
 	if !exists {
-		return errors.New("节点未质押")
+		return errors.New("node is not staked")
 	}
 
 	if stake.Status != StakeActive {
-		return fmt.Errorf("质押状态不正确: %s", stake.Status)
+		return fmt.Errorf("invalid stake status: %s", stake.Status)
 	}
 
-	// 设置锁定期（例如：7天）
+	// set lock period (e.g., 7 days)
 	lockDuration := 7 * 24 * time.Hour
 	stake.LockedUntil = time.Now().Add(lockDuration).Unix()
 	stake.Status = StakeLocked
@@ -102,13 +102,13 @@ func (sm *StakeManager) Unstake(nodeID string) error {
 	return nil
 }
 
-// Slash 罚没质押（由 SlashEngine 调用）
+// Slash slash stake (called by SlashEngine)
 func (sm *StakeManager) Slash(nodeID string, ratio float64) (float64, error) {
 	if nodeID == "" {
-		return 0, errors.New("节点ID不能为空")
+		return 0, errors.New("node ID cannot be empty")
 	}
 	if ratio < 0 || ratio > 1 {
-		return 0, errors.New("罚没比例必须在0到1之间")
+		return 0, errors.New("slash ratio must be between 0 and 1")
 	}
 
 	sm.mu.Lock()
@@ -116,11 +116,11 @@ func (sm *StakeManager) Slash(nodeID string, ratio float64) (float64, error) {
 
 	stake, exists := sm.stakes[nodeID]
 	if !exists {
-		return 0, errors.New("节点未质押")
+		return 0, errors.New("node is not staked")
 	}
 
 	if stake.Status != StakeActive {
-		return 0, fmt.Errorf("节点状态不正确: %s", stake.Status)
+		return 0, fmt.Errorf("invalid node status: %s", stake.Status)
 	}
 
 	// computeslashamount
@@ -128,7 +128,7 @@ func (sm *StakeManager) Slash(nodeID string, ratio float64) (float64, error) {
 	stake.Amount -= slashAmount
 	stake.SlashTotal += slashAmount
 
-	// 如果全部罚没，标记为已罚没
+	// if fully slashed, mark as slashed
 	if stake.Amount <= 0 {
 		stake.Status = StakeSlashed
 		stake.Amount = 0
@@ -137,10 +137,10 @@ func (sm *StakeManager) Slash(nodeID string, ratio float64) (float64, error) {
 	return slashAmount, nil
 }
 
-// GetStake 查询质押信息
+// GetStake querystake / stakinginfo
 func (sm *StakeManager) GetStake(nodeID string) (*StakeInfo, error) {
 	if nodeID == "" {
-		return nil, errors.New("节点ID不能为空")
+		return nil, errors.New("node ID cannot be empty")
 	}
 
 	sm.mu.RLock()
@@ -148,10 +148,10 @@ func (sm *StakeManager) GetStake(nodeID string) (*StakeInfo, error) {
 
 	stake, exists := sm.stakes[nodeID]
 	if !exists {
-		return nil, errors.New("节点未质押")
+		return nil, errors.New("node is not staked")
 	}
 
-	// 返回副本
+	// return a copy
 	result := &StakeInfo{
 		NodeID:      stake.NodeID,
 		Amount:      stake.Amount,
@@ -164,7 +164,7 @@ func (sm *StakeManager) GetStake(nodeID string) (*StakeInfo, error) {
 	return result, nil
 }
 
-// IsEligible 检查节点是否有资格参与任务
+// IsEligible checks whether a node is eligible for tasks
 func (sm *StakeManager) IsEligible(nodeID string) bool {
 	if nodeID == "" {
 		return false
@@ -178,12 +178,12 @@ func (sm *StakeManager) IsEligible(nodeID string) bool {
 		return false
 	}
 
-	// 检查状态是否为活跃
+	// check that status is active
 	if stake.Status != StakeActive {
 		return false
 	}
 
-	// 检查质押金额是否满足最低要求
+	// check that staked amount meets the minimum requirement
 	if stake.Amount < sm.minStake {
 		return false
 	}
@@ -191,7 +191,7 @@ func (sm *StakeManager) IsEligible(nodeID string) bool {
 	return true
 }
 
-// GetTotalStaked 获取总质押量
+// GetTotalStaked gets total staked amount
 func (sm *StakeManager) GetTotalStaked() float64 {
 	sm.mu.RLock()
 	defer sm.mu.RUnlock()
@@ -206,10 +206,10 @@ func (sm *StakeManager) GetTotalStaked() float64 {
 	return total
 }
 
-// Withdraw 提取质押（锁定期结束后）
+// Withdraw withdraw stake (after lock period ends)
 func (sm *StakeManager) Withdraw(nodeID string) (float64, error) {
 	if nodeID == "" {
-		return 0, errors.New("节点ID不能为空")
+		return 0, errors.New("node ID cannot be empty")
 	}
 
 	sm.mu.Lock()
@@ -217,20 +217,20 @@ func (sm *StakeManager) Withdraw(nodeID string) (float64, error) {
 
 	stake, exists := sm.stakes[nodeID]
 	if !exists {
-		return 0, errors.New("节点未质押")
+		return 0, errors.New("node is not staked")
 	}
 
 	if stake.Status != StakeLocked {
-		return 0, fmt.Errorf("质押状态不正确: %s", stake.Status)
+		return 0, fmt.Errorf("invalid stake status: %s", stake.Status)
 	}
 
-	// 检查锁定期是否已过
+	// check whether the lock period has ended
 	if time.Now().Unix() < stake.LockedUntil {
-		return 0, fmt.Errorf("锁定期未结束，还需等待 %d 秒",
+		return 0, fmt.Errorf("lock period not over, %d seconds remaining",
 			stake.LockedUntil-time.Now().Unix())
 	}
 
-	// 计算可提取金额
+	// calculate withdrawable amount
 	withdrawAmount := stake.Amount
 
 	// updatestatus
@@ -253,7 +253,7 @@ func (sm *StakeManager) Export() ([]byte, error) {
 		Stakes:   make(map[string]*StakeInfo),
 	}
 
-	// 导出副本
+	// export a copy
 	for k, v := range sm.stakes {
 		state.Stakes[k] = &StakeInfo{
 			NodeID:      v.NodeID,
