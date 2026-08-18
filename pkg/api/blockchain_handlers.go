@@ -14,10 +14,10 @@ import (
 )
 
 // ============================================================================
-// UTXO 查询处理器
+// UTXO queryhandler
 // ============================================================================
 
-// UTXOByAddressResponse 返回地址的 UTXO 列表
+// UTXOByAddressResponse returnsaddress UTXO list
 type UTXOByAddressResponse struct {
 	Address  string     `json:"address"`
 	UTXOs    []UTXOItem `json:"utxos"`
@@ -25,7 +25,7 @@ type UTXOByAddressResponse struct {
 	CanSpend bool       `json:"can_spend"`
 }
 
-// UTXOItem 表示单个 UTXO
+// UTXOItem represents a single UTXO
 type UTXOItem struct {
 	TxID    string `json:"tx_id"`
 	Index   uint32 `json:"index"`
@@ -41,10 +41,10 @@ func (s *Server) handleUTXOByAddress(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 从 URL 路径中提取地址
-	// 处理 /v1/utxo/{address} 格式
+	// Extract the address from the URL path
+	// Handle the /v1/utxo/{address} format
 	urlPath := r.URL.Path
-	// 去掉 /v1/utxo/ 前缀
+	// Strip the /v1/utxo/ prefix
 	address := ""
 	if len(urlPath) > len("/v1/utxo/") {
 		address = urlPath[len("/v1/utxo/"):]
@@ -55,7 +55,7 @@ func (s *Server) handleUTXOByAddress(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 验证地址格式
+	// Validate the address format
 	var addrBytes [32]byte
 	decoded, err := hex.DecodeString(address)
 	if err != nil || len(decoded) != 32 {
@@ -64,7 +64,7 @@ func (s *Server) handleUTXOByAddress(w http.ResponseWriter, r *http.Request) {
 	}
 	copy(addrBytes[:], decoded)
 
-	// 从 UTXO 存储获取地址的 UTXO
+	// Get the address's UTXOs from UTXO storage
 	utxos, balance := s.getUTXOsByAddress(r.Context(), addrBytes)
 
 	response := UTXOByAddressResponse{
@@ -77,14 +77,14 @@ func (s *Server) handleUTXOByAddress(w http.ResponseWriter, r *http.Request) {
 	writeSuccess(w, response)
 }
 
-// getUTXOsByAddress 从存储获取地址的 UTXO
+// getUTXOsByAddress retrieves UTXOs for an address from storage
 func (s *Server) getUTXOsByAddress(ctx context.Context, address [32]byte) ([]UTXOItem, uint64) {
 	var utxos []UTXOItem
 	var total uint64
 
-	// 如果有 UTXO 存储，从中查询
+	// If UTXO storage is available, query it
 	if s.utxoStore != nil {
-		// 使用 UTXO 存储的查询方法
+		// Use the UTXO storage query method
 		allUTXOs := s.utxoStore.GetAllUTXOs(address)
 		for _, u := range allUTXOs {
 			utxos = append(utxos, UTXOItem{
@@ -98,7 +98,7 @@ func (s *Server) getUTXOsByAddress(ctx context.Context, address [32]byte) ([]UTX
 		}
 	}
 
-	// 按 TxID 排序
+	// Sort by TxID
 	sort.Slice(utxos, func(i, j int) bool {
 		return utxos[i].TxID < utxos[j].TxID
 	})
@@ -107,10 +107,10 @@ func (s *Server) getUTXOsByAddress(ctx context.Context, address [32]byte) ([]UTX
 }
 
 // ============================================================================
-// 验证者列表处理器
+// Validator list handlers
 // ============================================================================
 
-// ValidatorsResponse 返回验证者列表
+// ValidatorsResponse returnsvalidatorlist
 type ValidatorsResponse struct {
 	Validators []ValidatorInfo `json:"validators"`
 	Total      int             `json:"total"`
@@ -118,7 +118,7 @@ type ValidatorsResponse struct {
 	TotalStake uint64          `json:"total_stake"`
 }
 
-// ValidatorInfo 表示单个验证者信息
+// ValidatorInfo represents a single validator's information
 type ValidatorInfo struct {
 	Address      string `json:"address"`
 	Stake        uint64 `json:"stake"`
@@ -137,10 +137,10 @@ func (s *Server) handleValidators(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 从共识状态获取验证者列表
+	// Get the validator list from consensus state
 	validators, totalStake := s.getValidators(r.Context())
 
-	// 统计活跃验证者
+	// Count active validators
 	activeCount := 0
 	for _, v := range validators {
 		if v.IsActive {
@@ -158,13 +158,13 @@ func (s *Server) handleValidators(w http.ResponseWriter, r *http.Request) {
 	writeSuccess(w, response)
 }
 
-// getValidators 从共识状态获取验证者信息
+// getValidators retrieves validator information from consensus state
 func (s *Server) getValidators(ctx context.Context) ([]ValidatorInfo, uint64) {
 	var validators []ValidatorInfo
 	var totalStake uint64
 
 	if s.consensusState != nil {
-		// 获取所有验证者
+		// Get all validators
 		allValidators := s.consensusState.GetActiveValidators()
 		for _, v := range allValidators {
 			validatorInfo := ValidatorInfo{
@@ -182,7 +182,7 @@ func (s *Server) getValidators(ctx context.Context) ([]ValidatorInfo, uint64) {
 		}
 	}
 
-	// 按质押金额排序
+	// Sort by stake amount
 	sort.Slice(validators, func(i, j int) bool {
 		return validators[i].Stake > validators[j].Stake
 	})
@@ -191,10 +191,10 @@ func (s *Server) getValidators(ctx context.Context) ([]ValidatorInfo, uint64) {
 }
 
 // ============================================================================
-// 内存池查询处理器
+// Mempool query handlers
 // ============================================================================
 
-// MempoolResponse 返回内存池状态
+// MempoolResponse returns the mempool state
 type MempoolResponse struct {
 	Transactions []MempoolTxInfo `json:"transactions"`
 	Count        int             `json:"count"`
@@ -205,7 +205,7 @@ type MempoolResponse struct {
 	AvgFeeRate   float64         `json:"avg_fee_rate"`
 }
 
-// MempoolTxInfo 表示内存池中的交易
+// MempoolTxInfo represents a transaction in the mempool
 type MempoolTxInfo struct {
 	TxID       string    `json:"tx_id"`
 	Fee        uint64    `json:"fee"`
@@ -229,14 +229,14 @@ func (s *Server) handleMempool(w http.ResponseWriter, r *http.Request) {
 	if limitStr := r.URL.Query().Get("limit"); limitStr != "" {
 		fmt.Sscanf(limitStr, "%d", &limit)
 		if limit > 1000 {
-			limit = 1000 // 最大限制
+			limit = 1000 // maximum limit
 		}
 	}
 
-	// 从内存池获取交易
+	// Get transactions from the mempool
 	txs := s.getMempoolTransactions(r.Context(), limit)
 
-	// 计算统计信息
+	// Compute statistics
 	var totalFees uint64
 	var totalSize int
 	var totalFeeRate float64
@@ -273,7 +273,7 @@ func (s *Server) handleMempool(w http.ResponseWriter, r *http.Request) {
 	writeSuccess(w, response)
 }
 
-// getMempoolTransactions 从内存池获取交易
+// getMempoolTransactions retrieves transactions from the mempool
 func (s *Server) getMempoolTransactions(ctx context.Context, limit int) []MempoolTxInfo {
 	var txs []MempoolTxInfo
 
@@ -281,7 +281,7 @@ func (s *Server) getMempoolTransactions(ctx context.Context, limit int) []Mempoo
 		return txs
 	}
 
-	// 获取内存池中的所有交易
+	// Get all transactions in the mempool
 	entries := s.mempool.GetAllEntries()
 
 	for _, entry := range entries {
@@ -303,7 +303,7 @@ func (s *Server) getMempoolTransactions(ctx context.Context, limit int) []Mempoo
 		txs = append(txs, txInfo)
 	}
 
-	// 按费率排序（高费率优先）
+	// Sort by fee rate (highest first)
 	sort.Slice(txs, func(i, j int) bool {
 		return txs[i].FeeRate > txs[j].FeeRate
 	})
@@ -312,10 +312,10 @@ func (s *Server) getMempoolTransactions(ctx context.Context, limit int) []Mempoo
 }
 
 // ============================================================================
-// 质押状态处理器
+// Staking status handlers
 // ============================================================================
 
-// StakingResponse 返回全局质押状态
+// StakingResponse returnsglobalstake / stakingstatus
 type StakingResponse struct {
 	TotalStaked      uint64       `json:"total_staked"`
 	TotalValidators  int          `json:"total_validators"`
@@ -327,12 +327,12 @@ type StakingResponse struct {
 	Stakers          []StakerInfo `json:"stakers,omitempty"`
 }
 
-// StakerInfo 表示单个质押者信息
+// StakerInfo represents a single staker's information
 type StakerInfo struct {
 	Address string  `json:"address"`
 	Stake   uint64  `json:"stake"`
 	Rewards uint64  `json:"rewards"`
-	Share   float64 `json:"share"` // 质押占比
+	Share   float64 `json:"share"` // share of total stake
 }
 
 // handleStaking handle GET /v1/staking
@@ -350,7 +350,7 @@ func (s *Server) handleStaking(w http.ResponseWriter, r *http.Request) {
 	writeSuccess(w, stakingInfo)
 }
 
-// getStakingInfo 获取质押信息
+// getStakingInfo getstake / stakinginfo
 func (s *Server) getStakingInfo(ctx context.Context, includeStakers bool) *StakingResponse {
 	if s.consensusState == nil {
 		return &StakingResponse{}
@@ -371,7 +371,7 @@ func (s *Server) getStakingInfo(ctx context.Context, includeStakers bool) *Staki
 		APY:              calculateAPY(totalStake, config.BlockReward),
 	}
 
-	// 如果请求包含质押者详情
+	// If the request includes staker details
 	if includeStakers {
 		var stakers []StakerInfo
 		for _, v := range validators {
@@ -386,7 +386,7 @@ func (s *Server) getStakingInfo(ctx context.Context, includeStakers bool) *Staki
 				Share:   share,
 			})
 		}
-		// 按质押金额排序
+		// Sort by stake amount
 		sort.Slice(stakers, func(i, j int) bool {
 			return stakers[i].Stake > stakers[j].Stake
 		})
@@ -396,13 +396,13 @@ func (s *Server) getStakingInfo(ctx context.Context, includeStakers bool) *Staki
 	return response
 }
 
-// calculateAPY 计算质押年化收益率
+// calculateAPY computes the annual staking yield
 func calculateAPY(totalStake, blockReward uint64) float64 {
 	if totalStake == 0 {
 		return 0
 	}
-	// 简化的 APY 计算
-	// 假设每年产生 365*24*3600/30 = 1,051,200 个区块
+	// Simplified APY calculation
+	// Assume 365*24*3600/30 = 1,051,200 blocks are produced per year
 	blocksPerYear := float64(365*24*60*60) / 30
 	annualReward := float64(blockReward) * blocksPerYear
 	apy := (annualReward / float64(totalStake)) * 100
@@ -410,10 +410,10 @@ func calculateAPY(totalStake, blockReward uint64) float64 {
 }
 
 // ============================================================================
-// 治理提案处理器
+// Governance proposal handlers
 // ============================================================================
 
-// ProposalsResponse 返回治理提案列表
+// ProposalsResponse returnsgovernanceproposallist
 type ProposalsResponse struct {
 	Proposals []ProposalInfo `json:"proposals"`
 	Total     int            `json:"total"`
@@ -422,7 +422,7 @@ type ProposalsResponse struct {
 	Rejected  int            `json:"rejected"`
 }
 
-// ProposalInfo 表示治理提案
+// ProposalInfo represents a governance proposal
 type ProposalInfo struct {
 	ID           string    `json:"id"`
 	Title        string    `json:"title"`
@@ -450,7 +450,7 @@ func (s *Server) handleProposals(w http.ResponseWriter, r *http.Request) {
 
 	proposals := s.getProposals(r.Context(), status)
 
-	// 统计状态
+	// Count by status
 	active, passed, rejected := 0, 0, 0
 	for _, p := range proposals {
 		switch p.Status {
@@ -478,11 +478,11 @@ func (s *Server) handleProposals(w http.ResponseWriter, r *http.Request) {
 func (s *Server) getProposals(ctx context.Context, statusFilter string) []ProposalInfo {
 	var proposals []ProposalInfo
 
-	// 注意：治理模块可能还未实现
-	// 这里提供示例实现，如果项目中有治理模块，应该从那里获取提案
+	// Note: the governance module may not be implemented yet
+	// A sample implementation is provided here; if the project has a governance module, proposals should be fetched from it
 
 	if s.governance != nil {
-		// 从治理模块获取提案
+		// Get proposals from the governance module
 		allProposals := s.governance.GetAllProposals()
 		for _, p := range allProposals {
 			if statusFilter != "" && statusFilter != "all" && p.Status != statusFilter {
@@ -507,7 +507,7 @@ func (s *Server) getProposals(ctx context.Context, statusFilter string) []Propos
 		}
 	}
 
-	// 按创建时间排序
+	// Sort by creation time
 	sort.Slice(proposals, func(i, j int) bool {
 		return proposals[i].CreatedAt.After(proposals[j].CreatedAt)
 	})
@@ -516,18 +516,18 @@ func (s *Server) getProposals(ctx context.Context, statusFilter string) []Propos
 }
 
 // ============================================================================
-// 辅助接口定义
+// Helper interface definitions
 // ============================================================================
 
-// utxoStoreInterface UTXO 存储接口
+// utxoStoreInterface is the UTXO storage interface
 type utxoStoreInterface interface {
 	GetAllUTXOs(addr [32]byte) []*utxo.UTXO
 	GetTransactionIndex(txHash [32]byte) (uint64, error)
 }
 
-// mempoolInterface 内存池接口
-// 注意：utxo.Mempool 可能没有 GetAllEntries 方法
-// 我们需要根据实际实现调整
+// mempoolInterface is the mempool interface
+// Note: utxo.Mempool may not have a GetAllEntries method
+// We need to adjust based on the actual implementation
 type mempoolInterface interface {
 	GetAllEntries() []*utxo.MempoolEntry
 	GetTransaction(txHash [32]byte) *utxo.Transaction
@@ -542,12 +542,12 @@ type consensusConfigInterface interface {
 	GetCurrentEpoch() uint64
 }
 
-// governanceInterface 治理接口（如果项目中有的话）
+// governanceInterface is the governance interface (if the project has one)
 type governanceInterface interface {
 	GetAllProposals() []Proposal
 }
 
-// Proposal 表示治理提案
+// Proposal represents a governance proposal
 type Proposal struct {
 	ID           string
 	Title        string
