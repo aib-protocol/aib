@@ -2,19 +2,19 @@ package oracle
 
 import "time"
 
-// CacheStats 缓存统计信息
+// CacheStats holds cache statistics
 type CacheStats struct {
-	// Hits 缓存命中次数
+	// Hits is the number of cache hits
 	Hits int64
-	// Misses 缓存未命中次数
+	// Misses is the number of cache misses
 	Misses int64
-	// HitRate 缓存命中率（百分比）
+	// HitRate is the cache hit rate (percentage)
 	HitRate float64
-	// TotalRequests 总请求数
+	// TotalRequests is the total number of requests
 	TotalRequests int64
 }
 
-// HitRatePercentage 返回命中率百分比
+// HitRatePercentage returns the hit rate percentage
 func (cs *CacheStats) HitRatePercentage() float64 {
 	if cs.TotalRequests == 0 {
 		return 0
@@ -22,19 +22,19 @@ func (cs *CacheStats) HitRatePercentage() float64 {
 	return float64(cs.Hits) / float64(cs.TotalRequests) * 100
 }
 
-// AlertLevel 告警级别
+// AlertLevel is the alert level
 type AlertLevel int
 
 const (
-	// AlertInfo 信息级别
+	// AlertInfo is the info level
 	AlertInfo AlertLevel = iota
-	// AlertWarning 警告级别
+	// AlertWarning is the warning level
 	AlertWarning
-	// AlertCritical 严重级别
+	// AlertCritical is the critical level
 	AlertCritical
 )
 
-// String 返回告警级别的字符串表示
+// String returns the string representation of the alert level
 func (al AlertLevel) String() string {
 	switch al {
 	case AlertInfo:
@@ -48,20 +48,20 @@ func (al AlertLevel) String() string {
 	}
 }
 
-// PriceAlert 价格偏差告警（用于回调）
+// PriceAlert is a price deviation alert (used for callbacks)
 type PriceAlert struct {
-	// Pair 交易对
+	// Pair is the trading pair
 	Pair TradingPair
-	// Level 告警级别
+	// Level is the alert level
 	Level AlertLevel
-	// CurrentPrice 当前价格
+	// CurrentPrice is the current price
 	CurrentPrice float64
-	// ReferencePrice 参考价格（历史平均）
+	// ReferencePrice is the reference price (historical average)
 	ReferencePrice float64
-	// Deviation 偏差百分比
+	// Deviation is the deviation percentage
 	Deviation float64
-	// Timestamp 告警时间戳
+	// Timestamp is the alert timestamp
 	Timestamp time.Time
-	// Message 告警消息
+	// Message is the alert message
 	Message string
 }

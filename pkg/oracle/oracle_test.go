@@ -559,18 +559,18 @@ func TestPriceOracle_GetPrice_FailoverWithPartialSourceFailures(t *testing.T) {
 	config.MinSources = 2
 	config.CacheTTL = 1 * time.Millisecond
 
-	// 两个健康源
+	// Two healthy sources
 	healthy1 := newMockSource("Healthy1", SourceTypeCEX, []TradingPair{PairBTCUSD})
 	healthy1.setPrice(PairBTCUSD, 50000.0, 1000.0)
 
 	healthy2 := newMockSource("Healthy2", SourceTypeDEX, []TradingPair{PairBTCUSD})
 	healthy2.setPrice(PairBTCUSD, 50200.0, 800.0)
 
-	// 一个不可用源（模拟故障）
+	// One unavailable source (simulating a failure)
 	down := newMockSource("Down", SourceTypeCEX, []TradingPair{PairBTCUSD})
 	down.available = false
 
-	// 一个可用但不返回该交易对的源（FetchPrice 失败路径）
+	// One source that is available but does not return this pair (FetchPrice failure path)
 	unsupported := newMockSource("Unsupported", SourceTypeCEX, []TradingPair{PairETHUSD})
 	unsupported.setPrice(PairETHUSD, 3000.0, 500.0)
 
@@ -608,9 +608,9 @@ func TestPriceOracle_GetPrice_FailoverAllSourcesFailed(t *testing.T) {
 func TestPriceOracle_OutlierFiltering_AllOutliersFallbackToRaw(t *testing.T) {
 	config := DefaultConfig()
 	config.MinSources = 1
-	config.DeviationThreshold = 0.0001 // 极小阈值，迫使大部分数据被过滤
+	config.DeviationThreshold = 0.0001 // Tiny threshold, forcing most data to be filtered out
 
-	// 使用分布更分散的价格，只有中间的 S2 不会被过滤
+	// Use more dispersed prices so only the middle source S2 is not filtered out
 	s1 := newMockSource("S1", SourceTypeCEX, []TradingPair{PairBTCUSD})
 	s2 := newMockSource("S2", SourceTypeDEX, []TradingPair{PairBTCUSD})
 	s3 := newMockSource("S3", SourceTypeStablecoin, []TradingPair{PairBTCUSD})
@@ -625,11 +625,11 @@ func TestPriceOracle_OutlierFiltering_AllOutliersFallbackToRaw(t *testing.T) {
 		t.Fatalf("GetPrice failed: %v", err)
 	}
 
-	// 中位数 (50000) 的源应该保留，其他被过滤
+	// The median (50000) source should be kept, others filtered out
 	if price.Sources != 1 {
 		t.Errorf("expected only median source (1) to remain after strict filtering, got %d", price.Sources)
 	}
-	// 价格应该是中位数价格
+	// The price should be the median price
 	if price.Price != 50000.0 {
 		t.Errorf("expected median price 50000.0, got %f", price.Price)
 	}
@@ -638,18 +638,18 @@ func TestPriceOracle_OutlierFiltering_AllOutliersFallbackToRaw(t *testing.T) {
 func TestPriceOracle_OutlierFiltering_SymmetricOutliers(t *testing.T) {
 	config := DefaultConfig()
 	config.MinSources = 1
-	config.DeviationThreshold = 5.0 // 5% 阈值
+	config.DeviationThreshold = 5.0 // 5% threshold
 
 	s1 := newMockSource("S1", SourceTypeCEX, []TradingPair{PairBTCUSD})
 	s2 := newMockSource("S2", SourceTypeDEX, []TradingPair{PairBTCUSD})
 	s3 := newMockSource("S3", SourceTypeStablecoin, []TradingPair{PairBTCUSD})
 	s4 := newMockSource("S4", SourceTypeCEX, []TradingPair{PairBTCUSD})
 
-	// S1 和 S4 是对称的离群值（超过 5% 阈值）
-	s1.setPrice(PairBTCUSD, 46000.0, 1000.0) // -8% 偏离
+	// S1 and S4 are symmetric outliers (exceeding the 5% threshold)
+	s1.setPrice(PairBTCUSD, 46000.0, 1000.0) // -8% deviation
 	s2.setPrice(PairBTCUSD, 49900.0, 1000.0)
 	s3.setPrice(PairBTCUSD, 50100.0, 1000.0)
-	s4.setPrice(PairBTCUSD, 54000.0, 1000.0) // +8% 偏离
+	s4.setPrice(PairBTCUSD, 54000.0, 1000.0) // +8% deviation
 
 	oracle, _ := NewPriceOracle([]PriceSource{s1, s2, s3, s4}, config)
 	price, err := oracle.GetPrice(PairBTCUSD)
@@ -657,11 +657,11 @@ func TestPriceOracle_OutlierFiltering_SymmetricOutliers(t *testing.T) {
 		t.Fatalf("GetPrice failed: %v", err)
 	}
 
-	// 离群值应被过滤，剩下 2 个源
+	// Outliers should be filtered out, leaving 2 sources
 	if price.Sources != 2 {
 		t.Errorf("expected 2 sources after filtering outliers, got %d", price.Sources)
 	}
-	// 价格应接近 50000
+	// The price should be close to 50000
 	if price.Price < 49900 || price.Price > 50100 {
 		t.Errorf("expected price near 50000, got %f", price.Price)
 	}
@@ -669,9 +669,9 @@ func TestPriceOracle_OutlierFiltering_SymmetricOutliers(t *testing.T) {
 
 func TestPriceOracle_ValidateSlippage_TooHighRejected(t *testing.T) {
 	config := DefaultConfig()
-	config.MaxSlippage = 1.0 // 严格限制
+	config.MaxSlippage = 1.0 // Strict limit
 
-	// 低流动性，触发高滑点
+	// Low liquidity, triggering high slippage
 	source := newMockSource("LowLiquidity", SourceTypeDEX, []TradingPair{PairBTCUSD})
 	source.setPrice(PairBTCUSD, 50000.0, 1.0)
 
@@ -697,7 +697,7 @@ func TestPriceOracle_ValidateSlippage_MinOutputProtection(t *testing.T) {
 		t.Fatalf("CalculateSlippage failed: %v", err)
 	}
 
-	// 设置高于实际输出的 minOutput，触发保护
+	// Set minOutput higher than the actual output to trigger protection
 	err = oracle.ValidateSlippage(PairBTCUSD, 1.0, result.ActualOutput+1.0)
 	if err == nil {
 		t.Fatal("expected slippage validation to fail due to min output protection")
@@ -1163,7 +1163,7 @@ func TestPriceOracle_SingleSource(t *testing.T) {
 }
 
 // ============================================================================
-// 缓存统计测试
+// Cache statistics tests
 // ============================================================================
 
 func TestPriceOracle_GetCacheStats(t *testing.T) {
@@ -1173,20 +1173,20 @@ func TestPriceOracle_GetCacheStats(t *testing.T) {
 
 	oracle, _ := NewPriceOracle([]PriceSource{source}, config)
 
-	// 初始状态
+	// Initial state
 	stats := oracle.GetCacheStats()
 	if stats.TotalRequests != 0 {
 		t.Errorf("initial total requests should be 0, got %d", stats.TotalRequests)
 	}
 
-	// 第一次请求 - 缓存未命中
+	// First request - cache miss
 	_, _ = oracle.GetPrice(PairBTCUSD)
 	stats = oracle.GetCacheStats()
 	if stats.Misses != 1 {
 		t.Errorf("expected 1 miss, got %d", stats.Misses)
 	}
 
-	// 第二次请求 - 缓存命中
+	// Second request - cache hit
 	_, _ = oracle.GetPrice(PairBTCUSD)
 	stats = oracle.GetCacheStats()
 	if stats.Hits != 1 {
@@ -1201,11 +1201,11 @@ func TestPriceOracle_ResetCacheStats(t *testing.T) {
 
 	oracle, _ := NewPriceOracle([]PriceSource{source}, config)
 
-	// 生成一些统计
+	// Generate some statistics
 	_, _ = oracle.GetPrice(PairBTCUSD)
 	_, _ = oracle.GetPrice(PairBTCUSD)
 
-	// 重置统计
+	// Reset statistics
 	oracle.ResetCacheStats()
 
 	stats := oracle.GetCacheStats()
@@ -1215,7 +1215,7 @@ func TestPriceOracle_ResetCacheStats(t *testing.T) {
 }
 
 // ============================================================================
-// 缓存预热测试
+// Cache warmup tests
 // ============================================================================
 
 func TestPriceOracle_Warmup(t *testing.T) {
@@ -1226,10 +1226,10 @@ func TestPriceOracle_Warmup(t *testing.T) {
 
 	oracle, _ := NewPriceOracle([]PriceSource{source}, config)
 
-	// 预热缓存
+	// Warm up the cache
 	oracle.Warmup()
 
-	// 后续请求应命中缓存
+	// Subsequent requests should hit the cache
 	oracle.ResetCacheStats()
 	_, _ = oracle.GetPrice(PairBTCUSD)
 	_, _ = oracle.GetPrice(PairETHUSD)
@@ -1248,7 +1248,7 @@ func TestPriceOracle_WarmupPairs(t *testing.T) {
 
 	oracle, _ := NewPriceOracle([]PriceSource{source}, config)
 
-	// 仅预热 BTC/USD
+	// Warm up only BTC/USD
 	oracle.WarmupPairs(PairBTCUSD)
 	oracle.ResetCacheStats()
 
@@ -1260,7 +1260,7 @@ func TestPriceOracle_WarmupPairs(t *testing.T) {
 }
 
 // ============================================================================
-// 价格历史测试
+// Price history tests
 // ============================================================================
 
 func TestPriceOracle_GetPriceHistory(t *testing.T) {
@@ -1270,13 +1270,13 @@ func TestPriceOracle_GetPriceHistory(t *testing.T) {
 
 	oracle, _ := NewPriceOracle([]PriceSource{source}, config)
 
-	// 初始状态 - 没有历史
+	// Initial state - no history
 	history := oracle.GetPriceHistory(PairBTCUSD)
 	if len(history) != 0 {
 		t.Errorf("initial history should be empty, got %d entries", len(history))
 	}
 
-	// 第一次获取价格 -> 添加到历史
+	// First price fetch -> added to history
 	_, _ = oracle.GetPrice(PairBTCUSD)
 	history = oracle.GetPriceHistory(PairBTCUSD)
 	if len(history) != 1 {
@@ -1290,13 +1290,13 @@ func TestPriceOracle_GetAveragePrice(t *testing.T) {
 
 	oracle, _ := NewPriceOracle([]PriceSource{source}, config)
 
-	// 没有历史时应该返回错误
+	// Should return an error when there is no history
 	_, err := oracle.GetAveragePrice(PairBTCUSD)
 	if err == nil {
 		t.Error("should error when no price history")
 	}
 
-	// 添加价格历史
+	// Add price history
 	prices := []float64{50000, 50100, 49900}
 	for _, p := range prices {
 		source.setPrice(PairBTCUSD, p, 1000.0)
@@ -1304,7 +1304,7 @@ func TestPriceOracle_GetAveragePrice(t *testing.T) {
 		_, _ = oracle.GetPrice(PairBTCUSD)
 	}
 
-	// 计算平均价格
+	// Calculate the average price
 	avg, err := oracle.GetAveragePrice(PairBTCUSD)
 	if err != nil {
 		t.Fatalf("GetAveragePrice failed: %v", err)
@@ -1317,7 +1317,7 @@ func TestPriceOracle_GetAveragePrice(t *testing.T) {
 }
 
 // ============================================================================
-// 价格偏差告警测试
+// Price deviation alert tests
 // ============================================================================
 
 func TestPriceOracle_AlertHandler(t *testing.T) {
@@ -1326,20 +1326,20 @@ func TestPriceOracle_AlertHandler(t *testing.T) {
 
 	oracle, _ := NewPriceOracle([]PriceSource{source}, config)
 
-	// 设置告警处理器
+	// Set the alert handler
 	alertReceived := false
 	oracle.SetDeviationAlertHandler(func(pair TradingPair, oldPrice, newPrice, deviation float64) {
 		alertReceived = true
 	})
 
-	// 添加稳定的价格历史
+	// Add stable price history
 	for i := 0; i < 5; i++ {
 		source.setPrice(PairBTCUSD, 50000.0, 1000.0)
 		oracle.InvalidateCache(PairBTCUSD)
 		_, _ = oracle.GetPrice(PairBTCUSD)
 	}
 
-	// 添加大幅偏离的价格（20% 偏离 > 10% 阈值）
+	// Add a sharply deviating price (20% deviation > 10% threshold)
 	source.setPrice(PairBTCUSD, 60000.0, 1000.0)
 	oracle.InvalidateCache(PairBTCUSD)
 	_, _ = oracle.GetPrice(PairBTCUSD)
@@ -1350,7 +1350,7 @@ func TestPriceOracle_AlertHandler(t *testing.T) {
 }
 
 // ============================================================================
-// 告警级别测试
+// Alert level tests
 // ============================================================================
 
 func TestAlertLevel_String(t *testing.T) {
@@ -1372,7 +1372,7 @@ func TestAlertLevel_String(t *testing.T) {
 }
 
 // ============================================================================
-// CacheStats 测试
+// CacheStats tests
 // ============================================================================
 
 func TestCacheStats_HitRatePercentage(t *testing.T) {
@@ -1387,7 +1387,7 @@ func TestCacheStats_HitRatePercentage(t *testing.T) {
 		t.Errorf("expected 70%% hit rate, got %f", hitRate)
 	}
 
-	// 测试零请求
+	// Test zero requests
 	stats2 := &CacheStats{
 		Hits:          0,
 		Misses:        0,
@@ -1401,7 +1401,7 @@ func TestCacheStats_HitRatePercentage(t *testing.T) {
 }
 
 // ============================================================================
-// DEX Price Source Tests (DEX 价格源测试)
+// DEX Price Source Tests
 // ============================================================================
 
 func TestUniswapSource_New(t *testing.T) {
@@ -1523,7 +1523,7 @@ func TestCurveSource_IsAvailable(t *testing.T) {
 }
 
 // ============================================================================
-// CEX Price Source Tests (CEX 价格源测试)
+// CEX Price Source Tests
 // ============================================================================
 
 func TestBinanceSource_New(t *testing.T) {
@@ -1622,7 +1622,7 @@ func TestKrakenSource_IsAvailable(t *testing.T) {
 }
 
 // ============================================================================
-// Stablecoin Source Tests (稳定币价格源测试)
+// Stablecoin Source Tests
 // ============================================================================
 
 func TestStablecoinSource_New(t *testing.T) {
@@ -1665,7 +1665,7 @@ func TestStablecoinSource_IsAvailable(t *testing.T) {
 }
 
 // ============================================================================
-// DefaultSources Tests (默认价格源测试)
+// DefaultSources Tests
 // ============================================================================
 
 func TestDefaultSources(t *testing.T) {

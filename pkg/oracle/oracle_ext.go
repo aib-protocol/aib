@@ -1,5 +1,5 @@
-// Package oracle 提供价格预言机的扩展功能
-// 包含缓存统计、预热、价格偏差检测等
+// Package oracle provides extended functionality for the price oracle
+// including cache statistics, warmup, price deviation detection, and more
 package oracle
 
 import (
@@ -10,10 +10,10 @@ import (
 )
 
 // ===========================================================================
-// 缓存统计功能
+// Cache statistics
 // ===========================================================================
 
-// GetCacheStats 返回缓存统计信息
+// GetCacheStats returns cache statistics
 func (o *PriceOracle) GetCacheStats() CacheStats {
 	hits := atomic.LoadInt64(&o.cacheHits)
 	misses := atomic.LoadInt64(&o.cacheMisses)
@@ -32,23 +32,23 @@ func (o *PriceOracle) GetCacheStats() CacheStats {
 	}
 }
 
-// ResetCacheStats 重置缓存统计
+// ResetCacheStats resets cache statistics
 func (o *PriceOracle) ResetCacheStats() {
 	atomic.StoreInt64(&o.cacheHits, 0)
 	atomic.StoreInt64(&o.cacheMisses, 0)
 }
 
 // ===========================================================================
-// 缓存预热功能
+// Cache warmup
 // ===========================================================================
 
-// Warmup 预热所有支持交易对的缓存
+// Warmup warms up the cache for all supported trading pairs
 func (o *PriceOracle) Warmup() {
 	pairs := o.GetSupportedPairs()
 	o.warmupPairs(pairs...)
 }
 
-// WarmupPairs 预热指定交易对的缓存
+// WarmupPairs warms up the cache for the specified trading pairs
 func (o *PriceOracle) WarmupPairs(pairs ...TradingPair) {
 	o.warmupPairs(pairs...)
 }
@@ -70,10 +70,10 @@ func (o *PriceOracle) warmupPairs(pairs ...TradingPair) {
 }
 
 // ===========================================================================
-// 价格历史查询
+// Price history queries
 // ===========================================================================
 
-// GetPriceHistory 获取指定交易对的价格历史
+// GetPriceHistory returns the price history for the specified trading pair
 func (o *PriceOracle) GetPriceHistory(pair TradingPair) []priceHistoryEntry {
 	o.priceHistoryMu.RLock()
 	defer o.priceHistoryMu.RUnlock()
@@ -83,13 +83,13 @@ func (o *PriceOracle) GetPriceHistory(pair TradingPair) []priceHistoryEntry {
 		return nil
 	}
 
-	// 返回副本
+	// Return a copy
 	result := make([]priceHistoryEntry, len(history))
 	copy(result, history)
 	return result
 }
 
-// GetAveragePrice 获取历史平均价格
+// GetAveragePrice returns the average historical price
 func (o *PriceOracle) GetAveragePrice(pair TradingPair) (float64, error) {
 	history := o.GetPriceHistory(pair)
 
@@ -106,22 +106,22 @@ func (o *PriceOracle) GetAveragePrice(pair TradingPair) (float64, error) {
 }
 
 // ===========================================================================
-// 价格偏差检测
+// Price deviation detection
 // ===========================================================================
 
-// CheckPriceDeviation 手动检查指定交易对的价格偏差
+// CheckPriceDeviation manually checks the price deviation for the specified trading pair
 func (o *PriceOracle) CheckPriceDeviation(pair TradingPair) (deviation float64, referencePrice float64, hasAlert bool, alertMessage string) {
 	history := o.GetPriceHistory(pair)
 
 	if len(history) < 5 {
-		return 0, 0, false, "历史数据不足"
+		return 0, 0, false, "insufficient historical data"
 	}
 
 	currentPrice, err := o.GetCachedPrice(pair)
 	if err != nil {
 		currentPrice, err = o.GetPrice(pair)
 		if err != nil {
-			return 0, 0, false, "无法获取当前价格"
+			return 0, 0, false, "unable to fetch current price"
 		}
 	}
 
@@ -132,29 +132,29 @@ func (o *PriceOracle) CheckPriceDeviation(pair TradingPair) (deviation float64, 
 	avgPrice := sum / float64(len(history))
 
 	if avgPrice <= 0 {
-		return 0, 0, false, "参考价格无效"
+		return 0, 0, false, "invalid reference price"
 	}
 
 	deviation = math.Abs(currentPrice.Price-avgPrice) / avgPrice * 100
 	referencePrice = avgPrice
-	threshold := 10.0 // 默认 10% 阈值
+	threshold := 10.0 // default 10% threshold
 
 	if threshold > 0 && deviation > threshold {
 		hasAlert = true
-		alertMessage = fmt.Sprintf("价格偏差 %.2f%% 超过阈值 %.2f%%", deviation, threshold)
+		alertMessage = fmt.Sprintf("price deviation %.2f%% exceeds threshold %.2f%%", deviation, threshold)
 	}
 
 	return deviation, referencePrice, hasAlert, alertMessage
 }
 
-// SetDeviationAlertHandler 设置价格偏差告警处理器
+// SetDeviationAlertHandler sets the price deviation alert handler
 func (o *PriceOracle) SetDeviationAlertHandler(handler func(pair TradingPair, oldPrice, newPrice, deviation float64)) {
 	o.alertHandlerMu.Lock()
 	defer o.alertHandlerMu.Unlock()
 	o.alertHandler = &simpleAlertHandler{fn: handler}
 }
 
-// simpleAlertHandler 简单的告警处理器实现
+// simpleAlertHandler is a simple alert handler implementation
 type simpleAlertHandler struct {
 	fn func(pair TradingPair, oldPrice, newPrice, deviation float64)
 }
