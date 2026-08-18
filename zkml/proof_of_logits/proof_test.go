@@ -8,10 +8,10 @@ import (
 )
 
 // ============================================================================
-// 1. 证明生成测试
+// 1. Proof generation tests
 // ============================================================================
 
-// TestProofGeneration_BasicInference 验证通过推理引擎生成证明的基本流程
+// TestProofGeneration_BasicInference verifies the basic flow of generating a proof via the inference engine
 func TestProofGeneration_BasicInference(t *testing.T) {
 	engine := NewInferenceEngine()
 
@@ -27,48 +27,48 @@ func TestProofGeneration_BasicInference(t *testing.T) {
 
 	resp, proof, err := engine.InferenceWithProof(req)
 	if err != nil {
-		t.Fatalf("InferenceWithProof 失败: %v", err)
+		t.Fatalf("InferenceWithProof failed: %v", err)
 	}
 
-	// 验证响应不为空
+	// Verify the response is non-nil
 	if resp == nil {
-		t.Fatal("推理响应为 nil")
+		t.Fatal("inference response is nil")
 	}
 	if resp.Text == "" {
-		t.Fatal("推理响应文本为空")
+		t.Fatal("inference response text is empty")
 	}
 	if resp.Logits == nil {
-		t.Fatal("推理响应 logits 为 nil")
+		t.Fatal("inference response logits is nil")
 	}
 
-	// 验证证明结构完整
+	// Verify the proof structure is complete
 	if proof == nil {
-		t.Fatal("生成的证明为 nil")
+		t.Fatal("generated proof is nil")
 	}
 	if proof.Type == "" {
-		t.Error("证明类型为空")
+		t.Error("proof type is empty")
 	}
 	if len(proof.ModelID) == 0 {
-		t.Error("证明的 ModelID 为空")
+		t.Error("proof ModelID is empty")
 	}
 	if proof.Timestamp == 0 {
-		t.Error("证明时间戳为零")
+		t.Error("proof timestamp is zero")
 	}
 	if len(proof.ProofData) == 0 {
-		t.Error("证明数据为空")
+		t.Error("proof data is empty")
 	}
 
-	// 验证证明时间戳合理（不在未来超过 5 分钟）
+	// Verify the proof timestamp is reasonable (not more than 5 minutes in the future)
 	now := time.Now().Unix()
 	if proof.Timestamp > now+300 {
-		t.Errorf("证明时间戳在未来: proof=%d, now=%d", proof.Timestamp, now)
+		t.Errorf("proof timestamp is in the future: proof=%d, now=%d", proof.Timestamp, now)
 	}
 	if proof.Timestamp < now-60 {
-		t.Errorf("证明时间戳过旧: proof=%d, now=%d", proof.Timestamp, now)
+		t.Errorf("proof timestamp is too old: proof=%d, now=%d", proof.Timestamp, now)
 	}
 }
 
-// TestProofGeneration_MultipleProofs 验证连续生成多个证明时每个都是独立的
+// TestProofGeneration_MultipleProofs verifies that each of several consecutive proofs is independent
 func TestProofGeneration_MultipleProofs(t *testing.T) {
 	engine := NewInferenceEngine()
 	prompts := []string{
@@ -91,31 +91,31 @@ func TestProofGeneration_MultipleProofs(t *testing.T) {
 
 		_, proof, err := engine.InferenceWithProof(req)
 		if err != nil {
-			t.Fatalf("第 %d 次 InferenceWithProof 失败: %v", i+1, err)
+			t.Fatalf("InferenceWithProof failed on iteration %d: %v", i+1, err)
 		}
 		if proof == nil {
-			t.Fatalf("第 %d 次生成的证明为 nil", i+1)
+			t.Fatalf("proof generated on iteration %d is nil", i+1)
 		}
 		proofs = append(proofs, proof)
 	}
 
-	// 验证生成了正确数量的证明
+	// Verify the correct number of proofs were generated
 	if len(proofs) != len(prompts) {
-		t.Fatalf("生成的证明数量不匹配: got=%d, want=%d", len(proofs), len(prompts))
+		t.Fatalf("generated proof count mismatch: got=%d, want=%d", len(proofs), len(prompts))
 	}
 
-	// 验证每个证明都有独立的数据
+	// Verify each proof has independent data
 	for i := 0; i < len(proofs); i++ {
 		if proofs[i].Type == "" {
-			t.Errorf("第 %d 个证明类型为空", i+1)
+			t.Errorf("proof %d type is empty", i+1)
 		}
 		if len(proofs[i].ProofData) == 0 {
-			t.Errorf("第 %d 个证明数据为空", i+1)
+			t.Errorf("proof %d data is empty", i+1)
 		}
 	}
 }
 
-// TestProofGeneration_WitnessGeneration 测试 witness 数据生成
+// TestProofGeneration_WitnessGeneration tests witness data generation
 func TestProofGeneration_WitnessGeneration(t *testing.T) {
 	modelHash := sha256.Sum256([]byte("test-model-for-witness"))
 	promptHash := sha256.Sum256([]byte("explain zero knowledge proofs"))
@@ -124,30 +124,30 @@ func TestProofGeneration_WitnessGeneration(t *testing.T) {
 
 	circuit := NewVerifierCircuit(modelHash[:], promptHash[:], outputHash[:], logitsHash[:])
 
-	// 使用 LogitsExtractor 提取真实的 logits
+	// Use LogitsExtractor to extract real logits
 	extractor := NewLogitsExtractor()
 	logits, err := extractor.ExtractLogits(nil, modelHash[:], promptHash[:])
 	if err != nil {
-		t.Fatalf("提取 logits 失败: %v", err)
+		t.Fatalf("failed to extract logits: %v", err)
 	}
 
-	// 生成 witness
+	// Generate witness
 	witness, err := circuit.GenerateWitness(logits, []byte("model-weights"))
 	if err != nil {
-		t.Fatalf("生成 witness 失败: %v", err)
+		t.Fatalf("failed to generate witness: %v", err)
 	}
 
 	if len(witness) == 0 {
-		t.Fatal("witness 数据为空")
+		t.Fatal("witness data is empty")
 	}
 
-	// witness 应该是有效的 JSON
+	// witness should be valid JSON
 	if witness[0] != '{' {
-		t.Error("witness 数据不是有效的 JSON 格式")
+		t.Error("witness data is not valid JSON")
 	}
 }
 
-// TestProofGeneration_PromptHashConsistency 验证证明中的 prompt hash 与输入一致
+// TestProofGeneration_PromptHashConsistency verifies the prompt hash in the proof matches the input
 func TestProofGeneration_PromptHashConsistency(t *testing.T) {
 	engine := NewInferenceEngine()
 
@@ -164,21 +164,21 @@ func TestProofGeneration_PromptHashConsistency(t *testing.T) {
 
 	resp, proof, err := engine.InferenceWithProof(req)
 	if err != nil {
-		t.Fatalf("InferenceWithProof 失败: %v", err)
+		t.Fatalf("InferenceWithProof failed: %v", err)
 	}
 
-	// 验证证明的输出哈希与响应文本的哈希一致
+	// Verify the proof output hash matches the hash of the response text
 	expectedOutputHash := sha256.Sum256([]byte(resp.Text))
 	if proof.OutputHash != expectedOutputHash {
-		t.Error("证明的 OutputHash 与响应文本哈希不一致")
+		t.Error("proof OutputHash does not match the response text hash")
 	}
 }
 
 // ============================================================================
-// 2. 证明验证测试
+// 2. Proof verification tests
 // ============================================================================
 
-// TestProofVerification_ValidProof 验证有效证明能通过验证
+// TestProofVerification_ValidProof verifies that a valid proof passes verification
 func TestProofVerification_ValidProof(t *testing.T) {
 	engine := NewInferenceEngine()
 
@@ -194,25 +194,25 @@ func TestProofVerification_ValidProof(t *testing.T) {
 
 	resp, proof, err := engine.InferenceWithProof(req)
 	if err != nil {
-		t.Fatalf("InferenceWithProof 失败: %v", err)
+		t.Fatalf("InferenceWithProof failed: %v", err)
 	}
 
 	valid, err := engine.VerifyProof(proof, req, resp)
 	if err != nil {
-		t.Fatalf("VerifyProof 返回错误: %v", err)
+		t.Fatalf("VerifyProof returned error: %v", err)
 	}
 	if !valid {
-		t.Error("有效证明应当通过验证")
+		t.Error("valid proof should pass verification")
 	}
 }
 
-// TestProofVerification_CircuitVerify 测试 VerifierCircuit 的证明验证
+// TestProofVerification_CircuitVerify tests proof verification by VerifierCircuit
 func TestProofVerification_CircuitVerify(t *testing.T) {
 	modelHash := sha256.Sum256([]byte("circuit-verify-model"))
 
 	circuit := NewVerifierCircuit(modelHash[:], nil, nil, nil)
 
-	// 创建与 circuit 匹配的证明
+	// Create a proof matching the circuit
 	proof := &Proof{
 		Type:      "placeholder",
 		ModelID:   modelHash[:],
@@ -222,14 +222,14 @@ func TestProofVerification_CircuitVerify(t *testing.T) {
 
 	valid, err := circuit.VerifyProof(proof)
 	if err != nil {
-		t.Fatalf("电路验证失败: %v", err)
+		t.Fatalf("circuit verification failed: %v", err)
 	}
 	if !valid {
-		t.Error("匹配的证明应当通过电路验证")
+		t.Error("matching proof should pass circuit verification")
 	}
 }
 
-// TestProofVerification_CircuitModelMismatch 验证模型哈希不匹配时验证失败
+// TestProofVerification_CircuitModelMismatch verifies verification fails when the model hash mismatches
 func TestProofVerification_CircuitModelMismatch(t *testing.T) {
 	modelHash1 := sha256.Sum256([]byte("model-alpha"))
 	modelHash2 := sha256.Sum256([]byte("model-beta"))
@@ -245,14 +245,14 @@ func TestProofVerification_CircuitModelMismatch(t *testing.T) {
 
 	valid, err := circuit.VerifyProof(proof)
 	if err == nil {
-		t.Error("模型哈希不匹配应当返回错误")
+		t.Error("model hash mismatch should return an error")
 	}
 	if valid {
-		t.Error("模型哈希不匹配的证明不应通过验证")
+		t.Error("proof with mismatched model hash should not pass verification")
 	}
 }
 
-// TestProofVerification_ConsistencyCheck 测试 logits 一致性验证
+// TestProofVerification_ConsistencyCheck tests logits consistency verification
 func TestProofVerification_ConsistencyCheck(t *testing.T) {
 	verifier := NewLogitsConsistencyVerifier()
 	extractor := NewLogitsExtractor()
@@ -263,20 +263,20 @@ func TestProofVerification_ConsistencyCheck(t *testing.T) {
 
 	logits, err := extractor.ExtractLogits(nil, modelID, promptHash[:])
 	if err != nil {
-		t.Fatalf("提取 logits 失败: %v", err)
+		t.Fatalf("failed to extract logits: %v", err)
 	}
 
-	// 完整一致性检查
+	// Full consistency check
 	valid, err := verifier.VerifyFullConsistency(logits, prompt, "generated output text", modelID)
 	if err != nil {
-		t.Fatalf("完整一致性验证失败: %v", err)
+		t.Fatalf("full consistency verification failed: %v", err)
 	}
 	if !valid {
-		t.Error("一致的 logits 应当通过完整验证")
+		t.Error("consistent logits should pass full verification")
 	}
 }
 
-// TestProofVerification_SimilarityCheck 测试相同输入产生的 logits 相似度
+// TestProofVerification_SimilarityCheck tests similarity of logits produced from the same input
 func TestProofVerification_SimilarityCheck(t *testing.T) {
 	simVerifier := NewLogitsSimilarityVerifier()
 	extractor := NewLogitsExtractor()
@@ -286,10 +286,10 @@ func TestProofVerification_SimilarityCheck(t *testing.T) {
 
 	logits1, err := extractor.ExtractLogits(nil, modelID, promptHash[:])
 	if err != nil {
-		t.Fatalf("提取 logits1 失败: %v", err)
+		t.Fatalf("failed to extract logits1: %v", err)
 	}
 
-	// 创建完全相同的 logits 副本
+	// Create an identical copy of the logits
 	logits2 := &Logits{
 		Values:     make([]float64, len(logits1.Values)),
 		TokenIDs:   make([]int, len(logits1.TokenIDs)),
@@ -301,32 +301,32 @@ func TestProofVerification_SimilarityCheck(t *testing.T) {
 	copy(logits2.Values, logits1.Values)
 	copy(logits2.TokenIDs, logits1.TokenIDs)
 
-	// 完全相同的 logits 相似度应为 1.0
+	// Identical logits should have similarity 1.0
 	similarity, err := simVerifier.ComputeSimilarity(logits1, logits2)
 	if err != nil {
-		t.Fatalf("计算相似度失败: %v", err)
+		t.Fatalf("failed to compute similarity: %v", err)
 	}
 	if similarity != 1.0 {
-		t.Errorf("完全相同的 logits 相似度应为 1.0, 实际: %f", similarity)
+		t.Errorf("identical logits similarity should be 1.0, got: %f", similarity)
 	}
 
-	// 测试拷贝检测 - 完全相同的 logits 应被检测为拷贝
+	// Test copy detection - identical logits should be detected as a copy
 	isCopy, maxSim, idx, err := simVerifier.DetectCopying(logits1, []*Logits{logits2})
 	if err != nil {
-		t.Fatalf("拷贝检测失败: %v", err)
+		t.Fatalf("copy detection failed: %v", err)
 	}
 	if !isCopy {
-		t.Error("完全相同的 logits 应被检测为拷贝")
+		t.Error("identical logits should be detected as a copy")
 	}
 	if maxSim < 0.95 {
-		t.Errorf("拷贝检测相似度过低: %f", maxSim)
+		t.Errorf("copy detection similarity too low: %f", maxSim)
 	}
 	if idx != 0 {
-		t.Errorf("最相似索引应为 0, 实际: %d", idx)
+		t.Errorf("most similar index should be 0, got: %d", idx)
 	}
 }
 
-// TestProofVerification_QuantizedLogits 验证量化后的 logits 正确性
+// TestProofVerification_QuantizedLogits verifies correctness of quantized logits
 func TestProofVerification_QuantizedLogits(t *testing.T) {
 	extractor := NewLogitsExtractor()
 	modelID := []byte("quantize-model")
@@ -334,31 +334,31 @@ func TestProofVerification_QuantizedLogits(t *testing.T) {
 
 	logits, err := extractor.ExtractLogits(nil, modelID, promptHash[:])
 	if err != nil {
-		t.Fatalf("提取 logits 失败: %v", err)
+		t.Fatalf("failed to extract logits: %v", err)
 	}
 
-	// 测试三种量化级别
+	// Test three quantization levels
 	quantizationBits := []int{8, 16, 32}
 	for _, bits := range quantizationBits {
 		extractor.SetQuantization(bits)
 		quantized, err := extractor.QuantizeLogits(logits)
 		if err != nil {
-			t.Fatalf("%d-bit 量化失败: %v", bits, err)
+			t.Fatalf("%d-bit quantization failed: %v", bits, err)
 		}
 		if len(quantized) != len(logits.Values) {
-			t.Errorf("%d-bit 量化后长度不匹配: got=%d, want=%d", bits, len(quantized), len(logits.Values))
+			t.Errorf("%d-bit quantized length mismatch: got=%d, want=%d", bits, len(quantized), len(logits.Values))
 		}
 
-		// 验证量化值在合理范围内
+		// Verify quantized values are in a reasonable range
 		for j, v := range quantized {
 			switch bits {
 			case 8:
 				if v < 0 || v > 255 {
-					t.Errorf("8-bit 量化值超出范围 [0,255]: index=%d, value=%d", j, v)
+					t.Errorf("8-bit quantized value out of range [0,255]: index=%d, value=%d", j, v)
 				}
 			case 16:
 				if v < math.MinInt16 || v > math.MaxInt16 {
-					t.Errorf("16-bit 量化值超出范围: index=%d, value=%d", j, v)
+					t.Errorf("16-bit quantized value out of range: index=%d, value=%d", j, v)
 				}
 			}
 		}
@@ -366,10 +366,10 @@ func TestProofVerification_QuantizedLogits(t *testing.T) {
 }
 
 // ============================================================================
-// 3. 证明错误处理测试
+// 3. Proof error handling tests
 // ============================================================================
 
-// TestProofError_NilProof 测试 nil 证明的错误处理
+// TestProofError_NilProof tests error handling for a nil proof
 func TestProofError_NilProof(t *testing.T) {
 	engine := NewInferenceEngine()
 	req := &InferenceRequest{
@@ -383,19 +383,19 @@ func TestProofError_NilProof(t *testing.T) {
 	}
 	resp, err := engine.Inference(req)
 	if err != nil {
-		t.Fatalf("Inference 失败: %v", err)
+		t.Fatalf("Inference failed: %v", err)
 	}
 
 	valid, err := engine.VerifyProof(nil, req, resp)
 	if err == nil {
-		t.Error("nil 证明应当返回错误")
+		t.Error("nil proof should return an error")
 	}
 	if valid {
-		t.Error("nil 证明不应通过验证")
+		t.Error("nil proof should not pass verification")
 	}
 }
 
-// TestProofError_NilRequest 测试 nil 请求的错误处理
+// TestProofError_NilRequest tests error handling for a nil request
 func TestProofError_NilRequest(t *testing.T) {
 	engine := NewInferenceEngine()
 
@@ -408,14 +408,14 @@ func TestProofError_NilRequest(t *testing.T) {
 
 	valid, err := engine.VerifyProof(proof, nil, nil)
 	if err == nil {
-		t.Error("nil 请求应当返回错误")
+		t.Error("nil request should return an error")
 	}
 	if valid {
-		t.Error("nil 请求不应通过验证")
+		t.Error("nil request should not pass verification")
 	}
 }
 
-// TestProofError_EmptyPromptInference 测试空 prompt 推理的错误处理
+// TestProofError_EmptyPromptInference tests error handling for inference with an empty prompt
 func TestProofError_EmptyPromptInference(t *testing.T) {
 	engine := NewInferenceEngine()
 
@@ -431,11 +431,11 @@ func TestProofError_EmptyPromptInference(t *testing.T) {
 
 	_, _, err := engine.InferenceWithProof(req)
 	if err == nil {
-		t.Error("空 prompt 应当返回错误")
+		t.Error("empty prompt should return an error")
 	}
 }
 
-// TestProofError_EmptyModelID 测试空 ModelID 推理的错误处理
+// TestProofError_EmptyModelID tests error handling for inference with an empty ModelID
 func TestProofError_EmptyModelID(t *testing.T) {
 	engine := NewInferenceEngine()
 
@@ -451,11 +451,11 @@ func TestProofError_EmptyModelID(t *testing.T) {
 
 	_, _, err := engine.InferenceWithProof(req)
 	if err == nil {
-		t.Error("空 ModelID 应当返回错误")
+		t.Error("empty ModelID should return an error")
 	}
 }
 
-// TestProofError_InvalidTemperature 测试无效温度参数的错误处理
+// TestProofError_InvalidTemperature tests error handling for invalid temperature parameters
 func TestProofError_InvalidTemperature(t *testing.T) {
 	engine := NewInferenceEngine()
 
@@ -463,8 +463,8 @@ func TestProofError_InvalidTemperature(t *testing.T) {
 		name        string
 		temperature float64
 	}{
-		{"负温度", -0.1},
-		{"过高温度", 2.5},
+		{"negative temperature", -0.1},
+		{"temperature too high", 2.5},
 	}
 
 	for _, tc := range testCases {
@@ -481,13 +481,13 @@ func TestProofError_InvalidTemperature(t *testing.T) {
 
 			_, _, err := engine.InferenceWithProof(req)
 			if err == nil {
-				t.Errorf("温度 %.1f 应当返回错误", tc.temperature)
+				t.Errorf("temperature %.1f should return an error", tc.temperature)
 			}
 		})
 	}
 }
 
-// TestProofError_InvalidTopP 测试无效 TopP 参数的错误处理
+// TestProofError_InvalidTopP tests error handling for invalid TopP parameters
 func TestProofError_InvalidTopP(t *testing.T) {
 	engine := NewInferenceEngine()
 
@@ -495,8 +495,8 @@ func TestProofError_InvalidTopP(t *testing.T) {
 		name string
 		topP float64
 	}{
-		{"负 TopP", -0.1},
-		{"过高 TopP", 1.5},
+		{"negative TopP", -0.1},
+		{"TopP too high", 1.5},
 	}
 
 	for _, tc := range testCases {
@@ -513,36 +513,36 @@ func TestProofError_InvalidTopP(t *testing.T) {
 
 			_, _, err := engine.InferenceWithProof(req)
 			if err == nil {
-				t.Errorf("TopP %.1f 应当返回错误", tc.topP)
+				t.Errorf("TopP %.1f should return an error", tc.topP)
 			}
 		})
 	}
 }
 
-// TestProofError_NilInferenceRequest 测试 nil 推理请求的错误处理
+// TestProofError_NilInferenceRequest tests error handling for a nil inference request
 func TestProofError_NilInferenceRequest(t *testing.T) {
 	engine := NewInferenceEngine()
 
 	_, _, err := engine.InferenceWithProof(nil)
 	if err == nil {
-		t.Error("nil 请求应当返回错误")
+		t.Error("nil request should return an error")
 	}
 }
 
-// TestProofError_CircuitNilProof 测试电路验证 nil 证明
+// TestProofError_CircuitNilProof tests circuit verification with a nil proof
 func TestProofError_CircuitNilProof(t *testing.T) {
 	circuit := NewVerifierCircuit(nil, nil, nil, nil)
 
 	valid, err := circuit.VerifyProof(nil)
 	if err == nil {
-		t.Error("nil 证明应当返回错误")
+		t.Error("nil proof should return an error")
 	}
 	if valid {
-		t.Error("nil 证明不应通过电路验证")
+		t.Error("nil proof should not pass circuit verification")
 	}
 }
 
-// TestProofError_CircuitEmptyProofData 测试非 placeholder 类型但无证明数据
+// TestProofError_CircuitEmptyProofData tests a non-placeholder type with no proof data
 func TestProofError_CircuitEmptyProofData(t *testing.T) {
 	circuit := NewVerifierCircuit(nil, nil, nil, nil)
 
@@ -550,50 +550,50 @@ func TestProofError_CircuitEmptyProofData(t *testing.T) {
 		Type:      "zkml",
 		ModelID:   []byte("some-model"),
 		Timestamp: time.Now().Unix(),
-		ProofData: []byte{}, // 空证明数据
+		ProofData: []byte{}, // empty proof data
 	}
 
 	valid, err := circuit.VerifyProof(proof)
 	if err == nil {
-		t.Error("非 placeholder 类型空证明数据应当返回错误")
+		t.Error("non-placeholder type with empty proof data should return an error")
 	}
 	if valid {
-		t.Error("空证明数据不应通过验证")
+		t.Error("empty proof data should not pass verification")
 	}
 }
 
-// TestProofError_WitnessNilLogits 测试 witness 生成时 nil logits
+// TestProofError_WitnessNilLogits tests nil logits during witness generation
 func TestProofError_WitnessNilLogits(t *testing.T) {
 	circuit := NewVerifierCircuit(nil, nil, nil, nil)
 
 	_, err := circuit.GenerateWitness(nil, []byte("weights"))
 	if err == nil {
-		t.Error("nil logits 应当在 witness 生成时返回错误")
+		t.Error("nil logits should return an error during witness generation")
 	}
 }
 
-// TestProofError_QuantizeNilLogits 测试量化 nil logits
+// TestProofError_QuantizeNilLogits tests quantizing nil logits
 func TestProofError_QuantizeNilLogits(t *testing.T) {
 	extractor := NewLogitsExtractor()
 
 	_, err := extractor.QuantizeLogits(nil)
 	if err == nil {
-		t.Error("nil logits 应当在量化时返回错误")
+		t.Error("nil logits should return an error during quantization")
 	}
 }
 
-// TestProofError_QuantizeEmptyLogits 测试量化空 logits
+// TestProofError_QuantizeEmptyLogits tests quantizing empty logits
 func TestProofError_QuantizeEmptyLogits(t *testing.T) {
 	extractor := NewLogitsExtractor()
 
 	emptyLogits := &Logits{Values: []float64{}}
 	_, err := extractor.QuantizeLogits(emptyLogits)
 	if err == nil {
-		t.Error("空 logits 应当在量化时返回错误")
+		t.Error("empty logits should return an error during quantization")
 	}
 }
 
-// TestProofError_ConsistencyNilLogits 测试一致性验证 nil logits
+// TestProofError_ConsistencyNilLogits tests consistency verification with nil logits
 func TestProofError_ConsistencyNilLogits(t *testing.T) {
 	verifier := NewLogitsConsistencyVerifier()
 
@@ -617,24 +617,24 @@ func TestProofError_ConsistencyNilLogits(t *testing.T) {
 			if tc.logits == nil && tc.output != "" {
 				_, err := verifier.VerifyLogitsToOutput(tc.logits, tc.output)
 				if err == nil {
-					t.Error("应当返回错误")
+					t.Error("should return an error")
 				}
 			}
 			if tc.logits == nil && tc.prompt != "" {
 				_, err := verifier.VerifyLogitsToPrompt(tc.logits, tc.prompt)
 				if err == nil {
-					t.Error("应当返回错误")
+					t.Error("should return an error")
 				}
 			}
 			if tc.logits == nil && len(tc.model) > 0 {
 				_, err := verifier.VerifyLogitsToModel(tc.logits, tc.model)
 				if err == nil {
-					t.Error("应当返回错误")
+					t.Error("should return an error")
 				}
 			}
 			if tc.logits != nil && tc.prompt == "" && tc.output != "" {
 				_, err := verifier.VerifyLogitsToOutput(tc.logits, tc.output)
-				// 这里 logits 有值但只有一个元素，可能会因 "all same" 检查失败
+				// Here logits have values but only one element, which may fail the "all same" check
 				_ = err
 			}
 			if tc.logits != nil && tc.output == "" && tc.prompt != "" {
@@ -644,35 +644,35 @@ func TestProofError_ConsistencyNilLogits(t *testing.T) {
 			if tc.logits != nil && len(tc.model) == 0 {
 				_, err := verifier.VerifyLogitsToModel(tc.logits, tc.model)
 				if err == nil {
-					t.Error("空 modelID 应当返回错误")
+					t.Error("empty modelID should return an error")
 				}
 			}
 		})
 	}
 }
 
-// TestProofError_SimilarityNilLogits 测试相似度计算 nil logits
+// TestProofError_SimilarityNilLogits tests similarity computation with nil logits
 func TestProofError_SimilarityNilLogits(t *testing.T) {
 	verifier := NewLogitsSimilarityVerifier()
 
 	_, err := verifier.ComputeSimilarity(nil, nil)
 	if err == nil {
-		t.Error("nil logits 应当在相似度计算时返回错误")
+		t.Error("nil logits should return an error during similarity computation")
 	}
 
 	logits := &Logits{Values: []float64{1.0, 2.0}}
 	_, err = verifier.ComputeSimilarity(logits, nil)
 	if err == nil {
-		t.Error("一个 nil logits 应当返回错误")
+		t.Error("a single nil logits should return an error")
 	}
 
 	_, err = verifier.ComputeSimilarity(nil, logits)
 	if err == nil {
-		t.Error("一个 nil logits 应当返回错误")
+		t.Error("a single nil logits should return an error")
 	}
 }
 
-// TestProofError_SimilarityLengthMismatch 测试长度不匹配的 logits 相似度
+// TestProofError_SimilarityLengthMismatch tests similarity of logits with mismatched lengths
 func TestProofError_SimilarityLengthMismatch(t *testing.T) {
 	verifier := NewLogitsSimilarityVerifier()
 
@@ -681,31 +681,31 @@ func TestProofError_SimilarityLengthMismatch(t *testing.T) {
 
 	_, err := verifier.ComputeSimilarity(logits1, logits2)
 	if err == nil {
-		t.Error("长度不匹配的 logits 应当返回错误")
+		t.Error("logits with mismatched lengths should return an error")
 	}
 }
 
-// TestProofError_DetectCopyingNilLogits 测试拷贝检测中的 nil logits
+// TestProofError_DetectCopyingNilLogits tests nil logits in copy detection
 func TestProofError_DetectCopyingNilLogits(t *testing.T) {
 	verifier := NewLogitsSimilarityVerifier()
 
 	_, _, _, err := verifier.DetectCopying(nil, []*Logits{})
 	if err == nil {
-		t.Error("nil logits 应当在拷贝检测时返回错误")
+		t.Error("nil logits should return an error during copy detection")
 	}
 }
 
-// TestProofError_PromptHashMismatch 测试 prompt hash 不匹配的验证
+// TestProofError_PromptHashMismatch tests verification with mismatched prompt hash
 func TestProofError_PromptHashMismatch(t *testing.T) {
 	verifier := NewLogitsVerifier()
 	generator := NewRandomInputGenerator()
 
 	challenge, err := generator.GenerateChallenge(60, 10)
 	if err != nil {
-		t.Fatalf("生成 challenge 失败: %v", err)
+		t.Fatalf("failed to generate challenge: %v", err)
 	}
 
-	// 创建 logits 但使用不同的 prompt hash
+	// Create logits but with a different prompt hash
 	wrongPromptHash := sha256.Sum256([]byte("completely different prompt"))
 	logits := &Logits{
 		Values:     []float64{5.0, 3.5, 2.0, -1.0, -2.0},
@@ -718,18 +718,18 @@ func TestProofError_PromptHashMismatch(t *testing.T) {
 
 	valid, err := verifier.VerifyLogits(logits, challenge)
 	if err == nil || valid {
-		t.Error("prompt hash 不匹配应当验证失败")
+		t.Error("mismatched prompt hash should fail verification")
 	}
 }
 
-// TestProofError_FutureTimestamp 测试未来时间戳的 logits
+// TestProofError_FutureTimestamp tests logits with a future timestamp
 func TestProofError_FutureTimestamp(t *testing.T) {
 	verifier := NewLogitsVerifier()
 	generator := NewRandomInputGenerator()
 
 	challenge, err := generator.GenerateChallenge(60, 10)
 	if err != nil {
-		t.Fatalf("生成 challenge 失败: %v", err)
+		t.Fatalf("failed to generate challenge: %v", err)
 	}
 
 	promptHash := sha256.Sum256([]byte(challenge.Prompt))
@@ -737,25 +737,25 @@ func TestProofError_FutureTimestamp(t *testing.T) {
 		Values:     []float64{5.0, 3.5, 2.0, -1.0, -2.0},
 		TokenIDs:   []int{0, 1, 2, 3, 4},
 		TopK:       3,
-		Timestamp:  time.Now().Unix() + 600, // 10 分钟后，超过 5 分钟容差
+		Timestamp:  time.Now().Unix() + 600, // 10 minutes ahead, exceeding the 5-minute tolerance
 		ModelID:    []byte("test-model"),
 		PromptHash: promptHash[:],
 	}
 
 	valid, err := verifier.VerifyLogits(logits, challenge)
 	if err == nil || valid {
-		t.Error("未来时间戳的 logits 应当验证失败")
+		t.Error("logits with a future timestamp should fail verification")
 	}
 }
 
-// TestProofError_AllNaNLogits 测试全 NaN 值的 logits
+// TestProofError_AllNaNLogits tests all-NaN logits
 func TestProofError_AllNaNLogits(t *testing.T) {
 	verifier := NewLogitsVerifier()
 	generator := NewRandomInputGenerator()
 
 	challenge, err := generator.GenerateChallenge(60, 10)
 	if err != nil {
-		t.Fatalf("生成 challenge 失败: %v", err)
+		t.Fatalf("failed to generate challenge: %v", err)
 	}
 
 	logits := &Logits{
@@ -769,18 +769,18 @@ func TestProofError_AllNaNLogits(t *testing.T) {
 
 	valid, err := verifier.VerifyLogits(logits, challenge)
 	if err == nil || valid {
-		t.Error("全 NaN 的 logits 应当验证失败")
+		t.Error("all-NaN logits should fail verification")
 	}
 }
 
-// TestProofError_AllInfLogits 测试全 Inf 值的 logits
+// TestProofError_AllInfLogits tests all-Inf logits
 func TestProofError_AllInfLogits(t *testing.T) {
 	verifier := NewLogitsVerifier()
 	generator := NewRandomInputGenerator()
 
 	challenge, err := generator.GenerateChallenge(60, 10)
 	if err != nil {
-		t.Fatalf("生成 challenge 失败: %v", err)
+		t.Fatalf("failed to generate challenge: %v", err)
 	}
 
 	logits := &Logits{
@@ -794,18 +794,18 @@ func TestProofError_AllInfLogits(t *testing.T) {
 
 	valid, err := verifier.VerifyLogits(logits, challenge)
 	if err == nil || valid {
-		t.Error("全 Inf 的 logits 应当验证失败")
+		t.Error("all-Inf logits should fail verification")
 	}
 }
 
-// TestProofError_EmptyLogitsVerification 测试空 logits 的验证
+// TestProofError_EmptyLogitsVerification tests verification of empty logits
 func TestProofError_EmptyLogitsVerification(t *testing.T) {
 	verifier := NewLogitsVerifier()
 	generator := NewRandomInputGenerator()
 
 	challenge, err := generator.GenerateChallenge(60, 10)
 	if err != nil {
-		t.Fatalf("生成 challenge 失败: %v", err)
+		t.Fatalf("failed to generate challenge: %v", err)
 	}
 
 	logits := &Logits{
@@ -816,15 +816,15 @@ func TestProofError_EmptyLogitsVerification(t *testing.T) {
 
 	valid, err := verifier.VerifyLogits(logits, challenge)
 	if err == nil || valid {
-		t.Error("空 logits 应当验证失败")
+		t.Error("empty logits should fail verification")
 	}
 }
 
 // ============================================================================
-// 4. 证明性能测试
+// 4. Proof performance tests
 // ============================================================================
 
-// TestPerformance_ProofGeneration 测试证明生成性能
+// TestPerformance_ProofGeneration tests proof generation performance
 func TestPerformance_ProofGeneration(t *testing.T) {
 	engine := NewInferenceEngine()
 	iterations := 100
@@ -843,24 +843,24 @@ func TestPerformance_ProofGeneration(t *testing.T) {
 	for i := 0; i < iterations; i++ {
 		_, proof, err := engine.InferenceWithProof(req)
 		if err != nil {
-			t.Fatalf("第 %d 次证明生成失败: %v", i+1, err)
+			t.Fatalf("proof generation failed on iteration %d: %v", i+1, err)
 		}
 		if proof == nil {
-			t.Fatalf("第 %d 次生成的证明为 nil", i+1)
+			t.Fatalf("proof generated on iteration %d is nil", i+1)
 		}
 	}
 	elapsed := time.Since(start)
 
 	avgDuration := elapsed / time.Duration(iterations)
-	t.Logf("证明生成性能: %d 次迭代, 总耗时 %v, 平均 %v/次", iterations, elapsed, avgDuration)
+	t.Logf("Proof generation performance: %d iterations, total %v, avg %v/iter", iterations, elapsed, avgDuration)
 
-	// 单次证明生成不应超过 100ms
+	// A single proof generation should not exceed 100ms
 	if avgDuration > 100*time.Millisecond {
-		t.Errorf("证明生成平均耗时过长: %v (阈值 100ms)", avgDuration)
+		t.Errorf("proof generation average duration too long: %v (threshold 100ms)", avgDuration)
 	}
 }
 
-// TestPerformance_ProofVerification 测试证明验证性能
+// TestPerformance_ProofVerification tests proof verification performance
 func TestPerformance_ProofVerification(t *testing.T) {
 	engine := NewInferenceEngine()
 	iterations := 100
@@ -875,34 +875,34 @@ func TestPerformance_ProofVerification(t *testing.T) {
 		Timestamp:   time.Now().Unix(),
 	}
 
-	// 先生成证明
+	// Generate a proof first
 	resp, proof, err := engine.InferenceWithProof(req)
 	if err != nil {
-		t.Fatalf("证明生成失败: %v", err)
+		t.Fatalf("proof generation failed: %v", err)
 	}
 
 	start := time.Now()
 	for i := 0; i < iterations; i++ {
 		valid, err := engine.VerifyProof(proof, req, resp)
 		if err != nil {
-			t.Fatalf("第 %d 次验证失败: %v", i+1, err)
+			t.Fatalf("verification failed on iteration %d: %v", i+1, err)
 		}
 		if !valid {
-			t.Fatalf("第 %d 次验证结果应为 true", i+1)
+			t.Fatalf("verification result on iteration %d should be true", i+1)
 		}
 	}
 	elapsed := time.Since(start)
 
 	avgDuration := elapsed / time.Duration(iterations)
-	t.Logf("证明验证性能: %d 次迭代, 总耗时 %v, 平均 %v/次", iterations, elapsed, avgDuration)
+	t.Logf("Proof verification performance: %d iterations, total %v, avg %v/iter", iterations, elapsed, avgDuration)
 
-	// 单次验证不应超过 10ms
+	// A single verification should not exceed 10ms
 	if avgDuration > 10*time.Millisecond {
-		t.Errorf("证明验证平均耗时过长: %v (阈值 10ms)", avgDuration)
+		t.Errorf("proof verification average duration too long: %v (threshold 10ms)", avgDuration)
 	}
 }
 
-// TestPerformance_BatchProofGeneration 测试批量证明生成性能
+// TestPerformance_BatchProofGeneration tests batch proof generation performance
 func TestPerformance_BatchProofGeneration(t *testing.T) {
 	engine := NewInferenceEngine()
 	batchSize := 50
@@ -912,7 +912,7 @@ func TestPerformance_BatchProofGeneration(t *testing.T) {
 		gen := NewRandomInputGenerator()
 		prompt, err := gen.GenerateRandomPrompt(5)
 		if err != nil {
-			t.Fatalf("生成第 %d 个随机 prompt 失败: %v", i+1, err)
+			t.Fatalf("failed to generate random prompt %d: %v", i+1, err)
 		}
 		prompts[i] = prompt
 	}
@@ -932,21 +932,21 @@ func TestPerformance_BatchProofGeneration(t *testing.T) {
 
 		_, proof, err := engine.InferenceWithProof(req)
 		if err != nil {
-			t.Fatalf("批量第 %d 次证明生成失败: %v", i+1, err)
+			t.Fatalf("batch proof generation failed on iteration %d: %v", i+1, err)
 		}
 		proofs = append(proofs, proof)
 	}
 	elapsed := time.Since(start)
 
 	if len(proofs) != batchSize {
-		t.Fatalf("批量生成证明数量不匹配: got=%d, want=%d", len(proofs), batchSize)
+		t.Fatalf("batch generated proof count mismatch: got=%d, want=%d", len(proofs), batchSize)
 	}
 
 	avgDuration := elapsed / time.Duration(batchSize)
-	t.Logf("批量证明生成: %d 个证明, 总耗时 %v, 平均 %v/个", batchSize, elapsed, avgDuration)
+	t.Logf("Batch proof generation: %d proofs, total %v, avg %v/proof", batchSize, elapsed, avgDuration)
 }
 
-// TestPerformance_CircuitVerification 测试电路验证性能
+// TestPerformance_CircuitVerification tests circuit verification performance
 func TestPerformance_CircuitVerification(t *testing.T) {
 	modelHash := sha256.Sum256([]byte("perf-circuit-model"))
 	circuit := NewVerifierCircuit(modelHash[:], nil, nil, nil)
@@ -963,24 +963,24 @@ func TestPerformance_CircuitVerification(t *testing.T) {
 	for i := 0; i < iterations; i++ {
 		valid, err := circuit.VerifyProof(proof)
 		if err != nil {
-			t.Fatalf("第 %d 次电路验证失败: %v", i+1, err)
+			t.Fatalf("circuit verification failed on iteration %d: %v", i+1, err)
 		}
 		if !valid {
-			t.Fatalf("第 %d 次电路验证结果应为 true", i+1)
+			t.Fatalf("circuit verification result on iteration %d should be true", i+1)
 		}
 	}
 	elapsed := time.Since(start)
 
 	avgDuration := elapsed / time.Duration(iterations)
-	t.Logf("电路验证性能: %d 次迭代, 总耗时 %v, 平均 %v/次", iterations, elapsed, avgDuration)
+	t.Logf("Circuit verification performance: %d iterations, total %v, avg %v/iter", iterations, elapsed, avgDuration)
 
-	// 电路验证应非常快
+	// Circuit verification should be very fast
 	if avgDuration > 1*time.Millisecond {
-		t.Errorf("电路验证平均耗时过长: %v (阈值 1ms)", avgDuration)
+		t.Errorf("circuit verification average duration too long: %v (threshold 1ms)", avgDuration)
 	}
 }
 
-// TestPerformance_WitnessGeneration 测试 witness 生成性能
+// TestPerformance_WitnessGeneration tests witness generation performance
 func TestPerformance_WitnessGeneration(t *testing.T) {
 	modelHash := sha256.Sum256([]byte("perf-witness-model"))
 	promptHash := sha256.Sum256([]byte("benchmark witness generation"))
@@ -993,30 +993,30 @@ func TestPerformance_WitnessGeneration(t *testing.T) {
 
 	logits, err := extractor.ExtractLogits(nil, modelHash[:], promptHash[:])
 	if err != nil {
-		t.Fatalf("提取 logits 失败: %v", err)
+		t.Fatalf("failed to extract logits: %v", err)
 	}
 
 	start := time.Now()
 	for i := 0; i < iterations; i++ {
 		witness, err := circuit.GenerateWitness(logits, []byte("model-weights-data"))
 		if err != nil {
-			t.Fatalf("第 %d 次 witness 生成失败: %v", i+1, err)
+			t.Fatalf("witness generation failed on iteration %d: %v", i+1, err)
 		}
 		if len(witness) == 0 {
-			t.Fatalf("第 %d 次 witness 数据为空", i+1)
+			t.Fatalf("witness data empty on iteration %d", i+1)
 		}
 	}
 	elapsed := time.Since(start)
 
 	avgDuration := elapsed / time.Duration(iterations)
-	t.Logf("Witness 生成性能: %d 次迭代, 总耗时 %v, 平均 %v/次", iterations, elapsed, avgDuration)
+	t.Logf("Witness generation performance: %d iterations, total %v, avg %v/iter", iterations, elapsed, avgDuration)
 
 	if avgDuration > 5*time.Millisecond {
-		t.Errorf("Witness 生成平均耗时过长: %v (阈值 5ms)", avgDuration)
+		t.Errorf("Witness generation average duration too long: %v (threshold 5ms)", avgDuration)
 	}
 }
 
-// TestPerformance_LogitsSimilarity 测试 logits 相似度计算性能
+// TestPerformance_LogitsSimilarity tests logits similarity computation performance
 func TestPerformance_LogitsSimilarity(t *testing.T) {
 	verifier := NewLogitsSimilarityVerifier()
 	extractor := NewLogitsExtractor()
@@ -1028,31 +1028,31 @@ func TestPerformance_LogitsSimilarity(t *testing.T) {
 
 	logits1, err := extractor.ExtractLogits(nil, modelID, promptHash1[:])
 	if err != nil {
-		t.Fatalf("提取 logits1 失败: %v", err)
+		t.Fatalf("failed to extract logits1: %v", err)
 	}
 	logits2, err := extractor.ExtractLogits(nil, modelID, promptHash2[:])
 	if err != nil {
-		t.Fatalf("提取 logits2 失败: %v", err)
+		t.Fatalf("failed to extract logits2: %v", err)
 	}
 
 	start := time.Now()
 	for i := 0; i < iterations; i++ {
 		_, err := verifier.ComputeSimilarity(logits1, logits2)
 		if err != nil {
-			t.Fatalf("第 %d 次相似度计算失败: %v", i+1, err)
+			t.Fatalf("similarity computation failed on iteration %d: %v", i+1, err)
 		}
 	}
 	elapsed := time.Since(start)
 
 	avgDuration := elapsed / time.Duration(iterations)
-	t.Logf("Logits 相似度计算性能: %d 次迭代, 总耗时 %v, 平均 %v/次", iterations, elapsed, avgDuration)
+	t.Logf("Logits similarity performance: %d iterations, total %v, avg %v/iter", iterations, elapsed, avgDuration)
 
 	if avgDuration > 1*time.Millisecond {
-		t.Errorf("Logits 相似度计算平均耗时过长: %v (阈值 1ms)", avgDuration)
+		t.Errorf("Logits similarity average duration too long: %v (threshold 1ms)", avgDuration)
 	}
 }
 
-// TestPerformance_Quantization 测试量化性能
+// TestPerformance_Quantization tests quantization performance
 func TestPerformance_Quantization(t *testing.T) {
 	extractor := NewLogitsExtractor()
 	iterations := 300
@@ -1061,7 +1061,7 @@ func TestPerformance_Quantization(t *testing.T) {
 	promptHash := sha256.Sum256([]byte("quantization benchmark prompt"))
 	logits, err := extractor.ExtractLogits(nil, modelID, promptHash[:])
 	if err != nil {
-		t.Fatalf("提取 logits 失败: %v", err)
+		t.Fatalf("failed to extract logits: %v", err)
 	}
 
 	quantBits := []int{8, 16, 32}
@@ -1072,15 +1072,15 @@ func TestPerformance_Quantization(t *testing.T) {
 		for i := 0; i < iterations; i++ {
 			q, err := extractor.QuantizeLogits(logits)
 			if err != nil {
-				t.Fatalf("%d-bit 第 %d 次量化失败: %v", bits, i+1, err)
+				t.Fatalf("%d-bit quantization failed on iteration %d: %v", bits, i+1, err)
 			}
 			if len(q) == 0 {
-				t.Fatalf("%d-bit 第 %d 次量化结果为空", bits, i+1)
+				t.Fatalf("%d-bit quantization result empty on iteration %d", bits, i+1)
 			}
 		}
 		elapsed := time.Since(start)
 
 		avgDuration := elapsed / time.Duration(iterations)
-		t.Logf("%d-bit 量化性能: %d 次迭代, 总耗时 %v, 平均 %v/次", bits, iterations, elapsed, avgDuration)
+		t.Logf("%d-bit quantization performance: %d iterations, total %v, avg %v/iter", bits, iterations, elapsed, avgDuration)
 	}
 }
