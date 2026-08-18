@@ -24,10 +24,10 @@ var (
 
 func main() {
 	// Parse global flags first
-	flag.StringVar(&apiEndpoint, "api", "http://127.0.0.1:8080", "API 端点地址")
-	flag.StringVar(&outputFormat, "output", "text", "输出格式 (json|text|table)")
-	flag.BoolVar(&verbose, "v", false, "详细输出")
-	flag.BoolVar(&verbose, "verbose", false, "详细输出")
+	flag.StringVar(&apiEndpoint, "api", "http://127.0.0.1:8080", "API endpoint address")
+	flag.StringVar(&outputFormat, "output", "text", "Output format (json|text|table)")
+	flag.BoolVar(&verbose, "v", false, "Verbose output")
+	flag.BoolVar(&verbose, "verbose", false, "Verbose output")
 
 	// Custom usage
 	flag.Usage = usage
@@ -51,7 +51,7 @@ func main() {
 	cmdArgs := args[1:]
 
 	if err := executeCommand(client, cmd, cmdArgs, format); err != nil {
-		fmt.Fprintf(os.Stderr, "错误: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(1)
 	}
 }
@@ -59,54 +59,54 @@ func main() {
 func usage() {
 	fmt.Fprint(os.Stderr, VersionInfo+`
 
-用法:
-  aib-cli [选项] <命令> [参数]
+Usage:
+  aib-cli [options] <command> [args]
 
-命令:
-  wallet <子命令>      钱包操作
-    create              创建新钱包
-    restore <助记词>    从助记词恢复钱包
-    balance <地址>      查询地址余额
-    send <发送方> <接收方> <金额>  发送交易
-    stake <地址> <金额> 质押
-    unstake <地址> <金额> 解质押
+Commands:
+  wallet <subcommand>  Wallet operations
+    create              Create a new wallet
+    restore <mnemonic>  Restore wallet from mnemonic
+    balance <address>   Query address balance
+    send <from> <to> <amount>  Send transaction
+    stake <address> <amount> Stake tokens
+    unstake <address> <amount> Unstake tokens
 
-  node <子命令>         节点操作
-    status              查询节点状态
-    peers               查看对等节点
-    block <高度|哈希>   查看区块信息
+  node <subcommand>     Node operations
+    status              Query node status
+    peers               View peer nodes
+    block <height|hash> View block info
 
-  tx <哈希>             查询交易
+  tx <hash>             Query transaction
 
-  version              显示版本信息
+  version              Show version info
 
-选项:
-  -api <地址>          API 端点 (默认: http://127.0.0.1:8080)
-  -output <格式>       输出格式 (json|text|table, 默认: text)
-  -v, -verbose         详细输出
+Options:
+  -api <address>       API endpoint (default: http://127.0.0.1:8080)
+  -output <format>     Output format (json|text|table, default: text)
+  -v, -verbose         Verbose output
 
-示例:
-  # 创建钱包
+Examples:
+  # Create wallet
   aib-cli wallet create
 
-  # 查询余额
+  # Query balance
   aib-cli wallet balance 0x1234...
 
-  # 发送交易 (1.5 AIB)
+  # Send transaction (1.5 AIB)
   aib-cli wallet send 0x sender 0x recipient 1.5
 
-  # 查看节点状态
+  # View node status
   aib-cli node status
 
-  # JSON 输出
+  # JSON output
   aib-cli -output json node status
 `)
 }
 
 func executeCommand(client *cli.Client, cmd string, args []string, format cli.OutputFormat) error {
 	if verbose {
-		fmt.Fprintf(os.Stderr, "执行命令: %s %s\n", cmd, strings.Join(args, " "))
-		fmt.Fprintf(os.Stderr, "API 端点: %s\n", apiEndpoint)
+		fmt.Fprintf(os.Stderr, "Executing command: %s %s\n", cmd, strings.Join(args, " "))
+		fmt.Fprintf(os.Stderr, "API endpoint: %s\n", apiEndpoint)
 	}
 
 	switch cmd {
@@ -128,13 +128,13 @@ func executeCommand(client *cli.Client, cmd string, args []string, format cli.Ou
 		return nil
 
 	default:
-		return fmt.Errorf("未知命令: %s (使用 'aib-cli help' 查看帮助)", cmd)
+		return fmt.Errorf("Unknown command: %s (use 'aib-cli help' for help)", cmd)
 	}
 }
 
 func executeWalletCommand(client *cli.Client, args []string, format cli.OutputFormat) error {
 	if len(args) < 1 {
-		return fmt.Errorf("钱包命令需要子命令 (create|restore|balance|send|stake|unstake)")
+		return fmt.Errorf("wallet command requires a subcommand (create|restore|balance|send|stake|unstake)")
 	}
 
 	walletCmd := cli.NewWalletCommand(client, format)
@@ -152,7 +152,7 @@ func executeWalletCommand(client *cli.Client, args []string, format cli.OutputFo
 
 	case "restore":
 		if len(subArgs) < 1 {
-			return fmt.Errorf("restore 命令需要助记词参数")
+			return fmt.Errorf("restore command requires a mnemonic argument")
 		}
 		mnemonic := subArgs[0]
 		savePath := ""
@@ -163,7 +163,7 @@ func executeWalletCommand(client *cli.Client, args []string, format cli.OutputFo
 
 	case "balance":
 		if len(subArgs) < 1 {
-			return fmt.Errorf("balance 命令需要地址参数")
+			return fmt.Errorf("balance command requires an address argument")
 		}
 		return walletCmd.Balance(subArgs[0])
 
@@ -172,40 +172,40 @@ func executeWalletCommand(client *cli.Client, args []string, format cli.OutputFo
 
 	case "stake":
 		if len(subArgs) < 2 {
-			return fmt.Errorf("stake 命令需要地址和金额参数")
+			return fmt.Errorf("stake command requires address and amount arguments")
 		}
 		amount, err := cli.ParseAmount(subArgs[1])
 		if err != nil {
-			return fmt.Errorf("无效的金额: %w", err)
+			return fmt.Errorf("Invalid amount: %w", err)
 		}
 		return walletCmd.Stake(subArgs[0], amount)
 
 	case "unstake":
 		if len(subArgs) < 2 {
-			return fmt.Errorf("unstake 命令需要地址和金额参数")
+			return fmt.Errorf("unstake command requires address and amount arguments")
 		}
 		amount, err := cli.ParseAmount(subArgs[1])
 		if err != nil {
-			return fmt.Errorf("无效的金额: %w", err)
+			return fmt.Errorf("Invalid amount: %w", err)
 		}
 		return walletCmd.Unstake(subArgs[0], amount)
 
 	default:
-		return fmt.Errorf("未知钱包子命令: %s", subCmd)
+		return fmt.Errorf("Unknown wallet subcommand: %s", subCmd)
 	}
 }
 
 func handleSend(walletCmd *cli.WalletCommand, args []string) error {
 	// send <from> <to> <amount> [gas-limit] [gas-price]
 	if len(args) < 3 {
-		return fmt.Errorf("send 命令需要: 发送方地址、接收方地址和金额")
+		return fmt.Errorf("send command requires: sender address, recipient address and amount")
 	}
 
 	from := args[0]
 	to := args[1]
 	amount, err := cli.ParseAmount(args[2])
 	if err != nil {
-		return fmt.Errorf("无效的金额: %w", err)
+		return fmt.Errorf("Invalid amount: %w", err)
 	}
 
 	gasLimit := uint64(21000) // Default gas limit
@@ -214,7 +214,7 @@ func handleSend(walletCmd *cli.WalletCommand, args []string) error {
 	if len(args) > 3 {
 		gl, err := cli.ParseAmount(args[3])
 		if err != nil {
-			return fmt.Errorf("无效的 gas limit: %w", err)
+			return fmt.Errorf("Invalid gas limit: %w", err)
 		}
 		gasLimit = gl
 	}
@@ -222,7 +222,7 @@ func handleSend(walletCmd *cli.WalletCommand, args []string) error {
 	if len(args) > 4 {
 		gp, err := cli.ParseAmount(args[4])
 		if err != nil {
-			return fmt.Errorf("无效的 gas price: %w", err)
+			return fmt.Errorf("Invalid gas price: %w", err)
 		}
 		gasPrice = gp
 	}
@@ -232,7 +232,7 @@ func handleSend(walletCmd *cli.WalletCommand, args []string) error {
 
 func executeNodeCommand(client *cli.Client, args []string, format cli.OutputFormat) error {
 	if len(args) < 1 {
-		return fmt.Errorf("节点命令需要子命令 (status|peers|block)")
+		return fmt.Errorf("node command requires a subcommand (status|peers|block)")
 	}
 
 	nodeCmd := cli.NewNodeCommand(client, format)
@@ -249,18 +249,18 @@ func executeNodeCommand(client *cli.Client, args []string, format cli.OutputForm
 
 	case "block":
 		if len(subArgs) < 1 {
-			return fmt.Errorf("block 命令需要区块高度或哈希参数")
+			return fmt.Errorf("block command requires a block height or hash argument")
 		}
 		return nodeCmd.Block(subArgs[0])
 
 	default:
-		return fmt.Errorf("未知节点子命令: %s", subCmd)
+		return fmt.Errorf("Unknown node subcommand: %s", subCmd)
 	}
 }
 
 func executeTxCommand(client *cli.Client, args []string, format cli.OutputFormat) error {
 	if len(args) < 1 {
-		return fmt.Errorf("tx 命令需要交易哈希参数")
+		return fmt.Errorf("tx command requires a transaction hash argument")
 	}
 
 	txCmd := cli.NewTxCommand(client, format)
