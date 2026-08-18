@@ -13,7 +13,7 @@ import (
 	"github.com/aib-protocol/aib/pkg/migration"
 )
 
-// BlockHeader 定义区块头接口
+// BlockHeader defines the block header interface
 type BlockHeader interface {
 	GetHeight() uint64
 	GetTimestamp() uint64
@@ -21,14 +21,14 @@ type BlockHeader interface {
 	GetProposer() [32]byte
 }
 
-// Block 定义区块接口
+// Block defines the block interface
 type Block interface {
 	GetHeader() BlockHeader
 	GetHash() [32]byte
 	GetTransactions() int
 }
 
-// ChainReader 接口用于读取区块链数据
+// ChainReader is an interface for reading blockchain data
 type ChainReader interface {
 	GetHeight() uint64
 	GetLatestBlock() Block
@@ -36,7 +36,7 @@ type ChainReader interface {
 	GetBlockByHash(hash [32]byte) (Block, error)
 }
 
-// MigrationHubAPI 定义迁移中心 API 接口
+// MigrationHubAPI defines the migration hub API interface
 type MigrationHubAPI interface {
 	GetMigrationStatus() *migration.MigrationStatus
 	GetUserMigrationInfo(addr interfaces.Address) *migration.UserMigrationInfo
@@ -47,7 +47,7 @@ type MigrationHubAPI interface {
 	IsAIB1Claimed(addr interfaces.Address) bool
 }
 
-// Server HTTP 服务器
+// Server is the HTTP server
 type Server struct {
 	httpServer     *http.Server
 	mux            *http.ServeMux
@@ -70,7 +70,7 @@ type p2pNetworkInterface interface {
 	GetPeerList() []PeerEntry
 }
 
-// PeerEntry 节点信息条目（与 p2p.PeerListEntry 对齐）
+// PeerEntry is a peer info entry (aligned with p2p.PeerListEntry)
 type PeerEntry struct {
 	ID        string
 	Address   string
@@ -78,12 +78,12 @@ type PeerEntry struct {
 	Connected bool
 }
 
-// P2PNetworkAdapter 适配 p2p.Network 到 p2pNetworkInterface
+// P2PNetworkAdapter adapts p2p.Network to p2pNetworkInterface
 type P2PNetworkAdapter struct {
 	getPeerList func() []PeerEntry
 }
 
-// NewP2PNetworkAdapter 创建适配器
+// NewP2PNetworkAdapter creates the adapter
 func NewP2PNetworkAdapter(getPeerList func() []PeerEntry) *P2PNetworkAdapter {
 	return &P2PNetworkAdapter{getPeerList: getPeerList}
 }
@@ -93,133 +93,133 @@ func (a *P2PNetworkAdapter) GetPeerList() []PeerEntry {
 	return a.getPeerList()
 }
 
-// SetChain 设置区块链引用
+// SetChain sets the blockchain reference
 func (s *Server) SetChain(chain ChainReader) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.chain = chain
 }
 
-// GetChain 获取区块链引用
+// GetChain returns the blockchain reference
 func (s *Server) GetChain() ChainReader {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return s.chain
 }
 
-// SetMigrationHub 设置迁移中心引用
+// SetMigrationHub sets the migration hub reference
 func (s *Server) SetMigrationHub(hub MigrationHubAPI) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.migrationHub = hub
 }
 
-// GetMigrationHub 获取迁移中心引用
+// GetMigrationHub returns the migration hub reference
 func (s *Server) GetMigrationHub() MigrationHubAPI {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return s.migrationHub
 }
 
-// SetUTXOStore 设置 UTXO 存储引用
+// SetUTXOStore sets the UTXO store reference
 func (s *Server) SetUTXOStore(store utxoStoreInterface) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.utxoStore = store
 }
 
-// GetUTXOStore 获取 UTXO 存储引用
+// GetUTXOStore returns the UTXO store reference
 func (s *Server) GetUTXOStore() utxoStoreInterface {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return s.utxoStore
 }
 
-// SetMempool 设置内存池引用
+// SetMempool sets the mempool reference
 func (s *Server) SetMempool(mp mempoolInterface) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.mempool = mp
 }
 
-// GetMempool 获取内存池引用
+// GetMempool returns the mempool reference
 func (s *Server) GetMempool() mempoolInterface {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return s.mempool
 }
 
-// SetConsensusState 设置共识状态引用
+// SetConsensusState sets the consensus state reference
 func (s *Server) SetConsensusState(cs consensusConfigInterface) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.consensusState = cs
 }
 
-// GetConsensusState 获取共识状态引用
+// GetConsensusState returns the consensus state reference
 func (s *Server) GetConsensusState() consensusConfigInterface {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return s.consensusState
 }
 
-// SetGovernance 设置治理模块引用
+// SetGovernance sets the governance module reference
 func (s *Server) SetGovernance(gov governanceInterface) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.governance = gov
 }
 
-// GetGovernance 获取治理模块引用
+// GetGovernance returns the governance module reference
 func (s *Server) GetGovernance() governanceInterface {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return s.governance
 }
 
-// SetP2PNetwork 设置 P2P 网络引用
+// SetP2PNetwork sets the P2P network reference
 func (s *Server) SetP2PNetwork(network p2pNetworkInterface) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.p2pNetwork = network
 }
 
-// GetP2PNetwork 获取 P2P 网络引用
+// GetP2PNetwork returns the P2P network reference
 func (s *Server) GetP2PNetwork() p2pNetworkInterface {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return s.p2pNetwork
 }
 
-// SetChainID 设置链 ID
+// SetChainID sets the chain ID
 func (s *Server) SetChainID(chainID string) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.chainID = chainID
 }
 
-// GetChainID 获取链 ID
+// GetChainID returns the chain ID
 func (s *Server) GetChainID() string {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return s.chainID
 }
 
-// SetAPIKeys 设置 API 认证密钥
+// SetAPIKeys sets the API authentication keys
 func (s *Server) SetAPIKeys(keys []string) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.apiKeys = keys
 }
 
-// GetAPIKeys 获取 API 认证密钥
+// GetAPIKeys returns the API authentication keys
 func (s *Server) GetAPIKeys() []string {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return s.apiKeys
 }
 
-// NewServer 创建新的 API 服务器
+// NewServer creates a new API server
 func NewServer(port int) *Server {
 	mux := http.NewServeMux()
 	server := &Server{
@@ -239,58 +239,58 @@ func NewServer(port int) *Server {
 	return server
 }
 
-// RegisterRoutes 注册所有路由
+// RegisterRoutes registers all routes
 func (s *Server) RegisterRoutes() {
-	// authWrap 为需要认证的 handler 包装 AuthMiddleware
+	// authWrap wraps AuthMiddleware around handlers that require authentication
 	authWrap := func(handler http.HandlerFunc) http.Handler {
 		if len(s.apiKeys) > 0 {
 			return AuthMiddleware(s.apiKeys)(http.HandlerFunc(handler))
 		}
-		// 未配置 API keys 时不启用认证（开发模式）
+		// Authentication is disabled when no API keys are configured (development mode)
 		return handler
 	}
 
 	// =========================================================================
-	// 公开端点 - 无需认证
+	// Public endpoints - no authentication required
 	// =========================================================================
 
-	// 健康检查 - 基础
+	// Health check - basic
 	s.mux.HandleFunc("/health", s.handleHealth)
 	s.mux.HandleFunc("/v1/status", s.handleStatus)
 
 	// P2P nodelist
 	s.mux.HandleFunc("/v1/peers", s.handlePeers)
 
-	// 健康检查 - 增强版
+	// Health check - enhanced
 	s.mux.HandleFunc("/health/detailed", s.handleHealthDetailed)
 
 	// Kubernetes probes
 	s.mux.HandleFunc("/healthz", s.handleLiveness)
 	s.mux.HandleFunc("/readyz", s.handleReadiness)
 
-	// 区块（只读查询）
+	// Blocks (read-only queries)
 	s.mux.HandleFunc("/v1/block/latest", s.handleGetLatestBlock)
 	s.mux.HandleFunc("/v1/block/", s.handleGetBlock)
 
-	// 交易查询（只读）
+	// Transaction queries (read-only)
 	s.mux.HandleFunc("/v1/transactions", s.handleTransactionsList)
 	s.mux.HandleFunc("/v1/transaction/", s.handleTransactionDetail)
 
-	// 余额查询（只读）
+	// Balance queries (read-only)
 	s.mux.HandleFunc("/v1/balance/", s.handleGetBalance)
 
-	// 区块链查询 - 只读端点
+	// Blockchain queries - read-only endpoints
 	s.mux.HandleFunc("/v1/utxo/", s.handleUTXOByAddress)
 	s.mux.HandleFunc("/v1/validators", s.handleValidators)
 	s.mux.HandleFunc("/v1/mempool", s.handleMempool)
 	s.mux.HandleFunc("/v1/staking", s.handleStaking)
 	s.mux.HandleFunc("/v1/proposals", s.handleProposals)
 
-	// AI 模型/节点列表（只读）
+	// AI model/node list (read-only)
 	s.mux.HandleFunc("/v1/ai/models", s.handleListModels)
 	s.mux.HandleFunc("/v1/ai/nodes", s.handleListNodes)
 
-	// 迁移查询（只读）
+	// Migration queries (read-only)
 	s.mux.HandleFunc("/api/migration/snapshot", s.handleMigrationSnapshot)
 	s.mux.HandleFunc("/api/migration/rates", s.handleMigrationRates)
 	s.mux.HandleFunc("/api/migration/status/", s.handleMigrationStatus)
@@ -298,13 +298,13 @@ func (s *Server) RegisterRoutes() {
 	s.mux.HandleFunc("/api/migration/estimate", s.handleMigrationEstimate)
 
 	// =========================================================================
-	// 需要认证的端点 - 涉及资金操作
+	// Authenticated endpoints - involve fund operations
 	// =========================================================================
 
-	// 交易提交
+	// Transaction submission
 	s.mux.Handle("/v1/transaction", authWrap(s.handleSubmitTransaction))
 
-	// 钱包管理
+	// Wallet management
 	s.mux.Handle("/v1/wallet/create", authWrap(s.handleCreateWallet))
 	s.mux.Handle("/v1/wallet/restore", authWrap(s.handleRestoreWallet))
 	s.mux.Handle("/v1/wallet/import", authWrap(s.handleImportWallet))
@@ -312,34 +312,34 @@ func (s *Server) RegisterRoutes() {
 	s.mux.Handle("/v1/wallet/balance", authWrap(s.handleWalletBalance))
 	s.mux.Handle("/v1/wallet/send", authWrap(s.handleSendTransaction))
 
-	// 质押操作（涉及资金）
+	// Staking operations (involve funds)
 	s.mux.Handle("/v1/stake", authWrap(s.handleStake))
 	s.mux.Handle("/v1/unstake", authWrap(s.handleUnstake))
 
-	// 质押查询（只读）
+	// Staking queries (read-only)
 	s.mux.HandleFunc("/v1/wallet/stake", s.handleGetStake)
 
-	// 通道操作
+	// Channel operations
 	s.mux.Handle("/v1/channel/open", authWrap(s.handleChannelOpen))
 	s.mux.Handle("/v1/channel/close", authWrap(s.handleChannelClose))
 	s.mux.Handle("/v1/channel/pay", authWrap(s.handleChannelPay))
 
-	// 通道查询（只读）
+	// Channel queries (read-only)
 	s.mux.HandleFunc("/v1/channel/", s.handleGetChannel)
 	s.mux.HandleFunc("/v1/channels", s.handleListChannels)
 
-	// AI 推理（涉及计费）
+	// AI inference (billing involved)
 	s.mux.Handle("/v1/ai/inference", authWrap(s.handleInference))
 
-	// 迁移操作（涉及资金）
+	// Migration operations (involve funds)
 	s.mux.Handle("/api/migration/claim-aib1", authWrap(s.handleClaimAIB1))
 	s.mux.Handle("/api/migration/claim-unlocked", authWrap(s.handleClaimUnlocked))
 
-	// 应用日志中间件
+	// Apply the logging middleware
 	s.httpServer.Handler = LoggingMiddleware(s.mux)
 }
 
-// Start 启动服务器
+// Start starts the server
 func (s *Server) Start() error {
 	s.RegisterRoutes()
 	log.Printf("Starting API server on port %d", s.port)
@@ -349,19 +349,19 @@ func (s *Server) Start() error {
 	return nil
 }
 
-// Stop 停止服务器
+// Stop stops the server
 func (s *Server) Stop(ctx context.Context) error {
 	log.Printf("Stopping API server on port %d", s.port)
 	return s.httpServer.Shutdown(ctx)
 }
 
-// Uptime 返回服务器运行时间
+// Uptime returns how long the server has been running
 func (s *Server) Uptime() time.Duration {
 	return time.Since(s.startTime)
 }
 
 // ============================================================================
-// 辅助函数
+// Helper functions
 // ============================================================================
 
 func writeJSON(w http.ResponseWriter, status int, data interface{}) {
