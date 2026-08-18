@@ -11,16 +11,16 @@ import (
 )
 
 // ===========================================================================
-// 通用 HTTP 价格源基础设施
+// Common HTTP price source infrastructure
 // ===========================================================================
 
-// httpClient 是所有价格源共享的 HTTP 客户端，带超时配置
+// httpClient is shared by all price sources, with a timeout configured
 var httpClient = &http.Client{
 	Timeout: 10 * time.Second,
 }
 
-// fetchJSON 从指定 URL 获取 JSON 数据并解码到 target。
-// 这是所有 HTTP 价格源的通用方法。
+// fetchJSON fetches JSON from the given URL and decodes it into target.
+// This is a common method for all HTTP price sources.
 func fetchJSON(url string, target interface{}) error {
 	resp, err := httpClient.Get(url)
 	if err != nil {
@@ -46,20 +46,20 @@ func fetchJSON(url string, target interface{}) error {
 }
 
 // ===========================================================================
-// Binance 价格源
+// Binance price source
 // ===========================================================================
 
-// BinanceSource 从 Binance API 获取价格数据。
-// API 端点: https://api.binance.com/api/v3/ticker/24hr
+// BinanceSource fetches price data from the Binance API.
+// API endpoint: https://api.binance.com/api/v3/ticker/24hr
 type BinanceSource struct {
 	mu        sync.RWMutex
 	available bool
 	baseURL   string
-	// pairMapping 将标准交易对映射为 Binance 交易对符号
+	// pairMapping maps standard pairs to Binance symbols
 	pairMapping map[string]string
 }
 
-// binanceTickerResponse Binance 24小时价格变动统计 API 响应
+// binanceTickerResponse is the Binance 24h ticker statistics API response
 type binanceTickerResponse struct {
 	Symbol    string `json:"symbol"`
 	LastPrice string `json:"lastPrice"`
@@ -68,7 +68,7 @@ type binanceTickerResponse struct {
 	Volume    string `json:"volume"`
 }
 
-// NewBinanceSource 创建 Binance 价格源实例
+// NewBinanceSource creates a Binance price source instance
 func NewBinanceSource() *BinanceSource {
 	return &BinanceSource{
 		available: true,
@@ -85,7 +85,7 @@ func NewBinanceSource() *BinanceSource {
 	}
 }
 
-// FetchPrice 从 Binance 获取指定交易对的价格
+// FetchPrice fetches the price for the given pair from Binance
 func (s *BinanceSource) FetchPrice(pair TradingPair) (PriceData, error) {
 	symbol, ok := s.pairMapping[pair.String()]
 	if !ok {
@@ -123,24 +123,24 @@ func (s *BinanceSource) FetchPrice(pair TradingPair) (PriceData, error) {
 	}, nil
 }
 
-// IsAvailable 检查 Binance 源是否可用
+// IsAvailable checks whether the Binance source is available
 func (s *BinanceSource) IsAvailable() bool {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return s.available
 }
 
-// GetName 返回价格源名称
+// GetName returns the price source name
 func (s *BinanceSource) GetName() string {
 	return "Binance"
 }
 
-// GetType 返回价格源类型
+// GetType returns the price source type
 func (s *BinanceSource) GetType() SourceType {
 	return SourceTypeCEX
 }
 
-// SupportedPairs 返回 Binance 支持的交易对
+// SupportedPairs returns the pairs supported by Binance
 func (s *BinanceSource) SupportedPairs() []TradingPair {
 	return []TradingPair{
 		PairBTCUSD, PairETHUSD,
@@ -150,20 +150,20 @@ func (s *BinanceSource) SupportedPairs() []TradingPair {
 }
 
 // ===========================================================================
-// Coinbase 价格源
+// Coinbase price source
 // ===========================================================================
 
-// CoinbaseSource 从 Coinbase API 获取价格数据。
-// API 端点: https://api.coinbase.com/v2/prices/{pair}/spot
+// CoinbaseSource fetches price data from the Coinbase API.
+// API endpoint: https://api.coinbase.com/v2/prices/{pair}/spot
 type CoinbaseSource struct {
 	mu        sync.RWMutex
 	available bool
 	baseURL   string
-	// pairMapping 将标准交易对映射为 Coinbase API 格式
+	// pairMapping maps standard pairs to Coinbase API format
 	pairMapping map[string]string
 }
 
-// coinbasePriceResponse Coinbase 价格 API 响应
+// coinbasePriceResponse is the Coinbase price API response
 type coinbasePriceResponse struct {
 	Data struct {
 		Amount   string `json:"amount"`
@@ -171,7 +171,7 @@ type coinbasePriceResponse struct {
 	} `json:"data"`
 }
 
-// NewCoinbaseSource 创建 Coinbase 价格源实例
+// NewCoinbaseSource creates a Coinbase price source instance
 func NewCoinbaseSource() *CoinbaseSource {
 	return &CoinbaseSource{
 		available: true,
@@ -186,7 +186,7 @@ func NewCoinbaseSource() *CoinbaseSource {
 	}
 }
 
-// FetchPrice 从 Coinbase 获取指定交易对的价格
+// FetchPrice fetches the price for the given pair from Coinbase
 func (s *CoinbaseSource) FetchPrice(pair TradingPair) (PriceData, error) {
 	cbPair, ok := s.pairMapping[pair.String()]
 	if !ok {
@@ -218,24 +218,24 @@ func (s *CoinbaseSource) FetchPrice(pair TradingPair) (PriceData, error) {
 	}, nil
 }
 
-// IsAvailable 检查 Coinbase 源是否可用
+// IsAvailable checks whether the Coinbase source is available
 func (s *CoinbaseSource) IsAvailable() bool {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return s.available
 }
 
-// GetName 返回价格源名称
+// GetName returns the price source name
 func (s *CoinbaseSource) GetName() string {
 	return "Coinbase"
 }
 
-// GetType 返回价格源类型
+// GetType returns the price source type
 func (s *CoinbaseSource) GetType() SourceType {
 	return SourceTypeCEX
 }
 
-// SupportedPairs 返回 Coinbase 支持的交易对
+// SupportedPairs returns the pairs supported by Coinbase
 func (s *CoinbaseSource) SupportedPairs() []TradingPair {
 	return []TradingPair{
 		PairBTCUSD, PairETHUSD,
@@ -245,26 +245,26 @@ func (s *CoinbaseSource) SupportedPairs() []TradingPair {
 }
 
 // ===========================================================================
-// Kraken 价格源
+// Kraken price source
 // ===========================================================================
 
-// KrakenSource 从 Kraken API 获取价格数据。
-// API 端点: https://api.kraken.com/0/public/Ticker
+// KrakenSource fetches price data from the Kraken API.
+// API endpoint: https://api.kraken.com/0/public/Ticker
 type KrakenSource struct {
 	mu        sync.RWMutex
 	available bool
 	baseURL   string
-	// pairMapping 将标准交易对映射为 Kraken API 格式
+	// pairMapping maps standard pairs to Kraken API format
 	pairMapping map[string]string
 }
 
-// krakenTickerResponse Kraken Ticker API 响应
+// krakenTickerResponse is the Kraken Ticker API response
 type krakenTickerResponse struct {
 	Error  []string                          `json:"error"`
 	Result map[string]krakenTickerPairResult `json:"result"`
 }
 
-// krakenTickerPairResult Kraken 单个交易对的 Ticker 数据
+// krakenTickerPairResult is the ticker data for a single Kraken pair
 type krakenTickerPairResult struct {
 	// Ask [price, wholeLotVolume, lotVolume]
 	Ask []string `json:"a"`
@@ -276,7 +276,7 @@ type krakenTickerPairResult struct {
 	Volume []string `json:"v"`
 }
 
-// NewKrakenSource 创建 Kraken 价格源实例
+// NewKrakenSource creates a Kraken price source instance
 func NewKrakenSource() *KrakenSource {
 	return &KrakenSource{
 		available: true,
@@ -291,7 +291,7 @@ func NewKrakenSource() *KrakenSource {
 	}
 }
 
-// FetchPrice 从 Kraken 获取指定交易对的价格
+// FetchPrice fetches the price for the given pair from Kraken
 func (s *KrakenSource) FetchPrice(pair TradingPair) (PriceData, error) {
 	krakenPair, ok := s.pairMapping[pair.String()]
 	if !ok {
@@ -312,7 +312,7 @@ func (s *KrakenSource) FetchPrice(pair TradingPair) (PriceData, error) {
 		return PriceData{}, fmt.Errorf("%w: Kraken API error: %v", ErrPriceUnavailable, resp.Error)
 	}
 
-	// 遍历 result 获取第一个交易对数据
+	// Iterate over result to get the first pair's data
 	var tickerData krakenTickerPairResult
 	for _, v := range resp.Result {
 		tickerData = v
@@ -340,7 +340,7 @@ func (s *KrakenSource) FetchPrice(pair TradingPair) (PriceData, error) {
 	}, nil
 }
 
-// safeIndex 安全地获取字符串切片中的元素，越界时返回空字符串
+// safeIndex safely indexes a string slice, returning "" when out of range
 func safeIndex(s []string, i int) string {
 	if i < len(s) {
 		return s[i]
@@ -348,24 +348,24 @@ func safeIndex(s []string, i int) string {
 	return ""
 }
 
-// IsAvailable 检查 Kraken 源是否可用
+// IsAvailable checks whether the Kraken source is available
 func (s *KrakenSource) IsAvailable() bool {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return s.available
 }
 
-// GetName 返回价格源名称
+// GetName returns the price source name
 func (s *KrakenSource) GetName() string {
 	return "Kraken"
 }
 
-// GetType 返回价格源类型
+// GetType returns the price source type
 func (s *KrakenSource) GetType() SourceType {
 	return SourceTypeCEX
 }
 
-// SupportedPairs 返回 Kraken 支持的交易对
+// SupportedPairs returns the pairs supported by Kraken
 func (s *KrakenSource) SupportedPairs() []TradingPair {
 	return []TradingPair{
 		PairBTCUSD, PairETHUSD,
@@ -375,20 +375,20 @@ func (s *KrakenSource) SupportedPairs() []TradingPair {
 }
 
 // ===========================================================================
-// Uniswap V3 价格源（链上 DEX）
+// Uniswap V3 price source (on-chain DEX)
 // ===========================================================================
 
-// UniswapSource 从 Uniswap V3 的 The Graph 子图获取价格数据。
-// 使用 The Graph 的公开子图 API 查询池子价格。
+// UniswapSource fetches price data from Uniswap V3's The Graph subgraph.
+// Queries pool prices via The Graph's public subgraph API.
 type UniswapSource struct {
 	mu        sync.RWMutex
 	available bool
 	subgraph  string
-	// poolMapping 将交易对映射为 Uniswap 池子地址
+	// poolMapping maps pairs to Uniswap pool addresses
 	poolMapping map[string]string
 }
 
-// uniswapGraphResponse The Graph 子图查询响应
+// uniswapGraphResponse is The Graph subgraph query response
 type uniswapGraphResponse struct {
 	Data struct {
 		Pool *struct {
@@ -400,7 +400,7 @@ type uniswapGraphResponse struct {
 	} `json:"data"`
 }
 
-// NewUniswapSource 创建 Uniswap 价格源实例
+// NewUniswapSource creates a Uniswap price source instance
 func NewUniswapSource() *UniswapSource {
 	return &UniswapSource{
 		available: true,
@@ -414,7 +414,7 @@ func NewUniswapSource() *UniswapSource {
 	}
 }
 
-// FetchPrice 从 Uniswap V3 子图获取指定交易对的价格
+// FetchPrice fetches the price for the given pair from the Uniswap V3 subgraph
 func (s *UniswapSource) FetchPrice(pair TradingPair) (PriceData, error) {
 	poolAddr, ok := s.poolMapping[pair.String()]
 	if !ok {
@@ -429,7 +429,7 @@ func (s *UniswapSource) FetchPrice(pair TradingPair) (PriceData, error) {
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	// 使用 io.NopCloser 将 query 包装为 request body
+	// Wrap the query as the request body using io.NopCloser
 	req.Body = io.NopCloser(stringReader(query))
 
 	resp, err := httpClient.Do(req)
@@ -474,7 +474,7 @@ func (s *UniswapSource) FetchPrice(pair TradingPair) (PriceData, error) {
 	}, nil
 }
 
-// stringReader 辅助函数，返回字符串的 io.Reader
+// stringReader is a helper that returns an io.Reader over a string
 type stringReaderImpl struct {
 	s string
 	i int
@@ -493,24 +493,24 @@ func (r *stringReaderImpl) Read(p []byte) (n int, err error) {
 	return
 }
 
-// IsAvailable 检查 Uniswap 源是否可用
+// IsAvailable checks whether the Uniswap source is available
 func (s *UniswapSource) IsAvailable() bool {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return s.available
 }
 
-// GetName 返回价格源名称
+// GetName returns the price source name
 func (s *UniswapSource) GetName() string {
 	return "Uniswap V3"
 }
 
-// GetType 返回价格源类型
+// GetType returns the price source type
 func (s *UniswapSource) GetType() SourceType {
 	return SourceTypeDEX
 }
 
-// SupportedPairs 返回 Uniswap 支持的交易对
+// SupportedPairs returns the pairs supported by Uniswap
 func (s *UniswapSource) SupportedPairs() []TradingPair {
 	return []TradingPair{
 		PairETHUSD, PairBTCUSD,
@@ -519,19 +519,19 @@ func (s *UniswapSource) SupportedPairs() []TradingPair {
 }
 
 // ===========================================================================
-// SushiSwap 价格源（链上 DEX）
+// SushiSwap price source (on-chain DEX)
 // ===========================================================================
 
-// SushiSwapSource 从 SushiSwap 的 The Graph 子图获取价格数据
+// SushiSwapSource fetches price data from SushiSwap's The Graph subgraph
 type SushiSwapSource struct {
 	mu        sync.RWMutex
 	available bool
 	subgraph  string
-	// pairMapping 将交易对映射为 SushiSwap 池子地址
+	// pairMapping maps pairs to SushiSwap pool addresses
 	pairMapping map[string]string
 }
 
-// sushiGraphResponse SushiSwap Graph 子图查询响应
+// sushiGraphResponse is the SushiSwap Graph subgraph query response
 type sushiGraphResponse struct {
 	Data struct {
 		Pair *struct {
@@ -543,19 +543,19 @@ type sushiGraphResponse struct {
 	} `json:"data"`
 }
 
-// NewSushiSwapSource 创建 SushiSwap 价格源实例
+// NewSushiSwapSource creates a SushiSwap price source instance
 func NewSushiSwapSource() *SushiSwapSource {
 	return &SushiSwapSource{
 		available: true,
 		subgraph:  "https://api.thegraph.com/subgraphs/name/sushiswap/exchange",
 		pairMapping: map[string]string{
 			"ETH/USD": "0x397ff1542f962076d0bfe58ea045ffa2d347aca0", // ETH/USDC
-			"BTC/USD": "0xceff51756c56ceffca006cd410b03ffc46dd3a58", // WBTC/WETH (需要换算)
+			"BTC/USD": "0xceff51756c56ceffca006cd410b03ffc46dd3a58", // WBTC/WETH (needs conversion)
 		},
 	}
 }
 
-// FetchPrice 从 SushiSwap 子图获取指定交易对的价格
+// FetchPrice fetches the price for the given pair from the SushiSwap subgraph
 func (s *SushiSwapSource) FetchPrice(pair TradingPair) (PriceData, error) {
 	pairAddr, ok := s.pairMapping[pair.String()]
 	if !ok {
@@ -613,43 +613,43 @@ func (s *SushiSwapSource) FetchPrice(pair TradingPair) (PriceData, error) {
 	}, nil
 }
 
-// IsAvailable 检查 SushiSwap 源是否可用
+// IsAvailable checks whether the SushiSwap source is available
 func (s *SushiSwapSource) IsAvailable() bool {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return s.available
 }
 
-// GetName 返回价格源名称
+// GetName returns the price source name
 func (s *SushiSwapSource) GetName() string {
 	return "SushiSwap"
 }
 
-// GetType 返回价格源类型
+// GetType returns the price source type
 func (s *SushiSwapSource) GetType() SourceType {
 	return SourceTypeDEX
 }
 
-// SupportedPairs 返回 SushiSwap 支持的交易对
+// SupportedPairs returns the pairs supported by SushiSwap
 func (s *SushiSwapSource) SupportedPairs() []TradingPair {
 	return []TradingPair{PairETHUSD, PairBTCUSD}
 }
 
 // ===========================================================================
-// Curve Finance 价格源（链上 DEX，专注稳定币）
+// Curve Finance price source (on-chain DEX, stablecoin-focused)
 // ===========================================================================
 
-// CurveSource 从 Curve Finance API 获取价格数据。
-// Curve 以稳定币交易对和低滑点闻名。
+// CurveSource fetches price data from the Curve Finance API.
+// Curve is known for stablecoin pairs and low slippage.
 type CurveSource struct {
 	mu        sync.RWMutex
 	available bool
 	baseURL   string
-	// poolMapping 将交易对映射为 Curve 池子标识
+	// poolMapping maps pairs to Curve pool identifiers
 	poolMapping map[string]string
 }
 
-// curvePoolResponse Curve API 响应
+// curvePoolResponse is the Curve API response
 type curvePoolResponse struct {
 	Data struct {
 		PoolData []struct {
@@ -666,7 +666,7 @@ type curvePoolResponse struct {
 	} `json:"data"`
 }
 
-// NewCurveSource 创建 Curve 价格源实例
+// NewCurveSource creates a Curve price source instance
 func NewCurveSource() *CurveSource {
 	return &CurveSource{
 		available: true,
@@ -678,7 +678,7 @@ func NewCurveSource() *CurveSource {
 	}
 }
 
-// FetchPrice 从 Curve 获取指定交易对的价格
+// FetchPrice fetches the price for the given pair from Curve
 func (s *CurveSource) FetchPrice(pair TradingPair) (PriceData, error) {
 	_, ok := s.poolMapping[pair.String()]
 	if !ok {
@@ -695,7 +695,7 @@ func (s *CurveSource) FetchPrice(pair TradingPair) (PriceData, error) {
 		return PriceData{}, fmt.Errorf("%w: Curve: %v", ErrPriceUnavailable, err)
 	}
 
-	// 在池子的币种中查找目标资产的价格
+	// Look up the target asset's price among the pool's coins
 	targetSymbol := pair.Base
 	var price float64
 	var liquidity float64
@@ -714,7 +714,7 @@ func (s *CurveSource) FetchPrice(pair TradingPair) (PriceData, error) {
 	}
 
 	if price <= 0 {
-		// 稳定币默认价格为 1.0（仅在 API 无法返回时使用）
+		// Stablecoins default to 1.0 (only when the API cannot return a price)
 		return PriceData{}, fmt.Errorf("%w: Curve: price not found for %s", ErrPriceUnavailable, pair)
 	}
 
@@ -732,49 +732,49 @@ func (s *CurveSource) FetchPrice(pair TradingPair) (PriceData, error) {
 	}, nil
 }
 
-// IsAvailable 检查 Curve 源是否可用
+// IsAvailable checks whether the Curve source is available
 func (s *CurveSource) IsAvailable() bool {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return s.available
 }
 
-// GetName 返回价格源名称
+// GetName returns the price source name
 func (s *CurveSource) GetName() string {
 	return "Curve"
 }
 
-// GetType 返回价格源类型
+// GetType returns the price source type
 func (s *CurveSource) GetType() SourceType {
 	return SourceTypeDEX
 }
 
-// SupportedPairs 返回 Curve 支持的交易对
+// SupportedPairs returns the pairs supported by Curve
 func (s *CurveSource) SupportedPairs() []TradingPair {
 	return []TradingPair{PairUSDTUSD, PairUSDCUSD}
 }
 
 // ===========================================================================
-// 稳定币锚定价格源
+// Stablecoin peg price source
 // ===========================================================================
 
-// StablecoinSource 提供稳定币（USDT、USDC、DAI）的锚定价格。
-// 从 CoinGecko API 获取实际的稳定币价格偏离数据。
+// StablecoinSource provides pegged prices for stablecoins (USDT, USDC, DAI).
+// Fetches actual stablecoin price deviation data from the CoinGecko API.
 type StablecoinSource struct {
 	mu        sync.RWMutex
 	available bool
 	baseURL   string
-	// coinIDs 将稳定币符号映射为 CoinGecko 的 coin ID
+	// coinIDs maps stablecoin symbols to CoinGecko coin IDs
 	coinIDs map[string]string
 }
 
-// coingeckoResponse CoinGecko 简单价格 API 响应
+// coingeckoResponse is the CoinGecko simple price API response
 type coingeckoResponse map[string]struct {
 	USD       float64 `json:"usd"`
 	Volume24h float64 `json:"usd_24h_vol"`
 }
 
-// NewStablecoinSource 创建稳定币锚定价格源实例
+// NewStablecoinSource creates a stablecoin peg price source instance
 func NewStablecoinSource() *StablecoinSource {
 	return &StablecoinSource{
 		available: true,
@@ -787,7 +787,7 @@ func NewStablecoinSource() *StablecoinSource {
 	}
 }
 
-// FetchPrice 从 CoinGecko 获取稳定币的实际价格
+// FetchPrice fetches the stablecoin's actual price from CoinGecko
 func (s *StablecoinSource) FetchPrice(pair TradingPair) (PriceData, error) {
 	if pair.Quote != "USD" {
 		return PriceData{}, fmt.Errorf("%w: %s on Stablecoin source (only USD pairs)", ErrPairNotSupported, pair)
@@ -827,45 +827,45 @@ func (s *StablecoinSource) FetchPrice(pair TradingPair) (PriceData, error) {
 	}, nil
 }
 
-// IsAvailable 检查稳定币价格源是否可用
+// IsAvailable checks whether the stablecoin source is available
 func (s *StablecoinSource) IsAvailable() bool {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return s.available
 }
 
-// GetName 返回价格源名称
+// GetName returns the price source name
 func (s *StablecoinSource) GetName() string {
 	return "Stablecoin-CoinGecko"
 }
 
-// GetType 返回价格源类型
+// GetType returns the price source type
 func (s *StablecoinSource) GetType() SourceType {
 	return SourceTypeStablecoin
 }
 
-// SupportedPairs 返回稳定币源支持的交易对
+// SupportedPairs returns the pairs supported by the stablecoin source
 func (s *StablecoinSource) SupportedPairs() []TradingPair {
 	return []TradingPair{PairUSDTUSD, PairUSDCUSD}
 }
 
 // ===========================================================================
-// 工厂函数
+// Factory functions
 // ===========================================================================
 
-// DefaultSources 创建并返回所有默认价格源的列表。
-// 包括所有 CEX、DEX 和稳定币锚定源。
+// DefaultSources creates and returns the list of all default price sources.
+// Includes all CEX, DEX, and stablecoin peg sources.
 func DefaultSources() []PriceSource {
 	return []PriceSource{
-		// CEX 价格源
+		// CEX price sources
 		NewBinanceSource(),
 		NewCoinbaseSource(),
 		NewKrakenSource(),
-		// DEX 价格源
+		// DEX price sources
 		NewUniswapSource(),
 		NewSushiSwapSource(),
 		NewCurveSource(),
-		// 稳定币锚定
+		// Stablecoin pegs
 		NewStablecoinSource(),
 	}
 }

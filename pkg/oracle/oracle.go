@@ -10,42 +10,42 @@ import (
 	"time"
 )
 
-// PriceOracle 是多源价格预言机的核心结构体。
-// 它管理多个价格源，聚合价格数据，并提供缓存和滑点保护。
+// PriceOracle is the core struct of the multi-source price oracle.
+// It manages multiple price sources, aggregates price data, and provides caching and slippage protection.
 type PriceOracle struct {
 	mu      sync.RWMutex
 	config  OracleConfig
 	sources []PriceSource
 
-	// cache 按交易对缓存聚合后的价格
+	// cache stores aggregated prices per trading pair
 	cache map[string]cacheEntry
 
-	// cacheHits 缓存命中次数（使用原子操作）
+	// cacheHits is the cache hit count (atomic)
 	cacheHits int64
-	// cacheMisses 缓存未命中次数（使用原子操作）
+	// cacheMisses is the cache miss count (atomic)
 	cacheMisses int64
 
-	// priceHistory 价格历史记录（用于偏差检测）
+	// priceHistory holds price history records (for deviation detection)
 	priceHistory   map[string][]priceHistoryEntry
 	priceHistoryMu sync.RWMutex
 
-	// alertHandler 价格偏差告警处理器
+	// alertHandler handles price deviation alerts
 	alertHandler   AlertHandler
 	alertHandlerMu sync.RWMutex
 
-	// running 标记预言机是否正在运行
+	// running indicates whether the oracle is running
 	running bool
 
-	// stopCh 用于通知后台刷新 goroutine 停止
+	// stopCh signals the background refresh goroutine to stop
 	stopCh chan struct{}
 
-	// logger 日志输出
+	// logger for log output
 	logger *log.Logger
 }
 
-// NewPriceOracle 创建一个新的价格预言机实例。
-// sources 为价格源列表，config 为配置参数。
-// 如果 config 未通过验证，返回错误。
+// NewPriceOracle creates a new price oracle instance.
+// sources is the list of price sources; config is the configuration.
+// Returns an error if config fails validation.
 func NewPriceOracle(sources []PriceSource, config OracleConfig) (*PriceOracle, error) {
 	if err := config.Validate(); err != nil {
 		return nil, err
@@ -65,13 +65,13 @@ func NewPriceOracle(sources []PriceSource, config OracleConfig) (*PriceOracle, e
 	}, nil
 }
 
-// NewDefaultPriceOracle 使用默认价格源和默认配置创建预言机。
+// NewDefaultPriceOracle creates an oracle with default sources and default config.
 func NewDefaultPriceOracle() (*PriceOracle, error) {
 	return NewPriceOracle(DefaultSources(), DefaultConfig())
 }
 
-// Start 启动预言机的后台自动刷新。
-// 调用后，预言机会按配置的间隔自动更新所有支持的交易对价格。
+// Start starts the oracle's background auto-refresh.
+// Once called, the oracle refreshes prices for all supported pairs at the configured interval.
 func (o *PriceOracle) Start() {
 	o.mu.Lock()
 	if o.running {
@@ -81,14 +81,14 @@ func (o *PriceOracle) Start() {
 	o.running = true
 	o.mu.Unlock()
 
-	// 启动时立即刷新一次
+	// Refresh immediately on startup
 	o.refreshAll()
 
-	// 后台定期刷新
+	// Periodic background refresh
 	go o.refreshLoop()
 }
 
-// Stop 停止预言机的后台自动刷新
+// Stop stops the oracle's background auto-refresh
 func (o *PriceOracle) Stop() {
 	o.mu.Lock()
 	defer o.mu.Unlock()
@@ -101,14 +101,14 @@ func (o *PriceOracle) Stop() {
 	close(o.stopCh)
 }
 
-// IsRunning 返回预言机是否正在运行
+// IsRunning returns whether the oracle is running
 func (o *PriceOracle) IsRunning() bool {
 	o.mu.RLock()
 	defer o.mu.RUnlock()
 	return o.running
 }
 
-// refreshLoop 后台刷新循环
+// refreshLoop is the background refresh loop
 func (o *PriceOracle) refreshLoop() {
 	ticker := time.NewTicker(o.config.RefreshInterval)
 	defer ticker.Stop()
@@ -123,7 +123,7 @@ func (o *PriceOracle) refreshLoop() {
 	}
 }
 
-// refreshAll 刷新所有支持的交易对价格
+// refreshAll refreshes prices for all supported pairs
 func (o *PriceOracle) refreshAll() {
 	pairs := SupportedPairs()
 	var wg sync.WaitGroup
@@ -142,39 +142,39 @@ func (o *PriceOracle) refreshAll() {
 	wg.Wait()
 }
 
-// GetPrice 获取指定交易对的聚合价格。
-// 优先使用缓存，缓存过期时重新获取。
+// GetPrice returns the aggregated price for the given pair.
+// Uses the cache first; refetches when the cache has expired.
 func (o *PriceOracle) GetPrice(pair TradingPair) (AggregatedPrice, error) {
-	// 先检查缓存
+	// Check the cache first
 	o.mu.RLock()
 	entry, exists := o.cache[pair.String()]
 	o.mu.RUnlock()
 
 	if exists && !entry.isExpired() {
-		// 缓存命中 - 更新统计
+		// Cache hit - update stats
 		atomic.AddInt64(&o.cacheHits, 1)
 		return entry.price, nil
 	}
 
-	// 缓存未命中 - 更新统计
+	// Cache miss - update stats
 	atomic.AddInt64(&o.cacheMisses, 1)
 
-	// 获取旧价格用于偏差检测（在获取新价格之前）
+	// Get the old price for deviation detection (before fetching the new price)
 	oldPrice := o.getLastPrice(pair)
 
-	// 缓存不存在或已过期，重新获取
+	// Cache missing or expired; refetch
 	aggPrice, err := o.fetchAndAggregate(pair)
 	if err != nil {
 		return aggPrice, err
 	}
 
-	// 检查价格偏差并触发告警
+	// Check price deviation and trigger alerts
 	o.checkPriceDeviationWithOldPrice(aggPrice, oldPrice)
 
 	return aggPrice, nil
 }
 
-// GetPriceFromSource 从指定的价格源获取价格（不经过聚合）
+// GetPriceFromSource fetches the price from a specific source (no aggregation)
 func (o *PriceOracle) GetPriceFromSource(pair TradingPair, sourceName string) (PriceData, error) {
 	for _, source := range o.sources {
 		if source.GetName() == sourceName && source.IsAvailable() {
@@ -184,12 +184,12 @@ func (o *PriceOracle) GetPriceFromSource(pair TradingPair, sourceName string) (P
 	return PriceData{}, fmt.Errorf("%w: source %q not found or unavailable", ErrPriceUnavailable, sourceName)
 }
 
-// GetAllPrices 从所有可用的价格源获取指定交易对的价格（不聚合）
+// GetAllPrices fetches the given pair's price from all available sources (no aggregation)
 func (o *PriceOracle) GetAllPrices(pair TradingPair) []PriceData {
 	return o.collectPrices(pair)
 }
 
-// fetchAndAggregate 从所有可用源收集价格并聚合
+// fetchAndAggregate collects prices from all available sources and aggregates them
 func (o *PriceOracle) fetchAndAggregate(pair TradingPair) (AggregatedPrice, error) {
 	prices := o.collectPrices(pair)
 
@@ -200,10 +200,10 @@ func (o *PriceOracle) fetchAndAggregate(pair TradingPair) (AggregatedPrice, erro
 		)
 	}
 
-	// 聚合计算
+	// Aggregate
 	aggregated := o.aggregate(pair, prices)
 
-	// 更新缓存
+	// Update the cache
 	o.mu.Lock()
 	o.cache[pair.String()] = cacheEntry{
 		price:     aggregated,
@@ -211,13 +211,13 @@ func (o *PriceOracle) fetchAndAggregate(pair TradingPair) (AggregatedPrice, erro
 	}
 	o.mu.Unlock()
 
-	// 保存价格历史
+	// Save price history
 	o.addPriceHistory(pair, aggregated.Price)
 
 	return aggregated, nil
 }
 
-// collectPrices 从所有可用的价格源并行收集价格数据
+// collectPrices collects price data from all available sources in parallel
 func (o *PriceOracle) collectPrices(pair TradingPair) []PriceData {
 	type result struct {
 		data PriceData
@@ -232,7 +232,7 @@ func (o *PriceOracle) collectPrices(pair TradingPair) []PriceData {
 			continue
 		}
 
-		// 检查该源是否支持此交易对
+		// Check whether the source supports this pair
 		supported := false
 		for _, sp := range source.SupportedPairs() {
 			if sp.Equal(pair) {
@@ -252,7 +252,7 @@ func (o *PriceOracle) collectPrices(pair TradingPair) []PriceData {
 		}(source)
 	}
 
-	// 等待所有 goroutine 完成后关闭通道
+	// Close the channel after all goroutines finish
 	go func() {
 		wg.Wait()
 		close(results)
@@ -272,24 +272,24 @@ func (o *PriceOracle) collectPrices(pair TradingPair) []PriceData {
 	return prices
 }
 
-// aggregate 对收集到的价格数据进行聚合。
-// 步骤:
-//  1. 离群值过滤（剔除偏离中位数超过阈值的数据）
-//  2. 加权平均计算（Volume-Weighted Average Price）
-//  3. 统计计算（置信度、标准差等）
+// aggregate aggregates the collected price data.
+// Steps:
+//  1. Outlier filtering (drop data deviating from the median beyond the threshold)
+//  2. Weighted average (Volume-Weighted Average Price)
+//  3. Statistics (confidence, standard deviation, etc.)
 func (o *PriceOracle) aggregate(pair TradingPair, prices []PriceData) AggregatedPrice {
 	if len(prices) == 0 {
 		return AggregatedPrice{Pair: pair, Timestamp: time.Now()}
 	}
 
-	// 只有一个价格源时直接返回
+	// With a single source, return directly
 	if len(prices) == 1 {
 		return AggregatedPrice{
 			Pair:        pair,
 			Price:       prices[0].Price,
 			Sources:     1,
 			TotalVolume: prices[0].Volume24h,
-			Confidence:  0.5, // 单源置信度较低
+			Confidence:  0.5, // lower confidence for a single source
 			Timestamp:   time.Now(),
 			MinPrice:    prices[0].Price,
 			MaxPrice:    prices[0].Price,
@@ -298,21 +298,21 @@ func (o *PriceOracle) aggregate(pair TradingPair, prices []PriceData) Aggregated
 		}
 	}
 
-	// 步骤 1: 计算中位数
+	// Step 1: compute the median
 	median := o.calculateMedian(prices)
 
-	// 步骤 2: 离群值过滤
+	// Step 2: outlier filtering
 	filtered := o.filterOutliers(prices, median)
 
-	// 如果过滤后没有剩余数据，使用原始数据
+	// If nothing remains after filtering, use the original data
 	if len(filtered) == 0 {
 		filtered = prices
 	}
 
-	// 步骤 3: 加权平均价格计算 (VWAP)
+	// Step 3: volume-weighted average price (VWAP)
 	vwap := o.calculateVWAP(filtered)
 
-	// 步骤 4: 统计信息
+	// Step 4: statistics
 	minPrice, maxPrice := o.minMax(filtered)
 	deviation := o.calculateStdDev(filtered, vwap)
 	totalVolume := o.totalVolume(filtered)
@@ -332,7 +332,7 @@ func (o *PriceOracle) aggregate(pair TradingPair, prices []PriceData) Aggregated
 	}
 }
 
-// calculateMedian 计算价格的中位数
+// calculateMedian computes the median of the prices
 func (o *PriceOracle) calculateMedian(prices []PriceData) float64 {
 	vals := make([]float64, len(prices))
 	for i, p := range prices {
@@ -347,14 +347,14 @@ func (o *PriceOracle) calculateMedian(prices []PriceData) float64 {
 	return vals[n/2]
 }
 
-// filterOutliers 过滤掉偏离中位数超过阈值的价格数据。
-// 阈值由 config.DeviationThreshold 指定（百分比）。
+// filterOutliers removes price data deviating from the median beyond the threshold.
+// The threshold is given by config.DeviationThreshold (percent).
 func (o *PriceOracle) filterOutliers(prices []PriceData, median float64) []PriceData {
 	if median <= 0 {
 		return prices
 	}
 
-	threshold := o.config.DeviationThreshold / 100.0 // 转为小数
+	threshold := o.config.DeviationThreshold / 100.0 // convert to fraction
 	var filtered []PriceData
 
 	for _, p := range prices {
@@ -370,8 +370,8 @@ func (o *PriceOracle) filterOutliers(prices []PriceData, median float64) []Price
 	return filtered
 }
 
-// calculateVWAP 计算成交量加权平均价格 (Volume-Weighted Average Price)。
-// 如果所有数据源的成交量都为零，则回退到简单平均。
+// calculateVWAP computes the volume-weighted average price (VWAP).
+// Falls back to a simple average if all source volumes are zero.
 func (o *PriceOracle) calculateVWAP(prices []PriceData) float64 {
 	var totalWeightedPrice float64
 	var totalVolume float64
@@ -379,14 +379,14 @@ func (o *PriceOracle) calculateVWAP(prices []PriceData) float64 {
 	for _, p := range prices {
 		volume := p.Volume24h
 		if volume <= 0 {
-			volume = 1 // 无成交量数据时赋予最小权重
+			volume = 1 // minimum weight when no volume data
 		}
 		totalWeightedPrice += p.Price * volume
 		totalVolume += volume
 	}
 
 	if totalVolume <= 0 {
-		// 回退到简单平均
+		// Fall back to a simple average
 		var sum float64
 		for _, p := range prices {
 			sum += p.Price
@@ -397,7 +397,7 @@ func (o *PriceOracle) calculateVWAP(prices []PriceData) float64 {
 	return totalWeightedPrice / totalVolume
 }
 
-// calculateStdDev 计算价格的标准差
+// calculateStdDev computes the standard deviation of the prices
 func (o *PriceOracle) calculateStdDev(prices []PriceData, mean float64) float64 {
 	if len(prices) <= 1 {
 		return 0
@@ -413,7 +413,7 @@ func (o *PriceOracle) calculateStdDev(prices []PriceData, mean float64) float64 
 	return math.Sqrt(variance)
 }
 
-// minMax 返回价格列表中的最小和最大价格
+// minMax returns the minimum and maximum prices in the list
 func (o *PriceOracle) minMax(prices []PriceData) (float64, float64) {
 	if len(prices) == 0 {
 		return 0, 0
@@ -434,7 +434,7 @@ func (o *PriceOracle) minMax(prices []PriceData) (float64, float64) {
 	return minP, maxP
 }
 
-// totalVolume 计算总成交量
+// totalVolume computes the total volume
 func (o *PriceOracle) totalVolume(prices []PriceData) float64 {
 	var total float64
 	for _, p := range prices {
@@ -443,29 +443,29 @@ func (o *PriceOracle) totalVolume(prices []PriceData) float64 {
 	return total
 }
 
-// calculateConfidence 计算置信度（0-1之间）。
-// 基于数据源数量和价格一致性。
+// calculateConfidence computes the confidence (0-1).
+// Based on source count and price consistency.
 func (o *PriceOracle) calculateConfidence(prices []PriceData, stdDev float64) float64 {
 	if len(prices) == 0 {
 		return 0
 	}
 
-	// 数据源数量因子：更多源 -> 更高置信度
-	// 使用 sigmoid-like 曲线：1 源 = 0.5, 3 源 = 0.75, 5+ 源 = ~0.9
+	// Source count factor: more sources -> higher confidence
+	// Uses a sigmoid-like curve: 1 source = 0.5, 3 sources = 0.75, 5+ sources = ~0.9
 	sourceFactor := 1.0 - 1.0/(1.0+float64(len(prices))*0.5)
 
-	// 一致性因子：标准差越小 -> 越一致 -> 越高置信度
-	// 计算变异系数 (CV = stdDev / mean)
+	// Consistency factor: smaller std dev -> more consistent -> higher confidence
+	// Compute the coefficient of variation (CV = stdDev / mean)
 	mean := o.calculateVWAP(prices)
 	consistencyFactor := 1.0
 	if mean > 0 && stdDev > 0 {
 		cv := stdDev / mean
-		// CV < 0.01 (1%) -> 高一致性
-		// CV > 0.05 (5%) -> 低一致性
+		// CV < 0.01 (1%) -> high consistency
+		// CV > 0.05 (5%) -> low consistency
 		consistencyFactor = math.Max(0.1, 1.0-cv*10)
 	}
 
-	// 源类型多样性加分：不同类型的源提供更可靠的价格
+	// Source-type diversity bonus: mixed source types yield more reliable prices
 	typeSet := make(map[SourceType]bool)
 	for _, p := range prices {
 		typeSet[p.SourceType] = true
@@ -484,15 +484,15 @@ func (o *PriceOracle) calculateConfidence(prices []PriceData, stdDev float64) fl
 }
 
 // ===========================================================================
-// 滑点保护
+// Slippage protection
 // ===========================================================================
 
-// CalculateSlippage 计算给定交易对和输入金额的滑点。
-// inputAmount: 输入的基础资产数量
-// pair: 交易对
-// 返回滑点分析结果。
+// CalculateSlippage computes slippage for a given pair and input amount.
+// inputAmount: amount of the base asset
+// pair: trading pair
+// Returns the slippage analysis result.
 func (o *PriceOracle) CalculateSlippage(pair TradingPair, inputAmount float64) (SlippageResult, error) {
-	// 获取当前聚合价格
+	// Get the current aggregated price
 	aggPrice, err := o.GetPrice(pair)
 	if err != nil {
 		return SlippageResult{}, fmt.Errorf("cannot calculate slippage: %w", err)
@@ -502,24 +502,24 @@ func (o *PriceOracle) CalculateSlippage(pair TradingPair, inputAmount float64) (
 		return SlippageResult{}, fmt.Errorf("%w: aggregated price is zero for %s", ErrPriceUnavailable, pair)
 	}
 
-	// 无滑点时的预期输出
+	// Expected output with zero slippage
 	expectedOutput := inputAmount * aggPrice.Price
 
-	// 价格影响估算
-	// 使用简化的恒定乘积 AMM 模型 (x * y = k)
-	// 价格影响 ≈ inputAmount / totalLiquidity
+	// Price impact estimation
+	// Uses a simplified constant-product AMM model (x * y = k)
+	// Price impact ≈ inputAmount / totalLiquidity
 	priceImpact := o.estimatePriceImpact(aggPrice, inputAmount)
 
-	// 考虑滑点后的实际输出
+	// Actual output after slippage
 	actualOutput := expectedOutput * (1 - priceImpact/100)
 
-	// 滑点百分比
+	// Slippage percentage
 	slippagePercent := 0.0
 	if expectedOutput > 0 {
 		slippagePercent = (expectedOutput - actualOutput) / expectedOutput * 100
 	}
 
-	// 满足最大滑点限制的最小输出
+	// Minimum output satisfying the max slippage limit
 	minOutput := expectedOutput * (1 - o.config.MaxSlippage/100)
 
 	return SlippageResult{
@@ -534,8 +534,8 @@ func (o *PriceOracle) CalculateSlippage(pair TradingPair, inputAmount float64) (
 	}, nil
 }
 
-// ValidateSlippage 验证交易的滑点是否在允许范围内。
-// 如果滑点超出 MaxSlippage，返回 ErrSlippageTooHigh。
+// ValidateSlippage checks whether a trade's slippage is within the allowed range.
+// Returns ErrSlippageTooHigh if slippage exceeds MaxSlippage.
 func (o *PriceOracle) ValidateSlippage(pair TradingPair, inputAmount float64, minOutputAmount float64) error {
 	result, err := o.CalculateSlippage(pair, inputAmount)
 	if err != nil {
@@ -555,10 +555,10 @@ func (o *PriceOracle) ValidateSlippage(pair TradingPair, inputAmount float64, mi
 	return nil
 }
 
-// estimatePriceImpact 估算价格影响百分比。
-// 使用恒定乘积 AMM 模型进行估算。
+// estimatePriceImpact estimates the price impact percentage.
+// Estimated using a constant-product AMM model.
 func (o *PriceOracle) estimatePriceImpact(aggPrice AggregatedPrice, inputAmount float64) float64 {
-	// 从原始价格数据中获取总流动性
+	// Get total liquidity from the raw price data
 	var totalLiquidity float64
 	for _, p := range aggPrice.RawPrices {
 		if p.Liquidity > 0 {
@@ -566,24 +566,24 @@ func (o *PriceOracle) estimatePriceImpact(aggPrice AggregatedPrice, inputAmount 
 		}
 	}
 
-	// 如果没有流动性数据，使用成交量作为近似值
+	// If no liquidity data, approximate with volume
 	if totalLiquidity <= 0 {
 		totalLiquidity = aggPrice.TotalVolume
 	}
 
-	// 如果仍然没有流动性数据，返回一个保守估计
+	// If still no liquidity data, return a conservative estimate
 	if totalLiquidity <= 0 {
-		return 0.1 // 默认 0.1% 的价格影响
+		return 0.1 // default 0.1% price impact
 	}
 
-	// 输入金额的 USD 价值
+	// USD value of the input amount
 	inputValueUSD := inputAmount * aggPrice.Price
 
-	// 价格影响估算: impact% ≈ (inputValue / totalLiquidity) * 100
-	// 使用恒定乘积公式的简化版本
+	// Price impact estimate: impact% ≈ (inputValue / totalLiquidity) * 100
+	// Uses a simplified version of the constant-product formula
 	impact := (inputValueUSD / totalLiquidity) * 100
 
-	// 非线性调整：大额交易的影响增长更快
+	// Non-linear adjustment: impact grows faster for large trades
 	if impact > 1.0 {
 		impact = impact * (1.0 + impact*0.1)
 	}
@@ -592,25 +592,25 @@ func (o *PriceOracle) estimatePriceImpact(aggPrice AggregatedPrice, inputAmount 
 }
 
 // ===========================================================================
-// 价格缓存管理
+// Price cache management
 // ===========================================================================
 
-// InvalidateCache 使指定交易对的缓存失效
+// InvalidateCache invalidates the cache for the given pair
 func (o *PriceOracle) InvalidateCache(pair TradingPair) {
 	o.mu.Lock()
 	defer o.mu.Unlock()
 	delete(o.cache, pair.String())
 }
 
-// InvalidateAllCache 使所有缓存失效
+// InvalidateAllCache invalidates all cached entries
 func (o *PriceOracle) InvalidateAllCache() {
 	o.mu.Lock()
 	defer o.mu.Unlock()
 	o.cache = make(map[string]cacheEntry)
 }
 
-// GetCachedPrice 仅从缓存获取价格（不触发刷新）。
-// 如果缓存不存在或已过期，返回 ErrPriceStale。
+// GetCachedPrice reads the price from cache only (no refresh).
+// Returns ErrPriceStale if the cache is missing or expired.
 func (o *PriceOracle) GetCachedPrice(pair TradingPair) (AggregatedPrice, error) {
 	o.mu.RLock()
 	defer o.mu.RUnlock()
@@ -629,17 +629,17 @@ func (o *PriceOracle) GetCachedPrice(pair TradingPair) (AggregatedPrice, error) 
 }
 
 // ===========================================================================
-// 价格源管理
+// Price source management
 // ===========================================================================
 
-// AddSource 添加一个新的价格源
+// AddSource adds a new price source
 func (o *PriceOracle) AddSource(source PriceSource) {
 	o.mu.Lock()
 	defer o.mu.Unlock()
 	o.sources = append(o.sources, source)
 }
 
-// RemoveSource 根据名称移除一个价格源
+// RemoveSource removes a price source by name
 func (o *PriceOracle) RemoveSource(name string) {
 	o.mu.Lock()
 	defer o.mu.Unlock()
@@ -652,7 +652,7 @@ func (o *PriceOracle) RemoveSource(name string) {
 	}
 }
 
-// GetSources 返回所有已注册的价格源
+// GetSources returns all registered price sources
 func (o *PriceOracle) GetSources() []PriceSource {
 	o.mu.RLock()
 	defer o.mu.RUnlock()
@@ -662,7 +662,7 @@ func (o *PriceOracle) GetSources() []PriceSource {
 	return result
 }
 
-// GetAvailableSources 返回当前可用的价格源
+// GetAvailableSources returns the currently available price sources
 func (o *PriceOracle) GetAvailableSources() []PriceSource {
 	o.mu.RLock()
 	defer o.mu.RUnlock()
@@ -677,18 +677,18 @@ func (o *PriceOracle) GetAvailableSources() []PriceSource {
 }
 
 // ===========================================================================
-// 配置管理
+// Configuration management
 // ===========================================================================
 
-// GetConfig 返回当前配置的副本
+// GetConfig returns a copy of the current config
 func (o *PriceOracle) GetConfig() OracleConfig {
 	o.mu.RLock()
 	defer o.mu.RUnlock()
 	return o.config
 }
 
-// UpdateConfig 更新预言机配置。
-// 新配置必须通过验证。
+// UpdateConfig updates the oracle configuration.
+// The new config must pass validation.
 func (o *PriceOracle) UpdateConfig(config OracleConfig) error {
 	if err := config.Validate(); err != nil {
 		return err
@@ -701,7 +701,7 @@ func (o *PriceOracle) UpdateConfig(config OracleConfig) error {
 	return nil
 }
 
-// SetLogger 设置自定义日志输出
+// SetLogger sets a custom logger
 func (o *PriceOracle) SetLogger(logger *log.Logger) {
 	o.mu.Lock()
 	defer o.mu.Unlock()
@@ -709,10 +709,10 @@ func (o *PriceOracle) SetLogger(logger *log.Logger) {
 }
 
 // ===========================================================================
-// 辅助查询方法
+// Helper query methods
 // ===========================================================================
 
-// GetSupportedPairs 返回当前所有价格源支持的交易对的并集
+// GetSupportedPairs returns the union of pairs supported by all registered sources
 func (o *PriceOracle) GetSupportedPairs() []TradingPair {
 	o.mu.RLock()
 	defer o.mu.RUnlock()
@@ -731,8 +731,8 @@ func (o *PriceOracle) GetSupportedPairs() []TradingPair {
 	return pairs
 }
 
-// HealthCheck 检查预言机及其价格源的健康状况。
-// 返回包含每个源状态的映射。
+// HealthCheck checks the health of the oracle and its price sources.
+// Returns a map with each source's status.
 func (o *PriceOracle) HealthCheck() map[string]bool {
 	o.mu.RLock()
 	defer o.mu.RUnlock()
@@ -745,22 +745,22 @@ func (o *PriceOracle) HealthCheck() map[string]bool {
 }
 
 // ===========================================================================
-// 价格历史与告警
+// Price history and alerts
 // ===========================================================================
 
-// checkPriceDeviationWithOldPrice 使用提供的旧价格检查价格偏差并在超过阈值时触发告警
+// checkPriceDeviationWithOldPrice checks price deviation against the given old price and alerts when the threshold is exceeded
 func (o *PriceOracle) checkPriceDeviationWithOldPrice(aggPrice AggregatedPrice, oldPrice float64) {
-	// 如果没有旧价格（第一次获取），跳过检查
+	// No old price (first fetch); skip the check
 	if oldPrice <= 0 {
 		return
 	}
 
 	newPrice := aggPrice.Price
 
-	// 计算偏差百分比
+	// Compute deviation percentage
 	deviation := math.Abs((newPrice-oldPrice)/oldPrice) * 100
 
-	// 偏差阈值（可在配置中添加）
+	// Deviation threshold (could be made configurable)
 	const deviationThreshold = 10.0 // 10%
 
 	if deviation > deviationThreshold {
@@ -774,7 +774,7 @@ func (o *PriceOracle) checkPriceDeviationWithOldPrice(aggPrice AggregatedPrice, 
 	}
 }
 
-// checkPriceDeviation 检查价格偏差并在超过阈值时触发告警
+// checkPriceDeviation checks price deviation and alerts when the threshold is exceeded
 func (o *PriceOracle) checkPriceDeviation(aggPrice AggregatedPrice) {
 	o.priceHistoryMu.RLock()
 	history, exists := o.priceHistory[aggPrice.Pair.String()]
@@ -784,15 +784,15 @@ func (o *PriceOracle) checkPriceDeviation(aggPrice AggregatedPrice) {
 		return
 	}
 
-	// 获取最近的历史价格
+	// Get the most recent historical price
 	lastEntry := history[len(history)-1]
 	oldPrice := lastEntry.Price
 	newPrice := aggPrice.Price
 
-	// 计算偏差百分比
+	// Compute deviation percentage
 	deviation := math.Abs((newPrice-oldPrice)/oldPrice) * 100
 
-	// 偏差阈值（可在配置中添加）
+	// Deviation threshold (could be made configurable)
 	const deviationThreshold = 10.0 // 10%
 
 	if deviation > deviationThreshold {
@@ -806,7 +806,7 @@ func (o *PriceOracle) checkPriceDeviation(aggPrice AggregatedPrice) {
 	}
 }
 
-// getLastPrice 获取指定交易对的最新历史价格
+// getLastPrice returns the latest historical price for the given pair
 func (o *PriceOracle) getLastPrice(pair TradingPair) float64 {
 	o.priceHistoryMu.RLock()
 	defer o.priceHistoryMu.RUnlock()
@@ -819,7 +819,7 @@ func (o *PriceOracle) getLastPrice(pair TradingPair) float64 {
 	return history[len(history)-1].Price
 }
 
-// addPriceHistory 添加价格到历史记录（保留最近100条）
+// addPriceHistory appends a price to the history (keeping the most recent 100)
 func (o *PriceOracle) addPriceHistory(pair TradingPair, price float64) {
 	o.priceHistoryMu.Lock()
 	defer o.priceHistoryMu.Unlock()
@@ -829,13 +829,13 @@ func (o *PriceOracle) addPriceHistory(pair TradingPair, price float64) {
 	pairKey := pair.String()
 	history := o.priceHistory[pairKey]
 
-	// 添加新条目
+	// Append the new entry
 	history = append(history, priceHistoryEntry{
 		Price:     price,
 		Timestamp: time.Now(),
 	})
 
-	// 限制历史记录数量
+	// Cap the history length
 	if len(history) > maxHistory {
 		history = history[len(history)-maxHistory:]
 	}

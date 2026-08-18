@@ -1,7 +1,7 @@
-// Package oracle 实现多源价格预言机系统。
+// Package oracle implements a multi-source price oracle system.
 //
-// 预言机从多个价格源（DEX、CEX、稳定币锚定）收集价格数据，
-// 通过加权平均和离群值过滤计算最终价格，并提供滑点保护功能。
+// The oracle collects price data from multiple sources (DEX, CEX, stablecoin peg),
+// computes a final price via weighted averaging and outlier filtering, and provides slippage protection.
 package oracle
 
 import (
@@ -10,46 +10,46 @@ import (
 	"time"
 )
 
-// 预定义错误
+// Predefined errors
 var (
-	// ErrNoPriceSources 表示没有可用的价格源
+	// ErrNoPriceSources indicates no price sources are available
 	ErrNoPriceSources = errors.New("oracle: no price sources available")
 
-	// ErrPairNotSupported 表示不支持请求的交易对
+	// ErrPairNotSupported indicates the requested pair is not supported
 	ErrPairNotSupported = errors.New("oracle: trading pair not supported")
 
-	// ErrPriceUnavailable 表示无法获取价格数据
+	// ErrPriceUnavailable indicates price data could not be fetched
 	ErrPriceUnavailable = errors.New("oracle: price data unavailable")
 
-	// ErrPriceStale 表示缓存中的价格数据已过期
+	// ErrPriceStale indicates cached price data has expired
 	ErrPriceStale = errors.New("oracle: cached price data is stale")
 
-	// ErrSlippageTooHigh 表示滑点超出允许范围
+	// ErrSlippageTooHigh indicates slippage exceeds the allowed range
 	ErrSlippageTooHigh = errors.New("oracle: slippage exceeds maximum allowed")
 
-	// ErrInsufficientLiquidity 表示流动性不足
+	// ErrInsufficientLiquidity indicates insufficient liquidity
 	ErrInsufficientLiquidity = errors.New("oracle: insufficient liquidity")
 
-	// ErrOracleNotRunning 表示预言机未启动
+	// ErrOracleNotRunning indicates the oracle is not running
 	ErrOracleNotRunning = errors.New("oracle: not running")
 
-	// ErrInvalidConfig 表示配置无效
+	// ErrInvalidConfig indicates an invalid configuration
 	ErrInvalidConfig = errors.New("oracle: invalid configuration")
 )
 
-// SourceType 表示价格源的类型
+// SourceType represents the type of a price source
 type SourceType int
 
 const (
-	// SourceTypeDEX 去中心化交易所
+	// SourceTypeDEX is a decentralized exchange
 	SourceTypeDEX SourceType = iota
-	// SourceTypeCEX 中心化交易所
+	// SourceTypeCEX is a centralized exchange
 	SourceTypeCEX
-	// SourceTypeStablecoin 稳定币锚定
+	// SourceTypeStablecoin is a stablecoin peg
 	SourceTypeStablecoin
 )
 
-// String 返回 SourceType 的字符串表示
+// String returns the string representation of a SourceType
 func (st SourceType) String() string {
 	switch st {
 	case SourceTypeDEX:
@@ -63,25 +63,25 @@ func (st SourceType) String() string {
 	}
 }
 
-// TradingPair 表示一个交易对
+// TradingPair represents a trading pair
 type TradingPair struct {
-	// Base 基础资产（如 AIB）
+	// Base is the base asset (e.g. AIB)
 	Base string
-	// Quote 报价资产（如 USD）
+	// Quote is the quote asset (e.g. USD)
 	Quote string
 }
 
-// String 返回交易对的标准字符串表示（如 "AIB/USD"）
+// String returns the canonical string form of the pair (e.g. "AIB/USD")
 func (tp TradingPair) String() string {
 	return tp.Base + "/" + tp.Quote
 }
 
-// Equal 比较两个交易对是否相同
+// Equal compares two trading pairs for equality
 func (tp TradingPair) Equal(other TradingPair) bool {
 	return tp.Base == other.Base && tp.Quote == other.Quote
 }
 
-// 预定义的交易对
+// Predefined trading pairs
 var (
 	PairAIBUSD  = TradingPair{Base: "AIB", Quote: "USD"}
 	PairAIBBTC  = TradingPair{Base: "AIB", Quote: "BTC"}
@@ -92,7 +92,7 @@ var (
 	PairUSDCUSD = TradingPair{Base: "USDC", Quote: "USD"}
 )
 
-// SupportedPairs 返回所有支持的交易对
+// SupportedPairs returns all supported trading pairs
 func SupportedPairs() []TradingPair {
 	return []TradingPair{
 		PairAIBUSD,
@@ -105,37 +105,37 @@ func SupportedPairs() []TradingPair {
 	}
 }
 
-// PriceData 表示来自单个价格源的价格数据
+// PriceData represents price data from a single price source
 type PriceData struct {
-	// Pair 交易对
+	// Pair is the trading pair
 	Pair TradingPair
 
-	// Price 价格（以 Quote 资产计价）
+	// Price denominated in the Quote asset
 	Price float64
 
-	// Volume24h 24小时成交量（以 Base 资产计量）
+	// Volume24h is the 24h volume (in the Base asset)
 	Volume24h float64
 
-	// Timestamp 价格数据的时间戳
+	// Timestamp of the price data
 	Timestamp time.Time
 
-	// Source 价格来源名称
+	// Source is the price source name
 	Source string
 
-	// SourceType 价格源类型
+	// SourceType is the price source type
 	SourceType SourceType
 
-	// Bid 买一价（可选）
+	// Bid is the best bid (optional)
 	Bid float64
 
-	// Ask 卖一价（可选）
+	// Ask is the best ask (optional)
 	Ask float64
 
-	// Liquidity 可用流动性（以 USD 计价，可选）
+	// Liquidity is available liquidity in USD (optional)
 	Liquidity float64
 }
 
-// Spread 返回买卖价差百分比
+// Spread returns the bid-ask spread percentage
 func (pd PriceData) Spread() float64 {
 	if pd.Bid <= 0 || pd.Ask <= 0 {
 		return 0
@@ -143,93 +143,93 @@ func (pd PriceData) Spread() float64 {
 	return (pd.Ask - pd.Bid) / pd.Bid * 100
 }
 
-// IsValid 检查价格数据是否有效
+// IsValid checks whether the price data is valid
 func (pd PriceData) IsValid() bool {
 	return pd.Price > 0 && !pd.Timestamp.IsZero() && pd.Source != ""
 }
 
-// Age 返回价格数据的年龄
+// Age returns the age of the price data
 func (pd PriceData) Age() time.Duration {
 	return time.Since(pd.Timestamp)
 }
 
-// AggregatedPrice 表示经过聚合计算的最终价格
+// AggregatedPrice represents the final aggregated price
 type AggregatedPrice struct {
-	// Pair 交易对
+	// Pair is the trading pair
 	Pair TradingPair
 
-	// Price 聚合后的最终价格
+	// Price is the final aggregated price
 	Price float64
 
-	// Sources 参与聚合的数据源数量
+	// Sources is the number of sources in the aggregation
 	Sources int
 
-	// TotalVolume 所有源的总成交量
+	// TotalVolume is the total volume across all sources
 	TotalVolume float64
 
-	// Confidence 置信度（0-1之间，基于数据源数量和一致性）
+	// Confidence (0-1), based on source count and consistency
 	Confidence float64
 
-	// Timestamp 聚合时间
+	// Timestamp of the aggregation
 	Timestamp time.Time
 
-	// MinPrice 各源中的最低价
+	// MinPrice is the lowest price across sources
 	MinPrice float64
 
-	// MaxPrice 各源中的最高价
+	// MaxPrice is the highest price across sources
 	MaxPrice float64
 
-	// Deviation 各源之间的标准差
+	// Deviation is the standard deviation across sources
 	Deviation float64
 
-	// RawPrices 参与聚合的原始价格数据
+	// RawPrices is the raw price data used in the aggregation
 	RawPrices []PriceData
 }
 
-// PriceSource 是价格源的核心接口。
-// 每个价格源（DEX、CEX、稳定币锚定）都必须实现此接口。
+// PriceSource is the core interface for a price source.
+// Every price source (DEX, CEX, stablecoin peg) must implement this interface.
 type PriceSource interface {
-	// FetchPrice 从该价格源获取指定交易对的价格数据。
-	// 如果交易对不支持或数据不可用，返回相应错误。
+	// FetchPrice fetches the price data for the given pair from this source.
+	// Returns an error if the pair is unsupported or data is unavailable.
 	FetchPrice(pair TradingPair) (PriceData, error)
 
-	// IsAvailable 检查该价格源当前是否可用。
-	// 可用于健康检查和故障转移判断。
+	// IsAvailable checks whether the source is currently available.
+	// Useful for health checks and failover decisions.
 	IsAvailable() bool
 
-	// GetName 返回价格源的名称（如 "Binance"、"Uniswap"）。
+	// GetName returns the source name (e.g. "Binance", "Uniswap").
 	GetName() string
 
-	// GetType 返回价格源的类型。
+	// GetType returns the price source type.
 	GetType() SourceType
 
-	// SupportedPairs 返回该价格源支持的交易对列表。
+	// SupportedPairs returns the pairs supported by this source.
 	SupportedPairs() []TradingPair
 }
 
-// OracleConfig 包含价格预言机的配置参数
+// OracleConfig holds the price oracle configuration parameters
 type OracleConfig struct {
-	// RefreshInterval 自动刷新间隔
+	// RefreshInterval is the auto-refresh interval
 	RefreshInterval time.Duration
 
-	// CacheTTL 缓存的生存时间
+	// CacheTTL is the cache time-to-live
 	CacheTTL time.Duration
 
-	// DeviationThreshold 离群值过滤阈值（百分比，如 5.0 表示 5%）
-	// 偏离中位数超过此阈值的价格将被剔除
+	// DeviationThreshold is the outlier filtering threshold (percent, e.g. 5.0 = 5%)
+	// Prices deviating from the median beyond this threshold are dropped
 	DeviationThreshold float64
 
-	// MinSources 计算聚合价格所需的最少数据源数量
+	// MinSources is the minimum number of sources required for aggregation
 	MinSources int
 
-	// MaxSlippage 允许的最大滑点百分比
+	// MaxSlippage is the maximum allowed slippage percentage
 	MaxSlippage float64
 
-	// StaleThreshold 判定价格数据过期的时间阈值
+	// StaleThreshold is the age at which price data is considered stale
 	StaleThreshold time.Duration
 }
 
-// DefaultConfig 返回默认的预言机配置
+// DefaultConfig returns the default oracle configuration
 func DefaultConfig() OracleConfig {
 	return OracleConfig{
 		RefreshInterval:    30 * time.Second,
@@ -241,7 +241,7 @@ func DefaultConfig() OracleConfig {
 	}
 }
 
-// Validate 验证配置是否有效
+// Validate checks whether the configuration is valid
 func (c OracleConfig) Validate() error {
 	if c.RefreshInterval <= 0 {
 		return fmt.Errorf("%w: refresh interval must be positive", ErrInvalidConfig)
@@ -264,55 +264,55 @@ func (c OracleConfig) Validate() error {
 	return nil
 }
 
-// SlippageResult 表示滑点计算的结果
+// SlippageResult represents the result of a slippage calculation
 type SlippageResult struct {
-	// InputAmount 输入数量
+	// InputAmount is the input quantity
 	InputAmount float64
 
-	// ExpectedOutput 无滑点时的预期输出
+	// ExpectedOutput is the output with zero slippage
 	ExpectedOutput float64
 
-	// ActualOutput 考虑滑点后的实际输出
+	// ActualOutput is the output after slippage
 	ActualOutput float64
 
-	// SlippagePercent 滑点百分比
+	// SlippagePercent is the slippage percentage
 	SlippagePercent float64
 
-	// PriceImpact 价格影响百分比
+	// PriceImpact is the price impact percentage
 	PriceImpact float64
 
-	// MinOutput 满足最大滑点限制时的最小输出
+	// MinOutput is the minimum output satisfying the max slippage limit
 	MinOutput float64
 
-	// Pair 交易对
+	// Pair is the trading pair
 	Pair TradingPair
 
-	// Acceptable 是否在可接受范围内
+	// Acceptable indicates whether it is within the acceptable range
 	Acceptable bool
 }
 
-// cacheEntry 价格缓存条目（内部使用）
+// cacheEntry is a price cache entry (internal use)
 type cacheEntry struct {
-	// price 聚合后的价格
+	// price is the aggregated price
 	price AggregatedPrice
 
-	// expiresAt 过期时间
+	// expiresAt is the expiration time
 	expiresAt time.Time
 }
 
-// isExpired 检查缓存条目是否已过期
+// isExpired checks whether the cache entry has expired
 func (ce cacheEntry) isExpired() bool {
 	return time.Now().After(ce.expiresAt)
 }
 
-// priceHistoryEntry 记录历史价格数据（用于偏差检测）
+// priceHistoryEntry records historical price data (for deviation detection)
 type priceHistoryEntry struct {
 	Price     float64
 	Timestamp time.Time
 }
 
-// AlertHandler 价格偏差告警处理器
+// AlertHandler handles price deviation alerts
 type AlertHandler interface {
-	// OnPriceDeviation 当价格偏差超过阈值时调用
+	// OnPriceDeviation is called when price deviation exceeds the threshold
 	OnPriceDeviation(pair TradingPair, oldPrice, newPrice float64, deviation float64)
 }
