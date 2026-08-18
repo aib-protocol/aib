@@ -1,18 +1,18 @@
 #!/bin/bash
 #
-# AIB 2.0 主网节点启动脚本
-# 用法: ./start-mainnet-node.sh [选项]
-# 选项:
-#   -p, --port PORT     指定监听端口 (默认: 51200)
-#   -d, --daemon        作为守护进程运行
-#   -s, --systemd       安装 systemd 服务
-#   -r, --restart       重启 systemd 服务
-#   -h, --help          显示帮助信息
+# AIB 2.0 mainnet node startup script
+# Usage: ./start-mainnet-node.sh [options]
+# Options:
+#   -p, --port PORT     listen port (default: 51200)
+#   -d, --daemon        run as daemon
+#   -s, --systemd       install systemd service
+#   -r, --restart       restart systemd service
+#   -h, --help          show help
 #
 
 set -e
 
-# ========== 配置变量 ==========
+# ========== Config variables ==========
 PROJECT_DIR="."
 BINARY_PATH="${PROJECT_DIR}/bin/aib2-portal"
 DEFAULT_PORT="51200"
@@ -21,17 +21,17 @@ LOG_DIR="${PROJECT_DIR}/logs"
 LOG_FILE="${LOG_DIR}/mainnet.log"
 PID_FILE="${PROJECT_DIR}/aib2-portal.pid"
 
-# 节点配置
+# node configuration
 NODE_IP="www.aib.one"
 
-# ========== 颜色定义 ==========
+# ========== Color definitions ==========
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# ========== 函数定义 ==========
+# ========== Functions ==========
 
 log_info() {
     echo -e "${BLUE}[INFO]${NC} $1"
@@ -51,64 +51,64 @@ log_error() {
 
 show_help() {
     cat << EOF
-AIB 2.0 主网节点启动脚本
+AIB 2.0 Mainnet Node Startup Script
 
-用法: $0 [选项]
+Usage: $0 [options]
 
-选项:
-  -p, --port PORT     指定监听端口 (默认: ${DEFAULT_PORT})
-  -d, --daemon        作为守护进程运行
-  -s, --systemd       安装 systemd 服务
-  -r, --restart       重启 systemd 服务
-  -t, --stop          停止服务
-  -S, --status        查看服务状态
-  -h, --help          显示帮助信息
+Options:
+  -p, --port PORT     listen port (default: ${DEFAULT_PORT})
+  -d, --daemon        run as daemon
+  -s, --systemd       install systemd service
+  -r, --restart       restart systemd service
+  -t, --stop          stop the service
+  -S, --status        show service status
+  -h, --help          show help
 
-示例:
-  $0 --port 51200                    # 在端口 51200 启动
-  $0 --daemon                         # 作为守护进程运行
-  $0 --systemd                        # 安装 systemd 服务
-  $0 --restart                        # 重启服务
-  $0 --status                         # 查看状态
+Examples:
+  $0 --port 51200                    # start on port 51200
+  $0 --daemon                         # run as daemon
+  $0 --systemd                        # install systemd service
+  $0 --restart                        # restart the service
+  $0 --status                         # show status
 EOF
 }
 
-# 检查端口可用性
+# check port availability
 check_port() {
     local port=$1
     if ss -tlnp 2>/dev/null | grep -q ":${port} " || netstat -tlnp 2>/dev/null | grep -q ":${port} "; then
-        log_error "端口 ${port} 已被占用!"
+        log_error "Port ${port} is already in use!"
         return 1
     fi
-    log_info "端口 ${port} 可用"
+    log_info "Port ${port} is available"
     return 0
 }
 
-# 创建日志目录
+# create log directory
 setup_log_dir() {
     if [ ! -d "${LOG_DIR}" ]; then
         mkdir -p "${LOG_DIR}"
-        log_info "创建日志目录: ${LOG_DIR}"
+        log_info "Creating log directory: ${LOG_DIR}"
     fi
 }
 
-# 检查依赖
+# check dependencies
 check_dependencies() {
     if [ ! -f "${BINARY_PATH}" ]; then
-        log_error "找不到二进制文件: ${BINARY_PATH}"
-        log_info "请先构建: cd ${PROJECT_DIR} && go build -o bin/aib2-portal ./cmd/aib2-portal"
+        log_error "Binary not found: ${BINARY_PATH}"
+        log_info "Build first: cd ${PROJECT_DIR} && go build -o bin/aib2-portal ./cmd/aib2-portal"
         exit 1
     fi
 
     if [ ! -x "${BINARY_PATH}" ]; then
-        log_error "二进制文件没有执行权限: ${BINARY_PATH}"
+        log_error "Binary is not executable: ${BINARY_PATH}"
         chmod +x "${BINARY_PATH}"
     fi
 
-    log_success "依赖检查通过"
+    log_success "Dependency check passed"
 }
 
-# 启动节点
+# start node
 start_node() {
     local port=$1
     local daemon=$2
@@ -117,9 +117,9 @@ start_node() {
     setup_log_dir
     check_dependencies
 
-    log_info "启动 AIB 2.0 主网节点..."
-    log_info "监听地址: https://${NODE_IP}:${port}"
-    log_info "日志文件: ${LOG_FILE}"
+    log_info "Starting AIB 2.0 mainnet node..."
+    log_info "Listen address: https://${NODE_IP}:${port}"
+    log_info "Log file: ${LOG_FILE}"
 
     if [ "${daemon}" = "true" ]; then
         nohup "${BINARY_PATH}" -addr ":${port}" >> "${LOG_FILE}" 2>&1 &
@@ -127,10 +127,10 @@ start_node() {
         sleep 2
 
         if kill -0 $(cat "${PID_FILE}") 2>/dev/null; then
-            log_success "节点启动成功! PID: $(cat ${PID_FILE})"
-            log_info "访问地址: https://${NODE_IP}:${port}"
+            log_success "Node started successfully! PID: $(cat ${PID_FILE})"
+            log_info "URL: https://${NODE_IP}:${port}"
         else
-            log_error "节点启动失败，请查看日志: ${LOG_FILE}"
+            log_error "Node failed to start, check the log: ${LOG_FILE}"
             exit 1
         fi
     else
@@ -138,65 +138,65 @@ start_node() {
     fi
 }
 
-# 停止节点
+# stop node
 stop_node() {
     if [ -f "${PID_FILE}" ]; then
         local pid=$(cat "${PID_FILE}")
         if kill -0 "${pid}" 2>/dev/null; then
-            log_info "停止节点 (PID: ${pid})..."
+            log_info "Stopping node (PID: ${pid})..."
             kill "${pid}"
             sleep 2
             if kill -0 "${pid}" 2>/dev/null; then
                 kill -9 "${pid}"
             fi
             rm -f "${PID_FILE}"
-            log_success "节点已停止"
+            log_success "Node stopped"
         else
-            log_warn "节点未运行"
+            log_warn "Node is not running"
             rm -f "${PID_FILE}"
         fi
     else
-        # 尝试查找并杀死进程
+        # try to find and kill the process
         local pid=$(pgrep -f "aib2-portal.*addr.*:${DEFAULT_PORT}")
         if [ -n "${pid}" ]; then
-            log_info "找到运行中的节点 (PID: ${pid})，正在停止..."
+            log_info "Found running node (PID: ${pid}), stopping..."
             kill "${pid}" 2>/dev/null || true
             sleep 2
-            log_success "节点已停止"
+            log_success "Node stopped"
         else
-            log_warn "未找到运行中的节点"
+            log_warn "No running node found"
         fi
     fi
 }
 
-# 检查节点状态
+# check node status
 check_status() {
     if [ -f "${PID_FILE}" ]; then
         local pid=$(cat "${PID_FILE}")
         if kill -0 "${pid}" 2>/dev/null; then
-            log_success "节点运行中 (PID: ${pid})"
+            log_success "Node is running (PID: ${pid})"
             return 0
         else
-            log_error "PID 文件存在但进程已退出"
+            log_error "PID file exists but process has exited"
             return 1
         fi
     else
         local pid=$(pgrep -f "aib2-portal.*addr.*:${DEFAULT_PORT}")
         if [ -n "${pid}" ]; then
-            log_success "节点运行中 (PID: ${pid})"
+            log_success "Node is running (PID: ${pid})"
             return 0
         else
-            log_error "节点未运行"
+            log_error "Node is not running"
             return 1
         fi
     fi
 }
 
-# 安装 systemd 服务
+# install systemd service
 install_systemd_service() {
-    log_info "安装 systemd 服务: ${SERVICE_NAME}"
+    log_info "Installing systemd service: ${SERVICE_NAME}"
 
-    # 创建 systemd 服务文件
+    # create systemd service file
     cat > /tmp/${SERVICE_NAME}.service << EOF
 [Unit]
 Description=AIB 2.0 Mainnet Node
@@ -213,7 +213,7 @@ RestartSec=10
 StandardOutput=append:${LOG_FILE}
 StandardError=append:${LOG_FILE}
 
-# 环境变量
+# environment variables
 Environment=PROJECT_DIR=${PROJECT_DIR}
 Environment=PORT=${DEFAULT_PORT}
 
@@ -221,42 +221,42 @@ Environment=PORT=${DEFAULT_PORT}
 WantedBy=multi-user.target
 EOF
 
-    # 复制到 systemd 目录
+    # copy to systemd directory
     if [ -d /etc/systemd/system ]; then
         cp /tmp/${SERVICE_NAME}.service /etc/systemd/system/
         systemctl daemon-reload
-        log_success "systemd 服务已安装"
-        log_info "使用以下命令管理服务:"
-        echo "  systemctl start ${SERVICE_NAME}     # 启动"
-        echo "  systemctl stop ${SERVICE_NAME}      # 停止"
-        echo "  systemctl restart ${SERVICE_NAME}   # 重启"
-        echo "  systemctl status ${SERVICE_NAME}    # 状态"
-        echo "  journalctl -u ${SERVICE_NAME} -f    # 查看日志"
+        log_success "systemd service installed"
+        log_info "Manage the service with:"
+        echo "  systemctl start ${SERVICE_NAME}     # start"
+        echo "  systemctl stop ${SERVICE_NAME}      # stop"
+        echo "  systemctl restart ${SERVICE_NAME}   # restart"
+        echo "  systemctl status ${SERVICE_NAME}    # status"
+        echo "  journalctl -u ${SERVICE_NAME} -f    # view logs"
     else
-        log_error "systemd 未安装或不可用"
+        log_error "systemd not installed or unavailable"
         exit 1
     fi
 }
 
-# 启动 systemd 服务
+# start systemd service
 start_systemd_service() {
-    log_info "启动 systemd 服务..."
+    log_info "Starting systemd service..."
     systemctl start ${SERVICE_NAME}
-    log_success "服务已启动"
+    log_success "Service started"
     systemctl status ${SERVICE_NAME} --no-pager
 }
 
-# 重启 systemd 服务
+# restart systemd service
 restart_systemd_service() {
-    log_info "重启 systemd 服务..."
+    log_info "Restarting systemd service..."
     systemctl restart ${SERVICE_NAME}
-    log_success "服务已重启"
+    log_success "Service restarted"
     systemctl status ${SERVICE_NAME} --no-pager
 }
 
-# ========== 主程序 ==========
+# ========== Main program ==========
 
-# 解析命令行参数
+# parse command-line arguments
 PORT="${DEFAULT_PORT}"
 DAEMON="false"
 SYSTEMD="false"
@@ -295,14 +295,14 @@ while [[ $# -gt 0 ]]; do
             exit 0
             ;;
         *)
-            log_error "未知选项: $1"
+            log_error "Unknown option: $1"
             show_help
             exit 1
             ;;
     esac
 done
 
-# 执行操作
+# execute action
 if [ "${SYSTEMD}" = "true" ]; then
     install_systemd_service
     start_systemd_service
