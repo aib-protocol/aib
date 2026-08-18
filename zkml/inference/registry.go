@@ -4,20 +4,19 @@ import (
 	"sync"
 )
 
-// ModelRegistry 模型注册表
-
-// 维护所有已注册模型的信息、权重、性能指标
-
-// 无需权限即可注册新模型（permissionless）
-// 权重通过治理决定
+// ModelRegistry is the model registry.
+//
+// It maintains information, weights, and performance metrics for all registered models.
+// Registering a new model is permissionless;
+// weights are determined through governance.
 type ModelRegistry struct {
 	mu            sync.RWMutex
 	models        map[string]*ModelInfo        // modelID -> ModelInfo
-	performance   map[string]*ModelPerformance // modelID -> 性能数据
-	votingWeights map[string]float64           // modelID -> 投票中权重
+	performance   map[string]*ModelPerformance // modelID -> performance data
+	votingWeights map[string]float64           // modelID -> weight in voting
 }
 
-// NewModelRegistry 创建新模型注册表
+// NewModelRegistry creates a new model registry.
 func NewModelRegistry() *ModelRegistry {
 	return &ModelRegistry{
 		models:        make(map[string]*ModelInfo),
@@ -26,10 +25,10 @@ func NewModelRegistry() *ModelRegistry {
 	}
 }
 
-// RegisterModel 注册新模型
-
-// 任何人都可以注册（permissionless）
-// 初始权重为 1.0（基准）
+// RegisterModel registers a new model.
+//
+// Anyone can register (permissionless);
+// the initial weight is 1.0 (baseline).
 func (r *ModelRegistry) RegisterModel(info *ModelInfo) error {
 	if info == nil {
 		return nil
@@ -38,19 +37,19 @@ func (r *ModelRegistry) RegisterModel(info *ModelInfo) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	info.Weight = 1.0 // 初始权重
+	info.Weight = 1.0 // initial weight
 	if info.Performance == nil {
 		info.Performance = &ModelPerformance{}
 	}
 
 	r.models[info.ModelID] = info
 	r.performance[info.ModelID] = info.Performance
-	r.votingWeights[info.ModelID] = 1.0 // 初始投票权重
+	r.votingWeights[info.ModelID] = 1.0 // initial voting weight
 
 	return nil
 }
 
-// GetModelInfo 获取模型信息
+// GetModelInfo returns the model info.
 func (r *ModelRegistry) GetModelInfo(modelID string) *ModelInfo {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
@@ -58,7 +57,7 @@ func (r *ModelRegistry) GetModelInfo(modelID string) *ModelInfo {
 	return r.models[modelID]
 }
 
-// GetPerformance 获取模型性能数据
+// GetPerformance returns the model performance data.
 func (r *ModelRegistry) GetPerformance(modelID []byte) *ModelPerformance {
 	if modelID == nil {
 		return nil
@@ -71,9 +70,9 @@ func (r *ModelRegistry) GetPerformance(modelID []byte) *ModelPerformance {
 	return r.performance[modelIDStr]
 }
 
-// UpdatePerformance 更新模型性能数据
-
-// 节点定期提交性能数据
+// UpdatePerformance updates the model performance data.
+//
+// Nodes periodically submit performance data.
 func (r *ModelRegistry) UpdatePerformance(modelID string, perf *ModelPerformance) error {
 	if perf == nil {
 		return nil
@@ -83,7 +82,7 @@ func (r *ModelRegistry) UpdatePerformance(modelID string, perf *ModelPerformance
 	defer r.mu.Unlock()
 
 	if r.models[modelID] == nil {
-		return nil // 模型未注册
+		return nil // model not registered
 	}
 
 	r.performance[modelID] = perf
@@ -92,7 +91,7 @@ func (r *ModelRegistry) UpdatePerformance(modelID string, perf *ModelPerformance
 	return nil
 }
 
-// ListModels 列出所有已注册模型
+// ListModels lists all registered models.
 func (r *ModelRegistry) ListModels() []*ModelInfo {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
@@ -105,7 +104,7 @@ func (r *ModelRegistry) ListModels() []*ModelInfo {
 	return result
 }
 
-// GetWeight 获取模型当前权重
+// GetWeight returns the model's current weight.
 func (r *ModelRegistry) GetWeight(modelID string) float64 {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
@@ -113,12 +112,12 @@ func (r *ModelRegistry) GetWeight(modelID string) float64 {
 	if info, ok := r.models[modelID]; ok {
 		return info.Weight
 	}
-	return 1.0 // 默认权重
+	return 1.0 // default weight
 }
 
-// SetWeight 设置模型权重
-
-// 只能通过治理提案调用
+// SetWeight sets the model weight.
+//
+// May only be called through a governance proposal.
 func (r *ModelRegistry) SetWeight(modelID string, weight float64) error {
 	if weight <= 0 {
 		return nil
@@ -132,12 +131,12 @@ func (r *ModelRegistry) SetWeight(modelID string, weight float64) error {
 	}
 
 	r.models[modelID].Weight = weight
-	r.votingWeights[modelID] = weight // 同步更新投票权重
+	r.votingWeights[modelID] = weight // update voting weight in sync
 
 	return nil
 }
 
-// ProposalManager 治理提案管理器
+// ProposalManager is the governance proposal manager.
 
 type ProposalManager struct {
 	mu        sync.RWMutex
@@ -146,7 +145,7 @@ type ProposalManager struct {
 	registry  *ModelRegistry
 }
 
-// NewProposalManager 创建提案管理器
+// NewProposalManager creates a proposal manager.
 func NewProposalManager(registry *ModelRegistry) *ProposalManager {
 	return &ProposalManager{
 		proposals: make(map[string]*GovernanceProposal),
@@ -155,9 +154,9 @@ func NewProposalManager(registry *ModelRegistry) *ProposalManager {
 	}
 }
 
-// SubmitProposal 提交治理提案
-
-// 任何人都可以提交，基于真实数据
+// SubmitProposal submits a governance proposal.
+//
+// Anyone can submit, based on real data.
 func (pm *ProposalManager) SubmitProposal(proposal *GovernanceProposal) error {
 	if proposal == nil {
 		return nil
@@ -173,23 +172,23 @@ func (pm *ProposalManager) SubmitProposal(proposal *GovernanceProposal) error {
 	return nil
 }
 
-// Vote 对提案投票
-
-// 需要持有 AIB token 才能投票
+// Vote casts a vote on a proposal.
+//
+// Holding AIB tokens is required to vote.
 func (pm *ProposalManager) Vote(proposalID, voter string, vote bool) error {
 	pm.mu.Lock()
 	defer pm.mu.Unlock()
 
 	proposal := pm.proposals[proposalID]
 	if proposal == nil {
-		return nil // 提案不存在
+		return nil // proposal does not exist
 	}
 
 	if proposal.Status != ProposalStatusActive {
-		return nil // 提案不在投票期
+		return nil // proposal is not in the voting period
 	}
 
-	// addvote
+	// add vote
 	governanceVote := &GovernanceVote{
 		ProposalID: proposalID,
 		Voter:      voter,
@@ -202,7 +201,7 @@ func (pm *ProposalManager) Vote(proposalID, voter string, vote bool) error {
 	return nil
 }
 
-// GetProposal 获取提案信息
+// GetProposal returns the proposal info.
 func (pm *ProposalManager) GetProposal(proposalID string) *GovernanceProposal {
 	pm.mu.RLock()
 	defer pm.mu.RUnlock()
@@ -210,9 +209,9 @@ func (pm *ProposalManager) GetProposal(proposalID string) *GovernanceProposal {
 	return pm.proposals[proposalID]
 }
 
-// FinalizeProposal 完成提案
-
-// 检查投票结果，自动执行
+// FinalizeProposal completes a proposal.
+//
+// It checks the voting result and executes automatically.
 func (pm *ProposalManager) FinalizeProposal(proposalID string) (*GovernanceProposal, error) {
 	pm.mu.Lock()
 	defer pm.mu.Unlock()
@@ -224,7 +223,7 @@ func (pm *ProposalManager) FinalizeProposal(proposalID string) (*GovernancePropo
 
 	votes := pm.votes[proposalID]
 
-	// 统计投票
+	// tally votes
 	yesCount := 0
 	totalCount := 0
 
@@ -235,11 +234,11 @@ func (pm *ProposalManager) FinalizeProposal(proposalID string) (*GovernancePropo
 		}
 	}
 
-	// 检查阈值（67% 多数）
+	// check threshold (67% majority)
 	if totalCount > 0 && float64(yesCount)/float64(totalCount) >= 0.67 {
 		proposal.Status = ProposalStatusPassed
 
-		// 执行提案
+		// execute the proposal
 		switch proposal.Type {
 		case ProposalTypeWeightAdjustment:
 			modelID, _ := proposal.Evidence["model_id"].(string)
@@ -254,7 +253,7 @@ func (pm *ProposalManager) FinalizeProposal(proposalID string) (*GovernancePropo
 	return proposal, nil
 }
 
-// ListActiveProposals 列出活跃提案
+// ListActiveProposals lists active proposals.
 func (pm *ProposalManager) ListActiveProposals() []*GovernanceProposal {
 	pm.mu.RLock()
 	defer pm.mu.RUnlock()
