@@ -20,7 +20,7 @@ type MempoolEntry struct {
 // Mempool holds unconfirmed transactions.
 type Mempool struct {
 	entries    map[[32]byte]*MempoolEntry // txHash -> entry
-	spentUTXOs map[string]bool            // 已使用的UTXO（防双花）
+	spentUTXOs map[string]bool            // spent UTXOs (double-spend protection)
 	maxSize    int
 	minFee     uint64
 	mu         sync.RWMutex

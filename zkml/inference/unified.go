@@ -11,9 +11,9 @@ import (
 	"time"
 )
 
-// 通用推理接口定义
+// Unified inference interface definitions
 
-// InferenceProviderType 定义支持的推理提供商类型
+// InferenceProviderType defines the supported inference provider types
 type InferenceProviderType string
 
 const (
@@ -24,15 +24,15 @@ const (
 	ProviderTypePlugin    InferenceProviderType = "plugin"
 )
 
-// UnifiedConfig 通用推理提供者配置
-// 支持任何 OpenAI 兼容 API
+// UnifiedConfig generic inference provider configuration
+// supports any OpenAI-compatible API
 type UnifiedConfig struct {
-	Type        InferenceProviderType `json:"type"`        // 提供商类型
-	BaseURL     string                `json:"base_url"`    // API 基础 URL
-	APIKey      string                `json:"api_key"`     // API 密钥
-	Model       string                `json:"model"`       // 模型名称
-	Weight      float64               `json:"weight"`      // 模型权重
-	Timeout     time.Duration         `json:"timeout"`     // 请求超时
+	Type        InferenceProviderType `json:"type"`        // provider type
+	BaseURL     string                `json:"base_url"`    // API base URL
+	APIKey      string                `json:"api_key"`     // API key
+	Model       string                `json:"model"`       // model name
+	Weight      float64               `json:"weight"`      // model weight
+	Timeout     time.Duration         `json:"timeout"`     // request timeout
 	MaxTokens   int                   `json:"max_tokens"`  // 最大生成 tokens
 	Temperature float64               `json:"temperature"` // 温度参数
 	TopP        float64               `json:"top_p"`       // Top-p 采样
@@ -53,7 +53,7 @@ func DefaultUnifiedConfig() *UnifiedConfig {
 }
 
 // UnifiedProvider 统一推理提供者
-// 支持任何 OpenAI 兼容 API 的通用提供者
+// supports any OpenAI-compatible API 的通用提供者
 // 无需为每个新模型编写代码适配器
 type UnifiedProvider struct {
 	config        *UnifiedConfig
@@ -95,9 +95,9 @@ func NewUnifiedProvider(config *UnifiedConfig) (*UnifiedProvider, error) {
 	}, nil
 }
 
-// Infer 执行推理（实现 InferenceProvider 接口）
+// Infer performs inference（实现 InferenceProvider 接口）
 
-// 支持以下提供商：
+// 支持以下provider：
 // 1. OpenAI 兼容 API（默认）：任何 OpenAI 格式 API
 // 2. Ollama API（本地推理）
 // 3. Anthropic Claude API（需要特殊处理）
@@ -334,7 +334,7 @@ func (p *UnifiedProvider) ModelID() []byte {
 type ModelInfo struct {
 	ModelID      string                `json:"model_id"`      // 模型唯一标识
 	Name         string                `json:"name"`          // 模型显示名称
-	Type         InferenceProviderType `json:"type"`          // 提供商类型
+	Type         InferenceProviderType `json:"type"`          // provider type
 	BaseURL      string                `json:"base_url"`      // API base URL
 	Weight       float64               `json:"weight"`        // 权重（1.0 = 基准）
 	Performance  *ModelPerformance     `json:"performance"`   // 性能指标
@@ -350,7 +350,7 @@ type ModelPerformance struct {
 	ReliabilityScore   float64       `json:"reliability_score"`    // 可靠性评分
 }
 
-// GetWeight 获取模型权重
+// GetWeight 获取model weight
 
 // 权重计算公式：
 // weight = base_weight * (1 + performance_bonus - cost_penalty)
@@ -495,7 +495,7 @@ func (p *UnifiedProvider) ExecuteProposal(proposal *GovernanceProposal) error {
 			return fmt.Errorf("unified: missing proposed_weight in evidence")
 		}
 
-		// 更新模型权重
+		// 更新model weight
 		if p.modelRegistry != nil {
 			info := p.modelRegistry.GetModelInfo(modelID)
 			if info != nil {

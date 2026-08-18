@@ -8,18 +8,18 @@ import (
 	"os"
 )
 
-// MinerConfig 矿工配置结构
+// MinerConfig miner configuration
 type MinerConfig struct {
-	NodeID      string  `json:"node_id"`      // 节点唯一标识
-	OllamaURL   string  `json:"ollama_url"`   // Ollama API 地址
-	Model       string  `json:"model"`        // 推理模型名称
-	StakeAmount float64 `json:"stake_amount"` // 质押数量
-	ListenAddr  string  `json:"listen_addr"`  // 监听地址
-	DataDir     string  `json:"data_dir"`     // 数据存储目录
-	LogLevel    string  `json:"log_level"`    // 日志级别: debug, info, warn, error
+	NodeID      string  `json:"node_id"`      // unique node identifier
+	OllamaURL   string  `json:"ollama_url"`   // Ollama API address
+	Model       string  `json:"model"`        // inference model name
+	StakeAmount float64 `json:"stake_amount"` // stake amount
+	ListenAddr  string  `json:"listen_addr"`  // listen address
+	DataDir     string  `json:"data_dir"`     // data storage directory
+	LogLevel    string  `json:"log_level"`    // log level: debug, info, warn, error
 }
 
-// DefaultMinerConfig 返回带有合理默认值的配置
+// DefaultMinerConfig returns a config with sensible defaults
 func DefaultMinerConfig() *MinerConfig {
 	return &MinerConfig{
 		NodeID:      GenerateNodeID(),
@@ -32,23 +32,23 @@ func DefaultMinerConfig() *MinerConfig {
 	}
 }
 
-// LoadConfig 从 JSON 文件加载配置
+// LoadConfig loads config from a JSON file
 func LoadConfig(path string) (*MinerConfig, error) {
 	if path == "" {
-		return nil, fmt.Errorf("config: 配置文件路径不能为空")
+		return nil, fmt.Errorf("config: config file path cannot be empty")
 	}
 
 	data, err := os.ReadFile(path)
 	if err != nil {
-		return nil, fmt.Errorf("config: 无法读取配置文件 %s: %w", path, err)
+		return nil, fmt.Errorf("config: failed to read config file %s: %w", path, err)
 	}
 
 	var config MinerConfig
 	if err := json.Unmarshal(data, &config); err != nil {
-		return nil, fmt.Errorf("config: 解析配置文件失败: %w", err)
+		return nil, fmt.Errorf("config: failed to parse config file: %w", err)
 	}
 
-	// 验证必要字段
+	// validate required fields
 	if err := config.Validate(); err != nil {
 		return nil, err
 	}
@@ -56,54 +56,54 @@ func LoadConfig(path string) (*MinerConfig, error) {
 	return &config, nil
 }
 
-// SaveConfig 将配置保存到 JSON 文件
+// SaveConfig saves the config to a JSON file
 func SaveConfig(path string, config *MinerConfig) error {
 	if path == "" {
-		return fmt.Errorf("config: 保存路径不能为空")
+		return fmt.Errorf("config: save path cannot be empty")
 	}
 	if config == nil {
-		return fmt.Errorf("config: 配置对象不能为 nil")
+		return fmt.Errorf("config: config cannot be nil")
 	}
 
 	data, err := json.MarshalIndent(config, "", "  ")
 	if err != nil {
-		return fmt.Errorf("config: 序列化配置失败: %w", err)
+		return fmt.Errorf("config: failed to serialize config: %w", err)
 	}
 
 	if err := os.WriteFile(path, data, 0644); err != nil {
-		return fmt.Errorf("config: 写入配置文件失败: %w", err)
+		return fmt.Errorf("config: failed to write config file: %w", err)
 	}
 
 	return nil
 }
 
-// GenerateNodeID 生成随机的节点 ID，使用 16 字节加密随机数
+// GenerateNodeID generates a random node ID using 16 bytes of cryptographic randomness
 func GenerateNodeID() string {
 	b := make([]byte, 16)
 	_, err := rand.Read(b)
 	if err != nil {
-		// 极端情况下回退到时间戳（不应该发生）
+		// fall back to timestamp in extreme cases (should not happen)
 		return "node_fallback"
 	}
 	return "miner_" + hex.EncodeToString(b)
 }
 
-// Validate 验证配置的合法性
+// Validate validates the config
 func (c *MinerConfig) Validate() error {
 	if c.NodeID == "" {
-		return fmt.Errorf("config: node_id 不能为空")
+		return fmt.Errorf("config: node_id cannot be empty")
 	}
 	if c.OllamaURL == "" {
-		return fmt.Errorf("config: ollama_url 不能为空")
+		return fmt.Errorf("config: ollama_url cannot be empty")
 	}
 	if c.Model == "" {
-		return fmt.Errorf("config: model 不能为空")
+		return fmt.Errorf("config: model cannot be empty")
 	}
 	if c.StakeAmount < 0 {
-		return fmt.Errorf("config: stake_amount 不能为负数")
+		return fmt.Errorf("config: stake_amount cannot be negative")
 	}
 	if c.ListenAddr == "" {
-		return fmt.Errorf("config: listen_addr 不能为空")
+		return fmt.Errorf("config: listen_addr cannot be empty")
 	}
 	return nil
 }

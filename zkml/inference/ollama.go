@@ -21,18 +21,18 @@ const (
 
 // OllamaConfig 保存 Ollama 适配器的配置参数
 type OllamaConfig struct {
-	BaseURL string        // Ollama API 基础 URL（默认 http://localhost:11434）
-	Model   string        // 模型名称（如 "llama2", "mistral"）
-	Timeout time.Duration // 请求超时时间
+	BaseURL string        // Ollama API base URL（默认 http://localhost:11434）
+	Model   string        // model name（如 "llama2", "mistral"）
+	Timeout time.Duration // request timeout时间
 }
 
 // OllamaProvider 实现 InferenceProvider 接口，负责与 Ollama HTTP API 通信
 type OllamaProvider struct {
-	baseURL    string        // Ollama API 基础 URL
-	model      string        // 使用的模型名称
+	baseURL    string        // Ollama API base URL
+	model      string        // 使用的model name
 	modelID    []byte        // 模型指纹哈希（SHA-256）
 	httpClient *http.Client  // HTTP 客户端
-	timeout    time.Duration // 请求超时
+	timeout    time.Duration // request timeout
 }
 
 // ollamaGenerateRequest 对应 Ollama /api/generate 请求体
@@ -95,7 +95,7 @@ func NewOllamaProvider(config *OllamaConfig) *OllamaProvider {
 }
 
 // Infer 调用 Ollama /api/generate 接口进行推理
-// 传入上下文和提示词，返回推理结果字符串
+// 传入上下文和提示词，返回inference result字符串
 func (p *OllamaProvider) Infer(ctx context.Context, prompt string) (string, error) {
 	if prompt == "" {
 		return "", fmt.Errorf("ollama: 提示词不能为空")
@@ -136,7 +136,7 @@ func (p *OllamaProvider) Infer(ctx context.Context, prompt string) (string, erro
 
 	// 检查 HTTP 状态码
 	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("ollama: 服务器返回错误状态码 %d: %s", resp.StatusCode, string(respBody))
+		return "", fmt.Errorf("ollama: 服务器返回error状态码 %d: %s", resp.StatusCode, string(respBody))
 	}
 
 	// 解析响应
@@ -145,9 +145,9 @@ func (p *OllamaProvider) Infer(ctx context.Context, prompt string) (string, erro
 		return "", fmt.Errorf("ollama: 解析响应失败: %w", err)
 	}
 
-	// 检查 Ollama 返回的错误信息
+	// 检查 Ollama 返回的error信息
 	if result.Error != "" {
-		return "", fmt.Errorf("ollama: 推理错误: %s", result.Error)
+		return "", fmt.Errorf("ollama: 推理error: %s", result.Error)
 	}
 
 	return result.Response, nil
@@ -207,7 +207,7 @@ func (p *OllamaProvider) ListModels(ctx context.Context) ([]string, error) {
 		return nil, fmt.Errorf("ollama: 解析模型列表失败: %w", err)
 	}
 
-	// 提取模型名称列表
+	// 提取model name列表
 	models := make([]string, 0, len(tagsResp.Models))
 	for _, m := range tagsResp.Models {
 		models = append(models, m.Name)
@@ -216,12 +216,12 @@ func (p *OllamaProvider) ListModels(ctx context.Context) ([]string, error) {
 	return models, nil
 }
 
-// Model 返回当前使用的模型名称
+// Model 返回当前使用的model name
 func (p *OllamaProvider) Model() string {
 	return p.model
 }
 
-// BaseURL 返回当前使用的 Ollama API 基础 URL
+// BaseURL 返回当前使用的 Ollama API base URL
 func (p *OllamaProvider) BaseURL() string {
 	return p.baseURL
 }

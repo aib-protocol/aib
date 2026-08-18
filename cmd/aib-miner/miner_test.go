@@ -12,56 +12,56 @@ import (
 	"github.com/aib-protocol/aib/zkml/orchestrator"
 )
 
-// TestDefaultMinerConfig 测试默认配置生成
+// TestDefaultMinerConfig tests default config generation
 func TestDefaultMinerConfig(t *testing.T) {
 	config := DefaultMinerConfig()
 
 	if config.NodeID == "" {
-		t.Error("默认配置的 NodeID 不应为空")
+		t.Error("default config NodeID should not be empty")
 	}
 	if config.OllamaURL != "http://localhost:11434" {
-		t.Errorf("默认 OllamaURL 应为 http://localhost:11434，实际为 %s", config.OllamaURL)
+		t.Errorf("default OllamaURL expected http://localhost:11434，actual %s", config.OllamaURL)
 	}
 	if config.Model != "llama2" {
-		t.Errorf("默认 Model 应为 llama2，实际为 %s", config.Model)
+		t.Errorf("default Model expected llama2，actual %s", config.Model)
 	}
 	if config.StakeAmount != 100.0 {
-		t.Errorf("默认 StakeAmount 应为 100.0，实际为 %f", config.StakeAmount)
+		t.Errorf("default StakeAmount expected 100.0，actual %f", config.StakeAmount)
 	}
 	if config.ListenAddr != "0.0.0.0:9090" {
-		t.Errorf("默认 ListenAddr 应为 0.0.0.0:9090，实际为 %s", config.ListenAddr)
+		t.Errorf("default ListenAddr expected 0.0.0.0:9090，actual %s", config.ListenAddr)
 	}
 	if config.DataDir != "./data" {
-		t.Errorf("默认 DataDir 应为 ./data，实际为 %s", config.DataDir)
+		t.Errorf("default DataDir expected ./data，actual %s", config.DataDir)
 	}
 	if config.LogLevel != "info" {
-		t.Errorf("默认 LogLevel 应为 info，实际为 %s", config.LogLevel)
+		t.Errorf("default LogLevel expected info，actual %s", config.LogLevel)
 	}
 }
 
-// TestGenerateNodeID 测试节点 ID 生成
+// TestGenerateNodeID tests node ID generation
 func TestGenerateNodeID(t *testing.T) {
-	// 测试多次生成，确保唯一性
+	// generate multiple times to ensure uniqueness
 	ids := make(map[string]bool)
 	for i := 0; i < 100; i++ {
 		id := GenerateNodeID()
 		if len(id) < 10 {
-			t.Errorf("生成的节点 ID 过短: %s", id)
+			t.Errorf("generated node ID too short: %s", id)
 		}
 		if ids[id] {
-			t.Errorf("检测到重复的节点 ID: %s", id)
+			t.Errorf("duplicate node ID detected: %s", id)
 		}
 		ids[id] = true
 	}
 }
 
-// TestConfigSaveLoad 测试配置保存和加载
+// TestConfigSaveLoad tests config save and load
 func TestConfigSaveLoad(t *testing.T) {
-	// 创建临时目录
+	// create a temp directory
 	tempDir := t.TempDir()
 	configPath := filepath.Join(tempDir, "test_config.json")
 
-	// 创建测试配置
+	// create test config
 	config := &MinerConfig{
 		NodeID:      "test_node_123",
 		OllamaURL:   "http://test:8080",
@@ -72,47 +72,47 @@ func TestConfigSaveLoad(t *testing.T) {
 		LogLevel:    "debug",
 	}
 
-	// 测试保存
+	// test save
 	if err := SaveConfig(configPath, config); err != nil {
-		t.Fatalf("保存配置失败: %v", err)
+		t.Fatalf("failed to save config: %v", err)
 	}
 
-	// 验证文件存在
+	// verify file exists
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
-		t.Fatal("配置文件未创建")
+		t.Fatal("config file not created")
 	}
 
-	// 测试加载
+	// test load
 	loadedConfig, err := LoadConfig(configPath)
 	if err != nil {
-		t.Fatalf("加载配置失败: %v", err)
+		t.Fatalf("failed to load config: %v", err)
 	}
 
-	// 验证加载的配置与原始配置一致
+	// verify loaded config matches original
 	if loadedConfig.NodeID != config.NodeID {
-		t.Errorf("NodeID 不匹配: 期望 %s, 实际 %s", config.NodeID, loadedConfig.NodeID)
+		t.Errorf("NodeID mismatch: want %s, got %s", config.NodeID, loadedConfig.NodeID)
 	}
 	if loadedConfig.OllamaURL != config.OllamaURL {
-		t.Errorf("OllamaURL 不匹配: 期望 %s, 实际 %s", config.OllamaURL, loadedConfig.OllamaURL)
+		t.Errorf("OllamaURL mismatch: want %s, got %s", config.OllamaURL, loadedConfig.OllamaURL)
 	}
 	if loadedConfig.Model != config.Model {
-		t.Errorf("Model 不匹配: 期望 %s, 实际 %s", config.Model, loadedConfig.Model)
+		t.Errorf("Model mismatch: want %s, got %s", config.Model, loadedConfig.Model)
 	}
 	if loadedConfig.StakeAmount != config.StakeAmount {
-		t.Errorf("StakeAmount 不匹配: 期望 %f, 实际 %f", config.StakeAmount, loadedConfig.StakeAmount)
+		t.Errorf("StakeAmount mismatch: want %f, got %f", config.StakeAmount, loadedConfig.StakeAmount)
 	}
 	if loadedConfig.ListenAddr != config.ListenAddr {
-		t.Errorf("ListenAddr 不匹配: 期望 %s, 实际 %s", config.ListenAddr, loadedConfig.ListenAddr)
+		t.Errorf("ListenAddr mismatch: want %s, got %s", config.ListenAddr, loadedConfig.ListenAddr)
 	}
 	if loadedConfig.DataDir != config.DataDir {
-		t.Errorf("DataDir 不匹配: 期望 %s, 实际 %s", config.DataDir, loadedConfig.DataDir)
+		t.Errorf("DataDir mismatch: want %s, got %s", config.DataDir, loadedConfig.DataDir)
 	}
 	if loadedConfig.LogLevel != config.LogLevel {
-		t.Errorf("LogLevel 不匹配: 期望 %s, 实际 %s", config.LogLevel, loadedConfig.LogLevel)
+		t.Errorf("LogLevel mismatch: want %s, got %s", config.LogLevel, loadedConfig.LogLevel)
 	}
 }
 
-// TestConfigValidation 测试配置验证
+// TestConfigValidation tests config validation
 func TestConfigValidation(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -120,7 +120,7 @@ func TestConfigValidation(t *testing.T) {
 		expected string
 	}{
 		{
-			name: "空 NodeID",
+			name: "empty NodeID",
 			config: &MinerConfig{
 				NodeID:      "",
 				OllamaURL:   "http://test",
@@ -128,10 +128,10 @@ func TestConfigValidation(t *testing.T) {
 				StakeAmount: 10.0,
 				ListenAddr:  ":8080",
 			},
-			expected: "node_id 不能为空",
+			expected: "node_id cannot be empty",
 		},
 		{
-			name: "空 OllamaURL",
+			name: "empty OllamaURL",
 			config: &MinerConfig{
 				NodeID:      "test",
 				OllamaURL:   "",
@@ -139,10 +139,10 @@ func TestConfigValidation(t *testing.T) {
 				StakeAmount: 10.0,
 				ListenAddr:  ":8080",
 			},
-			expected: "ollama_url 不能为空",
+			expected: "ollama_url cannot be empty",
 		},
 		{
-			name: "空 Model",
+			name: "empty Model",
 			config: &MinerConfig{
 				NodeID:      "test",
 				OllamaURL:   "http://test",
@@ -150,10 +150,10 @@ func TestConfigValidation(t *testing.T) {
 				StakeAmount: 10.0,
 				ListenAddr:  ":8080",
 			},
-			expected: "model 不能为空",
+			expected: "model cannot be empty",
 		},
 		{
-			name: "负质押数量",
+			name: "negative stake amount",
 			config: &MinerConfig{
 				NodeID:      "test",
 				OllamaURL:   "http://test",
@@ -161,10 +161,10 @@ func TestConfigValidation(t *testing.T) {
 				StakeAmount: -1.0,
 				ListenAddr:  ":8080",
 			},
-			expected: "stake_amount 不能为负数",
+			expected: "stake_amount cannot be negative",
 		},
 		{
-			name: "空监听地址",
+			name: "empty listen address",
 			config: &MinerConfig{
 				NodeID:      "test",
 				OllamaURL:   "http://test",
@@ -172,10 +172,10 @@ func TestConfigValidation(t *testing.T) {
 				StakeAmount: 10.0,
 				ListenAddr:  "",
 			},
-			expected: "listen_addr 不能为空",
+			expected: "listen_addr cannot be empty",
 		},
 		{
-			name: "有效配置",
+			name: "valid config",
 			config: &MinerConfig{
 				NodeID:      "test",
 				OllamaURL:   "http://test",
@@ -191,18 +191,18 @@ func TestConfigValidation(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			err := tt.config.Validate()
 			if tt.expected == "" && err != nil {
-				t.Errorf("期望验证通过，实际错误: %v", err)
+				t.Errorf("want validation to pass, got error: %v", err)
 			}
 			if tt.expected != "" && (err == nil || err.Error() != "config: "+tt.expected) {
-				t.Errorf("期望错误包含 '%s'，实际错误: %v", tt.expected, err)
+				t.Errorf("want error containing '%s', got error: %v", tt.expected, err)
 			}
 		})
 	}
 }
 
-// TestNewMiner 测试矿工创建
+// TestNewMiner tests miner creation
 func TestNewMiner(t *testing.T) {
-	// 测试有效配置
+	// test valid config
 	config := &MinerConfig{
 		NodeID:      "test_node",
 		OllamaURL:   "http://test",
@@ -213,32 +213,32 @@ func TestNewMiner(t *testing.T) {
 
 	miner, err := NewMiner(config)
 	if err != nil {
-		t.Fatalf("创建矿工失败: %v", err)
+		t.Fatalf("failed to create miner: %v", err)
 	}
 	if miner == nil {
-		t.Fatal("矿工实例不应为 nil")
+		t.Fatal("miner instance unexpectedly nil")
 	}
 	if miner.Config().NodeID != config.NodeID {
-		t.Errorf("矿工配置不匹配")
+		t.Errorf("miner config mismatch")
 	}
 
-	// 测试 nil 配置
+	// test nil config
 	_, err = NewMiner(nil)
 	if err == nil {
-		t.Error("nil 配置应返回错误")
+		t.Error("nil config should return error")
 	}
 
-	// 测试无效配置
+	// test invalid config
 	invalidConfig := &MinerConfig{
-		NodeID: "", // 无效的 NodeID
+		NodeID: "", // invalid NodeID
 	}
 	_, err = NewMiner(invalidConfig)
 	if err == nil {
-		t.Error("无效配置应返回错误")
+		t.Error("invalid config should return error")
 	}
 }
 
-// TestMinerStartStop 测试矿工启动和停止
+// TestMinerStartStop tests miner start and stop
 func TestMinerStartStop(t *testing.T) {
 	config := &MinerConfig{
 		NodeID:      "test_node",
@@ -250,48 +250,48 @@ func TestMinerStartStop(t *testing.T) {
 
 	miner, err := NewMiner(config)
 	if err != nil {
-		t.Fatalf("创建矿工失败: %v", err)
+		t.Fatalf("failed to create miner: %v", err)
 	}
 
 	ctx := context.Background()
 
-	// 测试启动
+	// test start
 	if err := miner.Start(ctx); err != nil {
-		t.Fatalf("启动矿工失败: %v", err)
+		t.Fatalf("failed to start miner: %v", err)
 	}
 
-	// 验证状态
+	// verify state
 	status := miner.Status()
 	if !status.Running {
-		t.Error("矿工启动后状态应为运行中")
+		t.Error("miner state should be running after start")
 	}
 	if status.NodeID != config.NodeID {
-		t.Errorf("状态中的 NodeID 不匹配")
+		t.Errorf("in status: NodeID mismatch")
 	}
 
-	// 测试重复启动
+	// test double start
 	if err := miner.Start(ctx); err == nil {
-		t.Error("重复启动应返回错误")
+		t.Error("double start should return error")
 	}
 
-	// 测试停止
+	// test stop
 	if err := miner.Stop(); err != nil {
-		t.Fatalf("停止矿工失败: %v", err)
+		t.Fatalf("failed to stop miner: %v", err)
 	}
 
-	// 验证状态
+	// verify state
 	status = miner.Status()
 	if status.Running {
-		t.Error("矿工停止后状态应为停止")
+		t.Error("miner state should be stopped after stop")
 	}
 
-	// 测试重复停止
+	// test double stop
 	if err := miner.Stop(); err == nil {
-		t.Error("重复停止应返回错误")
+		t.Error("double stop should return error")
 	}
 }
 
-// TestMinerStatus 测试状态获取
+// TestMinerStatus tests status retrieval
 func TestMinerStatus(t *testing.T) {
 	config := &MinerConfig{
 		NodeID:      "test_node",
@@ -303,49 +303,49 @@ func TestMinerStatus(t *testing.T) {
 
 	miner, err := NewMiner(config)
 	if err != nil {
-		t.Fatalf("创建矿工失败: %v", err)
+		t.Fatalf("failed to create miner: %v", err)
 	}
 
-	// 测试停止状态
+	// test stopped state
 	status := miner.Status()
 	if status.Running {
-		t.Error("未启动的矿工状态应为停止")
+		t.Error("unstarted miner state expected stopped")
 	}
 	if status.Uptime != 0 {
-		t.Error("未启动的矿工运行时长应为 0")
+		t.Error("unstarted miner uptime expected 0")
 	}
 	if status.TasksProcessed != 0 {
-		t.Error("未启动的矿工任务数应为 0")
+		t.Error("unstarted miner tasks processed expected 0")
 	}
 	if status.NodeID != config.NodeID {
-		t.Errorf("状态中的 NodeID 不匹配")
+		t.Errorf("in status: NodeID mismatch")
 	}
 	if status.Model != config.Model {
-		t.Errorf("状态中的 Model 不匹配")
+		t.Errorf("in status: Model mismatch")
 	}
 
-	// 测试启动后状态
+	// test state after start
 	ctx := context.Background()
 	if err := miner.Start(ctx); err != nil {
-		t.Fatalf("启动矿工失败: %v", err)
+		t.Fatalf("failed to start miner: %v", err)
 	}
 	defer miner.Stop()
 
-	time.Sleep(100 * time.Millisecond) // 等待一小段时间
+	time.Sleep(100 * time.Millisecond) // wait a short while
 
 	status = miner.Status()
 	if !status.Running {
-		t.Error("启动后的矿工状态应为运行中")
+		t.Error("miner state expected running after start")
 	}
 	if status.Uptime <= 0 {
-		t.Error("启动后的矿工运行时长应大于 0")
+		t.Error("miner uptime after start should be > 0")
 	}
 	if !status.StartTime.After(time.Now().Add(-time.Second)) {
-		t.Error("启动时间应接近当前时间")
+		t.Error("start time should be close to now")
 	}
 }
 
-// TestProcessTask 测试任务处理
+// TestProcessTask tests task processing
 func TestProcessTask(t *testing.T) {
 	config := &MinerConfig{
 		NodeID:      "test_node",
@@ -357,55 +357,55 @@ func TestProcessTask(t *testing.T) {
 
 	miner, err := NewMiner(config)
 	if err != nil {
-		t.Fatalf("创建矿工失败: %v", err)
+		t.Fatalf("failed to create miner: %v", err)
 	}
 
-	// 创建测试任务
+	// create test task
 	task := orchestrator.NewTask("task_123", "test prompt", "requester_123", 3, time.Minute)
 	task.AssignNodes([]string{"other_node_1", "test_node", "other_node_2"})
 
-	// 测试矿工未启动时处理任务
+	// test processing task when miner not started
 	err = miner.ProcessTask(task)
 	if err == nil {
-		t.Error("矿工未启动时应返回错误")
+		t.Error("should return error when miner not started")
 	}
 
-	// 启动矿工
+	// start the miner
 	ctx := context.Background()
 	if err := miner.Start(ctx); err != nil {
-		t.Fatalf("启动矿工失败: %v", err)
+		t.Fatalf("failed to start miner: %v", err)
 	}
 	defer miner.Stop()
 
-	// 测试处理分配给当前节点的任务
+	// test processing task assigned to current node
 	err = miner.ProcessTask(task)
 	if err != nil {
-		t.Fatalf("处理任务失败: %v", err)
+		t.Fatalf("failed to process task: %v", err)
 	}
 
-	// 验证任务计数
+	// verify task count
 	status := miner.Status()
 	if status.TasksProcessed != 1 {
-		t.Errorf("任务计数应为 1，实际为 %d", status.TasksProcessed)
+		t.Errorf("task count expected 1, actual %d", status.TasksProcessed)
 	}
 
-	// 测试处理未分配给当前节点的任务
+	// test processing task not assigned to current node
 	otherTask := orchestrator.NewTask("task_456", "test prompt", "requester_456", 2, time.Minute)
 	otherTask.AssignNodes([]string{"other_node_1", "other_node_2"})
 
 	err = miner.ProcessTask(otherTask)
 	if err == nil {
-		t.Error("处理未分配给当前节点的任务时应返回错误")
+		t.Error("processing task not assigned to current node should return error")
 	}
 
-	// 测试 nil 任务
+	// test nil task
 	err = miner.ProcessTask(nil)
 	if err == nil {
-		t.Error("处理 nil 任务时应返回错误")
+		t.Error("processing nil task should return error")
 	}
 }
 
-// TestConfigJSONMarshaling 测试 JSON 序列化和反序列化
+// TestConfigJSONMarshaling tests JSON marshal/unmarshal
 func TestConfigJSONMarshaling(t *testing.T) {
 	config := &MinerConfig{
 		NodeID:      "json_test_node",
@@ -417,70 +417,70 @@ func TestConfigJSONMarshaling(t *testing.T) {
 		LogLevel:    "warn",
 	}
 
-	// 测试序列化
+	// test marshal
 	data, err := json.Marshal(config)
 	if err != nil {
-		t.Fatalf("JSON 序列化失败: %v", err)
+		t.Fatalf("JSON marshal failed: %v", err)
 	}
 
-	// 测试反序列化
+	// test unmarshal
 	var decodedConfig MinerConfig
 	if err := json.Unmarshal(data, &decodedConfig); err != nil {
-		t.Fatalf("JSON 反序列化失败: %v", err)
+		t.Fatalf("JSON unmarshal failed: %v", err)
 	}
 
-	// 验证字段匹配
+	// verify fields match
 	if decodedConfig.NodeID != config.NodeID {
-		t.Errorf("NodeID 不匹配")
+		t.Errorf("NodeID mismatch")
 	}
 	if decodedConfig.OllamaURL != config.OllamaURL {
-		t.Errorf("OllamaURL 不匹配")
+		t.Errorf("OllamaURL mismatch")
 	}
 	if decodedConfig.Model != config.Model {
-		t.Errorf("Model 不匹配")
+		t.Errorf("Model mismatch")
 	}
 	if decodedConfig.StakeAmount != config.StakeAmount {
-		t.Errorf("StakeAmount 不匹配")
+		t.Errorf("StakeAmount mismatch")
 	}
 	if decodedConfig.ListenAddr != config.ListenAddr {
-		t.Errorf("ListenAddr 不匹配")
+		t.Errorf("ListenAddr mismatch")
 	}
 	if decodedConfig.DataDir != config.DataDir {
-		t.Errorf("DataDir 不匹配")
+		t.Errorf("DataDir mismatch")
 	}
 	if decodedConfig.LogLevel != config.LogLevel {
-		t.Errorf("LogLevel 不匹配")
+		t.Errorf("LogLevel mismatch")
 	}
 }
 
-// TestLoadConfigInvalidPath 测试加载无效路径
+// TestLoadConfigInvalidPath test loadinvalid path
 func TestLoadConfigInvalidPath(t *testing.T) {
-	// 测试空路径
+	// test empty path
 	_, err := LoadConfig("")
 	if err == nil {
-		t.Error("空路径应返回错误")
+		t.Error("empty path should return error")
 	}
 
-	// 测试不存在的文件
+	// test nonexistent file
 	_, err = LoadConfig("/tmp/nonexistent_config_123456.json")
 	if err == nil {
-		t.Error("不存在的文件应返回错误")
+		t.Error("nonexistent file should return error")
 	}
 
-	// 测试无效 JSON
+	// test invalid JSON
 	tempDir := t.TempDir()
 	invalidJSONPath := filepath.Join(tempDir, "invalid.json")
 	if err := os.WriteFile(invalidJSONPath, []byte("{ invalid json"), 0644); err != nil {
-		t.Fatalf("创建测试文件失败: %v", err)
+		t.Fatalf("failed to create test file: %v", err)
 	}
 
 	_, err = LoadConfig(invalidJSONPath)
 	if err == nil {
-		t.Error("无效 JSON 应返回错误")
+		t.Error("invalid JSON should return error")
 	}
 }
 
-// TestSaveConfigInvalidPath 测试保存到无效路径
+// TestSaveConfigInvalidPath tests saving to an invalid path
 func TestSaveConfigInvalidPath(t *testing.T) {
 	config := &MinerConfig{
 		NodeID:      "test",
@@ -490,20 +490,20 @@ func TestSaveConfigInvalidPath(t *testing.T) {
 		ListenAddr:  ":8080",
 	}
 
-	// 测试空路径
+	// test empty path
 	err := SaveConfig("", config)
 	if err == nil {
-		t.Error("空路径应返回错误")
+		t.Error("empty path should return error")
 	}
 
-	// 测试 nil 配置
+	// test nil config
 	err = SaveConfig("/tmp/test.json", nil)
 	if err == nil {
-		t.Error("nil 配置应返回错误")
+		t.Error("nil config should return error")
 	}
 }
 
-// TestMinerConcurrentAccess 测试并发访问
+// TestMinerConcurrentAccess tests concurrent access
 func TestMinerConcurrentAccess(t *testing.T) {
 	config := &MinerConfig{
 		NodeID:      "concurrent_node",
@@ -515,27 +515,27 @@ func TestMinerConcurrentAccess(t *testing.T) {
 
 	miner, err := NewMiner(config)
 	if err != nil {
-		t.Fatalf("创建矿工失败: %v", err)
+		t.Fatalf("failed to create miner: %v", err)
 	}
 
-	// 启动矿工
+	// start the miner
 	ctx := context.Background()
 	if err := miner.Start(ctx); err != nil {
-		t.Fatalf("启动矿工失败: %v", err)
+		t.Fatalf("failed to start miner: %v", err)
 	}
 	defer miner.Stop()
 
-	// 并发访问测试
+	// concurrent access test
 	done := make(chan bool)
 	errors := make(chan error, 10)
 
-	// 启动多个 goroutine 并发访问状态
+	// start multiple goroutines accessing state concurrently
 	for i := 0; i < 10; i++ {
 		go func(id int) {
 			for j := 0; j < 10; j++ {
 				status := miner.Status()
 				if status.NodeID != config.NodeID {
-					errors <- fmt.Errorf("goroutine %d 获取的 NodeID 不匹配", id)
+					errors <- fmt.Errorf("goroutine %d got mismatched NodeID", id)
 					return
 				}
 				time.Sleep(time.Millisecond)
@@ -544,12 +544,12 @@ func TestMinerConcurrentAccess(t *testing.T) {
 		}(i)
 	}
 
-	// 等待所有 goroutine 完成
+	// wait for all goroutines to finish
 	for i := 0; i < 10; i++ {
 		select {
 		case <-done:
 		case err := <-errors:
-			t.Fatalf("并发访问出错: %v", err)
+			t.Fatalf("concurrent access error: %v", err)
 		}
 	}
 }
