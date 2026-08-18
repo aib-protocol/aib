@@ -23,7 +23,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// Config 配置结构
+// Config configuration struct
 type Config struct {
 	RPCEndpoint string `yaml:"rpc_endpoint"`
 	ChainID     int64  `yaml:"chain_id"`
@@ -33,7 +33,7 @@ type Config struct {
 	Timeout     int    `yaml:"timeout_sec"`
 }
 
-// DeploymentRecord 部署记录
+// DeploymentRecord deployment record
 type DeploymentRecord struct {
 	Timestamp   time.Time        `json:"timestamp"`
 	Network     string           `json:"network"`
@@ -43,7 +43,7 @@ type DeploymentRecord struct {
 	Validations []ValidationInfo `json:"validations"`
 }
 
-// ContractInfo 合约信息
+// ContractInfo contract info
 type ContractInfo struct {
 	Name    string `json:"name"`
 	Address string `json:"address"`
@@ -51,7 +51,7 @@ type ContractInfo struct {
 	GasUsed uint64 `json:"gas_used"`
 }
 
-// ValidationInfo 验证信息
+// ValidationInfo validation info
 type ValidationInfo struct {
 	Name      string    `json:"name"`
 	Status    string    `json:"status"`
@@ -59,7 +59,7 @@ type ValidationInfo struct {
 	Timestamp time.Time `json:"timestamp"`
 }
 
-// DeploymentResult 部署结果
+// DeploymentResult deployment result
 type DeploymentResult struct {
 	Address common.Address
 	TxHash  common.Hash
@@ -68,68 +68,68 @@ type DeploymentResult struct {
 }
 
 var (
-	configFile = flag.String("config", "config.yaml", "配置文件路径")
-	contract   = flag.String("contract", "all", "要部署的合约: weth, factory, router, all")
-	network    = flag.String("network", "devnet", "网络: devnet, testnet, mainnet")
-	outputDir  = flag.String("output", "./deployments", "输出目录")
-	skipVerify = flag.Bool("skip-verify", false, "跳过验证")
-	verbose    = flag.Bool("verbose", false, "详细输出")
+	configFile = flag.String("config", "config.yaml", "path to config file")
+	contract   = flag.String("contract", "all", "contract to deploy: weth, factory, router, all")
+	network    = flag.String("network", "devnet", "network: devnet, testnet, mainnet")
+	outputDir  = flag.String("output", "./deployments", "output directory")
+	skipVerify = flag.Bool("skip-verify", false, "skip verification")
+	verbose    = flag.Bool("verbose", false, "verbose output")
 )
 
 func main() {
 	flag.Parse()
 
 	if *verbose {
-		fmt.Printf("=== AIB 合约部署工具 ===\n")
-		fmt.Printf("配置文件: %s\n", *configFile)
-		fmt.Printf("网络: %s\n", *network)
-		fmt.Printf("合约: %s\n\n", *contract)
+		fmt.Printf("=== AIB Contract Deployment Tool ===\n")
+		fmt.Printf("Config file: %s\n", *configFile)
+		fmt.Printf("Network: %s\n", *network)
+		fmt.Printf("Contract: %s\n\n", *contract)
 	}
 
-	// 加载配置
+	// load config
 	cfg, err := loadConfig(*configFile)
 	if err != nil {
-		logError("加载配置失败: %v", err)
+		logError("failed to load config: %v", err)
 		os.Exit(1)
 	}
 
-	// 创建输出目录
+	// create output directory
 	if err := os.MkdirAll(*outputDir, 0755); err != nil {
-		logError("创建输出目录失败: %v", err)
+		logError("failed to create output directory: %v", err)
 		os.Exit(1)
 	}
 
-	// 连接节点
+	// connect to node
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(cfg.Timeout)*time.Second)
 	defer cancel()
 
 	client, err := ethclient.DialContext(ctx, cfg.RPCEndpoint)
 	if err != nil {
-		logError("连接RPC节点失败: %v", err)
+		logError("failed to connect to RPC node: %v", err)
 		os.Exit(1)
 	}
 	defer client.Close()
 
-	// 获取私钥
+	// get private key
 	privateKey, err := crypto.HexToECDSA(strings.TrimPrefix(cfg.PrivateKey, "0x"))
 	if err != nil {
-		logError("解析私钥失败: %v", err)
+		logError("failed to parse private key: %v", err)
 		os.Exit(1)
 	}
 
-	// 获取发送者地址
+	// get sender address
 	senderAddress := crypto.PubkeyToAddress(privateKey.PublicKey)
 	if *verbose {
-		fmt.Printf("部署地址: %s\n", senderAddress.Hex())
+		fmt.Printf("Deploy address: %s\n", senderAddress.Hex())
 	}
 
-	// 获取链ID
+	// get chain ID
 	chainID := big.NewInt(cfg.ChainID)
 
-	// 初始化部署器
+	// initialize deployer
 	deployer := NewDeployer(client, privateKey, chainID, cfg)
 
-	// 执行部署
+	// execute deployment
 	record := &DeploymentRecord{
 		Timestamp:   time.Now(),
 		Network:     *network,
@@ -145,58 +145,58 @@ func main() {
 	case "weth":
 		results["WETH"], err = deployer.DeployWETH(ctx)
 	case "factory":
-		feeTo := senderAddress // 默认手续费接收者
+		feeTo := senderAddress // default fee recipient
 		results["UniswapV2Factory"], err = deployer.DeployFactory(ctx, feeTo)
 	case "router":
-		// Router需要Factory和WETH地址
-		factoryAddr := getInputAddress("输入Factory地址:")
-		wethAddr := getInputAddress("输入WETH地址:")
+		// Router requires Factory and WETH addresses
+		factoryAddr := getInputAddress("Enter Factory address:")
+		wethAddr := getInputAddress("Enter WETH address:")
 		results["UniswapV2Router"], err = deployer.DeployRouter(ctx, factoryAddr, wethAddr)
 	case "all":
-		logInfo("部署全部合约...")
+		logInfo("Deploying all contracts...")
 
-		// 1. 部署WETH
-		logInfo("1. 部署WETH...")
+		// 1. deploy WETH
+		logInfo("1. Deploying WETH...")
 		results["WETH"], _ = deployer.DeployWETH(ctx)
 		if results["WETH"].Error != nil {
-			logError("WETH部署失败: %v", results["WETH"].Error)
+			logError("WETH deployment failed: %v", results["WETH"].Error)
 		} else {
-			logSuccess("WETH部署成功: %s", results["WETH"].Address.Hex())
+			logSuccess("WETH deployed successfully: %s", results["WETH"].Address.Hex())
 		}
 
-		// 2. 部署Factory
-		logInfo("2. 部署UniswapV2Factory...")
+		// 2. deploy Factory
+		logInfo("2. Deploying UniswapV2Factory...")
 		feeTo := senderAddress
 		results["UniswapV2Factory"], _ = deployer.DeployFactory(ctx, feeTo)
 		if results["UniswapV2Factory"].Error != nil {
-			logError("Factory部署失败: %v", results["UniswapV2Factory"].Error)
+			logError("Factory deployment failed: %v", results["UniswapV2Factory"].Error)
 		} else {
-			logSuccess("Factory部署成功: %s", results["UniswapV2Factory"].Address.Hex())
+			logSuccess("Factory deployed successfully: %s", results["UniswapV2Factory"].Address.Hex())
 		}
 
-		// 3. 部署Router
+		// 3. deploy Router
 		if results["WETH"].Error == nil && results["UniswapV2Factory"].Error == nil {
-			logInfo("3. 部署UniswapV2Router...")
+			logInfo("3. Deploying UniswapV2Router...")
 			results["UniswapV2Router"], err = deployer.DeployRouter(
 				ctx,
 				results["UniswapV2Factory"].Address,
 				results["WETH"].Address,
 			)
 			if err != nil {
-				logError("Router部署失败: %v", err)
+				logError("Router deployment failed: %v", err)
 			} else {
-				logSuccess("Router部署成功: %s", results["UniswapV2Router"].Address.Hex())
+				logSuccess("Router deployed successfully: %s", results["UniswapV2Router"].Address.Hex())
 			}
 		}
 	default:
-		logError("未知合约类型: %s", *contract)
+		logError("unknown contract type: %s", *contract)
 		os.Exit(1)
 	}
 
-	// 收集部署结果
+	// collect deployment results
 	for name, result := range results {
 		if result.Error != nil {
-			logError("%s 部署失败: %v", name, result.Error)
+			logError("%s deployment failed: %v", name, result.Error)
 			continue
 		}
 
@@ -211,13 +211,13 @@ func main() {
 		record.Contracts = append(record.Contracts, info)
 	}
 
-	// 验证
+	// verify
 	if !*skipVerify && len(record.Contracts) > 0 {
-		logInfo("\n=== 开始验证 ===")
+		logInfo("\n=== Starting verification ===")
 		validator := NewValidator(client, deployer)
 
 		for _, contractInfo := range record.Contracts {
-			logInfo("验证 %s...", contractInfo.Name)
+			logInfo("Verifying %s...", contractInfo.Name)
 
 			v := ValidationInfo{
 				Name:      contractInfo.Name,
@@ -227,52 +227,52 @@ func main() {
 			if err := validator.ValidateContract(ctx, contractInfo.Address); err != nil {
 				v.Status = "failed"
 				v.Message = err.Error()
-				logError("  验证失败: %v", err)
+				logError("  verification failed: %v", err)
 			} else {
 				v.Status = "success"
-				v.Message = "合约验证通过"
-				logSuccess("  验证通过")
+				v.Message = "contract verification passed"
+				logSuccess("  verification passed")
 			}
 
 			record.Validations = append(record.Validations, v)
 		}
 	}
 
-	// 保存部署记录
+	// save deployment record
 	recordFile := filepath.Join(*outputDir, fmt.Sprintf("deployment_%s_%d.json", *network, time.Now().Unix()))
 	data, _ := json.MarshalIndent(record, "", "  ")
 	if err := os.WriteFile(recordFile, data, 0644); err != nil {
-		logError("保存部署记录失败: %v", err)
+		logError("failed to save deployment record: %v", err)
 	} else {
-		logSuccess("\n部署记录已保存: %s", recordFile)
+		logSuccess("\nDeployment record saved: %s", recordFile)
 	}
 
-	// 生成合约地址映射文件
+	// generate contract address mapping file
 	if len(record.Contracts) > 0 {
 		addrFile := filepath.Join(*outputDir, fmt.Sprintf("addresses_%s.txt", *network))
 		var addrData strings.Builder
-		addrData.WriteString(fmt.Sprintf("# AIB DeFi 合约地址映射\n"))
-		addrData.WriteString(fmt.Sprintf("# 网络: %s\n", *network))
-		addrData.WriteString(fmt.Sprintf("# 部署时间: %s\n\n", record.Timestamp.Format(time.RFC3339)))
+		addrData.WriteString(fmt.Sprintf("# AIB DeFi contract address mapping\n"))
+		addrData.WriteString(fmt.Sprintf("# Network: %s\n", *network))
+		addrData.WriteString(fmt.Sprintf("# Deployed at: %s\n\n", record.Timestamp.Format(time.RFC3339)))
 
 		for _, c := range record.Contracts {
 			addrData.WriteString(fmt.Sprintf("%s=%s\n", c.Name, c.Address))
 		}
 
 		if err := os.WriteFile(addrFile, []byte(addrData.String()), 0644); err != nil {
-			logError("保存地址映射失败: %v", err)
+			logError("failed to save address mapping: %v", err)
 		} else {
-			logSuccess("地址映射已保存: %s", addrFile)
+			logSuccess("Address mapping saved: %s", addrFile)
 		}
 	}
 
-	logInfo("\n=== 部署完成 ===")
+	logInfo("\n=== Deployment complete ===")
 	for _, c := range record.Contracts {
 		fmt.Printf("  %s: %s\n", c.Name, c.Address)
 	}
 }
 
-// Deployer 部署器
+// Deployer deploys contracts
 type Deployer struct {
 	client     *ethclient.Client
 	privateKey *ecdsa.PrivateKey
@@ -291,133 +291,133 @@ func NewDeployer(client *ethclient.Client, privateKey *ecdsa.PrivateKey, chainID
 	}
 }
 
-// DeployWETH 部署WETH合约
+// DeployWETH deploys the WETH contract
 func (d *Deployer) DeployWETH(ctx context.Context) (*DeploymentResult, error) {
-	// WETH合约字节码
+	// WETH contract bytecode
 	bytecode, err := d.loadContractBytecode("WETH")
 	if err != nil {
-		return nil, fmt.Errorf("加载WETH字节码失败: %w", err)
+		return nil, fmt.Errorf("failed to load WETH bytecode: %w", err)
 	}
 
 	return d.deploy(ctx, bytecode, nil)
 }
 
-// DeployFactory 部署UniswapV2Factory合约
+// DeployFactory deploys the UniswapV2Factory contract
 func (d *Deployer) DeployFactory(ctx context.Context, feeTo common.Address) (*DeploymentResult, error) {
 	bytecode, err := d.loadContractBytecode("UniswapV2Factory")
 	if err != nil {
-		return nil, fmt.Errorf("加载Factory字节码失败: %w", err)
+		return nil, fmt.Errorf("failed to load Factory bytecode: %w", err)
 	}
 
-	// 构造函数参数: address _feeToSetter
+	// constructor args: address _feeToSetter
 	abiData, err := d.loadContractABI("UniswapV2Factory")
 	if err != nil {
-		return nil, fmt.Errorf("加载Factory ABI失败: %w", err)
+		return nil, fmt.Errorf("failed to load Factory ABI: %w", err)
 	}
 
 	parsedABI, err := abi.JSON(strings.NewReader(abiData))
 	if err != nil {
-		return nil, fmt.Errorf("解析ABI失败: %w", err)
+		return nil, fmt.Errorf("failed to parse ABI: %w", err)
 	}
 
 	constructor := parsedABI.Constructor
 	input, err := constructor.Inputs.Pack(feeTo)
 	if err != nil {
-		return nil, fmt.Errorf("打包构造函数参数失败: %w", err)
+		return nil, fmt.Errorf("failed to pack constructor args: %w", err)
 	}
 
 	return d.deploy(ctx, bytecode, input)
 }
 
-// DeployRouter 部署UniswapV2Router合约
+// DeployRouter deploys the UniswapV2Router contract
 func (d *Deployer) DeployRouter(ctx context.Context, factory, weth common.Address) (*DeploymentResult, error) {
 	bytecode, err := d.loadContractBytecode("UniswapV2Router")
 	if err != nil {
-		return nil, fmt.Errorf("加载Router字节码失败: %w", err)
+		return nil, fmt.Errorf("failed to load Router bytecode: %w", err)
 	}
 
-	// 构造函数参数: address _factory, address _WETH
+	// constructor args: address _factory, address _WETH
 	abiData, err := d.loadContractABI("UniswapV2Router")
 	if err != nil {
-		return nil, fmt.Errorf("加载Router ABI失败: %w", err)
+		return nil, fmt.Errorf("failed to load Router ABI: %w", err)
 	}
 
 	parsedABI, err := abi.JSON(strings.NewReader(abiData))
 	if err != nil {
-		return nil, fmt.Errorf("解析ABI失败: %w", err)
+		return nil, fmt.Errorf("failed to parse ABI: %w", err)
 	}
 
 	constructor := parsedABI.Constructor
 	input, err := constructor.Inputs.Pack(factory, weth)
 	if err != nil {
-		return nil, fmt.Errorf("打包构造函数参数失败: %w", err)
+		return nil, fmt.Errorf("failed to pack constructor args: %w", err)
 	}
 
 	return d.deploy(ctx, bytecode, input)
 }
 
-// deploy 通用部署函数
+// deploy generic deployment function
 func (d *Deployer) deploy(ctx context.Context, bytecode []byte, input []byte) (*DeploymentResult, error) {
 	result := &DeploymentResult{}
 
-	// 构建交易数据
+	// build transaction data
 	var data []byte
 	data = append(data, bytecode...)
 	data = append(data, input...)
 
-	// 获取当前nonce
+	// get current nonce
 	nonce, err := d.client.PendingNonceAt(ctx, d.sender)
 	if err != nil {
-		result.Error = fmt.Errorf("获取nonce失败: %w", err)
+		result.Error = fmt.Errorf("failed to get nonce: %w", err)
 		return result, result.Error
 	}
 
-	// 解析gas价格
+	// parse gas price
 	gasPrice := new(big.Int)
 	if d.config.GasPrice != "" {
 		gasPrice, _ = new(big.Int).SetString(d.config.GasPrice, 0)
 	} else {
 		gasPrice, err = d.client.SuggestGasPrice(ctx)
 		if err != nil {
-			result.Error = fmt.Errorf("获取gas价格失败: %w", err)
+			result.Error = fmt.Errorf("failed to get gas price: %w", err)
 			return result, result.Error
 		}
 	}
 
-	// 设置gas限制
+	// set gas limit
 	gasLimit := d.config.GasLimit
 	if gasLimit == 0 {
-		gasLimit = 8000000 // 默认值
+		gasLimit = 8000000 // default value
 	}
 
-	// 构建交易
+	// build transaction
 	tx := types.NewTransaction(nonce, common.Address{}, big.NewInt(0), gasLimit, gasPrice, data)
 
-	// 签名交易
+	// sign transaction
 	signedTx, err := types.SignTx(tx, types.NewEIP155Signer(d.chainID), d.privateKey)
 	if err != nil {
-		result.Error = fmt.Errorf("签名交易失败: %w", err)
+		result.Error = fmt.Errorf("failed to sign transaction: %w", err)
 		return result, result.Error
 	}
 
-	// 发送交易
+	// send transaction
 	if err := d.client.SendTransaction(ctx, signedTx); err != nil {
-		result.Error = fmt.Errorf("发送交易失败: %w", err)
+		result.Error = fmt.Errorf("failed to send transaction: %w", err)
 		return result, result.Error
 	}
 
 	result.TxHash = signedTx.Hash()
-	logInfo("交易已发送: %s", result.TxHash.Hex())
+	logInfo("Transaction sent: %s", result.TxHash.Hex())
 
-	// 等待交易确认
+	// wait for transaction confirmation
 	receipt, err := bind.WaitMined(ctx, d.client, signedTx)
 	if err != nil {
-		result.Error = fmt.Errorf("等待交易确认失败: %w", err)
+		result.Error = fmt.Errorf("failed to wait for transaction confirmation: %w", err)
 		return result, result.Error
 	}
 
 	if receipt.Status == 0 {
-		result.Error = fmt.Errorf("交易执行失败")
+		result.Error = fmt.Errorf("transaction execution failed")
 		return result, result.Error
 	}
 
@@ -427,9 +427,9 @@ func (d *Deployer) deploy(ctx context.Context, bytecode []byte, input []byte) (*
 	return result, nil
 }
 
-// loadContractBytecode 加载合约字节码
+// loadContractBytecode loads contract bytecode
 func (d *Deployer) loadContractBytecode(name string) ([]byte, error) {
-	// 从contracts目录加载编译后的字节码
+	// load compiled bytecode from contracts directory
 	bytecodeFile := filepath.Join("./contracts", name+".bin")
 
 	data, err := os.ReadFile(bytecodeFile)
@@ -440,7 +440,7 @@ func (d *Deployer) loadContractBytecode(name string) ([]byte, error) {
 	return hex.DecodeString(strings.TrimSpace(string(data)))
 }
 
-// loadContractABI 加载合约ABI
+// loadContractABI loads contract ABI
 func (d *Deployer) loadContractABI(name string) (string, error) {
 	abiFile := filepath.Join("./contracts", name+".abi")
 
@@ -452,7 +452,7 @@ func (d *Deployer) loadContractABI(name string) (string, error) {
 	return string(data), nil
 }
 
-// Validator 验证器
+// Validator validates contracts
 type Validator struct {
 	client   *ethclient.Client
 	deployer *Deployer
@@ -465,33 +465,33 @@ func NewValidator(client *ethclient.Client, deployer *Deployer) *Validator {
 	}
 }
 
-// ValidateContract 验证合约
+// ValidateContract validates a contract
 func (v *Validator) ValidateContract(ctx context.Context, address common.Address) error {
-	// 检查合约代码
+	// check contract code
 	code, err := v.client.CodeAt(ctx, address, nil)
 	if err != nil {
-		return fmt.Errorf("获取合约代码失败: %w", err)
+		return fmt.Errorf("failed to get contract code: %w", err)
 	}
 
 	if len(code) == 0 {
-		return fmt.Errorf("合约不存在")
+		return fmt.Errorf("contract does not exist")
 	}
 
-	logInfo("  合约代码长度: %d 字节", len(code))
+	logInfo("  Contract code length: %d bytes", len(code))
 
-	// TODO: 添加更多验证逻辑
-	// - 验证合约函数
-	// - 验证初始状态
-	// - 运行测试用例
+	// TODO: add more validation logic
+	// - verify contract functions
+	// - verify initial state
+	// - run test cases
 
 	return nil
 }
 
-// loadConfig 加载配置文件
+// loadConfig loads the config file
 func loadConfig(path string) (*Config, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
-		// 返回默认配置
+		// return default config
 		return &Config{
 			RPCEndpoint: "http://localhost:8545",
 			ChainID:     314159,
@@ -508,7 +508,7 @@ func loadConfig(path string) (*Config, error) {
 	return &cfg, nil
 }
 
-// getInputAddress 从用户输入获取地址
+// getInputAddress reads an address from user input
 func getInputAddress(prompt string) common.Address {
 	reader := bufio.NewReader(os.Stdin)
 	fmt.Print(prompt)
@@ -517,7 +517,7 @@ func getInputAddress(prompt string) common.Address {
 	return common.HexToAddress(input)
 }
 
-// 日志函数
+// logging functions
 func logInfo(format string, args ...interface{}) {
 	fmt.Printf("[INFO] %s\n", fmt.Sprintf(format, args...))
 }
