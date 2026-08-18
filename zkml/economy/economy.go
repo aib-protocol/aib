@@ -4,13 +4,13 @@ import (
 	"encoding/json"
 )
 
-// Economy 聚合质押和奖励
+// Economy aggregates staking and rewards
 type Economy struct {
 	Stakes  *StakeManager
 	Rewards *RewardDistributor
 }
 
-// NewEconomy 创建新的经济模型
+// NewEconomy creates a new economy model
 func NewEconomy(minStake, baseReward float64) *Economy {
 	return &Economy{
 		Stakes:  NewStakeManager(minStake),
@@ -18,10 +18,10 @@ func NewEconomy(minStake, baseReward float64) *Economy {
 	}
 }
 
-// ProcessTaskCompletion 处理任务完成后的奖励分发
-// 检查节点资格后分发奖励
+// ProcessTaskCompletion handles reward distribution after task completion
+// Checks node eligibility before distributing rewards
 func (e *Economy) ProcessTaskCompletion(taskID string, nodeIDs []string) ([]string, error) {
-	// 过滤出有资格的节点
+	// filter out eligible nodes
 	eligibleNodes := make([]string, 0)
 	for _, nodeID := range nodeIDs {
 		if e.Stakes.IsEligible(nodeID) {
@@ -33,7 +33,7 @@ func (e *Economy) ProcessTaskCompletion(taskID string, nodeIDs []string) ([]stri
 		return nil, nil
 	}
 
-	// 给有资格的节点分发奖励
+	// distribute rewards to eligible nodes
 	if err := e.Rewards.DistributeTaskReward(taskID, eligibleNodes); err != nil {
 		return eligibleNodes, err
 	}
@@ -41,21 +41,21 @@ func (e *Economy) ProcessTaskCompletion(taskID string, nodeIDs []string) ([]stri
 	return eligibleNodes, nil
 }
 
-// ProcessSlash 处理罚没并分发举报奖励
-// 返回：罚没金额，举报奖励金额，error
+// ProcessSlash handles slashing and distributes the reporter reward
+// Returns: slash amount, reporter reward amount, error
 func (e *Economy) ProcessSlash(offenderID string, reporterID string, ratio float64, taskID string) (float64, float64, error) {
-	// 执行罚没
+	// execute the slash
 	slashAmount, err := e.Stakes.Slash(offenderID, ratio)
 	if err != nil {
 		return 0, 0, err
 	}
 
-	// 没有举报者则不分发举报奖励
+	// no reporter means no reporter reward
 	if reporterID == "" {
 		return slashAmount, 0, nil
 	}
 
-	// 分发举报奖励（罚没金额的 20% 作为举报奖励）
+	// distribute the reporter reward (20% of the slashed amount goes to the reporter)
 	reporterRewardRatio := 0.2
 	reporterReward := slashAmount * reporterRewardRatio
 
@@ -68,7 +68,7 @@ func (e *Economy) ProcessSlash(offenderID string, reporterID string, ratio float
 	return slashAmount, reporterReward, nil
 }
 
-// GetNodeSummary 获取节点经济摘要
+// GetNodeSummary returns the economic summary of a node
 func (e *Economy) GetNodeSummary(nodeID string) *NodeSummary {
 	summary := &NodeSummary{
 		NodeID:   nodeID,
@@ -85,7 +85,7 @@ func (e *Economy) GetNodeSummary(nodeID string) *NodeSummary {
 	return summary
 }
 
-// NodeSummary 节点经济摘要
+// NodeSummary is the economic summary of a node
 type NodeSummary struct {
 	NodeID      string      `json:"node_id"`
 	StakeAmount float64     `json:"stake_amount"`
@@ -95,7 +95,7 @@ type NodeSummary struct {
 	Eligible    bool        `json:"eligible"`
 }
 
-// Export 导出整体经济状态
+// Export exports the overall economy state
 func (e *Economy) Export() ([]byte, error) {
 	stakeData, err := e.Stakes.Export()
 	if err != nil {
@@ -118,7 +118,7 @@ func (e *Economy) Export() ([]byte, error) {
 	return json.Marshal(state)
 }
 
-// Import 导入整体经济状态
+// Import imports the overall economy state
 func (e *Economy) Import(data []byte) error {
 	var state struct {
 		Stakes  json.RawMessage `json:"stakes"`

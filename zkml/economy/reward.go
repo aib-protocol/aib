@@ -9,14 +9,14 @@ import (
 	"time"
 )
 
-// RewardDistributor 管理奖励分发
+// RewardDistributor manages reward distribution
 type RewardDistributor struct {
 	mu             sync.RWMutex
-	balances       map[string]float64 // nodeID -> 余额
-	rewardHistory  []*RewardEvent     // 全局奖励历史
-	baseReward     float64            // 基础奖励（每任务）
-	pocuMultiplier float64            // PoCU 乘数
-	maxHistory     int                // 最大历史记录数
+	balances       map[string]float64 // nodeID -> balance
+	rewardHistory  []*RewardEvent     // global reward history
+	baseReward     float64            // base reward (per task)
+	pocuMultiplier float64            // PoCU multiplier
+	maxHistory     int                // maximum number of history records
 }
 
 // RewardEvent rewardevent
@@ -33,26 +33,26 @@ type RewardEvent struct {
 type RewardType string
 
 const (
-	RewardInference  RewardType = "inference"  // 推理奖励
-	RewardValidation RewardType = "validation" // 验证奖励
-	RewardReporter   RewardType = "reporter"   // 举报奖励
+	RewardInference  RewardType = "inference"  // inference reward
+	RewardValidation RewardType = "validation" // validation reward
+	RewardReporter   RewardType = "reporter"   // reporter reward
 )
 
-// NewRewardDistributor 创建新的奖励分发器
+// NewRewardDistributor creates a new reward distributor
 func NewRewardDistributor(baseReward float64) *RewardDistributor {
 	return &RewardDistributor{
 		balances:       make(map[string]float64),
 		rewardHistory:  make([]*RewardEvent, 0),
 		baseReward:     baseReward,
-		pocuMultiplier: 1.0, // 默认乘数为 1.0
+		pocuMultiplier: 1.0, // default multiplier is 1.0
 		maxHistory:     10000,
 	}
 }
 
-// SetPoCUMultiplier 设置 PoCU 乘数
+// SetPoCUMultiplier sets the PoCU multiplier
 func (rd *RewardDistributor) SetPoCUMultiplier(multiplier float64) error {
 	if multiplier <= 0 {
-		return errors.New("PoCU 乘数必须大于0")
+		return errors.New("PoCU multiplier must be greater than 0")
 	}
 
 	rd.mu.Lock()
@@ -62,20 +62,20 @@ func (rd *RewardDistributor) SetPoCUMultiplier(multiplier float64) error {
 	return nil
 }
 
-// DistributeTaskReward 分发任务奖励
+// DistributeTaskReward distributes task rewards
 func (rd *RewardDistributor) DistributeTaskReward(taskID string, nodeIDs []string) error {
 	if taskID == "" {
-		return errors.New("任务ID不能为空")
+		return errors.New("task ID cannot be empty")
 	}
 	if len(nodeIDs) == 0 {
-		return errors.New("节点列表不能为空")
+		return errors.New("node list cannot be empty")
 	}
 
 	rd.mu.Lock()
 	defer rd.mu.Unlock()
 
 	now := time.Now().Unix()
-	// 计算每个节点的奖励金额 = 基础奖励 * PoCU乘数 / 参与节点数
+	// reward per node = base reward * PoCU multiplier / number of participating nodes
 	rewardPerNode := rd.baseReward * rd.pocuMultiplier / float64(len(nodeIDs))
 
 	for _, nodeID := range nodeIDs {
@@ -83,10 +83,10 @@ func (rd *RewardDistributor) DistributeTaskReward(taskID string, nodeIDs []strin
 			continue
 		}
 
-		// 增加余额
+		// add to balance
 		rd.balances[nodeID] += rewardPerNode
 
-		// 记录奖励事件
+		// record reward event
 		event := &RewardEvent{
 			ID:        rd.generateEventID(nodeID, taskID, now),
 			NodeID:    nodeID,
@@ -104,17 +104,17 @@ func (rd *RewardDistributor) DistributeTaskReward(taskID string, nodeIDs []strin
 // DistributeValidationReward distributeverifyreward
 func (rd *RewardDistributor) DistributeValidationReward(nodeID string, taskID string) error {
 	if nodeID == "" {
-		return errors.New("节点ID不能为空")
+		return errors.New("node ID cannot be empty")
 	}
 	if taskID == "" {
-		return errors.New("任务ID不能为空")
+		return errors.New("task ID cannot be empty")
 	}
 
 	rd.mu.Lock()
 	defer rd.mu.Unlock()
 
 	now := time.Now().Unix()
-	// 验证奖励为基础奖励的一半
+	// validation reward is half of the base reward
 	amount := rd.baseReward * 0.5
 
 	rd.balances[nodeID] += amount
@@ -135,10 +135,10 @@ func (rd *RewardDistributor) DistributeValidationReward(nodeID string, taskID st
 // DistributeReporterReward distributereportreward
 func (rd *RewardDistributor) DistributeReporterReward(nodeID string, amount float64, taskID string) error {
 	if nodeID == "" {
-		return errors.New("节点ID不能为空")
+		return errors.New("node ID cannot be empty")
 	}
 	if amount <= 0 {
-		return errors.New("奖励金额必须大于0")
+		return errors.New("reward amount must be greater than 0")
 	}
 
 	rd.mu.Lock()
@@ -169,7 +169,7 @@ func (rd *RewardDistributor) GetBalance(nodeID string) float64 {
 	return rd.balances[nodeID]
 }
 
-// GetHistory 查询节点的奖励历史
+// GetHistory querynoderewardhistory
 func (rd *RewardDistributor) GetHistory(nodeID string) []*RewardEvent {
 	rd.mu.RLock()
 	defer rd.mu.RUnlock()
@@ -177,7 +177,7 @@ func (rd *RewardDistributor) GetHistory(nodeID string) []*RewardEvent {
 	var history []*RewardEvent
 	for _, event := range rd.rewardHistory {
 		if event.NodeID == nodeID {
-			// 返回副本
+			// return a copy
 			eventCopy := &RewardEvent{
 				ID:        event.ID,
 				NodeID:    event.NodeID,
@@ -193,7 +193,7 @@ func (rd *RewardDistributor) GetHistory(nodeID string) []*RewardEvent {
 	return history
 }
 
-// GetTotalDistributed 获取总分发量
+// GetTotalDistributed returns the total amount distributed
 func (rd *RewardDistributor) GetTotalDistributed() float64 {
 	rd.mu.RLock()
 	defer rd.mu.RUnlock()
@@ -206,17 +206,17 @@ func (rd *RewardDistributor) GetTotalDistributed() float64 {
 	return total
 }
 
-// addHistory 添加历史记录（内部方法，需持有锁）
+// addHistory appends a history record (internal method, must hold the lock)
 func (rd *RewardDistributor) addHistory(event *RewardEvent) {
 	rd.rewardHistory = append(rd.rewardHistory, event)
 
-	// 超出限制时移除最早的记录
+	// remove the oldest records when the limit is exceeded
 	if len(rd.rewardHistory) > rd.maxHistory {
 		rd.rewardHistory = rd.rewardHistory[len(rd.rewardHistory)-rd.maxHistory:]
 	}
 }
 
-// generateEventID 生成唯一事件ID
+// generateEventID generates a unique event ID
 func (rd *RewardDistributor) generateEventID(nodeID, taskID string, timestamp int64) string {
 	data := fmt.Sprintf("reward:%s:%s:%d:%d",
 		nodeID, taskID, timestamp, len(rd.rewardHistory))
@@ -243,12 +243,12 @@ func (rd *RewardDistributor) Export() ([]byte, error) {
 		MaxHistory:     rd.maxHistory,
 	}
 
-	// copybalance
+	// copy balances
 	for k, v := range rd.balances {
 		state.Balances[k] = v
 	}
 
-	// 复制历史记录
+	// copy history records
 	for i, event := range rd.rewardHistory {
 		state.RewardHistory[i] = &RewardEvent{
 			ID:        event.ID,
