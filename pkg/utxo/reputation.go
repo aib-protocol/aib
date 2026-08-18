@@ -12,30 +12,30 @@ import (
 	"sync"
 )
 
-// ScoreContent 评分内容
+// ScoreContent represents the content of a score.
 type ScoreContent struct {
-	TargetPubKey [32]byte // 被评分节点公钥
+	TargetPubKey [32]byte // public key of the node being scored
 	Score        float64  // 0.0 - 10.0
 	Reason       string   // "good_response", "bad_response", "timeout", "cheating"
-	Timestamp    uint64   // 评分时间戳
+	Timestamp    uint64   // scoring timestamp
 }
 
-// ReputationScore 评分记录（带签名）
+// ReputationScore is a score record (with signature).
 type ReputationScore struct {
-	Content   ScoreContent // 评分内容
-	Signer    [32]byte     // 评分者公钥
-	Signature []byte       // 评分者签名
+	Content   ScoreContent // score content
+	Signer    [32]byte     // public key of the scorer
+	Signature []byte       // scorer's signature
 }
 
-// ReputationManager 管理评分
+// ReputationManager manages scores.
 type ReputationManager struct {
-	scores      map[[32]byte][]ReputationScore // 节点pubkey -> 收到的评分
-	averages    map[[32]byte]float64           // 节点pubkey -> 平均分
-	spamRecords map[[64]byte][]uint64          // (signer+target) -> 时间戳列表
+	scores      map[[32]byte][]ReputationScore // node pubkey -> received scores
+	averages    map[[32]byte]float64           // node pubkey -> average score
+	spamRecords map[[64]byte][]uint64          // (signer+target) -> list of timestamps
 	mu          sync.RWMutex
 }
 
-// NewReputationManager 创建新的评分管理器
+// NewReputationManager creates a new reputation manager.
 func NewReputationManager() *ReputationManager {
 	return &ReputationManager{
 		scores:      make(map[[32]byte][]ReputationScore),
@@ -44,13 +44,13 @@ func NewReputationManager() *ReputationManager {
 	}
 }
 
-// serializeContent 将ScoreContent序列化为字节
+// serializeContent serializes ScoreContent to bytes.
 func serializeContent(content *ScoreContent) []byte {
 	var buf bytes.Buffer
 
 	buf.Write(content.TargetPubKey[:])
 
-	// 将float64转换为固定字节表示
+	// convert float64 to a fixed byte representation
 	scoreBytes := make([]byte, 8)
 	binary.LittleEndian.PutUint64(scoreBytes, math.Float64bits(content.Score))
 	buf.Write(scoreBytes)
@@ -63,15 +63,15 @@ func serializeContent(content *ScoreContent) []byte {
 	return buf.Bytes()
 }
 
-// SignScore 签名评分
+// SignScore signs a score.
 func SignScore(content *ScoreContent, privKey ed25519.PrivateKey) *ReputationScore {
-	// 序列化内容
+	// serialize the content
 	data := serializeContent(content)
 
-	// 用私钥签名
+	// sign with the private key
 	signature := ed25519.Sign(privKey, data)
 
-	// 获取签名者公钥
+	// get the signer's public key
 	pubKey := privKey.Public().(ed25519.PublicKey)
 	var signer [32]byte
 	copy(signer[:], pubKey)
@@ -83,20 +83,20 @@ func SignScore(content *ScoreContent, privKey ed25519.PrivateKey) *ReputationSco
 	}
 }
 
-// VerifyScoreSignature 验证评分签名
+// VerifyScoreSignature verifies a score signature.
 func VerifyScoreSignature(score *ReputationScore) bool {
 	if score == nil || len(score.Signature) == 0 {
 		return false
 	}
 
-	// 序列化内容
+	// serialize the content
 	data := serializeContent(&score.Content)
 
 	// verifysign
 	return ed25519.Verify(ed25519.PublicKey(score.Signer[:]), data, score.Signature)
 }
 
-// SubmitScore 提交评分
+// SubmitScore submits a score.
 func (rm *ReputationManager) SubmitScore(score *ReputationScore) error {
 	if score == nil {
 		return fmt.Errorf("score is nil")
@@ -107,12 +107,12 @@ func (rm *ReputationManager) SubmitScore(score *ReputationScore) error {
 		return fmt.Errorf("invalid score signature")
 	}
 
-	// 验证评分范围
+	// validate the score range
 	if score.Content.Score < 0.0 || score.Content.Score > 10.0 {
 		return fmt.Errorf("score must be between 0.0 and 10.0")
 	}
 
-	// 验证reason有效性
+	// validate the reason
 	validReasons := map[string]bool{
 		"good_response": true,
 		"bad_response":  true,
@@ -126,24 +126,24 @@ func (rm *ReputationManager) SubmitScore(score *ReputationScore) error {
 	rm.mu.Lock()
 	defer rm.mu.Unlock()
 
-	// 记录spam检测数据
+	// record data for spam detection
 	rm.recordSpamRecord(score.Signer, score.Content.TargetPubKey, score.Content.Timestamp)
 
-	// 添加评分
+	// add the score
 	target := score.Content.TargetPubKey
 	rm.scores[target] = append(rm.scores[target], *score)
 
-	// 重新计算平均分
+	// recalculate the average score
 	rm.recalculateAverage(target)
 
 	return nil
 }
 
-// recalculateAverage 重新计算指定节点的平均分
+// recalculateAverage recalculates the average score for the given node.
 func (rm *ReputationManager) recalculateAverage(target [32]byte) {
 	scores := rm.scores[target]
 	if len(scores) == 0 {
-		rm.averages[target] = 5.0 // 默认中等分数
+		rm.averages[target] = 5.0 // default medium score
 		return
 	}
 
@@ -154,35 +154,35 @@ func (rm *ReputationManager) recalculateAverage(target [32]byte) {
 	rm.averages[target] = total / float64(len(scores))
 }
 
-// GetAverageScore 获取平均分
+// GetAverageScore returns the average score.
 func (rm *ReputationManager) GetAverageScore(node [32]byte) float64 {
 	rm.mu.RLock()
 	defer rm.mu.RUnlock()
 
 	score, ok := rm.averages[node]
 	if !ok {
-		return 5.0 // 默认中等分数
+		return 5.0 // default medium score
 	}
 	return score
 }
 
-// CalculateWeightMultiplier 计算评分乘数
-// 公式: 1.0 + (score - 5.0) / 10.0
-// 评分5.0 -> 乘数1.0, 评分10.0 -> 乘数1.5, 评分0.0 -> 乘数0.5
+// CalculateWeightMultiplier calculates the score multiplier.
+// Formula: 1.0 + (score - 5.0) / 10.0
+// score 5.0 -> multiplier 1.0, score 10.0 -> multiplier 1.5, score 0.0 -> multiplier 0.5
 func CalculateWeightMultiplier(score float64) float64 {
 	return 1.0 + (score-5.0)/10.0
 }
 
-// GetEffectiveWeight 获取有效权重
-// 有效权重 = stake * CalculateWeightMultiplier(averageScore)
+// GetEffectiveWeight getvalidweight
+// effective weight = stake * CalculateWeightMultiplier(averageScore)
 func (rm *ReputationManager) GetEffectiveWeight(node [32]byte, stake uint64) float64 {
 	averageScore := rm.GetAverageScore(node)
 	multiplier := CalculateWeightMultiplier(averageScore)
 	return float64(stake) * multiplier
 }
 
-// DetectSpam 检测作弊（短时间内大量评分给同一节点）
-// 如果同一个评分者在1小时内给同一目标节点评分超过10次，返回true
+// DetectSpam detects spam (a flood of scores to the same node in a short time).
+// Returns true if the same signer scored the same target node more than 10 times within 1 hour.
 func (rm *ReputationManager) DetectSpam(signer [32]byte, target [32]byte) bool {
 	rm.mu.RLock()
 	defer rm.mu.RUnlock()
@@ -203,7 +203,7 @@ func (rm *ReputationManager) DetectSpam(signer [32]byte, target [32]byte) bool {
 	return false
 }
 
-// recordSpamRecord 记录评分时间戳用于spam检测
+// recordSpamRecord records score timestamps for spam detection.
 func (rm *ReputationManager) recordSpamRecord(signer [32]byte, target [32]byte, timestamp uint64) {
 	var key [64]byte
 	copy(key[:32], signer[:])
@@ -211,7 +211,7 @@ func (rm *ReputationManager) recordSpamRecord(signer [32]byte, target [32]byte, 
 
 	rm.spamRecords[key] = append(rm.spamRecords[key], timestamp)
 
-	// 只保留最近1小时的时间戳（假设1小时 = 3600秒）
+	// keep only timestamps from the last hour (assume 1 hour = 3600 seconds)
 	cutoff := timestamp - 3600
 	records := rm.spamRecords[key]
 	var validRecords []uint64
@@ -223,14 +223,14 @@ func (rm *ReputationManager) recordSpamRecord(signer [32]byte, target [32]byte, 
 	rm.spamRecords[key] = validRecords
 }
 
-// GetScoreCount 获取节点收到的评分数量
+// GetScoreCount returns the number of scores a node has received.
 func (rm *ReputationManager) GetScoreCount(node [32]byte) int {
 	rm.mu.RLock()
 	defer rm.mu.RUnlock()
 	return len(rm.scores[node])
 }
 
-// GetScores 获取节点的所有评分
+// GetScores returns all scores of a node.
 func (rm *ReputationManager) GetScores(node [32]byte) []ReputationScore {
 	rm.mu.RLock()
 	defer rm.mu.RUnlock()
@@ -239,12 +239,12 @@ func (rm *ReputationManager) GetScores(node [32]byte) []ReputationScore {
 	return scores
 }
 
-// GetTopValidators 获取评分最高的验证者
+// GetTopValidators returns the validators with the highest scores.
 func (rm *ReputationManager) GetTopValidators(validators []*Validator, count int) []*Validator {
 	rm.mu.RLock()
 	defer rm.mu.RUnlock()
 
-	// 按平均分排序
+	// sort by average score
 	type scoredValidator struct {
 		validator *Validator
 		score     float64

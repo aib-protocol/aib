@@ -4,10 +4,10 @@ import (
 	"testing"
 )
 
-// ==================== 过滤器创建测试 ====================
+// ==================== Filter creation tests ====================
 
 func TestNewCompositeFilter(t *testing.T) {
-	// 测试创建空组合过滤器
+	// Test creating an empty composite filter
 	cf := NewCompositeFilter()
 	if cf == nil {
 		t.Fatal("expected non-nil CompositeFilter")
@@ -16,7 +16,7 @@ func TestNewCompositeFilter(t *testing.T) {
 		t.Errorf("expected empty filters, got %d", len(cf.filters))
 	}
 
-	// 测试创建带过滤器的组合
+	// Test creating a composite with filters
 	cf2 := NewCompositeFilter(FilterValidEvents, FilterHighAgreement)
 	if len(cf2.filters) != 2 {
 		t.Errorf("expected 2 filters, got %d", len(cf2.filters))
@@ -24,7 +24,7 @@ func TestNewCompositeFilter(t *testing.T) {
 }
 
 func TestNewOrFilter(t *testing.T) {
-	// 测试创建空 OR 过滤器
+	// Test creating an empty OR filter
 	of := NewOrFilter()
 	if of == nil {
 		t.Fatal("expected non-nil OrFilter")
@@ -33,7 +33,7 @@ func TestNewOrFilter(t *testing.T) {
 		t.Errorf("expected empty filters, got %d", len(of.filters))
 	}
 
-	// 测试创建带过滤器的 OR
+	// Test creating an OR with filters
 	of2 := NewOrFilter(FilterValidEvents, FilterInvalidEvents)
 	if len(of2.filters) != 2 {
 		t.Errorf("expected 2 filters, got %d", len(of2.filters))
@@ -41,7 +41,7 @@ func TestNewOrFilter(t *testing.T) {
 }
 
 func TestNewNotFilter(t *testing.T) {
-	// 测试创建 NOT 过滤器
+	// Test creating a NOT filter
 	nf := NewNotFilter(FilterValidEvents)
 	if nf == nil {
 		t.Fatal("expected non-nil NotFilter")
@@ -52,7 +52,7 @@ func TestNewNotFilter(t *testing.T) {
 }
 
 func TestEventFilterFunc(t *testing.T) {
-	// 测试 EventFilterFunc 实现 EventFilter 接口
+	// Test that EventFilterFunc implements the EventFilter interface
 	customFilter := EventFilterFunc(func(event *BlockEvent) bool {
 		return event.Priority == PriorityHigh
 	})
@@ -72,7 +72,7 @@ func TestEventFilterFunc(t *testing.T) {
 	}
 }
 
-// ==================== 过滤器匹配测试 ====================
+// ==================== Filter matching tests ====================
 
 func TestFilterValidEvents(t *testing.T) {
 	tests := []struct {
@@ -232,10 +232,10 @@ func TestFilterHighOrUrgent(t *testing.T) {
 	}
 }
 
-// ==================== 过滤器组合测试 ====================
+// ==================== Filter combination tests ====================
 
 func TestCompositeFilter_AllMatch(t *testing.T) {
-	// 测试 AND 逻辑：所有过滤器都必须匹配
+	// Test AND logic: all filters must match
 	cf := NewCompositeFilter(FilterValidEvents, FilterHighAgreement)
 
 	tests := []struct {
@@ -267,7 +267,7 @@ func TestCompositeFilter_AllMatch(t *testing.T) {
 }
 
 func TestCompositeFilter_Empty(t *testing.T) {
-	// 空组合过滤器应该匹配所有事件
+	// An empty composite filter should match all events
 	cf := NewCompositeFilter()
 
 	event := &BlockEvent{
@@ -282,7 +282,7 @@ func TestCompositeFilter_Empty(t *testing.T) {
 }
 
 func TestOrFilter_AnyMatch(t *testing.T) {
-	// 测试 OR 逻辑：任一过滤器匹配即可
+	// Test OR logic: any single filter matching is sufficient
 	of := NewOrFilter(FilterValidEvents, FilterHighAgreement)
 
 	tests := []struct {
@@ -314,7 +314,7 @@ func TestOrFilter_AnyMatch(t *testing.T) {
 }
 
 func TestOrFilter_Empty(t *testing.T) {
-	// 空 OR 过滤器应该不匹配任何事件
+	// An empty OR filter should match no events
 	of := NewOrFilter()
 
 	event := &BlockEvent{
@@ -329,7 +329,7 @@ func TestOrFilter_Empty(t *testing.T) {
 }
 
 func TestNotFilter_Invert(t *testing.T) {
-	// 测试 NOT 逻辑：反转过滤器结果
+	// Test NOT logic: inverts the filter result
 	nf := NewNotFilter(FilterValidEvents)
 
 	tests := []struct {
@@ -357,8 +357,8 @@ func TestNotFilter_Invert(t *testing.T) {
 }
 
 func TestFilterCombination_Complex(t *testing.T) {
-	// 测试复杂组合：NOT (Valid AND HighAgreement)
-	// 等价于：Invalid OR LowAgreement
+	// Test a complex combination: NOT (Valid AND HighAgreement)
+	// Equivalent to: Invalid OR LowAgreement
 	innerFilter := NewCompositeFilter(FilterValidEvents, FilterHighAgreement)
 	notFilter := NewNotFilter(innerFilter)
 
@@ -391,7 +391,7 @@ func TestFilterCombination_Complex(t *testing.T) {
 }
 
 func TestFilterCombination_OrWithNot(t *testing.T) {
-	// 测试：Urgent OR (Valid AND HighAgreement)
+	// Test: Urgent OR (Valid AND HighAgreement)
 	urgentOrOther := NewOrFilter(
 		FilterUrgentPriority,
 		NewCompositeFilter(FilterValidEvents, FilterHighAgreement),
@@ -454,7 +454,7 @@ func TestEventBuffer_NewAndAdd(t *testing.T) {
 func TestEventBuffer_GetFilteredEvents(t *testing.T) {
 	buf := NewEventBuffer(10)
 
-	// 添加多个测试事件
+	// Add several test events
 	events := []*BlockEvent{
 		{TaskID: "task1", IsValid: true, AgreementRate: 0.9, Priority: PriorityNormal},
 		{TaskID: "task2", IsValid: false, AgreementRate: 0.3, Priority: PriorityNormal},
@@ -468,19 +468,19 @@ func TestEventBuffer_GetFilteredEvents(t *testing.T) {
 		}
 	}
 
-	// 测试过滤有效事件
+	// Test filtering valid events
 	validEvents := buf.GetFilteredEvents(FilterValidEvents)
 	if len(validEvents) != 2 {
 		t.Errorf("expected 2 valid events, got %d", len(validEvents))
 	}
 
-	// 测试过滤高一致性事件
+	// Test filtering high-agreement events
 	highAgreementEvents := buf.GetFilteredEvents(FilterHighAgreement)
 	if len(highAgreementEvents) != 1 {
 		t.Errorf("expected 1 high agreement event, got %d", len(highAgreementEvents))
 	}
 
-	// 测试 nil 过滤器（返回所有事件）
+	// Test a nil filter (returns all events)
 	allEvents := buf.GetFilteredEvents(nil)
 	if len(allEvents) != 4 {
 		t.Errorf("expected 4 events with nil filter, got %d", len(allEvents))
@@ -559,7 +559,7 @@ func TestEventBuffer_GetEventsInRange(t *testing.T) {
 		}
 	}
 
-	// 测试时间范围过滤
+	// Test time-range filtering
 	rangeEvents := buf.GetEventsInRange(now+50, now+250)
 	if len(rangeEvents) != 2 {
 		t.Errorf("expected 2 events in range, got %d", len(rangeEvents))
@@ -584,7 +584,7 @@ func TestEventBuffer_RemoveEvents(t *testing.T) {
 		t.Errorf("expected 4 events, got %d", buf.Len())
 	}
 
-	// 移除无效事件
+	// Remove invalid events
 	removed := buf.RemoveEvents(FilterInvalidEvents)
 	if removed != 2 {
 		t.Errorf("expected 2 removed events, got %d", removed)
@@ -594,7 +594,7 @@ func TestEventBuffer_RemoveEvents(t *testing.T) {
 		t.Errorf("expected 2 events after removal, got %d", buf.Len())
 	}
 
-	// 验证剩余的是有效事件
+	// Verify the remaining ones are valid events
 	remaining := buf.GetEvents()
 	for _, e := range remaining {
 		if !e.IsValid {
@@ -623,18 +623,18 @@ func TestEventBuffer_Clear(t *testing.T) {
 func TestEventBuffer_MaxSize(t *testing.T) {
 	buf := NewEventBuffer(3)
 
-	// 添加超过最大容量的事件
+	// Add events exceeding the maximum capacity
 	for i := 0; i < 5; i++ {
 		event := &BlockEvent{TaskID: string(rune('a' + i))}
 		buf.Add(event)
 	}
 
-	// 缓冲区应该保持最大大小
+	// The buffer should stay at maximum size
 	if buf.Len() != 3 {
 		t.Errorf("expected buffer size 3, got %d", buf.Len())
 	}
 
-	// 验证最早的事件被移除
+	// Verify the oldest events were removed
 	events := buf.GetEvents()
 	if events[0].TaskID != "c" {
 		t.Errorf("expected oldest event c, got %s", events[0].TaskID)
@@ -654,7 +654,7 @@ func TestEventBuffer_Recover(t *testing.T) {
 		buf1.Add(e)
 	}
 
-	// 从 buf1 恢复到 buf2
+	// Recover from buf1 to buf2
 	recovered := buf2.Recover(buf1)
 	if recovered != 2 {
 		t.Errorf("expected 2 recovered events, got %d", recovered)
@@ -668,7 +668,7 @@ func TestEventBuffer_Recover(t *testing.T) {
 func TestEventBuffer_RecoverFromNil(t *testing.T) {
 	buf := NewEventBuffer(10)
 
-	// 从 nil 恢复应该返回 0
+	// Recovering from nil should return 0
 	recovered := buf.Recover(nil)
 	if recovered != 0 {
 		t.Errorf("expected 0 recovered from nil, got %d", recovered)
@@ -676,7 +676,7 @@ func TestEventBuffer_RecoverFromNil(t *testing.T) {
 }
 
 func TestPriorityEventQueue_Filter(t *testing.T) {
-	// 测试优先级队列与过滤器的结合
+	// Test combining the priority queue with filters
 	queue := NewPriorityEventQueue()
 
 	events := []*BlockEvent{
@@ -690,7 +690,7 @@ func TestPriorityEventQueue_Filter(t *testing.T) {
 		queue.Push(e)
 	}
 
-	// 使用高优先级过滤器过滤
+	// Filter using the high-priority filter
 	highPriorityFilter := NewCompositeFilter(FilterHighOrUrgent)
 	filtered := make([]*BlockEvent, 0)
 
@@ -707,10 +707,10 @@ func TestPriorityEventQueue_Filter(t *testing.T) {
 }
 
 func TestEventFilterInterface(t *testing.T) {
-	// 测试 EventFilter 接口的各种实现
+	// Test various implementations of the EventFilter interface
 	var filter EventFilter
 
-	// 测试 EventFilterFunc 实现接口
+	// Test that EventFilterFunc implements the interface
 	filter = EventFilterFunc(func(e *BlockEvent) bool {
 		return e.IsValid && e.AgreementRate >= 0.8
 	})
@@ -720,19 +720,19 @@ func TestEventFilterInterface(t *testing.T) {
 		t.Error("expected EventFilterFunc to match")
 	}
 
-	// 测试 CompositeFilter 实现接口
+	// Test that CompositeFilter implements the interface
 	filter = NewCompositeFilter(FilterValidEvents, FilterHighAgreement)
 	if !filter.Match(event) {
 		t.Error("expected CompositeFilter to match")
 	}
 
-	// 测试 OrFilter 实现接口
+	// Test that OrFilter implements the interface
 	filter = NewOrFilter(FilterInvalidEvents, FilterHighAgreement)
 	if !filter.Match(event) {
 		t.Error("expected OrFilter to match")
 	}
 
-	// 测试 NotFilter 实现接口
+	// Test that NotFilter implements the interface
 	filter = NewNotFilter(FilterInvalidEvents)
 	if !filter.Match(event) {
 		t.Error("expected NotFilter to match")
