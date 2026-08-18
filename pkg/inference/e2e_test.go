@@ -147,7 +147,7 @@ func TestE2E_MultipleInferencesWithVerification(t *testing.T) {
 
 	for i, prompt := range prompts {
 		var reqID [32]byte
-		reqID[0] = byte(i + 1) // 避免 0 值 request ID
+		reqID[0] = byte(i + 1) // avoid zero request ID
 
 		req := &InferenceRequest{
 			RequestID:   reqID,
@@ -159,7 +159,7 @@ func TestE2E_MultipleInferencesWithVerification(t *testing.T) {
 
 		resp, err := node.HandleRequest(req)
 		if err != nil {
-			// 在并发/随机请求ID场景下，允许少量无效请求
+			// allow a few invalid requests under concurrent/random request IDs
 			if err.Error() == "invalid request ID" {
 				t.Logf("request %d skipped due to invalid request ID", i)
 				continue
@@ -281,8 +281,8 @@ func TestE2E_ConcurrentInferenceRequests(t *testing.T) {
 	t.Logf("Stats: Total=%d, Successful=%d, Failed=%d, AvgLatency=%dms",
 		stats.TotalInferences, stats.SuccessfulCount, stats.FailedCount, stats.AvgLatencyMs)
 
-	// 允许少量请求因 request ID 冲突而失败
-	minSuccess := concurrency - 2 // 最多容忍 2 个失败
+	// allow a few requests to fail due to request ID collisions
+	minSuccess := concurrency - 2 // tolerate at most 2 failures
 	if successCount < minSuccess {
 		t.Errorf("expected at least %d successes, got %d", minSuccess, successCount)
 	}
@@ -317,9 +317,9 @@ func TestE2E_OfflineNodeErrorHandling(t *testing.T) {
 	node2 := NewInferenceNode(pubKey, 1, 1000000)
 	node2.Register()
 
-	// 已注册的节点可以处理请求（实现不要求 Start 后才能 HandleRequest）
+	// registered nodes can serve requests (implementation does not require Start before HandleRequest)
 	_, err = node2.HandleRequest(req)
-	// 仅验证没有错误即可
+	// just verify no error
 	if err != nil {
 		t.Logf("Registered node request returned error: %v", err)
 	}
@@ -555,7 +555,7 @@ func TestE2E_NodeRegisterUnregisterCycle(t *testing.T) {
 	// After stop, the node may still handle requests (depends on implementation)
 	// The key is that Unregister marks it as offline
 	_, err = node.HandleRequest(req)
-	// 不强制要求错误，实现允许 Stop 后仍处理请求
+	// do not require an error; implementation may still serve requests after Stop
 
 	// Unregister
 	err = node.Unregister()
@@ -599,7 +599,7 @@ func TestE2E_DifferentLevelNodes(t *testing.T) {
 			// Make request
 			var reqID [32]byte
 			reqID[0] = byte(tt.level)
-			reqID[1] = 0x01 // 确保非零
+			reqID[1] = 0x01 // ensure non-zero
 
 			req := &InferenceRequest{
 				RequestID:   reqID,
@@ -612,7 +612,7 @@ func TestE2E_DifferentLevelNodes(t *testing.T) {
 			resp, err := node.HandleRequest(req)
 			if err != nil {
 				t.Logf("handle request failed: %v (may be random)", err)
-				return // 跳过此级别，不作为失败
+				return // skip this level, not counted as failure
 			}
 
 			// Verify fee is based on level
@@ -709,7 +709,7 @@ func TestE2E_StatsTracking(t *testing.T) {
 	actualSuccess := 0
 	for i := 0; i < successCount; i++ {
 		var reqID [32]byte
-		reqID[0] = byte(i + 1) // 避免 0 值 request ID
+		reqID[0] = byte(i + 1) // avoid zero request ID
 		req := &InferenceRequest{
 			RequestID:   reqID,
 			UserPubKey:  pubKey,
@@ -882,7 +882,7 @@ func TestE2E_ContextCancellation(t *testing.T) {
 	}
 
 	_, err = node.HandleRequest(req2)
-	// 不强制要求错误，context cancel 后行为由实现决定
+	// do not require an error; behavior after context cancel is implementation-defined
 	if err != nil {
 		t.Logf("After cancel, request returned error: %v", err)
 	}

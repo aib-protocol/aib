@@ -552,7 +552,7 @@ func generateDishonestResult(prompt string, nodeID string) string {
 
 // hashPrompt creates a short hash of a prompt for deterministic results
 func hashPrompt(prompt string) []byte {
-	// 使用 SHA-256 来生成确定性哈希，而不是简单截取前 8 字节
+	// use SHA-256 for a deterministic hash instead of truncating the first 8 bytes
 	h := sha256.Sum256([]byte(prompt))
 	return h[:8]
 }

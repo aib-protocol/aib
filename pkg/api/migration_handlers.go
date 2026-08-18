@@ -17,7 +17,7 @@ import (
 // ============================================================================
 
 // handleMigrationSnapshot handle GET /api/migration/snapshot
-// 查询 AIB1 快照信息
+// query AIB1 snapshot info
 func (s *Server) handleMigrationSnapshot(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		writeError(w, http.StatusMethodNotAllowed, ErrCodeInvalidRequest, "Method not allowed", "")
@@ -49,7 +49,7 @@ func (s *Server) handleMigrationSnapshot(w http.ResponseWriter, r *http.Request)
 }
 
 // handleMigrationRates handle GET /api/migration/rates
-// 查询当前迁移汇率
+// query current migration rates
 func (s *Server) handleMigrationRates(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		writeError(w, http.StatusMethodNotAllowed, ErrCodeInvalidRequest, "Method not allowed", "")
@@ -99,13 +99,13 @@ func (s *Server) handleMigrationRates(w http.ResponseWriter, r *http.Request) {
 
 	writeSuccess(w, MigrationRatesResponse{
 		Timestamp:  time.Now().UTC(),
-		AIB1Rate:   100, // 1:1 固定汇率
+		AIB1Rate:   100, // 1:1 fixed rate
 		ChainRates: chainRates,
 	})
 }
 
 // handleMigrationStatus handle GET /api/migration/status/{addr}
-// 查询用户迁移状态
+// query user migration status
 func (s *Server) handleMigrationStatus(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		writeError(w, http.StatusMethodNotAllowed, ErrCodeInvalidRequest, "Method not allowed", "")
@@ -147,8 +147,8 @@ func (s *Server) handleMigrationStatus(w http.ResponseWriter, r *http.Request) {
 	writeSuccess(w, response)
 }
 
-// handleMigrationClaimable 处理 GET /api/migration/claimable/{addr}
-// 查询可领取金额
+// handleMigrationClaimable handling GET /api/migration/claimable/{addr}
+// query claimable amount
 func (s *Server) handleMigrationClaimable(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		writeError(w, http.StatusMethodNotAllowed, ErrCodeInvalidRequest, "Method not allowed", "")
@@ -206,7 +206,7 @@ func (s *Server) handleMigrationClaimable(w http.ResponseWriter, r *http.Request
 }
 
 // handleClaimAIB1 handle POST /api/migration/claim-aib1
-// 领取 AIB1 快照代币
+// claim AIB1 snapshot tokens
 func (s *Server) handleClaimAIB1(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		writeError(w, http.StatusMethodNotAllowed, ErrCodeInvalidRequest, "Method not allowed", "")
@@ -301,7 +301,7 @@ func (s *Server) handleClaimAIB1(w http.ResponseWriter, r *http.Request) {
 }
 
 // handleClaimUnlocked handle POST /api/migration/claim-unlocked
-// 领取已解锁代币
+// claim unlocked tokens
 func (s *Server) handleClaimUnlocked(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		writeError(w, http.StatusMethodNotAllowed, ErrCodeInvalidRequest, "Method not allowed", "")
@@ -361,7 +361,7 @@ func (s *Server) handleClaimUnlocked(w http.ResponseWriter, r *http.Request) {
 }
 
 // handleMigrationEstimate handle GET /api/migration/estimate
-// 估算迁移收益
+// estimate migration earnings
 func (s *Server) handleMigrationEstimate(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		writeError(w, http.StatusMethodNotAllowed, ErrCodeInvalidRequest, "Method not allowed", "")

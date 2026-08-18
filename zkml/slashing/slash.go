@@ -14,21 +14,21 @@ type ViolationType string
 
 // Violation types
 const (
-	FraudProof  ViolationType = "fraud_proof"  // 伪造证明
-	SybilAttack ViolationType = "sybil_attack" // 女巫攻击
-	CopyResult  ViolationType = "copy_result"  // 抄袭结果
-	NoWork      ViolationType = "no_work"      // 没干活
-	Misbehavior ViolationType = "misbehavior"  // 恶意行为
+	FraudProof  ViolationType = "fraud_proof"  // forged proof
+	SybilAttack ViolationType = "sybil_attack" // sybil attack
+	CopyResult  ViolationType = "copy_result"  // copied result
+	NoWork      ViolationType = "no_work"      // no work done
+	Misbehavior ViolationType = "misbehavior"  // misbehavior
 )
 
 // SlashConfig defines the slash ratios for different violations
 type SlashConfig struct {
-	FraudProof          float64 // 100% 质押
-	SybilAttack         float64 // 100% 质押
-	CopyResult          float64 // 50% 质押
-	NoWork              float64 // 25% 质押
-	Misbehavior         float64 // 可配置
-	ReporterRewardRatio float64 // 举报奖励比例 (默认 0.2 = 20%)
+	FraudProof          float64 // 100% of stake
+	SybilAttack         float64 // 100% of stake
+	CopyResult          float64 // 50% of stake
+	NoWork              float64 // 25% of stake
+	Misbehavior         float64 // configurable
+	ReporterRewardRatio float64 // reporter reward ratio (default 0.2 = 20%)
 }
 
 // DefaultSlashConfig returns the default slash configuration
@@ -39,7 +39,7 @@ func DefaultSlashConfig() *SlashConfig {
 		CopyResult:          0.5,  // 50%
 		NoWork:              0.25, // 25%
 		Misbehavior:         0.1,  // 10%
-		ReporterRewardRatio: 0.2,  // 20% 举报奖励
+		ReporterRewardRatio: 0.2,  // 20% reporter reward
 	}
 }
 

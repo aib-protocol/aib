@@ -8,10 +8,10 @@ import (
 )
 
 // ============================================================================
-// 增强的健康检查
+// enhanced health check
 // ============================================================================
 
-// DetailedHealthResponse 详细的健康检查响应
+// DetailedHealthResponse detailed health check response
 type DetailedHealthResponse struct {
 	Status     string           `json:"status"`
 	Timestamp  time.Time        `json:"timestamp"`
@@ -22,7 +22,7 @@ type DetailedHealthResponse struct {
 	API        APIHealth        `json:"api"`
 }
 
-// BlockchainHealth 区块链健康状态
+// BlockchainHealth blockchain health status
 type BlockchainHealth struct {
 	Status        string `json:"status"` // "synced", "syncing", "offline"
 	ChainID       string `json:"chain_id"`
@@ -33,7 +33,7 @@ type BlockchainHealth struct {
 	SyncStatus    string `json:"sync_status"`
 }
 
-// SystemHealth 系统健康状态
+// SystemHealth system health status
 type SystemHealth struct {
 	GoVersion       string `json:"go_version"`
 	NumGoroutines   int    `json:"num_goroutines"`
@@ -41,21 +41,21 @@ type SystemHealth struct {
 	AllocatedMemory uint64 `json:"allocated_memory"`
 }
 
-// APIHealth API 健康状态
+// APIHealth API health status
 type APIHealth struct {
 	Status          string `json:"status"`
 	Uptime          string `json:"uptime"`
 	RequestsHandled uint64 `json:"requests_handled"`
 }
 
-// handleHealthDetailed 处理详细的健康检查请求
+// handleHealthDetailed handles detailed health check requests
 func (s *Server) handleHealthDetailed(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		writeError(w, http.StatusMethodNotAllowed, ErrCodeInvalidRequest, "Method not allowed", "")
 		return
 	}
 
-	// 获取链状态
+	// get chain state
 	var chainHealth = BlockchainHealth{
 		Status:     "offline",
 		ChainID:    s.GetChainID(),
@@ -79,7 +79,7 @@ func (s *Server) handleHealthDetailed(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// 获取系统状态
+	// get system state
 	var m runtime.MemStats
 	runtime.ReadMemStats(&m)
 
@@ -127,7 +127,7 @@ func (s *Server) handleReadiness(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 检查链是否就绪
+	// check whether the chain is ready
 	ready := true
 	if chain := s.GetChain(); chain == nil {
 		ready = false

@@ -677,7 +677,7 @@ func (pm *ChainPeerManager) handleChainMessage(peer *ChainPeer, msgType uint8, p
 			return
 		}
 		for _, block := range msg.Blocks {
-			// SEC-008: 验证每个区块的签名
+			// SEC-008: verifyeachblocksignature
 			if err := pm.verifyBlockSignature(block); err != nil {
 				pm.logger.Printf("[P2P] Rejected synced block %d from peer %s: signature verification failed: %v",
 					block.Height, peer.nodeID, err)
@@ -705,7 +705,7 @@ func (pm *ChainPeerManager) handleChainMessage(peer *ChainPeer, msgType uint8, p
 		if err := UnmarshalMsg(payload, &msg); err != nil {
 			return
 		}
-		// SEC-008: 验证区块签名，防止注入伪造区块
+		// SEC-008: verify block signature to prevent forged-block injection
 		if err := pm.verifyBlockSignature(msg.Block); err != nil {
 			pm.logger.Printf("[P2P] Rejected block %d from peer %s: signature verification failed: %v",
 				msg.Block.Height, peer.nodeID, err)

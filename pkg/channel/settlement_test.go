@@ -519,7 +519,7 @@ func TestSettlement_Integration(t *testing.T) {
 }
 
 // ============================================================
-// 批量结算测试
+// batch settlement tests
 // ============================================================
 
 // TestBatchSettlementHandler_NewBatchSettlementHandler tests creating a new batch settlement handler
@@ -633,7 +633,7 @@ func TestBatchSettlementResult(t *testing.T) {
 }
 
 // ============================================================
-// 结算证明验证测试
+// settlement proof verification tests
 // ============================================================
 
 // TestSettlementProofVerifier_VerifySettlementProof tests settlement proof verification
@@ -965,7 +965,7 @@ func TestSettlementProof(t *testing.T) {
 }
 
 // ============================================================
-// 辅助类型
+// helper types
 // ============================================================
 
 // mockManagerForSettlement is a minimal mock for settlement tests
@@ -1366,11 +1366,11 @@ func signStateForTest(state *interfaces.SignedState, privKey ed25519.PrivateKey)
 }
 
 // ============================================================
-// 全面集成测试
+// comprehensive integration tests
 // ============================================================
 
 // ============================================================================
-// 1. 争议解决流程测试 (Dispute Resolution Flow Tests)
+// 1. dispute resolution flow tests
 // ============================================================================
 
 // TestDisputeResolution_InitiateAndResolve tests the full dispute resolution flow
@@ -1613,7 +1613,7 @@ func TestDisputeResolution_InvalidChallenge(t *testing.T) {
 }
 
 // ============================================================================
-// 2. 挑战期超时测试 (Challenge Period Timeout Tests)
+// 2. challenge period timeout tests
 // ============================================================================
 
 // TestChallengePeriod_Timeout tests force close with timeout
@@ -1788,7 +1788,7 @@ func TestChallengePeriod_MultipleForceClose(t *testing.T) {
 }
 
 // ============================================================================
-// 3. 多通道并发测试 (Multi-Channel Concurrent Tests)
+// 3. multi-channel concurrent tests
 // ============================================================================
 
 // TestMultiChannel_ConcurrentOperations tests concurrent operations on multiple channels
@@ -1971,7 +1971,7 @@ func TestMultiChannel_TransferRaceCondition(t *testing.T) {
 }
 
 // ============================================================================
-// 4. 资金锁定/解锁验证 (Fund Lock/Unlock Verification)
+// 4. fund lock/unlock verification
 // ============================================================================
 
 // TestFundLock_LockAndUnlock tests fund locking and unlocking
@@ -2308,7 +2308,7 @@ func TestFundLock_ForceSettlement(t *testing.T) {
 }
 
 // ============================================================================
-// 边界条件和错误场景测试 (Boundary Conditions and Error Scenarios)
+// boundary condition and error scenario tests
 // ============================================================================
 
 // TestBoundary_MaxChannelValue tests maximum channel value
@@ -2562,7 +2562,7 @@ func TestError_ChannelStateTransition(t *testing.T) {
 }
 
 // ============================================================================
-// 集成场景测试 (Integration Scenario Tests)
+// integration scenario tests
 // ============================================================================
 
 // TestIntegration_FullChannelLifecycle tests complete channel lifecycle

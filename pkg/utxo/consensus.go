@@ -14,11 +14,11 @@ import (
 	"time"
 )
 
-// 区块时间配置
+// block time configuration
 const (
-	TargetBlockTime   = 60 * time.Second // 目标区块时间（60秒）- L1追求稳定安全，高速交易由L2完成
-	MaxBlockTimeDrift = 5 * time.Minute  // 最大时间漂移（防攻击）
-	MinBlockTime      = 10 * time.Second // 最小区块时间
+	TargetBlockTime   = 60 * time.Second // target block time (60s) - L1 prioritizes stability/security; high-speed tx goes to L2
+	MaxBlockTimeDrift = 5 * time.Minute  // max time drift (attack mitigation)
+	MinBlockTime      = 10 * time.Second // minimum block time
 )
 
 // PoSConfig contains Proof of Stake parameters.
@@ -38,12 +38,12 @@ type PoSConfig struct {
 // DefaultPoSConfig returns the default PoS configuration.
 func DefaultPoSConfig() *PoSConfig {
 	return &PoSConfig{
-		EpochLength:     314,        // π 相关
+		EpochLength:     314,        // π-related
 		MinStake:        1000 * 1e8, // 1000 AIB
 		BlockReward:     50 * 1e8,   // 50 AIB
 		MaxValidators:   100,
 		StakeLockPeriod: 100,
-		EpochDuration:   100 * TargetBlockTime, // ~100分钟/epoch
+		EpochDuration:   100 * TargetBlockTime, // ~100 min/epoch
 
 		// Transaction fees: 1 AIB = 1e8 satoshi
 		BaseFeePerByte:     10, // 10 satoshi per byte (0.1 AIB per KB)

@@ -12,13 +12,13 @@ import (
 )
 
 var (
-	// ErrInvalidRequest 无效请求
+	// ErrInvalidRequest invalidrequest
 	ErrInvalidRequest = errors.New("invalid request")
-	// ErrMethodNotAllowed 方法不允许
+	// ErrMethodNotAllowed method not allowed
 	ErrMethodNotAllowed = errors.New("method not allowed")
 )
 
-// Handler 空投 API 处理器
+// Handler airdrop API handler
 type Handler struct {
 	validator   *Validator
 	scorer      *Scorer
@@ -26,7 +26,7 @@ type Handler struct {
 	router      *mux.Router
 }
 
-// HandlerConfig 处理器配置
+// HandlerConfig handlerconfig
 type HandlerConfig struct {
 	ValidatorConfig   *ValidatorConfig
 	ScoringConfig     *ScoringConfig
@@ -34,15 +34,15 @@ type HandlerConfig struct {
 	SignerSeed        []byte
 }
 
-// NewHandler 创建处理器
+// NewHandler createhandler
 func NewHandler(config *HandlerConfig) (*Handler, error) {
-	// 创建验证器
+	// create validator
 	validator := NewValidator(config.ValidatorConfig)
 
 	// createscorer
 	scorer := NewScorer(config.ScoringConfig)
 
-	// 创建分发器
+	// create distributor
 	distributor, err := NewDistributor(config.DistributorConfig, config.SignerSeed)
 	if err != nil {
 		return nil, fmt.Errorf("create distributor: %w", err)
@@ -60,32 +60,32 @@ func NewHandler(config *HandlerConfig) (*Handler, error) {
 	return h, nil
 }
 
-// setupRoutes 设置路由
+// setupRoutes setrouting
 func (h *Handler) setupRoutes() {
 	api := h.router.PathPrefix("/airdrop").Subrouter()
 
-	// 资格检查
+	// eligibility check
 	api.HandleFunc("/eligibility", h.handleEligibility).Methods(http.MethodGet, http.MethodOptions)
 
-	// 认领空投
+	// claim airdrop
 	api.HandleFunc("/claim", h.handleClaim).Methods(http.MethodPost, http.MethodOptions)
 
 	// querystatus
 	api.HandleFunc("/status", h.handleStatus).Methods(http.MethodGet, http.MethodOptions)
 
-	// 统计信息
+	// stats
 	api.HandleFunc("/stats", h.handleStats).Methods(http.MethodGet, http.MethodOptions)
 
-	// 公钥查询
+	// public key query
 	api.HandleFunc("/public-key", h.handlePublicKey).Methods(http.MethodGet, http.MethodOptions)
 }
 
-// ServeHTTP 实现 http.Handler
+// ServeHTTP implements http.Handler
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	h.router.ServeHTTP(w, r)
 }
 
-// handleEligibility 处理资格检查
+// handleEligibility handles eligibility checks
 func (h *Handler) handleEligibility(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodOptions {
 		h.writeCORS(w)
@@ -97,7 +97,7 @@ func (h *Handler) handleEligibility(w http.ResponseWriter, r *http.Request) {
 	email := r.URL.Query().Get("email")
 	address := r.URL.Query().Get("address")
 
-	// 获取客户端信息
+	// get client info
 	deviceID := h.generateDeviceFingerprint(r)
 	ipAddress := h.getClientIP(r)
 
@@ -128,7 +128,7 @@ func (h *Handler) handleEligibility(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 2. 评分
+	// 2. scoring
 	var score *Score
 	if verifyResult.UserInfo != nil {
 		score = h.scorer.ScoreUser(verifyResult.UserInfo, nil)
@@ -139,7 +139,7 @@ func (h *Handler) handleEligibility(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// 3. 检查认领资格
+	// 3. check claim eligibility
 	amount, err := h.distributor.CanClaim(address, verifyResult.UserInfo.ID, score.Total)
 	if err != nil {
 		h.writeJSON(w, http.StatusOK, &EligibilityResponse{
@@ -159,7 +159,7 @@ func (h *Handler) handleEligibility(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// handleClaim 处理认领请求
+// handleClaim handles claim requests
 func (h *Handler) handleClaim(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodOptions {
 		h.writeCORS(w)
@@ -173,7 +173,7 @@ func (h *Handler) handleClaim(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 验证必填字段
+	// validate required fields
 	if req.Address == "" {
 		h.writeError(w, http.StatusBadRequest, "MISSING_ADDRESS", "Address is required")
 		return
@@ -183,12 +183,12 @@ func (h *Handler) handleClaim(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 添加设备指纹和 IP
+	// add device fingerprint and IP
 	req.DeviceID = h.generateDeviceFingerprint(r)
 	req.IPAddress = h.getClientIP(r)
 	req.Timestamp = time.Now().Unix()
 
-	// 尝试认领
+	// attempt claim
 	record, err := h.distributor.Claim(&req)
 	if err != nil {
 		switch {
@@ -258,7 +258,7 @@ func (h *Handler) handleStatus(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// handleStats 处理统计信息
+// handleStats handles stats
 func (h *Handler) handleStats(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodOptions {
 		h.writeCORS(w)
@@ -269,7 +269,7 @@ func (h *Handler) handleStats(w http.ResponseWriter, r *http.Request) {
 	h.writeJSON(w, http.StatusOK, stats)
 }
 
-// handlePublicKey 处理公钥查询
+// handlePublicKey handles public key queries
 func (h *Handler) handlePublicKey(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodOptions {
 		h.writeCORS(w)
@@ -286,7 +286,7 @@ func (h *Handler) handlePublicKey(w http.ResponseWriter, r *http.Request) {
 // request/responsetype
 // ============================================================================
 
-// EligibilityResponse 资格检查响应
+// EligibilityResponse eligibility check response
 type EligibilityResponse struct {
 	Eligible bool           `json:"eligible"`
 	Score    *Score         `json:"score,omitempty"`
@@ -294,7 +294,7 @@ type EligibilityResponse struct {
 	Reason   string         `json:"reason,omitempty"`
 }
 
-// ClaimResponse 认领响应
+// ClaimResponse claim response
 type ClaimResponse struct {
 	Success bool         `json:"success"`
 	Record  *ClaimRecord `json:"record,omitempty"`
@@ -307,7 +307,7 @@ type StatusResponse struct {
 	Record  *ClaimRecord `json:"record,omitempty"`
 }
 
-// PublicKeyResponse 公钥响应
+// PublicKeyResponse public key response
 type PublicKeyResponse struct {
 	PublicKey string `json:"public_key"`
 	Algorithm string `json:"algorithm"`
@@ -321,7 +321,7 @@ type ErrorResponse struct {
 }
 
 // ============================================================================
-// 辅助方法
+// helper methods
 // ============================================================================
 
 // writeJSON write JSON response
@@ -349,7 +349,7 @@ func (h *Handler) writeCORS(w http.ResponseWriter) {
 	w.WriteHeader(http.StatusOK)
 }
 
-// generateDeviceFingerprint 生成设备指纹
+// generateDeviceFingerprint generates a device fingerprint
 func (h *Handler) generateDeviceFingerprint(r *http.Request) string {
 	userAgent := r.Header.Get("User-Agent")
 	acceptLang := r.Header.Get("Accept-Language")
@@ -362,7 +362,7 @@ func (h *Handler) generateDeviceFingerprint(r *http.Request) string {
 	return h.validator.deviceFingerprint.GenerateFingerprint(userAgent, acceptLang, timezone)
 }
 
-// getClientIP 获取客户端 IP
+// getClientIP getclient IP
 func (h *Handler) getClientIP(r *http.Request) string {
 	// check X-Forwarded-For
 	xff := r.Header.Get("X-Forwarded-For")
@@ -379,16 +379,16 @@ func (h *Handler) getClientIP(r *http.Request) string {
 		return NormalizeIP(xri)
 	}
 
-	// 使用 RemoteAddr
+	// use RemoteAddr
 	return NormalizeIP(r.RemoteAddr)
 }
 
-// GetRouter 获取路由器
+// GetRouter getrouting
 func (h *Handler) GetRouter() *mux.Router {
 	return h.router
 }
 
-// GetValidator 获取验证器
+// GetValidator getverify
 func (h *Handler) GetValidator() *Validator {
 	return h.validator
 }
@@ -398,7 +398,7 @@ func (h *Handler) GetScorer() *Scorer {
 	return h.scorer
 }
 
-// GetDistributor 获取分发器
+// GetDistributor returns the distributor
 func (h *Handler) GetDistributor() *Distributor {
 	return h.distributor
 }

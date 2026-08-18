@@ -10,7 +10,7 @@ import (
 )
 
 // ============================================================================
-// 健康检查
+// health check
 // ============================================================================
 
 func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
@@ -41,7 +41,7 @@ func (s *Server) handleStatus(w http.ResponseWriter, r *http.Request) {
 		blockHeight = chain.GetHeight()
 	}
 
-	// 获取 P2P 网络信息
+	// get P2P network info
 	peerCount := 0
 	if network := s.GetP2PNetwork(); network != nil {
 		peerCount = len(network.GetPeerList())
@@ -75,7 +75,7 @@ func (s *Server) handleGetBalance(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// MVP: 返回地址信息（实际查询待集成）
+	// MVP: return address info (real query pending integration)
 	writeSuccess(w, BalanceResponse{
 		Address:   address,
 		Balance:   0,
@@ -104,7 +104,7 @@ func (s *Server) handleSubmitTransaction(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	// MVP: 生成交易哈希
+	// MVP: generate transaction hash
 	txHash := fmt.Sprintf("%x", hex.EncodeToString([]byte(fmt.Sprintf("%s-%s-%d-%d", req.From, req.To, req.Amount, time.Now().UnixNano()))))
 
 	writeSuccess(w, TransactionResponse{
@@ -127,14 +127,14 @@ func (s *Server) handleGetLatestBlock(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 尝试获取真实区块数据
+	// try to fetch real block data
 	chain := s.GetChain()
 	if chain != nil {
 		block := chain.GetLatestBlock()
 		if block != nil {
 			header := block.GetHeader()
 			proposer := header.GetProposer()
-			// 去除空字节
+			// strip null bytes
 			proposerStr := strings.TrimRight(string(proposer[:]), "\x00")
 			if proposerStr == "" {
 				proposerStr = "validator"
@@ -151,7 +151,7 @@ func (s *Server) handleGetLatestBlock(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// 默认返回
+	// default return
 	writeSuccess(w, BlockResponse{
 		Height:    0,
 		Hash:      "0000000000000000000000000000000000000000000000000000000000000000",
@@ -223,5 +223,5 @@ func (s *Server) handlePeers(w http.ResponseWriter, r *http.Request) {
 }
 
 // ============================================================================
-// 钱包管理
+// wallet management
 // ============================================================================

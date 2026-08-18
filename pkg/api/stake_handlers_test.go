@@ -17,10 +17,10 @@ import (
 )
 
 // ============================================================================
-// 辅助函数
+// helpers
 // ============================================================================
 
-// createTestWallet 创建测试钱包
+// createTestWallet creates a test wallet
 func createTestWallet(t *testing.T) (*wallet.WalletSDK, []byte) {
 	pubKey, privKey, err := ed25519.GenerateKey(nil)
 	if err != nil {
@@ -39,7 +39,7 @@ func createTestWallet(t *testing.T) (*wallet.WalletSDK, []byte) {
 	return walletSDK, privKey
 }
 
-// createTestServer 创建测试服务器
+// createTestServer createtestserver
 func createTestServer(t *testing.T) *Server {
 	return &Server{
 		mux:            http.NewServeMux(),
@@ -52,7 +52,7 @@ func createTestServer(t *testing.T) *Server {
 }
 
 // ============================================================================
-// Mock 实现
+// Mock implements
 // ============================================================================
 
 type mockUTXOStore struct {
@@ -149,10 +149,10 @@ func (m *mockConsensusConfig) GetCurrentEpoch() uint64 {
 }
 
 // ============================================================================
-// 测试用例
+// test cases
 // ============================================================================
 
-// TestHandleStake 测试质押处理器
+// TestHandleStake teststake / stakinghandler
 func TestHandleStake(t *testing.T) {
 	t.Run("InvalidMethod", func(t *testing.T) {
 		s := createTestServer(t)
@@ -263,7 +263,7 @@ func TestHandleStake(t *testing.T) {
 	})
 }
 
-// TestHandleUnstake 测试解质押处理器
+// TestHandleUnstake tests the unstake handler
 func TestHandleUnstake(t *testing.T) {
 	t.Run("InvalidMethod", func(t *testing.T) {
 		s := createTestServer(t)
@@ -318,7 +318,7 @@ func TestHandleUnstake(t *testing.T) {
 	})
 }
 
-// TestHandleGetStake 测试质押状态查询处理器
+// TestHandleGetStake teststake / stakingstatusqueryhandler
 func TestHandleGetStake(t *testing.T) {
 	t.Run("InvalidMethod", func(t *testing.T) {
 		s := createTestServer(t)
@@ -376,7 +376,7 @@ func TestHandleGetStake(t *testing.T) {
 		s := createTestServer(t)
 		walletSDK, _ := createTestWallet(t)
 
-		// 添加一些测试 UTXO
+		// add some test UTXOs
 		store := s.utxoStore.(*mockUTXOStore)
 		addr := walletSDK.GetAddress()
 

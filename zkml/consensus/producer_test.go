@@ -452,7 +452,7 @@ func TestMonitor_ConcurrentStartStop(t *testing.T) {
 }
 
 // ============================================================================
-// 区块生成顺序测试
+// block production order tests
 // ============================================================================
 
 // TestBlockGenerationOrder tests that blocks are generated in correct order
@@ -569,7 +569,7 @@ func TestBlockHashChainVerification(t *testing.T) {
 }
 
 // ============================================================================
-// 共识节点选择测试
+// consensus node selection tests
 // ============================================================================
 
 // TestConsensusNodeSelection tests that consensus nodes are correctly selected
@@ -702,7 +702,7 @@ func TestConsensusNodesWithDisagreement(t *testing.T) {
 }
 
 // ============================================================================
-// 事件处理顺序测试
+// event processing order tests
 // ============================================================================
 
 // TestEventProcessingOrder tests that events are processed in order
@@ -831,7 +831,7 @@ func TestEventProcessingWithDifferentAgreements(t *testing.T) {
 }
 
 // ============================================================================
-// 并发安全性测试
+// concurrency safety tests
 // ============================================================================
 
 // TestBlockchainConcurrentBlockAdd tests concurrent block additions
