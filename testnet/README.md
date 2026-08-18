@@ -1,8 +1,8 @@
 # AIB 2.0 ZKML 3-Node Testnet
 
-本目录包含 AIB 2.0 ZKML 共识机制的 3 节点测试网络部署配置。
+This directory contains the deployment configuration for a 3-node test network of the AIB 2.0 ZKML consensus mechanism.
 
-## 架构
+## Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -25,28 +25,28 @@
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-## 前置条件
+## Prerequisites
 
-1. **Go 1.22+**: 已安装 Go 编译器
-2. **Ollama**: 运行 Ollama 服务
-3. **llama2 模型**: 已下载 llama2 模型
+1. **Go 1.22+**: Go compiler installed
+2. **Ollama**: Ollama service running
+3. **llama2 model**: llama2 model downloaded
 
-### 安装 Ollama 和模型
+### Install Ollama and the model
 
 ```bash
-# 安装 Ollama (Linux)
+# Install Ollama (Linux)
 curl -fsSL https://ollama.com/install.sh | sh
 
-# 启动 Ollama 服务
+# Start the Ollama service
 ollama serve &
 
-# 下载 llama2 模型
+# Download the llama2 model
 ollama pull llama2
 ```
 
-## 快速开始
+## Quick Start
 
-### 1. 构建并启动
+### 1. Build and start
 
 ```bash
 cd ./testnet
@@ -54,13 +54,13 @@ chmod +x deploy.sh stop.sh
 ./deploy.sh start
 ```
 
-### 2. 检查状态
+### 2. Check status
 
 ```bash
 ./deploy.sh status
 ```
 
-### 3. 查看日志
+### 3. View logs
 
 ```bash
 tail -f logs/node1.log
@@ -68,25 +68,25 @@ tail -f logs/node2.log
 tail -f logs/node3.log
 ```
 
-### 4. 停止测试网
+### 4. Stop the testnet
 
 ```bash
 ./deploy.sh stop
-# 或
+# or
 ./stop.sh
 ```
 
-## 配置文件
+## Configuration Files
 
-每个节点使用独立的配置文件：
+Each node uses its own configuration file:
 
-| 节点 | 配置文件 | 端口 | 数据目录 |
-|------|---------|------|---------|
+| Node | Config File | Port | Data Directory |
+|------|------------|------|----------------|
 | Node 1 | `config/node1.json` | 51210 | `data/node1` |
 | Node 2 | `config/node2.json` | 51211 | `data/node2` |
 | Node 3 | `config/node3.json` | 51212 | `data/node3` |
 
-### 配置示例
+### Example configuration
 
 ```json
 {
@@ -100,23 +100,23 @@ tail -f logs/node3.log
 }
 ```
 
-## 测试
+## Testing
 
-### 运行单元测试
+### Run unit tests
 
 ```bash
 cd .
 go test ./zkml/testnet/... -v
 ```
 
-### 运行集成测试
+### Run integration tests
 
 ```bash
 cd .
 go test ./zkml/... -v -count=1
 ```
 
-## 目录结构
+## Directory Structure
 
 ```
 testnet/
@@ -140,39 +140,39 @@ testnet/
 └── README.md
 ```
 
-## 故障排除
+## Troubleshooting
 
-### Ollama 连接失败
+### Ollama connection failure
 
 ```bash
-# 检查 Ollama 是否运行
+# Check whether Ollama is running
 curl http://localhost:11434/api/tags
 
-# 重启 Ollama
+# Restart Ollama
 pkill ollama
 ollama serve &
 ```
 
-### 节点启动失败
+### Node startup failure
 
 ```bash
-# 查看详细日志
+# View detailed logs
 cat logs/node1.log
 
-# 检查端口占用
+# Check port usage
 lsof -i :51210
 lsof -i :51211
 lsof -i :51212
 ```
 
-### 清理数据
+### Clean up data
 
 ```bash
 rm -rf data/node*/*
 rm -rf logs/*.log logs/*.pid
 ```
 
-## 访问链接
+## Access Links
 
 - **Ollama API**: http://localhost:11434
 - **Node 1**: http://127.0.0.1:51210
@@ -181,4 +181,4 @@ rm -rf logs/*.log logs/*.pid
 
 ---
 
-*更多文档: https://www.aib.one:51200/plans/zkml-testnet.md*
+*More documentation: https://www.aib.one:51200/plans/zkml-testnet.md*

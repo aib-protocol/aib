@@ -10,14 +10,14 @@ import (
 	"time"
 )
 
-// 版本信息
+// Version information
 const (
 	Version     = "0.1.0"
 	VersionInfo = "aib-miner version " + Version
 )
 
 func main() {
-	// 解析命令行参数
+	// Parse command line arguments
 	flag.Usage = usage
 
 	if len(os.Args) < 2 {
@@ -35,131 +35,131 @@ func main() {
 	case "version":
 		versionCmd()
 	default:
-		fmt.Fprintf(os.Stderr, "错误: 未知命令 '%s'\n\n", command)
+		fmt.Fprintf(os.Stderr, "Error: unknown command '%s'\n\n", command)
 		usage()
 		os.Exit(1)
 	}
 }
 
-// usage 显示使用帮助
+// usage displays help information
 func usage() {
-	fmt.Fprintf(os.Stderr, `AIB Miner - AIB 2.0 ZKML 矿工节点 CLI 工具
+	fmt.Fprintf(os.Stderr, `AIB Miner - AIB 2.0 ZKML miner node CLI tool
 
-使用方式:
-  aib-miner <命令> [选项]
+Usage:
+  aib-miner <command> [options]
 
-命令:
-  start      启动矿工节点
-  status     查看节点状态
-  version    显示版本信息
+Commands:
+  start      Start the miner node
+  status     Show node status
+  version    Show version information
 
-命令详情:
-  aib-miner start --config miner.json      # 使用指定配置文件启动
-  aib-miner status                          # 查看节点运行状态
-  aib-miner version                         # 显示版本号
+Command details:
+  aib-miner start --config miner.json      # Start with the specified config file
+  aib-miner status                          # Show node running status
+  aib-miner version                         # Show version number
 
 `)
 }
 
-// startCmd 处理 start 命令
+// startCmd handles the start command
 func startCmd(args []string) {
 	fs := flag.NewFlagSet("start", flag.ExitOnError)
-	configPath := fs.String("config", "", "配置文件路径 (JSON 格式)")
+	configPath := fs.String("config", "", "Config file path (JSON format)")
 
 	if err := fs.Parse(args); err != nil {
-		fmt.Fprintf(os.Stderr, "解析参数失败: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Failed to parse arguments: %v\n", err)
 		os.Exit(1)
 	}
 
-	// 加载配置或使用默认配置
+	// Load config or use default config
 	var config *MinerConfig
 	var err error
 
 	if *configPath != "" {
 		config, err = LoadConfig(*configPath)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "加载配置失败: %v\n", err)
+			fmt.Fprintf(os.Stderr, "Failed to load config: %v\n", err)
 			os.Exit(1)
 		}
-		fmt.Printf("使用配置文件: %s\n", *configPath)
+		fmt.Printf("Using config file: %s\n", *configPath)
 	} else {
 		config = DefaultMinerConfig()
-		fmt.Println("使用默认配置")
-		// 如果配置文件不存在，保存默认配置
+		fmt.Println("Using default config")
+		// If the config file does not exist, save the default config
 		defaultConfigPath := "miner.json"
 		if _, err := os.Stat(defaultConfigPath); os.IsNotExist(err) {
 			if err := SaveConfig(defaultConfigPath, config); err != nil {
-				fmt.Fprintf(os.Stderr, "警告: 无法保存默认配置: %v\n", err)
+				fmt.Fprintf(os.Stderr, "Warning: failed to save default config: %v\n", err)
 			} else {
-				fmt.Printf("默认配置已保存到: %s\n", defaultConfigPath)
+				fmt.Printf("Default config saved to: %s\n", defaultConfigPath)
 			}
 		}
 	}
 
-	// 创建矿工实例
+	// Create miner instance
 	miner, err := NewMiner(config)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "创建矿工失败: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Failed to create miner: %v\n", err)
 		os.Exit(1)
 	}
 
-	// 设置上下文和信号处理
+	// Set up context and signal handling
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	// 监听系统信号
+	// Listen for system signals
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 
-	// 启动矿工
-	fmt.Println("正在启动矿工节点...")
+	// Start the miner
+	fmt.Println("Starting miner node...")
 	if err := miner.Start(ctx); err != nil {
-		fmt.Fprintf(os.Stderr, "启动矿工失败: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Failed to start miner: %v\n", err)
 		os.Exit(1)
 	}
 
-	fmt.Printf("矿工节点已启动\n")
-	fmt.Printf("  节点 ID: %s\n", config.NodeID)
-	fmt.Printf("  模型: %s\n", config.Model)
+	fmt.Printf("Miner node started\n")
+	fmt.Printf("  Node ID: %s\n", config.NodeID)
+	fmt.Printf("  Model: %s\n", config.Model)
 	fmt.Printf("  Ollama: %s\n", config.OllamaURL)
-	fmt.Printf("  监听地址: %s\n", config.ListenAddr)
+	fmt.Printf("  Listen address: %s\n", config.ListenAddr)
 	fmt.Println()
-	fmt.Println("按 Ctrl+C 停止节点")
+	fmt.Println("Press Ctrl+C to stop the node")
 
-	// 等待信号
+	// Wait for signal
 	select {
 	case sig := <-sigChan:
-		fmt.Printf("\n收到信号: %v\n", sig)
+		fmt.Printf("\nReceived signal: %v\n", sig)
 	case <-ctx.Done():
-		fmt.Println("\n上下文已取消")
+		fmt.Println("\nContext cancelled")
 	}
 
-	// 停止矿工
-	fmt.Println("正在停止矿工节点...")
+	// Stop the miner
+	fmt.Println("Stopping miner node...")
 	if err := miner.Stop(); err != nil {
-		fmt.Fprintf(os.Stderr, "停止矿工时出错: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Error stopping miner: %v\n", err)
 		os.Exit(1)
 	}
 
-	fmt.Println("矿工节点已停止")
+	fmt.Println("Miner node stopped")
 
-	// 显示最终状态
+	// Show final status
 	status := miner.Status()
-	fmt.Printf("  运行时长: %v\n", status.Uptime.Round(time.Second))
-	fmt.Printf("  处理任务数: %d\n", status.TasksProcessed)
+	fmt.Printf("  Uptime: %v\n", status.Uptime.Round(time.Second))
+	fmt.Printf("  Tasks processed: %d\n", status.TasksProcessed)
 }
 
-// statusCmd 处理 status 命令
+// statusCmd handles the status command
 func statusCmd() {
-	// 最小实现：显示版本信息
-	// 实际实现应连接到运行中的节点获取状态
+	// Minimal implementation: show version information
+	// The full implementation should connect to a running node to get status
 	fmt.Println(VersionInfo)
 	fmt.Println()
-	fmt.Println("注意: status 命令的完整实现需要连接到运行中的节点")
-	fmt.Println("      当前显示版本信息作为参考")
+	fmt.Println("Note: the full implementation of the status command requires connecting to a running node")
+	fmt.Println("      Currently showing version information as a reference")
 }
 
-// versionCmd 处理 version 命令
+// versionCmd handles the version command
 func versionCmd() {
 	fmt.Println(VersionInfo)
 }

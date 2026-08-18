@@ -14,7 +14,7 @@ import (
 // ============================================================================
 
 // TestAttack_DoubleSpendRaceCondition
-// 攻击者同时广播两笔交易，花费同一个UTXO
+// attacker broadcasts two transactions at once spending the same UTXO
 func TestAttack_DoubleSpendRaceCondition(t *testing.T) {
 	t.Log("=== Double Spend Attack: Race Condition ===")
 
@@ -22,7 +22,7 @@ func TestAttack_DoubleSpendRaceCondition(t *testing.T) {
 	_, privKey, _ := ed25519.GenerateKey(nil)
 	addr := AddressFromPublicKey(privKey.Public().(ed25519.PublicKey))
 
-	// 创建一个UTXO
+	// create a UTXO
 	utxo := &UTXO{
 		TxHash:  [32]byte{1},
 		Index:   0,
@@ -31,7 +31,7 @@ func TestAttack_DoubleSpendRaceCondition(t *testing.T) {
 	}
 	store.AddUTXO(utxo)
 
-	// 攻击：创建两笔不同的交易，花费同一个UTXO
+	// attack: create two different transactions spending the same UTXO
 	tx1 := NewTransaction(
 		[]TXInput{{TxHash: [32]byte{1}, Index: 0}},
 		[]TXOutput{{Value: 1000, Address: [32]byte{2}, Script: nil}},
@@ -44,47 +44,47 @@ func TestAttack_DoubleSpendRaceCondition(t *testing.T) {
 	)
 	tx2.SignInput(0, privKey)
 
-	// 验证：第一笔交易应该成功
+	// verify: first transaction should succeed
 	store.SpendUTXO([32]byte{1}, 0)
 	_, err := store.GetUTXO([32]byte{1}, 0)
 	if err == nil {
-		t.Error("第一笔交易后UTXO应该被花费")
+		t.Error("UTXO should be spent after first transaction")
 	}
 
-	// 攻击：第二笔交易应该失败（UTXO已经被花费）
+	// attack: second transaction should fail (UTXO already spent)
 	if store.SpendUTXO([32]byte{1}, 0) == nil {
-		t.Error("安全漏洞：允许双重花费！")
+		t.Error("security hole: double spend allowed!")
 	} else {
-		t.Log("✓ 防御成功：第二笔交易被拒绝")
+		t.Log("✓ defense ok: second transaction rejected")
 	}
 }
 
 // TestAttack_SpendInvalidUTXO
-// 攻击者尝试花费不存在的UTXO
+// attacker tries to spend a nonexistent UTXO
 func TestAttack_SpendInvalidUTXO(t *testing.T) {
 	t.Log("=== Attack: Spend Invalid UTXO ===")
 
 	store := NewUTXOStore()
 	_, privKey, _ := ed25519.GenerateKey(nil)
 
-	// 攻击：尝试花费一个不存在的UTXO
+	// attack: try to spend a nonexistent UTXO
 	tx := NewTransaction(
-		[]TXInput{{TxHash: [32]byte{99}, Index: 999}}, // 不存在的UTXO
+		[]TXInput{{TxHash: [32]byte{99}, Index: 999}}, // nonexistent UTXO
 		[]TXOutput{{Value: 1000, Address: [32]byte{2}, Script: nil}},
 	)
 	tx.SignInput(0, privKey)
 
-	// 验证：应该无法获取UTXO
+	// verify: UTXO should not be retrievable
 	_, err := tx.TotalInputValue(store)
 	if err == nil {
-		t.Error("安全漏洞：允许花费不存在的UTXO！")
+		t.Error("security hole: spending a nonexistent UTXO allowed!")
 	} else {
-		t.Logf("✓ 防御成功：%v", err)
+		t.Logf("✓ defense ok: %v", err)
 	}
 }
 
 // TestAttack_OutputExceedsInput
-// 攻击者尝试输出超过输入的金额
+// attacker tries to output more than inputs
 func TestAttack_OutputExceedsInput(t *testing.T) {
 	t.Log("=== Attack: Output Exceeds Input Value ===")
 
@@ -92,7 +92,7 @@ func TestAttack_OutputExceedsInput(t *testing.T) {
 	_, privKey, _ := ed25519.GenerateKey(nil)
 	addr := AddressFromPublicKey(privKey.Public().(ed25519.PublicKey))
 
-	// 创建一个价值100的UTXO
+	// create a UTXO worth 100
 	utxo := &UTXO{
 		TxHash:  [32]byte{1},
 		Index:   0,
@@ -101,7 +101,7 @@ func TestAttack_OutputExceedsInput(t *testing.T) {
 	}
 	store.AddUTXO(utxo)
 
-	// 攻击：尝试输出200（但输入只有100）
+	// attack: try to output 200 (inputs only 100)
 	tx := NewTransaction(
 		[]TXInput{{TxHash: [32]byte{1}, Index: 0}},
 		[]TXOutput{
@@ -111,12 +111,12 @@ func TestAttack_OutputExceedsInput(t *testing.T) {
 	)
 	tx.SignInput(0, privKey)
 
-	// 验证：GetFee应该返回错误
+	// verify: GetFee should return error
 	_, err := tx.GetFee(store)
 	if err == nil {
-		t.Error("安全漏洞：允许输出超过输入！")
+		t.Error("security hole: outputs exceeding inputs allowed!")
 	} else {
-		t.Logf("✓ 防御成功：%v", err)
+		t.Logf("✓ defense ok: %v", err)
 	}
 }
 
@@ -125,7 +125,7 @@ func TestAttack_OutputExceedsInput(t *testing.T) {
 // ============================================================================
 
 // TestAttack_InvalidProposer
-// 攻击者尝试以错误验证者身份出块
+// attacker tries to produce a block as the wrong validator
 func TestAttack_InvalidProposer(t *testing.T) {
 	t.Log("=== Attack: Invalid Proposer ===")
 
@@ -140,11 +140,11 @@ func TestAttack_InvalidProposer(t *testing.T) {
 	cs.AddValidator(addrAlice, 1000, privAlice.Public().(ed25519.PublicKey))
 	cs.AddValidator(addrBob, 1000, privBob.Public().(ed25519.PublicKey))
 
-	// 计算应该的出块者
+	// compute the expected block producer
 	seed := []byte("test-seed")
 	expectedProposer, _ := cs.SelectProposer(seed)
 
-	// 攻击：Bob尝试出块，但应该是Alice出块
+	// attack: Bob tries to produce a block but Alice should
 	fakeBlock := NewBlock(nil, [32]byte{}, 1, addrBob)
 	fakeHash := fakeBlock.CalculateHash()
 	fakeBlock.Header.Signature = ed25519.Sign(privBob, fakeHash[:])
@@ -155,18 +155,18 @@ func TestAttack_InvalidProposer(t *testing.T) {
 	result := cs.VerifyBlockProposer(fakeBlock, prevBlock)
 
 	if result.Valid {
-		t.Errorf("安全漏洞：允许错误的出块者！expected=%x, got=%x", expectedProposer, addrBob)
+		t.Errorf("security hole: wrong block producer allowed! expected=%x, got=%x", expectedProposer, addrBob)
 	} else {
-		t.Logf("✓ 防御成功：%s", result.Error)
+		t.Logf("✓ defense ok: %s", result.Error)
 	}
 }
 
 // TestAttack_BlockReordering
-// 攻击者尝试重排区块顺序
+// attacker tries to reorder blocks
 func TestAttack_BlockReordering(t *testing.T) {
 	t.Log("=== Attack: Block Reordering ===")
 
-	// 创建区块链
+	// create a blockchain
 	block1 := NewBlock(nil, [32]byte{}, 1, [32]byte{1})
 	block1.Header.PrevBlockHash = [32]byte{}
 	block1.Hash = block1.CalculateHash()
@@ -175,21 +175,21 @@ func TestAttack_BlockReordering(t *testing.T) {
 	block2.Header.PrevBlockHash = block1.Hash
 	block2.Hash = block2.CalculateHash()
 
-	// 攻击：尝试验证错误的顺序（block2指向错误的父块）
+	// attack: validate a wrong order (block2 points to wrong parent)
 	fakeBlock2 := NewBlock(nil, [32]byte{99}, 2, [32]byte{2})
-	fakeBlock2.Header.PrevBlockHash = [32]byte{99} // 错误的前一个区块
+	fakeBlock2.Header.PrevBlockHash = [32]byte{99} // wrong previous block
 	fakeBlock2.Hash = fakeBlock2.CalculateHash()
 
 	err := fakeBlock2.ValidateBlockChain(block1)
 	if err == nil {
-		t.Error("安全漏洞：允许区块重排序！")
+		t.Error("security hole: block reordering allowed!")
 	} else {
-		t.Logf("✓ 防御成功：%v", err)
+		t.Logf("✓ defense ok: %v", err)
 	}
 }
 
 // TestAttack_InvalidMerkleRoot
-// 攻击者尝试篡改Merkle根
+// attacker tries to tamper with the Merkle root
 func TestAttack_InvalidMerkleRoot(t *testing.T) {
 	t.Log("=== Attack: Invalid Merkle Root ===")
 
@@ -202,19 +202,19 @@ func TestAttack_InvalidMerkleRoot(t *testing.T) {
 		[32]byte{1},
 	)
 
-	// 保存正确的Merkle根
+	// save the correct Merkle root
 	correctRoot := block.Header.MerkleRoot
 
-	// 攻击：修改交易但不更新Merkle根
-	block.Transactions[0].Outputs[0].Value = 999999 // 修改金额
+	// attack: modify a transaction without updating the Merkle root
+	block.Transactions[0].Outputs[0].Value = 999999 // modified amount
 
-	// 重新计算，看Merkle根是否改变
+	// recompute to see whether the Merkle root changes
 	block.Header.MerkleRoot = block.CalculateMerkleRoot()
 
 	if block.Header.MerkleRoot == correctRoot {
-		t.Error("安全漏洞：Merkle根没有检测到交易变化！")
+		t.Error("security hole: Merkle root failed to detect transaction change!")
 	} else {
-		t.Log("✓ 防御成功：Merkle根检测到交易篡改")
+		t.Log("✓ defense ok: Merkle root detected transaction tampering")
 	}
 }
 
@@ -223,7 +223,7 @@ func TestAttack_InvalidMerkleRoot(t *testing.T) {
 // ============================================================================
 
 // TestAttack_StakeGrinding
-// 攻击者尝试通过操纵选择种子来获得出块权
+// attacker tries to gain block production by manipulating the selection seed
 func TestAttack_StakeGrinding(t *testing.T) {
 	t.Log("=== Attack: Stake Grinding ===")
 
@@ -235,7 +235,7 @@ func TestAttack_StakeGrinding(t *testing.T) {
 	addr := sha256.Sum256(priv.Public().(ed25519.PublicKey))
 	cs.AddValidator(addr, 1000, priv.Public().(ed25519.PublicKey))
 
-	// 检查：不同的种子应该产生不同的结果（或至少是确定性的）
+	// check: different seeds should produce different results (or at least be deterministic)
 	results := make(map[[32]byte]int)
 	for i := 0; i < 10; i++ {
 		seed := sha256.Sum256([]byte(fmt.Sprintf("seed-%d", i)))
@@ -243,38 +243,38 @@ func TestAttack_StakeGrinding(t *testing.T) {
 		results[proposer]++
 	}
 
-	// 只有一个验证者，所以总是选中同一个
+	// only one validator, so the same one is always selected
 	if len(results) != 1 {
-		t.Error("确定性问题：相同验证者集合产生了不同的结果")
+		t.Error("determinism problem: same validator set produced different results")
 	} else {
-		t.Log("✓ 确定性检查通过")
+		t.Log("✓ determinism check passed")
 	}
 
-	// 添加更多验证者并检查分布
+	// add more validators and check distribution
 	_, priv2, _ := ed25519.GenerateKey(nil)
 	addr2 := sha256.Sum256(priv2.Public().(ed25519.PublicKey))
 	cs.AddValidator(addr2, 2000, priv2.Public().(ed25519.PublicKey))
 
-	// 高质押的验证者应该被选中更多次
+	// higher-stake validators should be selected more often
 	highStakeCount := 0
 	for i := 0; i < 20; i++ {
 		seed := sha256.Sum256([]byte(fmt.Sprintf("seed-%d", i)))
 		proposer, _ := cs.SelectProposer(seed[:])
-		if proposer == addr2 { // addr2有更高质押
+		if proposer == addr2 { // addr2 has higher stake
 			highStakeCount++
 		}
 	}
 
-	t.Logf("高质押验证者被选中：%d/20次", highStakeCount)
-	if highStakeCount < 8 { // 应该约2/3的概率
-		t.Error("安全警告：质押权重似乎不起作用")
+	t.Logf("high-stake validator selected: %d/20 times", highStakeCount)
+	if highStakeCount < 8 { // should be about 2/3 probability
+		t.Error("security warning: stake weighting seems not to work")
 	} else {
-		t.Log("✓ 质押权重验证通过")
+		t.Log("✓ stake weighting verification passed")
 	}
 }
 
 // TestAttack_ValidatorStateManipulation
-// 攻击者尝试操纵验证者状态
+// attacker tries to manipulate validator state
 func TestAttack_ValidatorStateManipulation(t *testing.T) {
 	t.Log("=== Attack: Validator State Manipulation ===")
 
@@ -286,10 +286,10 @@ func TestAttack_ValidatorStateManipulation(t *testing.T) {
 	addr := sha256.Sum256(priv.Public().(ed25519.PublicKey))
 	cs.AddValidator(addr, 1000, priv.Public().(ed25519.PublicKey))
 
-	// 获取原始状态根
+	// get original state root
 	root1, _ := cs.CalculateValidatorStateRoot()
 
-	// 攻击：尝试直接修改验证者质押
+	// attack: try to modify validator stake directly
 	cs.mu.Lock()
 	cs.validators[addr].Stake = 999999
 	cs.mu.Unlock()
@@ -297,27 +297,27 @@ func TestAttack_ValidatorStateManipulation(t *testing.T) {
 	root2, _ := cs.CalculateValidatorStateRoot()
 
 	if root1 == root2 {
-		t.Error("安全漏洞：验证者状态变化没有反映在状态根中！")
+		t.Error("security hole: validator state change not reflected in state root!")
 	} else {
-		t.Log("✓ 防御成功：状态根检测到验证者状态变化")
+		t.Log("✓ defense ok: state root detected validator state change")
 
-		// 验证旧根不再有效
+		// verify old root no longer valid
 		valid, _ := cs.VerifyValidatorStateRoot(root1)
 		if valid {
-			t.Error("安全漏洞：旧状态根仍然被接受！")
+			t.Error("security hole: old state root still accepted!")
 		} else {
-			t.Log("✓ 防御成功：旧状态根被拒绝")
+			t.Log("✓ defense ok: old state root rejected")
 		}
 	}
 }
 
 // TestAttack_RemoveValidatorBeforeLockPeriod
-// 攻击者尝试在锁定期内移除验证者
+// attacker tries to remove a validator during lock period
 func TestAttack_RemoveValidatorBeforeLockPeriod(t *testing.T) {
 	t.Log("=== Attack: Remove Validator Before Lock Period ===")
 
 	config := DefaultPoSConfig()
-	config.StakeLockPeriod = 100 // 100个区块的锁定期
+	config.StakeLockPeriod = 100 // lock period of 100 blocks
 	cs := NewConsensusState(config)
 
 	_, priv, _ := ed25519.GenerateKey(nil)
@@ -325,13 +325,13 @@ func TestAttack_RemoveValidatorBeforeLockPeriod(t *testing.T) {
 
 	cs.AddValidator(addr, 1000, priv.Public().(ed25519.PublicKey))
 
-	// 攻击：立即尝试移除（在锁定期内）
+	// attack: try to remove immediately (within lock period)
 	err := cs.RemoveValidator(addr)
 
 	if err == nil {
-		t.Error("安全漏洞：允许在锁定期内移除验证者！")
+		t.Error("security hole: removing validator within lock period allowed!")
 	} else {
-		t.Logf("✓ 防御成功：%v", err)
+		t.Logf("✓ defense ok: %v", err)
 	}
 }
 
@@ -340,7 +340,7 @@ func TestAttack_RemoveValidatorBeforeLockPeriod(t *testing.T) {
 // ============================================================================
 
 // TestAttack_FakeSignature
-// 攻击者尝试伪造签名
+// attacker tries to forge a signature
 func TestAttack_FakeSignature(t *testing.T) {
 	t.Log("=== Attack: Fake Signature ===")
 
@@ -356,27 +356,27 @@ func TestAttack_FakeSignature(t *testing.T) {
 	}
 	store.AddUTXO(utxo)
 
-	// 创建交易
+	// create a transaction
 	tx := NewTransaction(
 		[]TXInput{{TxHash: [32]byte{1}, Index: 0}},
 		[]TXOutput{{Value: 1000, Address: [32]byte{2}, Script: nil}},
 	)
 
-	// 攻击：使用错误的签名
+	// attack: use a wrong signature
 	_, fakePriv, _ := ed25519.GenerateKey(nil)
 	tx.Inputs[0].Signature = ed25519.Sign(fakePriv, []byte("fake"))
 	tx.Inputs[0].PublicKey = fakePriv.Public().(ed25519.PublicKey)
 
-	// 验证：签名应该无效
+	// verify: signature should be invalid
 	if tx.VerifyAllInputs() {
-		t.Error("安全漏洞：接受伪造的签名！")
+		t.Error("security hole: forged signature accepted!")
 	} else {
-		t.Log("✓ 防御成功：伪造签名被拒绝")
+		t.Log("✓ defense ok: forged signature rejected")
 	}
 }
 
 // TestAttack_EmptySignature
-// 攻击者尝试使用空签名
+// attacker tries to use an empty signature
 func TestAttack_EmptySignature(t *testing.T) {
 	t.Log("=== Attack: Empty Signature ===")
 
@@ -385,15 +385,15 @@ func TestAttack_EmptySignature(t *testing.T) {
 		[]TXOutput{{Value: 1000, Address: [32]byte{2}, Script: nil}},
 	)
 
-	// 攻击：清空签名
+	// attack: clear the signature
 	tx.Inputs[0].Signature = []byte{}
 	tx.Inputs[0].PublicKey = []byte{}
 
-	// 验证：应该失败
+	// verify: should fail
 	if tx.VerifyAllInputs() {
-		t.Error("安全漏洞：接受空签名！")
+		t.Error("security hole: empty signature accepted!")
 	} else {
-		t.Log("✓ 防御成功：空签名被拒绝")
+		t.Log("✓ defense ok: empty signature rejected")
 	}
 }
 
@@ -402,7 +402,7 @@ func TestAttack_EmptySignature(t *testing.T) {
 // ============================================================================
 
 // TestAttack_DoubleCoinbase
-// 攻击者尝试创建多个coinbase交易
+// attacker tries to create multiple coinbase transactions
 func TestAttack_DoubleCoinbase(t *testing.T) {
 	t.Log("=== Attack: Multiple Coinbase Transactions ===")
 
@@ -416,44 +416,44 @@ func TestAttack_DoubleCoinbase(t *testing.T) {
 		[32]byte{1},
 	)
 
-	// 使用 ValidateBlockSecurity 检测多coinbase
+	// use ValidateBlockSecurity to detect multiple coinbases
 	errs := block.ValidateBlockSecurity(NewUTXOStore(), 1)
 	foundCoinbaseErr := false
 	for _, err := range errs {
 		if err != nil {
-			t.Logf("  检测到: %v", err)
+			t.Logf("  detected: %v", err)
 			foundCoinbaseErr = true
 		}
 	}
 	if foundCoinbaseErr {
-		t.Log("✓ 防御成功：ValidateBlockSecurity 检测到多个coinbase")
+		t.Log("✓ defense ok: ValidateBlockSecurity detected multiple coinbases")
 	} else {
-		t.Error("安全漏洞：未检测到多个coinbase")
+		t.Error("security hole: multiple coinbases not detected")
 	}
 }
 
 // TestAttack_CoinbaseImmediateSpend
-// 攻击者尝试花费coinbase输出
+// attacker tries to spend coinbase outputs
 func TestAttack_CoinbaseImmediateSpend(t *testing.T) {
 	t.Log("=== Attack: Immediate Coinbase Spend ===")
 
-	// 测试成熟期检查
+	// test maturity check
 	if IsCoinbaseSpendable(100, 150) {
-		t.Error("安全漏洞：允许花费未成熟的coinbase（仅50个确认）")
+		t.Error("security hole: spending immature coinbase allowed (only 50 confirmations)")
 	} else {
-		t.Log("✓ 防御成功：50个确认不足（需要100）")
+		t.Log("✓ defense ok: 50 confirmations insufficient (100 required)")
 	}
 
 	if !IsCoinbaseSpendable(100, 200) {
-		t.Error("错误：100个确认的coinbase应该可以花费")
+		t.Error("error: coinbase with 100 confirmations should be spendable")
 	} else {
-		t.Log("✓ 100个确认后coinbase可以花费")
+		t.Log("✓ coinbase spendable after 100 confirmations")
 	}
 
 	if !IsCoinbaseSpendable(100, 300) {
-		t.Error("错误：200个确认的coinbase应该可以花费")
+		t.Error("error: coinbase with 200 confirmations should be spendable")
 	} else {
-		t.Log("✓ 200个确认后coinbase可以花费")
+		t.Log("✓ coinbase spendable after 200 confirmations")
 	}
 }
 
@@ -462,7 +462,7 @@ func TestAttack_CoinbaseImmediateSpend(t *testing.T) {
 // ============================================================================
 
 // TestAttack_ZeroFeeTransaction
-// 攻击者尝试创建零费用交易
+// attacker tries to create a zero-fee transaction
 func TestAttack_ZeroFeeTransaction(t *testing.T) {
 	t.Log("=== Attack: Zero Fee Transaction ===")
 
@@ -478,7 +478,7 @@ func TestAttack_ZeroFeeTransaction(t *testing.T) {
 	}
 	store.AddUTXO(utxo)
 
-	// 创建费用=0的交易（输入=输出）
+	// create a fee=0 transaction (inputs = outputs)
 	tx := NewTransaction(
 		[]TXInput{{TxHash: [32]byte{1}, Index: 0}},
 		[]TXOutput{{Value: 1000, Address: [32]byte{2}, Script: nil}},
@@ -487,12 +487,12 @@ func TestAttack_ZeroFeeTransaction(t *testing.T) {
 
 	fee, _ := tx.GetFee(store)
 
-	// 攻击：零费用交易
+	// attack: zero-fee transaction
 	if fee == 0 {
-		t.Log("⚠️  安全警告：零费用交易被接受")
-		t.Log("   建议：实现最低费用要求")
+		t.Log("⚠️  security warning: zero-fee transaction accepted")
+		t.Log("   suggestion: implement a minimum fee requirement")
 	} else {
-		t.Log("✓ 防御成功：费用检查通过")
+		t.Log("✓ defense ok: fee check passed")
 	}
 }
 

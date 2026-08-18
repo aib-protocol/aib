@@ -9,10 +9,10 @@ import (
 )
 
 // ============================================================================
-// 节点发现测试
+// Node discovery tests
 // ============================================================================
 
-// TestDiscovery_NodeDiscovery_NewNode 测试发现新节点
+// TestDiscovery_NodeDiscovery_NewNode tests discovering a new node
 func TestDiscovery_NodeDiscovery_NewNode(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -32,12 +32,12 @@ func TestDiscovery_NodeDiscovery_NewNode(t *testing.T) {
 		t.Fatalf("Failed to create discovery: %v", err)
 	}
 
-	// 初始节点数为0
+	// initial node count is 0
 	if discovery.GetPeerCount() != 0 {
 		t.Errorf("Expected 0 peers initially, got %d", discovery.GetPeerCount())
 	}
 
-	// 添加新节点
+	// add a new node
 	newPeer := &DiscoveredPeer{
 		ID:         PeerID("test-peer-1"),
 		Addrs:      []string{"/ip4/127.0.0.1/tcp/4001"},
@@ -48,12 +48,12 @@ func TestDiscovery_NodeDiscovery_NewNode(t *testing.T) {
 	}
 	discovery.AddDiscoveredPeer(newPeer)
 
-	// 验证节点数
+	// verify node count
 	if discovery.GetPeerCount() != 1 {
 		t.Errorf("Expected 1 peer after adding, got %d", discovery.GetPeerCount())
 	}
 
-	// 验证获取节点
+	// verify node retrieval
 	peers := discovery.GetKnownPeers()
 	if len(peers) != 1 {
 		t.Errorf("Expected 1 peer in GetKnownPeers, got %d", len(peers))
@@ -64,7 +64,7 @@ func TestDiscovery_NodeDiscovery_NewNode(t *testing.T) {
 	}
 }
 
-// TestDiscovery_NodeDiscovery_MultipleNodes 测试发现多个节点
+// TestDiscovery_NodeDiscovery_MultipleNodes tests discovering multiple nodes
 func TestDiscovery_NodeDiscovery_MultipleNodes(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -75,7 +75,7 @@ func TestDiscovery_NodeDiscovery_MultipleNodes(t *testing.T) {
 		MinPeers: 5,
 	})
 
-	// 添加多个节点
+	// add multiple nodes
 	peers := []*DiscoveredPeer{
 		{ID: PeerID("peer-1"), Addrs: []string{"/ip4/127.0.0.1/tcp/4001"}, Models: []string{"gpt-4"}},
 		{ID: PeerID("peer-2"), Addrs: []string{"/ip4/127.0.0.1/tcp/4002"}, Models: []string{"claude-3"}},
@@ -88,19 +88,19 @@ func TestDiscovery_NodeDiscovery_MultipleNodes(t *testing.T) {
 		discovery.AddDiscoveredPeer(p)
 	}
 
-	// 验证节点总数
+	// verify total node count
 	if discovery.GetPeerCount() != 5 {
 		t.Errorf("Expected 5 peers, got %d", discovery.GetPeerCount())
 	}
 
-	// 验证所有节点都能获取
+	// verify all nodes retrievable
 	knownPeers := discovery.GetKnownPeers()
 	if len(knownPeers) != 5 {
 		t.Errorf("Expected 5 known peers, got %d", len(knownPeers))
 	}
 }
 
-// TestDiscovery_NodeDiscovery_DuplicateNode 测试重复节点发现
+// TestDiscovery_NodeDiscovery_DuplicateNode tests duplicate node discovery
 func TestDiscovery_NodeDiscovery_DuplicateNode(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -111,7 +111,7 @@ func TestDiscovery_NodeDiscovery_DuplicateNode(t *testing.T) {
 	peerID := PeerID("duplicate-peer")
 	addr := "/ip4/127.0.0.1/tcp/4001"
 
-	// 第一次添加节点
+	// add the node the first time
 	peer1 := &DiscoveredPeer{
 		ID:         peerID,
 		Addrs:      []string{addr},
@@ -120,7 +120,7 @@ func TestDiscovery_NodeDiscovery_DuplicateNode(t *testing.T) {
 	}
 	discovery.AddDiscoveredPeer(peer1)
 
-	// 第二次添加相同节点（更新）
+	// add the same node a second time (update)
 	peer2 := &DiscoveredPeer{
 		ID:         peerID,
 		Addrs:      []string{addr},
@@ -129,18 +129,18 @@ func TestDiscovery_NodeDiscovery_DuplicateNode(t *testing.T) {
 	}
 	discovery.AddDiscoveredPeer(peer2)
 
-	// 验证节点数仍然为1（不会重复添加）
+	// verify node count still 1 (no duplicate added)
 	if discovery.GetPeerCount() != 1 {
 		t.Errorf("Expected 1 peer after duplicate add, got %d", discovery.GetPeerCount())
 	}
 
-	// 验证节点数据已更新
+	// verify node data updated
 	peers := discovery.GetKnownPeers()
 	if len(peers) != 1 {
 		t.Fatalf("Expected 1 peer, got %d", len(peers))
 	}
 
-	// 验证模型已更新
+	// verify model updated
 	found := false
 	for _, model := range peers[0].Models {
 		if model == "claude-3" {
@@ -154,10 +154,10 @@ func TestDiscovery_NodeDiscovery_DuplicateNode(t *testing.T) {
 }
 
 // ============================================================================
-// 节点选择测试
+// Node selection tests
 // ============================================================================
 
-// TestDiscovery_NodeSelection_ByModel 测试根据模型选择节点
+// TestDiscovery_NodeSelection_ByModel tests selecting nodes by model
 func TestDiscovery_NodeSelection_ByModel(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -165,7 +165,7 @@ func TestDiscovery_NodeSelection_ByModel(t *testing.T) {
 	network, _ := NewNetwork(ctx, nil)
 	discovery, _ := NewDiscovery(network, nil)
 
-	// 添加不同模型的节点
+	// add nodes with different models
 	discovery.AddDiscoveredPeer(&DiscoveredPeer{
 		ID: PeerID("gpt-peer-1"), Models: []string{"gpt-4"}, Addrs: []string{"/ip4/127.0.0.1/tcp/4001"},
 	})
@@ -176,44 +176,44 @@ func TestDiscovery_NodeSelection_ByModel(t *testing.T) {
 		ID: PeerID("claude-peer-1"), Models: []string{"claude-3"}, Addrs: []string{"/ip4/127.0.0.1/tcp/4003"},
 	})
 
-	// 测试选择 gpt-4 模型的节点
+	// test selecting nodes with gpt-4 model
 	gptPeers := discovery.GetPeersForModel("gpt-4")
 	if len(gptPeers) != 2 {
 		t.Errorf("Expected 2 peers for gpt-4, got %d", len(gptPeers))
 	}
 
-	// 测试选择 claude-3 模型的节点
+	// test selecting nodes with claude-3 model
 	claudePeers := discovery.GetPeersForModel("claude-3")
 	if len(claudePeers) != 1 {
 		t.Errorf("Expected 1 peer for claude-3, got %d", len(claudePeers))
 	}
 
-	// 测试不存在的模型
+	// test nonexistent model
 	nonexistentPeers := discovery.GetPeersForModel("nonexistent-model")
 	if len(nonexistentPeers) != 0 {
 		t.Errorf("Expected 0 peers for nonexistent model, got %d", len(nonexistentPeers))
 	}
 }
 
-// TestDiscovery_NodeSelection_MinPeers 测试最小节点数检查
+// TestDiscovery_NodeSelection_MinPeers tests minimum peer count check
 func TestDiscovery_NodeSelection_MinPeers(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	network, _ := NewNetwork(ctx, nil)
 
-	// 创建最小节点数为3的配置
+	// create config with min peers 3
 	discovery, _ := NewDiscovery(network, &DiscoveryConfig{
 		MinPeers: 3,
 		MaxPeers: 100,
 	})
 
-	// 初始状态检查
+	// initial state check
 	if discovery.HasMinimumPeers() {
 		t.Error("Should not have minimum peers initially")
 	}
 
-	// 添加2个节点（低于最小要求）
+	// add 2 nodes (below minimum)
 	discovery.AddDiscoveredPeer(&DiscoveredPeer{ID: PeerID("peer-1")})
 	discovery.AddDiscoveredPeer(&DiscoveredPeer{ID: PeerID("peer-2")})
 
@@ -221,7 +221,7 @@ func TestDiscovery_NodeSelection_MinPeers(t *testing.T) {
 		t.Error("Should not have minimum peers with only 2 peers")
 	}
 
-	// 添加第3个节点（达到最小要求）
+	// add 3rd node (meets minimum)
 	discovery.AddDiscoveredPeer(&DiscoveredPeer{ID: PeerID("peer-3")})
 
 	if !discovery.HasMinimumPeers() {
@@ -229,14 +229,14 @@ func TestDiscovery_NodeSelection_MinPeers(t *testing.T) {
 	}
 }
 
-// TestDiscovery_NodeSelection_MaxPeers 测试最大节点数限制
+// TestDiscovery_NodeSelection_MaxPeers tests max peer limit
 func TestDiscovery_NodeSelection_MaxPeers(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	network, _ := NewNetwork(ctx, nil)
 
-	// 创建最大节点数为2的配置（测试PeerManager）
+	// create config with max peers 2 (tests PeerManager)
 	pm, err := NewPeerManager(network, &PeerManagerConfig{
 		MaxPeers: 2,
 	})
@@ -244,19 +244,19 @@ func TestDiscovery_NodeSelection_MaxPeers(t *testing.T) {
 		t.Fatalf("Failed to create peer manager: %v", err)
 	}
 
-	// 添加第1个节点
+	// add 1st node
 	err = pm.AddPeer(PeerID("peer-1"), []string{"/ip4/127.0.0.1/tcp/4001"})
 	if err != nil {
 		t.Errorf("Failed to add peer 1: %v", err)
 	}
 
-	// 添加第2个节点
+	// add 2nd node
 	err = pm.AddPeer(PeerID("peer-2"), []string{"/ip4/127.0.0.1/tcp/4002"})
 	if err != nil {
 		t.Errorf("Failed to add peer 2: %v", err)
 	}
 
-	// 添加第3个节点应该失败（超过最大限制）
+	// adding 3rd node should fail (exceeds max limit)
 	err = pm.AddPeer(PeerID("peer-3"), []string{"/ip4/127.0.0.1/tcp/4003"})
 	if err == nil {
 		t.Error("Should fail to add third peer when max peers reached")
@@ -264,10 +264,10 @@ func TestDiscovery_NodeSelection_MaxPeers(t *testing.T) {
 }
 
 // ============================================================================
-// 发现超时测试
+// Discovery timeout tests
 // ============================================================================
 
-// TestDiscovery_Timeout_ContextCancellation 测试上下文取消时的超时处理
+// TestDiscovery_Timeout_ContextCancellation tests timeout handling on context cancellation
 func TestDiscovery_Timeout_ContextCancellation(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -278,29 +278,29 @@ func TestDiscovery_Timeout_ContextCancellation(t *testing.T) {
 		MinPeers: 1,
 	})
 
-	// 启动发现服务
+	// start discovery service
 	err := discovery.Start(ctx)
 	if err != nil {
 		t.Fatalf("Failed to start discovery: %v", err)
 	}
 
-	// 等待一小段时间让发现循环运行
+	// wait briefly for the discovery loop to run
 	time.Sleep(50 * time.Millisecond)
 
-	// 取消上下文
+	// cancel the context
 	cancel()
 
-	// 等待发现服务停止
+	// wait for discovery service to stop
 	time.Sleep(20 * time.Millisecond)
 
-	// 验证discovery可以安全访问
+	// verify discovery is safely accessible
 	count := discovery.GetPeerCount()
 	if count < 0 {
 		t.Errorf("Invalid peer count after cancellation: %d", count)
 	}
 }
 
-// TestDiscovery_Timeout_PeerLatency 测试节点延迟跟踪
+// TestDiscovery_Timeout_PeerLatency tests peer latency tracking
 func TestDiscovery_Timeout_PeerLatency(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -308,7 +308,7 @@ func TestDiscovery_Timeout_PeerLatency(t *testing.T) {
 	network, _ := NewNetwork(ctx, nil)
 	discovery, _ := NewDiscovery(network, nil)
 
-	// 添加节点并设置延迟
+	// add node and set latency
 	now := time.Now()
 	peer := &DiscoveredPeer{
 		ID:            PeerID("latency-test-peer"),
@@ -322,7 +322,7 @@ func TestDiscovery_Timeout_PeerLatency(t *testing.T) {
 	}
 	discovery.AddDiscoveredPeer(peer)
 
-	// 验证延迟值
+	// verify latency value
 	peers := discovery.GetKnownPeers()
 	if len(peers) != 1 {
 		t.Fatalf("Expected 1 peer, got %d", len(peers))
@@ -332,13 +332,13 @@ func TestDiscovery_Timeout_PeerLatency(t *testing.T) {
 		t.Errorf("Expected latency 100ms, got %v", peers[0].Latency)
 	}
 
-	// 验证ping成功次数
+	// verify ping success count
 	if peers[0].PingSuccesses != 5 {
 		t.Errorf("Expected 5 ping successes, got %d", peers[0].PingSuccesses)
 	}
 }
 
-// TestDiscovery_Timeout_StalePeerCleanup 测试陈旧节点清理
+// TestDiscovery_Timeout_StalePeerCleanup tests stale peer cleanup
 func TestDiscovery_Timeout_StalePeerCleanup(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -346,7 +346,7 @@ func TestDiscovery_Timeout_StalePeerCleanup(t *testing.T) {
 	network, _ := NewNetwork(ctx, nil)
 	discovery, _ := NewDiscovery(network, nil)
 
-	// 添加一个正常节点
+	// add a normal node
 	activePeer := &DiscoveredPeer{
 		ID:            PeerID("active-peer"),
 		Addrs:         []string{"/ip4/127.0.0.1/tcp/4001"},
@@ -356,7 +356,7 @@ func TestDiscovery_Timeout_StalePeerCleanup(t *testing.T) {
 	}
 	discovery.AddDiscoveredPeer(activePeer)
 
-	// 添加一个陈旧节点（最后一次ping是6分钟前，超过5分钟阈值）
+	// add a stale node (last ping 6 min ago, beyond 5 min threshold)
 	stalePeer := &DiscoveredPeer{
 		ID:            PeerID("stale-peer"),
 		Addrs:         []string{"/ip4/127.0.0.1/tcp/4002"},
@@ -366,20 +366,20 @@ func TestDiscovery_Timeout_StalePeerCleanup(t *testing.T) {
 	}
 	discovery.AddDiscoveredPeer(stalePeer)
 
-	// 验证初始节点数
+	// verify initial node count
 	if discovery.GetPeerCount() != 2 {
 		t.Errorf("Expected 2 peers initially, got %d", discovery.GetPeerCount())
 	}
 
-	// 执行清理（内部调用cleanStalePeers）
+	// run cleanup (internally calls cleanStalePeers)
 	discovery.cleanStalePeers()
 
-	// 验证清理后的节点数（应该只有活动节点）
+	// verify node count after cleanup (only active nodes should remain)
 	if discovery.GetPeerCount() != 1 {
 		t.Errorf("Expected 1 peer after cleanup, got %d", discovery.GetPeerCount())
 	}
 
-	// 验证剩余的是活动节点
+	// verify remaining node is the active one
 	peers := discovery.GetKnownPeers()
 	if len(peers) != 1 || peers[0].ID != "active-peer" {
 		t.Error("Expected active peer to remain after cleanup")
@@ -387,10 +387,10 @@ func TestDiscovery_Timeout_StalePeerCleanup(t *testing.T) {
 }
 
 // ============================================================================
-// 并发发现测试
+// Concurrent discovery tests
 // ============================================================================
 
-// TestDiscovery_Concurrency_ConcurrentAdd 测试并发添加节点
+// TestDiscovery_Concurrency_ConcurrentAdd tests concurrently adding nodes
 func TestDiscovery_Concurrency_ConcurrentAdd(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
@@ -404,7 +404,7 @@ func TestDiscovery_Concurrency_ConcurrentAdd(t *testing.T) {
 	var wg sync.WaitGroup
 	wg.Add(numGoroutines)
 
-	// 并发添加节点
+	// add nodes concurrently
 	for i := 0; i < numGoroutines; i++ {
 		go func(goroutineID int) {
 			defer wg.Done()
@@ -421,20 +421,20 @@ func TestDiscovery_Concurrency_ConcurrentAdd(t *testing.T) {
 		}(i)
 	}
 
-	// 等待所有goroutine完成
+	// wait for all goroutines to finish
 	wg.Wait()
 
-	// 验证总节点数
+	// verify total node count
 	expectedCount := numGoroutines * peersPerGoroutine
 	actualCount := discovery.GetPeerCount()
 
-	// 允许一定的误差（可能存在重复ID覆盖）
+	// allow some tolerance (duplicate IDs may overwrite)
 	if actualCount != expectedCount && actualCount > expectedCount-10 {
 		t.Logf("Expected %d peers, got %d (some may have been deduplicated)", expectedCount, actualCount)
 	}
 }
 
-// TestDiscovery_Concurrency_ConcurrentReadWrite 测试并发读写
+// TestDiscovery_Concurrency_ConcurrentReadWrite tests concurrent read/write
 func TestDiscovery_Concurrency_ConcurrentReadWrite(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
@@ -442,7 +442,7 @@ func TestDiscovery_Concurrency_ConcurrentReadWrite(t *testing.T) {
 	network, _ := NewNetwork(ctx, nil)
 	discovery, _ := NewDiscovery(network, nil)
 
-	// 预先添加一些节点
+	// pre-add some nodes
 	for i := 0; i < 100; i++ {
 		discovery.AddDiscoveredPeer(&DiscoveredPeer{
 			ID:     PeerID(fmt.Sprintf("initial-peer-%d", i)),
@@ -457,7 +457,7 @@ func TestDiscovery_Concurrency_ConcurrentReadWrite(t *testing.T) {
 
 	var wg sync.WaitGroup
 
-	// 启动写入goroutine
+	// start writer goroutines
 	for i := 0; i < numWriters; i++ {
 		wg.Add(1)
 		go func(writerID int) {
@@ -473,13 +473,13 @@ func TestDiscovery_Concurrency_ConcurrentReadWrite(t *testing.T) {
 		}(i)
 	}
 
-	// 启动读取goroutine
+	// start reader goroutines
 	for i := 0; i < numReaders; i++ {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
 			for j := 0; j < 100; j++ {
-				// 读取操作
+				// read operations
 				_ = discovery.GetPeerCount()
 				_ = discovery.GetKnownPeers()
 				_ = discovery.GetPeersForModel("gpt-4")
@@ -488,16 +488,16 @@ func TestDiscovery_Concurrency_ConcurrentReadWrite(t *testing.T) {
 		}()
 	}
 
-	// 等待所有操作完成
+	// wait for all operations to finish
 	wg.Wait()
 
-	// 验证数据完整性
+	// verify data integrity
 	peers := discovery.GetKnownPeers()
 	if len(peers) == 0 {
 		t.Error("Expected at least some peers after concurrent operations")
 	}
 
-	// 验证所有节点都可以访问
+	// verify all nodes accessible
 	for _, p := range peers {
 		if p.ID == "" {
 			t.Error("Found peer with empty ID")
@@ -506,7 +506,7 @@ func TestDiscovery_Concurrency_ConcurrentReadWrite(t *testing.T) {
 	}
 }
 
-// TestDiscovery_Concurrency_ConcurrentModelQuery 测试并发模型查询
+// TestDiscovery_Concurrency_ConcurrentModelQuery tests concurrent model queries
 func TestDiscovery_Concurrency_ConcurrentModelQuery(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
@@ -514,7 +514,7 @@ func TestDiscovery_Concurrency_ConcurrentModelQuery(t *testing.T) {
 	network, _ := NewNetwork(ctx, nil)
 	discovery, _ := NewDiscovery(network, nil)
 
-	// 添加不同模型的节点
+	// add nodes with different models
 	models := []string{"gpt-4", "claude-3", "llama-2", "mistral", "palm"}
 	for i := 0; i < 100; i++ {
 		model := models[i%len(models)]
@@ -525,7 +525,7 @@ func TestDiscovery_Concurrency_ConcurrentModelQuery(t *testing.T) {
 		})
 	}
 
-	// 并发查询每个模型
+	// query each model concurrently
 	var wg sync.WaitGroup
 	modelResults := make(map[string][]PeerID)
 	resultsMu := sync.Mutex{}
@@ -534,7 +534,7 @@ func TestDiscovery_Concurrency_ConcurrentModelQuery(t *testing.T) {
 		wg.Add(1)
 		go func(m string) {
 			defer wg.Done()
-			// 多次查询以增加并发压力
+			// query multiple times to increase contention
 			for i := 0; i < 50; i++ {
 				peers := discovery.GetPeersForModel(m)
 				if len(peers) > 0 {
@@ -548,7 +548,7 @@ func TestDiscovery_Concurrency_ConcurrentModelQuery(t *testing.T) {
 
 	wg.Wait()
 
-	// 验证每个模型都能正确返回结果
+	// verify each model returns correct results
 	for _, model := range models {
 		if len(modelResults[model]) == 0 {
 			t.Errorf("No peers found for model %s", model)
@@ -556,24 +556,24 @@ func TestDiscovery_Concurrency_ConcurrentModelQuery(t *testing.T) {
 	}
 }
 
-// TestDiscovery_Concurrency_StopDuringDiscovery 测试在发现过程中停止
+// TestDiscovery_Concurrency_StopDuringDiscovery tests stopping during discovery
 func TestDiscovery_Concurrency_StopDuringDiscovery(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
 	network, _ := NewNetwork(ctx, nil)
 	discovery, _ := NewDiscovery(network, &DiscoveryConfig{
-		Interval: 5 * time.Millisecond, // 快速发现间隔
+		Interval: 5 * time.Millisecond, // fast discovery interval
 		MinPeers: 1,
 	})
 
-	// 启动发现服务
+	// start discovery service
 	err := discovery.Start(ctx)
 	if err != nil {
 		t.Fatalf("Failed to start discovery: %v", err)
 	}
 
-	// 在发现运行时添加节点
+	// add nodes while discovery is running
 	go func() {
 		for i := 0; i < 100; i++ {
 			discovery.AddDiscoveredPeer(&DiscoveredPeer{
@@ -585,16 +585,16 @@ func TestDiscovery_Concurrency_StopDuringDiscovery(t *testing.T) {
 		}
 	}()
 
-	// 等待一小段时间
+	// wait a short while
 	time.Sleep(50 * time.Millisecond)
 
-	// 停止发现服务
+	// stop discovery service
 	err = discovery.Stop()
 	if err != nil {
 		t.Fatalf("Failed to stop discovery: %v", err)
 	}
 
-	// 验证节点数据完整性
+	// verify node data integrity
 	count := discovery.GetPeerCount()
 	if count == 0 {
 		t.Error("Expected some peers to be added before stop")
@@ -602,10 +602,10 @@ func TestDiscovery_Concurrency_StopDuringDiscovery(t *testing.T) {
 }
 
 // ============================================================================
-// 边界条件测试
+// Boundary condition tests
 // ============================================================================
 
-// TestDiscovery_Boundary_EmptyNetwork 测试空网络
+// TestDiscovery_Boundary_EmptyNetwork tests empty network
 func TestDiscovery_Boundary_EmptyNetwork(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -613,7 +613,7 @@ func TestDiscovery_Boundary_EmptyNetwork(t *testing.T) {
 	network, _ := NewNetwork(ctx, nil)
 	discovery, _ := NewDiscovery(network, nil)
 
-	// 验证空网络的行为
+	// verify behavior on empty network
 	if discovery.GetPeerCount() != 0 {
 		t.Errorf("Expected 0 peers in empty network, got %d", discovery.GetPeerCount())
 	}
@@ -627,27 +627,27 @@ func TestDiscovery_Boundary_EmptyNetwork(t *testing.T) {
 		t.Errorf("Expected 0 known peers, got %d", len(peers))
 	}
 
-	// 查询不存在的模型
+	// query nonexistent model
 	modelPeers := discovery.GetPeersForModel("gpt-4")
 	if modelPeers != nil && len(modelPeers) != 0 {
 		t.Errorf("Expected nil or empty for nonexistent model, got %v", modelPeers)
 	}
 }
 
-// TestDiscovery_Boundary_NilConfig 测试nil配置
+// TestDiscovery_Boundary_NilConfig tests nil config
 func TestDiscovery_Boundary_NilConfig(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	network, _ := NewNetwork(ctx, nil)
 
-	// 使用nil配置创建discovery
+	// create discovery with nil config
 	discovery, err := NewDiscovery(network, nil)
 	if err != nil {
 		t.Fatalf("Failed to create discovery with nil config: %v", err)
 	}
 
-	// 验证默认值
+	// verify defaults
 	if discovery.interval != 60*time.Second {
 		t.Errorf("Expected default interval 60s, got %v", discovery.interval)
 	}
@@ -661,23 +661,23 @@ func TestDiscovery_Boundary_NilConfig(t *testing.T) {
 	}
 }
 
-// TestDiscovery_Boundary_NilNetwork 测试nil网络
+// TestDiscovery_Boundary_NilNetwork tests nil network
 func TestDiscovery_Boundary_NilNetwork(t *testing.T) {
-	// 使用nil网络创建discovery应该失败
+	// creating discovery with nil network should fail
 	_, err := NewDiscovery(nil, nil)
 	if err == nil {
 		t.Error("Expected error when creating discovery with nil network")
 	}
 }
 
-// TestDiscovery_Boundary_ZeroConfig 测试零值配置
+// TestDiscovery_Boundary_ZeroConfig tests zero-value config
 func TestDiscovery_Boundary_ZeroConfig(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	network, _ := NewNetwork(ctx, nil)
 
-	// 使用零值配置
+	// use zero-value config
 	cfg := &DiscoveryConfig{
 		Interval:       0,
 		MaxPeers:       0,
@@ -690,7 +690,7 @@ func TestDiscovery_Boundary_ZeroConfig(t *testing.T) {
 		t.Fatalf("Failed to create discovery with zero config: %v", err)
 	}
 
-	// 验证默认值被应用
+	// verify defaults applied
 	if discovery.interval == 0 {
 		t.Error("Expected default interval to be set")
 	}
