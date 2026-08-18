@@ -12,37 +12,37 @@ import (
 	"time"
 )
 
-// 默认配置常量
+// Default configuration constants
 const (
 	defaultBaseURL = "http://localhost:11434"
 	defaultTimeout = 120 * time.Second
 	defaultModel   = "llama2"
 )
 
-// OllamaConfig 保存 Ollama 适配器的配置参数
+// OllamaConfig holds the configuration parameters for the Ollama adapter
 type OllamaConfig struct {
-	BaseURL string        // Ollama API base URL（默认 http://localhost:11434）
-	Model   string        // model name（如 "llama2", "mistral"）
-	Timeout time.Duration // request timeout时间
+	BaseURL string        // Ollama API base URL (default http://localhost:11434)
+	Model   string        // model name (e.g. "llama2", "mistral")
+	Timeout time.Duration // request timeout
 }
 
-// OllamaProvider 实现 InferenceProvider 接口，负责与 Ollama HTTP API 通信
+// OllamaProvider implements the InferenceProvider interface and communicates with the Ollama HTTP API
 type OllamaProvider struct {
 	baseURL    string        // Ollama API base URL
-	model      string        // 使用的model name
-	modelID    []byte        // 模型指纹哈希（SHA-256）
-	httpClient *http.Client  // HTTP 客户端
+	model      string        // model name in use
+	modelID    []byte        // model fingerprint hash (SHA-256)
+	httpClient *http.Client  // HTTP client
 	timeout    time.Duration // request timeout
 }
 
-// ollamaGenerateRequest 对应 Ollama /api/generate 请求体
+// ollamaGenerateRequest corresponds to the Ollama /api/generate request body
 type ollamaGenerateRequest struct {
 	Model  string `json:"model"`
 	Prompt string `json:"prompt"`
 	Stream bool   `json:"stream"`
 }
 
-// ollamaGenerateResponse 对应 Ollama /api/generate 响应体
+// ollamaGenerateResponse corresponds to the Ollama /api/generate response body
 type ollamaGenerateResponse struct {
 	Model    string `json:"model"`
 	Response string `json:"response"`
@@ -50,20 +50,20 @@ type ollamaGenerateResponse struct {
 	Error    string `json:"error,omitempty"`
 }
 
-// ollamaTagsResponse 对应 Ollama /api/tags 响应体
+// ollamaTagsResponse corresponds to the Ollama /api/tags response body
 type ollamaTagsResponse struct {
 	Models []ollamaModelInfo `json:"models"`
 }
 
-// ollamaModelInfo 保存模型的基本信息
+// ollamaModelInfo holds basic model information
 type ollamaModelInfo struct {
 	Name string `json:"name"`
 }
 
-// NewOllamaProvider 创建一个新的 Ollama 推理提供者
-// 根据传入的配置初始化 HTTP 客户端和模型指纹
+// NewOllamaProvider creates a new Ollama inference provider
+// It initializes the HTTP client and model fingerprint from the given config
 func NewOllamaProvider(config *OllamaConfig) *OllamaProvider {
-	// 处理默认值
+	// Handle defaults
 	baseURL := defaultBaseURL
 	model := defaultModel
 	timeout := defaultTimeout
@@ -80,7 +80,7 @@ func NewOllamaProvider(config *OllamaConfig) *OllamaProvider {
 		}
 	}
 
-	// 计算模型指纹：使用 baseURL + model 的 SHA-256 哈希
+	// Compute the model fingerprint: SHA-256 hash of baseURL + model
 	fingerprint := sha256.Sum256([]byte(baseURL + ":" + model))
 
 	return &OllamaProvider{
@@ -94,14 +94,14 @@ func NewOllamaProvider(config *OllamaConfig) *OllamaProvider {
 	}
 }
 
-// Infer 调用 Ollama /api/generate 接口进行推理
-// 传入上下文和提示词，返回inference result字符串
+// Infer calls the Ollama /api/generate endpoint to perform inference
+// It takes a context and prompt, and returns the inference result string
 func (p *OllamaProvider) Infer(ctx context.Context, prompt string) (string, error) {
 	if prompt == "" {
-		return "", fmt.Errorf("ollama: 提示词不能为空")
+		return "", fmt.Errorf("ollama: prompt must not be empty")
 	}
 
-	// 构建请求体，stream 设为 false 以获取完整响应
+	// Build the request body with stream set to false to get the full response
 	reqBody := ollamaGenerateRequest{
 		Model:  p.model,
 		Prompt: prompt,
@@ -110,101 +110,101 @@ func (p *OllamaProvider) Infer(ctx context.Context, prompt string) (string, erro
 
 	bodyBytes, err := json.Marshal(reqBody)
 	if err != nil {
-		return "", fmt.Errorf("ollama: 序列化请求失败: %w", err)
+		return "", fmt.Errorf("ollama: failed to marshal request: %w", err)
 	}
 
 	// create HTTP request
 	url := p.baseURL + "/api/generate"
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(bodyBytes))
 	if err != nil {
-		return "", fmt.Errorf("ollama: 创建请求失败: %w", err)
+		return "", fmt.Errorf("ollama: failed to create request: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 
 	// sendrequest
 	resp, err := p.httpClient.Do(req)
 	if err != nil {
-		return "", fmt.Errorf("ollama: 请求失败: %w", err)
+		return "", fmt.Errorf("ollama: request failed: %w", err)
 	}
 	defer resp.Body.Close()
 
-	// 读取响应体
+	// Read the response body
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return "", fmt.Errorf("ollama: 读取响应失败: %w", err)
+		return "", fmt.Errorf("ollama: failed to read response: %w", err)
 	}
 
-	// 检查 HTTP 状态码
+	// Check the HTTP status code
 	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("ollama: 服务器返回error状态码 %d: %s", resp.StatusCode, string(respBody))
+		return "", fmt.Errorf("ollama: server returned error status %d: %s", resp.StatusCode, string(respBody))
 	}
 
 	// parseresponse
 	var result ollamaGenerateResponse
 	if err := json.Unmarshal(respBody, &result); err != nil {
-		return "", fmt.Errorf("ollama: 解析响应失败: %w", err)
+		return "", fmt.Errorf("ollama: failed to parse response: %w", err)
 	}
 
-	// 检查 Ollama 返回的error信息
+	// Check the error message returned by Ollama
 	if result.Error != "" {
-		return "", fmt.Errorf("ollama: 推理error: %s", result.Error)
+		return "", fmt.Errorf("ollama: inference error: %s", result.Error)
 	}
 
 	return result.Response, nil
 }
 
-// ModelID 返回模型指纹哈希（SHA-256）
+// ModelID returns the model fingerprint hash (SHA-256)
 func (p *OllamaProvider) ModelID() []byte {
 	return p.modelID
 }
 
-// Ping 对 Ollama 服务进行健康检查
-// 尝试访问 Ollama 根路径，确认服务可达
+// Ping performs a health check on the Ollama service
+// It tries to access the Ollama root path to confirm the service is reachable
 func (p *OllamaProvider) Ping(ctx context.Context) error {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, p.baseURL, nil)
 	if err != nil {
-		return fmt.Errorf("ollama: 创建健康检查请求失败: %w", err)
+		return fmt.Errorf("ollama: failed to create health check request: %w", err)
 	}
 
 	resp, err := p.httpClient.Do(req)
 	if err != nil {
-		return fmt.Errorf("ollama: 健康检查失败: %w", err)
+		return fmt.Errorf("ollama: health check failed: %w", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("ollama: 健康检查返回状态码 %d", resp.StatusCode)
+		return fmt.Errorf("ollama: health check returned status %d", resp.StatusCode)
 	}
 
 	return nil
 }
 
-// ListModels 通过 Ollama /api/tags 接口列出所有可用模型
+// ListModels lists all available models via the Ollama /api/tags endpoint
 func (p *OllamaProvider) ListModels(ctx context.Context) ([]string, error) {
 	url := p.baseURL + "/api/tags"
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
-		return nil, fmt.Errorf("ollama: 创建列出模型请求失败: %w", err)
+		return nil, fmt.Errorf("ollama: failed to create list models request: %w", err)
 	}
 
 	resp, err := p.httpClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("ollama: 列出模型请求失败: %w", err)
+		return nil, fmt.Errorf("ollama: list models request failed: %w", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("ollama: 列出模型返回状态码 %d", resp.StatusCode)
+		return nil, fmt.Errorf("ollama: list models returned status %d", resp.StatusCode)
 	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("ollama: 读取模型列表失败: %w", err)
+		return nil, fmt.Errorf("ollama: failed to read model list: %w", err)
 	}
 
 	var tagsResp ollamaTagsResponse
 	if err := json.Unmarshal(body, &tagsResp); err != nil {
-		return nil, fmt.Errorf("ollama: 解析模型列表失败: %w", err)
+		return nil, fmt.Errorf("ollama: failed to parse model list: %w", err)
 	}
 
 	// withdrawmodel namelist
@@ -216,12 +216,12 @@ func (p *OllamaProvider) ListModels(ctx context.Context) ([]string, error) {
 	return models, nil
 }
 
-// Model 返回当前使用的model name
+// Model returns the model name currently in use
 func (p *OllamaProvider) Model() string {
 	return p.model
 }
 
-// BaseURL 返回当前使用的 Ollama API base URL
+// BaseURL returns the Ollama API base URL currently in use
 func (p *OllamaProvider) BaseURL() string {
 	return p.baseURL
 }
