@@ -20,7 +20,7 @@ const (
 // FormatOutput formats and prints output based on the specified format
 func FormatOutput(data interface{}, format OutputFormat, err error) error {
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "错误: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		return err
 	}
 
@@ -43,88 +43,88 @@ func FormatOutput(data interface{}, format OutputFormat, err error) error {
 func formatAsText(data interface{}) {
 	switch v := data.(type) {
 	case *WalletCreateResponse:
-		fmt.Println("钱包创建成功")
+		fmt.Println("Wallet created successfully")
 		fmt.Println(strings.Repeat("-", 50))
-		fmt.Printf("地址:      %s\n", v.Address)
-		fmt.Printf("公钥:      %s\n", v.PublicKey)
+		fmt.Printf("Address:   %s\n", v.Address)
+		fmt.Printf("Public key: %s\n", v.PublicKey)
 		if v.Mnemonic != "" {
-			fmt.Printf("助记词:    %s\n", v.Mnemonic)
-			fmt.Println("\n重要: 请妥善保管助记词，它是恢复钱包的唯一方式！")
+			fmt.Printf("Mnemonic:  %s\n", v.Mnemonic)
+			fmt.Println("\nImportant: keep the mnemonic safe, it is the only way to recover the wallet!")
 		}
 	case *BalanceResponse:
-		fmt.Println("余额信息")
+		fmt.Println("Balance Information")
 		fmt.Println(strings.Repeat("-", 50))
-		fmt.Printf("地址:      %s\n", v.Address)
-		fmt.Printf("余额:      %s AIB\n", FormatAmount(v.Balance))
-		fmt.Printf("UTXO数量:  %d\n", v.UTXOCount)
+		fmt.Printf("Address:   %s\n", v.Address)
+		fmt.Printf("Balance:   %s AIB\n", FormatAmount(v.Balance))
+		fmt.Printf("UTXO count: %d\n", v.UTXOCount)
 		if len(v.UTXOs) > 0 {
-			fmt.Println("\nUTXO详情:")
+			fmt.Println("\nUTXO details:")
 			for i, utxo := range v.UTXOs {
 				fmt.Printf("  %d. %s[%d] = %s AIB\n", i+1, shortHash(utxo.TxHash), utxo.Index, FormatAmount(utxo.Value))
 			}
 		}
 	case *SendTransactionResponse:
-		fmt.Println("交易已提交")
+		fmt.Println("Transaction submitted")
 		fmt.Println(strings.Repeat("-", 50))
-		fmt.Printf("交易哈希:  %s\n", v.TxHash)
-		fmt.Printf("发送方:    %s\n", v.From)
-		fmt.Printf("接收方:    %s\n", v.To)
-		fmt.Printf("金额:      %s AIB\n", FormatAmount(v.Amount))
-		fmt.Println("\n提示: 交易已进入内存池，等待确认...")
+		fmt.Printf("Tx hash:   %s\n", v.TxHash)
+		fmt.Printf("From:      %s\n", v.From)
+		fmt.Printf("To:        %s\n", v.To)
+		fmt.Printf("Amount:    %s AIB\n", FormatAmount(v.Amount))
+		fmt.Println("\nNote: the transaction has entered the mempool, waiting for confirmation...")
 	case *TransactionStatusResponse:
-		fmt.Println("交易状态")
+		fmt.Println("Transaction Status")
 		fmt.Println(strings.Repeat("-", 50))
-		fmt.Printf("交易哈希:  %s\n", v.TxHash)
-		fmt.Printf("状态:      %s\n", v.Status)
+		fmt.Printf("Tx hash:   %s\n", v.TxHash)
+		fmt.Printf("Status:    %s\n", v.Status)
 		if v.From != "" {
-			fmt.Printf("发送方:    %s\n", v.From)
+			fmt.Printf("From:      %s\n", v.From)
 		}
 		if v.To != "" {
-			fmt.Printf("接收方:    %s\n", v.To)
+			fmt.Printf("To:        %s\n", v.To)
 		}
 		if v.Amount > 0 {
-			fmt.Printf("金额:      %s AIB\n", FormatAmount(v.Amount))
+			fmt.Printf("Amount:    %s AIB\n", FormatAmount(v.Amount))
 		}
-		fmt.Printf("时间:      %s\n", v.Timestamp.Format("2006-01-02 15:04:05"))
+		fmt.Printf("Time:      %s\n", v.Timestamp.Format("2006-01-02 15:04:05"))
 	case *StakeResponse:
-		fmt.Println("质押操作成功")
+		fmt.Println("Stake operation successful")
 		fmt.Println(strings.Repeat("-", 50))
-		fmt.Printf("交易哈希:    %s\n", v.TxHash)
-		fmt.Printf("质押地址:    %s\n", v.Address)
-		fmt.Printf("质押金额:    %s AIB\n", FormatAmount(v.Amount))
-		fmt.Printf("当前质押:    %s AIB\n", FormatAmount(v.NewStake))
-		fmt.Printf("全网质押:    %s AIB\n", FormatAmount(v.TotalStaked))
+		fmt.Printf("Tx hash:      %s\n", v.TxHash)
+		fmt.Printf("Address:      %s\n", v.Address)
+		fmt.Printf("Amount:       %s AIB\n", FormatAmount(v.Amount))
+		fmt.Printf("Current stake: %s AIB\n", FormatAmount(v.NewStake))
+		fmt.Printf("Total staked: %s AIB\n", FormatAmount(v.TotalStaked))
 	case *NodeStatusResponse:
-		fmt.Println("节点状态")
+		fmt.Println("Node Status")
 		fmt.Println(strings.Repeat("-", 50))
-		fmt.Printf("状态:        %s\n", v.Status)
-		fmt.Printf("版本:        %s\n", v.Version)
-		fmt.Printf("运行时间:    %s\n", v.Uptime)
-		fmt.Printf("当前高度:    %d\n", v.Height)
-		fmt.Printf("最新区块:    %s\n", v.Hash)
+		fmt.Printf("Status:        %s\n", v.Status)
+		fmt.Printf("Version:       %s\n", v.Version)
+		fmt.Printf("Uptime:        %s\n", v.Uptime)
+		fmt.Printf("Height:        %d\n", v.Height)
+		fmt.Printf("Latest block:  %s\n", v.Hash)
 		if v.LastBlock != "" {
-			fmt.Printf("区块时间:    %s\n", v.LastBlock)
+			fmt.Printf("Block time:    %s\n", v.LastBlock)
 		}
-		fmt.Printf("对等节点:    %d\n", v.PeerCount)
+		fmt.Printf("Peers:         %d\n", v.PeerCount)
 		if v.Syncing {
-			fmt.Printf("同步中:      是 (%.2f%%)\n", v.SyncProgress*100)
+			fmt.Printf("Syncing:       yes (%.2f%%)\n", v.SyncProgress*100)
 		} else {
-			fmt.Println("同步中:      否")
+			fmt.Println("Syncing:       no")
 		}
 	case *PeersResponse:
-		fmt.Printf("对等节点列表 (共 %d 个)\n", v.Total)
+		fmt.Printf("Peer list (total %d)\n", v.Total)
 		fmt.Println(strings.Repeat("-", 80))
 		if len(v.Peers) == 0 {
-			fmt.Println("暂无对等节点")
+			fmt.Println("No peers")
 		} else {
-			fmt.Printf("%-6s %-50s %-10s %-20s\n", "状态", "节点ID", "地址", "最后连接")
+			fmt.Printf("%-8s %-50s %-10s %-20s\n", "Status", "Node ID", "Address", "Last seen")
 			fmt.Println(strings.Repeat("-", 80))
 			for _, p := range v.Peers {
-				status := "断开"
+				status := "offline"
 				if p.Connected {
-					status = "连接"
+					status = "online"
 				}
-				lastSeen := "从未"
+				lastSeen := "never"
 				if !p.LastSeen.IsZero() {
 					lastSeen = p.LastSeen.Format("15:04:05")
 				}
@@ -132,27 +132,27 @@ func formatAsText(data interface{}) {
 			}
 		}
 	case *BlockResponse:
-		fmt.Println("区块信息")
+		fmt.Println("Block Information")
 		fmt.Println(strings.Repeat("-", 50))
-		fmt.Printf("高度:        %d\n", v.Height)
-		fmt.Printf("哈希:        %s\n", v.Hash)
-		fmt.Printf("前一块:      %s\n", v.PrevHash)
-		fmt.Printf("时间:        %s\n", v.Timestamp.Format("2006-01-02 15:04:05"))
+		fmt.Printf("Height:        %d\n", v.Height)
+		fmt.Printf("Hash:          %s\n", v.Hash)
+		fmt.Printf("Previous:      %s\n", v.PrevHash)
+		fmt.Printf("Time:          %s\n", v.Timestamp.Format("2006-01-02 15:04:05"))
 		if v.Validator != "" {
-			fmt.Printf("验证者:      %s\n", v.Validator)
+			fmt.Printf("Validator:     %s\n", v.Validator)
 		}
 		if v.Proposer != "" {
-			fmt.Printf("提议者:      %s\n", v.Proposer)
+			fmt.Printf("Proposer:      %s\n", v.Proposer)
 		}
-		fmt.Printf("交易数量:    %d\n", v.TxCount)
-		fmt.Printf("区块大小:    %d 字节\n", v.Size)
+		fmt.Printf("Tx count:      %d\n", v.TxCount)
+		fmt.Printf("Block size:    %d bytes\n", v.Size)
 	case *HealthResponse:
-		fmt.Println("健康检查")
+		fmt.Println("Health Check")
 		fmt.Println(strings.Repeat("-", 30))
-		fmt.Printf("状态:        %s\n", v.Status)
-		fmt.Printf("版本:        %s\n", v.Version)
-		fmt.Printf("运行时间:    %s\n", v.Uptime)
-		fmt.Printf("检查时间:    %s\n", v.Timestamp.Format("2006-01-02 15:04:05"))
+		fmt.Printf("Status:        %s\n", v.Status)
+		fmt.Printf("Version:       %s\n", v.Version)
+		fmt.Printf("Uptime:        %s\n", v.Uptime)
+		fmt.Printf("Checked at:    %s\n", v.Timestamp.Format("2006-01-02 15:04:05"))
 	default:
 		// Default JSON formatting
 		encoder := json.NewEncoder(os.Stdout)

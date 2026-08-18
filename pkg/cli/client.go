@@ -64,7 +64,7 @@ func (c *Client) doRequest(method, path string, body []byte) (*APIResponse, erro
 	url := c.BaseURL + path
 	req, err := http.NewRequest(method, url, reqBody)
 	if err != nil {
-		return nil, fmt.Errorf("创建请求失败: %w", err)
+		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
 
 	if body != nil {
@@ -73,18 +73,18 @@ func (c *Client) doRequest(method, path string, body []byte) (*APIResponse, erro
 
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("请求失败: %w", err)
+		return nil, fmt.Errorf("request failed: %w", err)
 	}
 	defer resp.Body.Close()
 
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("读取响应失败: %w", err)
+		return nil, fmt.Errorf("failed to read response: %w", err)
 	}
 
 	var apiResp APIResponse
 	if err := json.Unmarshal(respBody, &apiResp); err != nil {
-		return nil, fmt.Errorf("解析响应失败: %w", err)
+		return nil, fmt.Errorf("failed to parse response: %w", err)
 	}
 
 	if !apiResp.Success && apiResp.Error != nil {
@@ -103,7 +103,7 @@ func (c *Client) Get(path string) (*APIResponse, error) {
 func (c *Client) Post(path string, body interface{}) (*APIResponse, error) {
 	jsonBody, err := json.Marshal(body)
 	if err != nil {
-		return nil, fmt.Errorf("编码请求体失败: %w", err)
+		return nil, fmt.Errorf("failed to encode request body: %w", err)
 	}
 	return c.doRequest("POST", path, jsonBody)
 }
@@ -249,7 +249,7 @@ func FormatAmount(amount uint64) string {
 func ParseAmount(s string) (uint64, error) {
 	s = strings.TrimSpace(s)
 	if s == "" {
-		return 0, fmt.Errorf("金额不能为空")
+		return 0, fmt.Errorf("amount cannot be empty")
 	}
 
 	// Check if there's a decimal point
@@ -268,13 +268,13 @@ func ParseAmount(s string) (uint64, error) {
 		if whole != "" {
 			_, err := fmt.Sscanf(whole, "%d", &wholePart)
 			if err != nil {
-				return 0, fmt.Errorf("无效的金额格式: %w", err)
+				return 0, fmt.Errorf("invalid amount format: %w", err)
 			}
 		}
 		if frac != "" {
 			_, err := fmt.Sscanf(frac, "%d", &fracPart)
 			if err != nil {
-				return 0, fmt.Errorf("无效的金额格式: %w", err)
+				return 0, fmt.Errorf("invalid amount format: %w", err)
 			}
 		}
 
@@ -285,7 +285,7 @@ func ParseAmount(s string) (uint64, error) {
 	var amount uint64
 	_, err := fmt.Sscanf(s, "%d", &amount)
 	if err != nil {
-		return 0, fmt.Errorf("无效的金额格式: %w", err)
+		return 0, fmt.Errorf("invalid amount format: %w", err)
 	}
 	return amount * 1e18, nil
 }

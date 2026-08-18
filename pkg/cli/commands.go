@@ -26,22 +26,22 @@ func NewWalletCommand(client *Client, format OutputFormat) *WalletCommand {
 func (w *WalletCommand) Create(savePath string) error {
 	resp, err := w.client.Post("/v1/wallet/create", nil)
 	if err != nil {
-		return fmt.Errorf("创建钱包失败: %w", err)
+		return fmt.Errorf("failed to create wallet: %w", err)
 	}
 
 	// Extract data from response
 	dataBytes, _ := json.Marshal(resp.Data)
 	var result WalletCreateResponse
 	if err := json.Unmarshal(dataBytes, &result); err != nil {
-		return fmt.Errorf("解析响应失败: %w", err)
+		return fmt.Errorf("failed to parse response: %w", err)
 	}
 
 	// Save to file if path specified
 	if savePath != "" {
 		if err := w.saveWallet(&result, savePath); err != nil {
-			return fmt.Errorf("保存钱包失败: %w", err)
+			return fmt.Errorf("failed to save wallet: %w", err)
 		}
-		fmt.Printf("钱包已保存到: %s\n", savePath)
+		fmt.Printf("Wallet saved to: %s\n", savePath)
 	}
 
 	return FormatOutput(&result, w.format, nil)
@@ -51,27 +51,27 @@ func (w *WalletCommand) Create(savePath string) error {
 func (w *WalletCommand) Restore(mnemonic, savePath string) error {
 	mnemonic = strings.TrimSpace(mnemonic)
 	if mnemonic == "" {
-		return fmt.Errorf("助记词不能为空")
+		return fmt.Errorf("mnemonic cannot be empty")
 	}
 
 	reqBody := map[string]string{"mnemonic": mnemonic}
 	resp, err := w.client.Post("/v1/wallet/restore", reqBody)
 	if err != nil {
-		return fmt.Errorf("恢复钱包失败: %w", err)
+		return fmt.Errorf("failed to restore wallet: %w", err)
 	}
 
 	dataBytes, _ := json.Marshal(resp.Data)
 	var result WalletCreateResponse
 	if err := json.Unmarshal(dataBytes, &result); err != nil {
-		return fmt.Errorf("解析响应失败: %w", err)
+		return fmt.Errorf("failed to parse response: %w", err)
 	}
 
 	// Save to file if path specified
 	if savePath != "" {
 		if err := w.saveWallet(&result, savePath); err != nil {
-			return fmt.Errorf("保存钱包失败: %w", err)
+			return fmt.Errorf("failed to save wallet: %w", err)
 		}
-		fmt.Printf("钱包已保存到: %s\n", savePath)
+		fmt.Printf("Wallet saved to: %s\n", savePath)
 	}
 
 	return FormatOutput(&result, w.format, nil)
@@ -81,18 +81,18 @@ func (w *WalletCommand) Restore(mnemonic, savePath string) error {
 func (w *WalletCommand) Balance(address string) error {
 	address = strings.TrimSpace(address)
 	if address == "" {
-		return fmt.Errorf("地址不能为空")
+		return fmt.Errorf("address cannot be empty")
 	}
 
 	resp, err := w.client.Get("/v1/wallet/balance?address=" + address)
 	if err != nil {
-		return fmt.Errorf("查询余额失败: %w", err)
+		return fmt.Errorf("failed to query balance: %w", err)
 	}
 
 	dataBytes, _ := json.Marshal(resp.Data)
 	var result BalanceResponse
 	if err := json.Unmarshal(dataBytes, &result); err != nil {
-		return fmt.Errorf("解析响应失败: %w", err)
+		return fmt.Errorf("failed to parse response: %w", err)
 	}
 
 	return FormatOutput(&result, w.format, nil)
@@ -103,10 +103,10 @@ func (w *WalletCommand) Send(from, to string, amount uint64, gasLimit, gasPrice 
 	from = strings.TrimSpace(from)
 	to = strings.TrimSpace(to)
 	if from == "" || to == "" {
-		return fmt.Errorf("发送方和接收方地址不能为空")
+		return fmt.Errorf("sender and receiver addresses cannot be empty")
 	}
 	if amount == 0 {
-		return fmt.Errorf("金额必须大于 0")
+		return fmt.Errorf("amount must be greater than 0")
 	}
 
 	req := SendTransactionRequest{
@@ -119,13 +119,13 @@ func (w *WalletCommand) Send(from, to string, amount uint64, gasLimit, gasPrice 
 
 	resp, err := w.client.Post("/v1/wallet/send", req)
 	if err != nil {
-		return fmt.Errorf("发送交易失败: %w", err)
+		return fmt.Errorf("failed to send transaction: %w", err)
 	}
 
 	dataBytes, _ := json.Marshal(resp.Data)
 	var result SendTransactionResponse
 	if err := json.Unmarshal(dataBytes, &result); err != nil {
-		return fmt.Errorf("解析响应失败: %w", err)
+		return fmt.Errorf("failed to parse response: %w", err)
 	}
 
 	return FormatOutput(&result, w.format, nil)
@@ -135,10 +135,10 @@ func (w *WalletCommand) Send(from, to string, amount uint64, gasLimit, gasPrice 
 func (w *WalletCommand) Stake(address string, amount uint64) error {
 	address = strings.TrimSpace(address)
 	if address == "" {
-		return fmt.Errorf("地址不能为空")
+		return fmt.Errorf("address cannot be empty")
 	}
 	if amount == 0 {
-		return fmt.Errorf("金额必须大于 0")
+		return fmt.Errorf("amount must be greater than 0")
 	}
 
 	req := StakeRequest{
@@ -148,13 +148,13 @@ func (w *WalletCommand) Stake(address string, amount uint64) error {
 
 	resp, err := w.client.Post("/v1/wallet/stake", req)
 	if err != nil {
-		return fmt.Errorf("质押失败: %w", err)
+		return fmt.Errorf("failed to stake: %w", err)
 	}
 
 	dataBytes, _ := json.Marshal(resp.Data)
 	var result StakeResponse
 	if err := json.Unmarshal(dataBytes, &result); err != nil {
-		return fmt.Errorf("解析响应失败: %w", err)
+		return fmt.Errorf("failed to parse response: %w", err)
 	}
 
 	return FormatOutput(&result, w.format, nil)
@@ -164,10 +164,10 @@ func (w *WalletCommand) Stake(address string, amount uint64) error {
 func (w *WalletCommand) Unstake(address string, amount uint64) error {
 	address = strings.TrimSpace(address)
 	if address == "" {
-		return fmt.Errorf("地址不能为空")
+		return fmt.Errorf("address cannot be empty")
 	}
 	if amount == 0 {
-		return fmt.Errorf("金额必须大于 0")
+		return fmt.Errorf("amount must be greater than 0")
 	}
 
 	req := StakeRequest{
@@ -177,13 +177,13 @@ func (w *WalletCommand) Unstake(address string, amount uint64) error {
 
 	resp, err := w.client.Post("/v1/wallet/unstake", req)
 	if err != nil {
-		return fmt.Errorf("解质押失败: %w", err)
+		return fmt.Errorf("failed to unstake: %w", err)
 	}
 
 	dataBytes, _ := json.Marshal(resp.Data)
 	var result StakeResponse
 	if err := json.Unmarshal(dataBytes, &result); err != nil {
-		return fmt.Errorf("解析响应失败: %w", err)
+		return fmt.Errorf("failed to parse response: %w", err)
 	}
 
 	return FormatOutput(&result, w.format, nil)
@@ -233,13 +233,13 @@ func NewNodeCommand(client *Client, format OutputFormat) *NodeCommand {
 func (n *NodeCommand) Status() error {
 	resp, err := n.client.Get("/v1/status")
 	if err != nil {
-		return fmt.Errorf("查询节点状态失败: %w", err)
+		return fmt.Errorf("failed to query node status: %w", err)
 	}
 
 	dataBytes, _ := json.Marshal(resp.Data)
 	var result NodeStatusResponse
 	if err := json.Unmarshal(dataBytes, &result); err != nil {
-		return fmt.Errorf("解析响应失败: %w", err)
+		return fmt.Errorf("failed to parse response: %w", err)
 	}
 
 	return FormatOutput(&result, n.format, nil)
@@ -249,13 +249,13 @@ func (n *NodeCommand) Status() error {
 func (n *NodeCommand) Peers() error {
 	resp, err := n.client.Get("/v1/peers")
 	if err != nil {
-		return fmt.Errorf("查询对等节点失败: %w", err)
+		return fmt.Errorf("failed to query peers: %w", err)
 	}
 
 	dataBytes, _ := json.Marshal(resp.Data)
 	var result PeersResponse
 	if err := json.Unmarshal(dataBytes, &result); err != nil {
-		return fmt.Errorf("解析响应失败: %w", err)
+		return fmt.Errorf("failed to parse response: %w", err)
 	}
 
 	return FormatOutput(&result, n.format, nil)
@@ -265,7 +265,7 @@ func (n *NodeCommand) Peers() error {
 func (n *NodeCommand) Block(heightOrHash string) error {
 	heightOrHash = strings.TrimSpace(heightOrHash)
 	if heightOrHash == "" {
-		return fmt.Errorf("区块高度或哈希不能为空")
+		return fmt.Errorf("block height or hash cannot be empty")
 	}
 
 	// API uses /v1/block/ for both height and hash
@@ -273,13 +273,13 @@ func (n *NodeCommand) Block(heightOrHash string) error {
 
 	resp, err := n.client.Get(path)
 	if err != nil {
-		return fmt.Errorf("查询区块失败: %w", err)
+		return fmt.Errorf("failed to query block: %w", err)
 	}
 
 	dataBytes, _ := json.Marshal(resp.Data)
 	var result BlockResponse
 	if err := json.Unmarshal(dataBytes, &result); err != nil {
-		return fmt.Errorf("解析响应失败: %w", err)
+		return fmt.Errorf("failed to parse response: %w", err)
 	}
 
 	return FormatOutput(&result, n.format, nil)
@@ -303,18 +303,18 @@ func NewTxCommand(client *Client, format OutputFormat) *TxCommand {
 func (t *TxCommand) Query(hash string) error {
 	hash = strings.TrimSpace(hash)
 	if hash == "" {
-		return fmt.Errorf("交易哈希不能为空")
+		return fmt.Errorf("transaction hash cannot be empty")
 	}
 
 	resp, err := t.client.Get("/v1/transaction/" + hash)
 	if err != nil {
-		return fmt.Errorf("查询交易失败: %w", err)
+		return fmt.Errorf("failed to query transaction: %w", err)
 	}
 
 	dataBytes, _ := json.Marshal(resp.Data)
 	var result TransactionStatusResponse
 	if err := json.Unmarshal(dataBytes, &result); err != nil {
-		return fmt.Errorf("解析响应失败: %w", err)
+		return fmt.Errorf("failed to parse response: %w", err)
 	}
 
 	return FormatOutput(&result, t.format, nil)

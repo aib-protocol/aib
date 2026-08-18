@@ -10,32 +10,32 @@ import (
 	"math/big"
 )
 
-// V2 协议参数
+// V2 protocolparameter
 const (
 	TotalSupply          = uint64(3_141_592_653) // π × 10^8
 	TotalSupplySatoshi   = TotalSupply * 1e8
 	BlockRewardV2        = uint64(50) // 50 AIB per block
 	BlockRewardSatoshi   = BlockRewardV2 * 1e8
-	StakingRewardRatio   = 0.6          // 60% 质押奖励
-	InferenceRewardRatio = 0.4          // 40% 推理奖励
-	MinStakeV2           = uint64(1000) // 最低1000 AIB
+	StakingRewardRatio   = 0.6          // 60% staking reward
+	InferenceRewardRatio = 0.4          // 40% inference reward
+	MinStakeV2           = uint64(1000) // minimum 1000 AIB
 	MinStakeV2Satoshi    = MinStakeV2 * 1e8
-	InitialNodeStake     = uint64(1000) // 初始节点1000 AIB (与最低质押一致)
+	InitialNodeStake     = uint64(1000) // initial node stake 1000 AIB (same as minimum stake)
 	InitialNodeCount     = 100
-	UnlockPeriodBlocks   = uint64(20160) // 7天 (30秒/块): 7*24*60*60/30
-	ScoreCheckInterval   = uint64(100)   // 每100块校验评分 (~50分钟)
+	UnlockPeriodBlocks   = uint64(20160) // 7 days (30 sec/block): 7*24*60*60/30
+	ScoreCheckInterval   = uint64(100)   // score check every 100 blocks (~50 minutes)
 )
 
-// CoinbaseV2 创建v2版coinbase交易，分配质押+推理奖励
+// CreateCoinbaseV2 creates a v2 coinbase transaction, allocating staking + inference rewards
 func CreateCoinbaseV2(proposer [32]byte, blockHeight uint64) *Transaction {
-	// 计算总奖励
+	// Calculate total reward
 	totalReward := BlockRewardSatoshi
 
-	// 计算质押奖励和推理奖励
+	// Calculate staking reward and inference reward
 	stakingReward := uint64(float64(totalReward) * StakingRewardRatio)
 	inferenceReward := uint64(float64(totalReward) * InferenceRewardRatio)
 
-	// createoutput
+	// create outputs
 	outputs := []TXOutput{
 		{
 			Value:   stakingReward,
@@ -49,7 +49,7 @@ func CreateCoinbaseV2(proposer [32]byte, blockHeight uint64) *Transaction {
 		},
 	}
 
-	// createcoinbasetransaction
+	// create coinbase transaction
 	tx := &Transaction{
 		Version: 2,
 		Inputs: []TXInput{
@@ -68,13 +68,13 @@ func CreateCoinbaseV2(proposer [32]byte, blockHeight uint64) *Transaction {
 	return tx
 }
 
-// InitGenesisValidators 初始化创世验证者集合（100个节点各100 AIB）
+// InitGenesisValidators initializes the genesis validator set (100 nodes with 100 AIB each)
 func InitGenesisValidators(cs *ConsensusState, keys []ed25519.PublicKey) error {
 	if len(keys) != InitialNodeCount {
 		return fmt.Errorf("expected %d genesis keys, got %d", InitialNodeCount, len(keys))
 	}
 
-	// 使用V2配置
+	// Use V2 configuration
 	config := &PoSConfig{
 		EpochLength:     314,
 		MinStake:        MinStakeV2Satoshi,
@@ -84,7 +84,7 @@ func InitGenesisValidators(cs *ConsensusState, keys []ed25519.PublicKey) error {
 	}
 	cs.config = config
 
-	// 添加所有验证者
+	// Add all validators
 	for i, pubKey := range keys {
 		var addr [32]byte
 		copy(addr[:], pubKey)
@@ -98,8 +98,8 @@ func InitGenesisValidators(cs *ConsensusState, keys []ed25519.PublicKey) error {
 	return nil
 }
 
-// SelectProposerV2 带评分权重的出块者选择
-// 使用VRF随机选择，但使用有效权重（stake × reputation multiplier）
+// SelectProposerV2 selects the block proposer with reputation-weighted scoring
+// Uses VRF-based random selection, but with effective weight (stake × reputation multiplier)
 func (cs *ConsensusState) SelectProposerV2(seed []byte, rm *ReputationManager) ([32]byte, error) {
 	cs.mu.RLock()
 	defer cs.mu.RUnlock()
@@ -109,7 +109,7 @@ func (cs *ConsensusState) SelectProposerV2(seed []byte, rm *ReputationManager) (
 		return [32]byte{}, fmt.Errorf("no active validators")
 	}
 
-	// 计算每个验证者的有效权重
+	// Calculate each validator's effective weight
 	type weightedValidator struct {
 		addr            [32]byte
 		effectiveWeight float64
@@ -120,7 +120,7 @@ func (cs *ConsensusState) SelectProposerV2(seed []byte, rm *ReputationManager) (
 	var totalEffectiveWeight float64
 
 	for _, v := range validators {
-		// 获取有效权重 = stake × multiplier
+		// Get effective weight = stake × multiplier
 		multiplier := CalculateWeightMultiplier(rm.GetAverageScore(v.Address))
 		effectiveWeight := float64(v.Stake) * multiplier
 
@@ -136,22 +136,22 @@ func (cs *ConsensusState) SelectProposerV2(seed []byte, rm *ReputationManager) (
 		return [32]byte{}, fmt.Errorf("total effective weight is zero")
 	}
 
-	// 使用VRF-like选择基于有效权重
+	// Use VRF-like selection based on effective weight
 	// Hash the seed with height to get a deterministic random value
 	hash := sha256.New()
 	hash.Write(seed)
 	binary.Write(hash, binary.BigEndian, cs.currentHeight)
 	digest := hash.Sum(nil)
 
-	// 转换为big.Int进行加权选择
+	// Convert to big.Int for weighted selection
 	randomInt := new(big.Int).SetBytes(digest)
 	totalWeightBig := new(big.Int).SetUint64(uint64(totalEffectiveWeight * 1e8))
 
-	// 获取[0, totalEffectiveWeight)范围内的随机值
+	// Get a random value in the range [0, totalEffectiveWeight)
 	selectedWeight := new(big.Int).Mod(randomInt, totalWeightBig)
 	selectedWeightFloat := float64(selectedWeight.Uint64()) / 1e8
 
-	// 基于累积有效权重选择出块者
+	// Select the proposer based on cumulative effective weight
 	var cumulativeWeight float64
 	for _, w := range weighted {
 		cumulativeWeight += w.effectiveWeight
@@ -160,11 +160,11 @@ func (cs *ConsensusState) SelectProposerV2(seed []byte, rm *ReputationManager) (
 		}
 	}
 
-	// Fallback（理论上不应到达这里）
+	// Fallback (theoretically unreachable)
 	return weighted[len(weighted)-1].addr, nil
 }
 
-// GetValidatorEffectiveWeight 获取验证者的有效权重
+// GetValidatorEffectiveWeight returns the validator's effective weight
 func (cs *ConsensusState) GetValidatorEffectiveWeight(addr [32]byte, rm *ReputationManager) (float64, error) {
 	cs.mu.RLock()
 	defer cs.mu.RUnlock()
@@ -178,7 +178,7 @@ func (cs *ConsensusState) GetValidatorEffectiveWeight(addr [32]byte, rm *Reputat
 	return float64(validator.Stake) * multiplier, nil
 }
 
-// ValidateProposerV2 验证V2出块者选择是否正确
+// ValidateProposerV2 verifies whether the V2 proposer selection is correct
 func (cs *ConsensusState) ValidateProposerV2(proposer [32]byte, seed []byte, rm *ReputationManager) error {
 	cs.mu.RLock()
 	defer cs.mu.RUnlock()
@@ -195,14 +195,14 @@ func (cs *ConsensusState) ValidateProposerV2(proposer [32]byte, seed []byte, rm 
 	return nil
 }
 
-// selectProposerV2Locked V2出块者选择的内部实现（需要持有锁）
+// selectProposerV2Locked is the internal implementation of V2 proposer selection (lock must be held)
 func (cs *ConsensusState) selectProposerV2Locked(seed []byte, rm *ReputationManager) ([32]byte, error) {
 	validators := cs.getActiveValidatorsLocked()
 	if len(validators) == 0 {
 		return [32]byte{}, fmt.Errorf("no active validators")
 	}
 
-	// 计算每个验证者的有效权重
+	// Calculate each validator's effective weight
 	type weightedValidator struct {
 		addr            [32]byte
 		effectiveWeight float64
@@ -226,7 +226,7 @@ func (cs *ConsensusState) selectProposerV2Locked(seed []byte, rm *ReputationMana
 		return [32]byte{}, fmt.Errorf("total effective weight is zero")
 	}
 
-	// VRF-like选择
+	// VRF-like selection
 	hash := sha256.New()
 	hash.Write(seed)
 	binary.Write(hash, binary.BigEndian, cs.currentHeight)
@@ -249,7 +249,7 @@ func (cs *ConsensusState) selectProposerV2Locked(seed []byte, rm *ReputationMana
 	return weighted[len(weighted)-1].addr, nil
 }
 
-// CalculateBlockRewardsV2 计算V2版本的区块奖励分配
+// CalculateBlockRewardsV2 calculates the V2 block reward distribution
 func CalculateBlockRewardsV2() (stakingReward, inferenceReward uint64) {
 	totalReward := BlockRewardSatoshi
 	stakingReward = uint64(float64(totalReward) * StakingRewardRatio)
@@ -257,7 +257,7 @@ func CalculateBlockRewardsV2() (stakingReward, inferenceReward uint64) {
 	return
 }
 
-// GetV2Config 返回V2协议配置
+// GetV2Config returns the V2 protocol configuration
 func GetV2Config() *PoSConfig {
 	return &PoSConfig{
 		EpochLength:     314,
@@ -268,7 +268,7 @@ func GetV2Config() *PoSConfig {
 	}
 }
 
-// NewAddressFromPublicKey 从公钥创建地址（使用已有的AddressFromPublicKey）
+// NewAddressFromPublicKey creates an address from a public key (uses the existing AddressFromPublicKey)
 func NewAddressFromPublicKey(pubKey []byte) [32]byte {
 	return AddressFromPublicKey(pubKey)
 }
@@ -287,8 +287,8 @@ func GenerateInferencePoW(proposer [32]byte, prevBlockHash [32]byte, height uint
 	return h.Sum(nil)
 }
 
-// VerifyReputationBasedSelection 验证基于评分的出块者选择
-// 返回选择的验证者和选择概率信息
+// VerifyReputationBasedSelection verifies the reputation-based proposer selection
+// Returns the selected validator and selection probability information
 func (cs *ConsensusState) VerifyReputationBasedSelection(proposer [32]byte, seed []byte, rm *ReputationManager) *ProposerVerificationResult {
 	result := &ProposerVerificationResult{
 		Valid: false,
@@ -297,7 +297,7 @@ func (cs *ConsensusState) VerifyReputationBasedSelection(proposer [32]byte, seed
 	cs.mu.RLock()
 	defer cs.mu.RUnlock()
 
-	// 计算预期出块者
+	// Calculate the expected proposer
 	expectedProposer, err := cs.selectProposerV2Locked(seed, rm)
 	if err != nil {
 		result.Error = fmt.Sprintf("failed to select proposer: %v", err)
@@ -306,21 +306,21 @@ func (cs *ConsensusState) VerifyReputationBasedSelection(proposer [32]byte, seed
 
 	result.ExpectedProposer = expectedProposer
 
-	// 比较
+	// Compare
 	if proposer != expectedProposer {
 		result.Error = fmt.Sprintf("proposer mismatch: expected %x, got %x",
 			expectedProposer, proposer)
 		return result
 	}
 
-	// 获取验证者信息
+	// Get validator information
 	validator, exists := cs.validators[proposer]
 	if !exists {
 		result.Error = fmt.Sprintf("proposer %x not in validator set", proposer)
 		return result
 	}
 
-	// 计算有效权重和概率
+	// Calculate effective weight and probability
 	multiplier := CalculateWeightMultiplier(rm.GetAverageScore(proposer))
 	effectiveWeight := float64(validator.Stake) * multiplier
 

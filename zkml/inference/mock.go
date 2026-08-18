@@ -9,28 +9,28 @@ import (
 	"time"
 )
 
-// MockProvider 用于测试的模拟推理提供者
-// 支持预设响应映射、模拟延迟和失败率
+// MockProvider is a mock inference provider used for testing
+// Supports preset response mappings, simulated latency, and failure rate
 type MockProvider struct {
 	mu        sync.RWMutex
-	responses map[string]string // prompt -> response 映射
-	modelID   []byte            // 模拟的模型指纹
-	delay     time.Duration     // 模拟推理延迟
-	failRate  float64           // 模拟失败率 (0-1)
+	responses map[string]string // prompt -> response mapping
+	modelID   []byte            // simulated model fingerprint
+	delay     time.Duration     // simulated inference latency
+	failRate  float64           // simulated failure rate (0-1)
 
-	// 统计数据
-	inferCount int // 推理调用次数
+	// statistics
+	inferCount int // number of inference calls
 }
 
-// MockConfig 保存 MockProvider 的配置
+// MockConfig holds the configuration for MockProvider
 type MockConfig struct {
-	Responses map[string]string // 预设的 prompt -> response 映射
-	ModelName string            // 模拟的模型名称（用于生成 modelID）
-	Delay     time.Duration     // 模拟推理延迟
-	FailRate  float64           // 模拟失败率 (0-1)
+	Responses map[string]string // preset prompt -> response mapping
+	ModelName string            // simulated model name (used to generate modelID)
+	Delay     time.Duration     // simulated inference latency
+	FailRate  float64           // simulated failure rate (0-1)
 }
 
-// NewMockProvider 创建一个新的模拟推理提供者
+// NewMockProvider creates a new mock inference provider
 func NewMockProvider(config *MockConfig) *MockProvider {
 	modelName := "mock-model"
 	responses := make(map[string]string)
@@ -50,7 +50,7 @@ func NewMockProvider(config *MockConfig) *MockProvider {
 		failRate = config.FailRate
 	}
 
-	// 生成模型指纹
+	// Generate model fingerprint
 	fingerprint := sha256.Sum256([]byte("mock:" + modelName))
 
 	return &MockProvider{
@@ -61,18 +61,18 @@ func NewMockProvider(config *MockConfig) *MockProvider {
 	}
 }
 
-// Infer 模拟推理过程
-// 如果 prompt 在预设映射中有对应响应则返回，否则返回默认响应
+// Infer simulates the inference process
+// If the prompt has a preset response in the mapping, return it; otherwise return the default response
 func (p *MockProvider) Infer(ctx context.Context, prompt string) (string, error) {
 	p.mu.Lock()
 	p.inferCount++
 	p.mu.Unlock()
 
 	if prompt == "" {
-		return "", fmt.Errorf("mock: 提示词不能为空")
+		return "", fmt.Errorf("mock: prompt must not be empty")
 	}
 
-	// 模拟推理延迟
+	// Simulate inference latency
 	if p.delay > 0 {
 		select {
 		case <-ctx.Done():
@@ -81,19 +81,19 @@ func (p *MockProvider) Infer(ctx context.Context, prompt string) (string, error)
 		}
 	}
 
-	// 模拟随机失败
+	// Simulate random failure
 	if p.failRate > 0 && rand.Float64() < p.failRate {
-		return "", fmt.Errorf("mock: 模拟推理失败（失败率: %.2f）", p.failRate)
+		return "", fmt.Errorf("mock: simulated inference failure (fail rate: %.2f)", p.failRate)
 	}
 
-	// 检查上下文是否已取消
+	// Check whether the context has been cancelled
 	select {
 	case <-ctx.Done():
 		return "", ctx.Err()
 	default:
 	}
 
-	// 查找预设响应
+	// Look up the preset response
 	p.mu.RLock()
 	resp, ok := p.responses[prompt]
 	p.mu.RUnlock()
@@ -102,30 +102,30 @@ func (p *MockProvider) Infer(ctx context.Context, prompt string) (string, error)
 		return resp, nil
 	}
 
-	// 返回默认响应
+	// Return the default response
 	return fmt.Sprintf("mock response for: %s", prompt), nil
 }
 
-// ModelID 返回模拟的模型指纹
+// ModelID returns the simulated model fingerprint
 func (p *MockProvider) ModelID() []byte {
 	return p.modelID
 }
 
-// SetResponse 设置指定 prompt 的预设响应
+// SetResponse sets the preset response for the given prompt
 func (p *MockProvider) SetResponse(prompt, response string) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	p.responses[prompt] = response
 }
 
-// InferCount 返回推理调用次数（用于测试验证）
+// InferCount returns the number of inference calls (for test verification)
 func (p *MockProvider) InferCount() int {
 	p.mu.RLock()
 	defer p.mu.RUnlock()
 	return p.inferCount
 }
 
-// ResetCount 重置推理调用计数
+// ResetCount resets the inference call counter
 func (p *MockProvider) ResetCount() {
 	p.mu.Lock()
 	defer p.mu.Unlock()
