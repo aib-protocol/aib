@@ -21,19 +21,19 @@ TimeoutStartSec=60
 LimitNOFILE=65535
 LimitNPROC=4096
 
-# 环境变量
+# environment variables
 Environment="HOME=~/aib"
 Environment="PORT=51200"
 Environment="LOG_LEVEL=info"
 
-# 安全配置
+# security settings
 NoNewPrivileges=true
 ProtectSystem=strict
 ProtectHome=true
 ReadWritePaths=./data ./logs
 PrivateTmp=true
 
-# 日志配置
+# logging settings
 StandardOutput=append:./logs/mainnet.log
 StandardError=append:./logs/mainnet.error.log
 

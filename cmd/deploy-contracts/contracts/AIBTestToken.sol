@@ -3,7 +3,7 @@ pragma solidity ^0.8.20;
 
 /**
  * @title AIBTestToken
- * @dev 测试用ERC20代币 - 用于部署验证测试
+ * @dev Test ERC20 token - used for deployment verification tests
  */
 contract AIBTestToken {
     string public constant name = "AIB Test Token";
