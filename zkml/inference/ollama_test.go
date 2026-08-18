@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-// TestNewOllamaProvider testcreates an OllamaProvider
+// TestNewOllamaProvider tests creating an OllamaProvider
 func TestNewOllamaProvider(t *testing.T) {
 	tests := []struct {
 		name      string
@@ -21,13 +21,13 @@ func TestNewOllamaProvider(t *testing.T) {
 		wantModel string
 	}{
 		{
-			name:      "默认配置",
+			name:      "default config",
 			config:    nil,
 			wantURL:   "http://localhost:11434",
 			wantModel: "llama2",
 		},
 		{
-			name: "自定义配置",
+			name: "custom config",
 			config: &OllamaConfig{
 				BaseURL: "http://example.com:8080",
 				Model:   "mistral",
@@ -36,7 +36,7 @@ func TestNewOllamaProvider(t *testing.T) {
 			wantModel: "mistral",
 		},
 		{
-			name: "自动移除尾部斜杠",
+			name: "automatically removes trailing slash",
 			config: &OllamaConfig{
 				BaseURL: "http://example.com:8080/",
 			},
@@ -54,43 +54,43 @@ func TestNewOllamaProvider(t *testing.T) {
 			if p.Model() != tt.wantModel {
 				t.Errorf("Model() = %v, want %v", p.Model(), tt.wantModel)
 			}
-			if len(p.ModelID()) != 32 { // SHA-256 输出长度
+			if len(p.ModelID()) != 32 { // SHA-256 output length
 				t.Errorf("ModelID() length = %v, want 32", len(p.ModelID()))
 			}
 		})
 	}
 }
 
-// TestOllamaProvider_Infer test推理功能
+// TestOllamaProvider_Infer tests the inference functionality
 func TestOllamaProvider_Infer(t *testing.T) {
-	// 创建模拟 Ollama 服务器
+	// Create a mock Ollama server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// verifyrequestmethod
+		// verify request method
 		if r.Method != http.MethodPost {
-			t.Errorf("期望 POST 请求，得到 %s", r.Method)
+			t.Errorf("want POST request, got %s", r.Method)
 		}
 
-		// 验证请求路径
+		// verify request path
 		if r.URL.Path != "/api/generate" {
-			t.Errorf("期望路径 /api/generate，得到 %s", r.URL.Path)
+			t.Errorf("want path /api/generate, got %s", r.URL.Path)
 		}
 
 		// verify Content-Type
 		if r.Header.Get("Content-Type") != "application/json" {
-			t.Errorf("期望 Content-Type: application/json，得到 %s", r.Header.Get("Content-Type"))
+			t.Errorf("want Content-Type: application/json, got %s", r.Header.Get("Content-Type"))
 		}
 
-		// 解析请求体
+		// parse request body
 		var reqBody ollamaGenerateRequest
 		if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
-			t.Errorf("解析请求体失败: %v", err)
+			t.Errorf("failed to parse request body: %v", err)
 			return
 		}
 
-		// 返回模拟响应
+		// return mock response
 		resp := ollamaGenerateResponse{
 			Model:    reqBody.Model,
-			Response: "模拟inference result: " + reqBody.Prompt,
+			Response: "mock inference result: " + reqBody.Prompt,
 			Done:     true,
 		}
 		w.Header().Set("Content-Type", "application/json")
@@ -98,32 +98,32 @@ func TestOllamaProvider_Infer(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// 使用test服务器创建 provider
+	// Create a provider using the test server
 	config := &OllamaConfig{
 		BaseURL: server.URL,
 		Model:   "test-model",
 	}
 	p := NewOllamaProvider(config)
 
-	// test推理
+	// test inference
 	ctx := context.Background()
-	result, err := p.Infer(ctx, "test提示词")
+	result, err := p.Infer(ctx, "test prompt")
 	if err != nil {
-		t.Fatalf("Infer() 失败: %v", err)
+		t.Fatalf("Infer() failed: %v", err)
 	}
 
-	expected := "模拟inference result: test提示词"
+	expected := "mock inference result: test prompt"
 	if result != expected {
 		t.Errorf("Infer() = %v, want %v", result, expected)
 	}
 }
 
-// TestOllamaProvider_Infer_EmptyPrompt test空提示词处理
+// TestOllamaProvider_Infer_EmptyPrompt tests empty prompt handling
 func TestOllamaProvider_Infer_EmptyPrompt(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(ollamaGenerateResponse{
-			Response: "响应",
+			Response: "response",
 			Done:     true,
 		})
 	}))
@@ -134,20 +134,20 @@ func TestOllamaProvider_Infer_EmptyPrompt(t *testing.T) {
 	ctx := context.Background()
 	_, err := p.Infer(ctx, "")
 	if err == nil {
-		t.Error("期望空提示词返回error")
+		t.Error("want error for empty prompt")
 	}
-	if !strings.Contains(err.Error(), "提示词不能为空") {
-		t.Errorf("error信息不正确: %v", err)
+	if !strings.Contains(err.Error(), "prompt must not be empty") {
+		t.Errorf("unexpected error message: %v", err)
 	}
 }
 
-// TestOllamaProvider_Infer_ContextTimeout test上下文超时
+// TestOllamaProvider_Infer_ContextTimeout tests context timeout
 func TestOllamaProvider_Infer_ContextTimeout(t *testing.T) {
-	// 创建延迟响应的服务器
+	// Create a server with delayed responses
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		time.Sleep(200 * time.Millisecond)
 		json.NewEncoder(w).Encode(ollamaGenerateResponse{
-			Response: "响应",
+			Response: "response",
 			Done:     true,
 		})
 	}))
@@ -158,21 +158,21 @@ func TestOllamaProvider_Infer_ContextTimeout(t *testing.T) {
 		Timeout: 10 * time.Second,
 	})
 
-	// 使用短超时上下文
+	// Use a short-timeout context
 	ctx, cancel := context.WithTimeout(context.Background(), 50*time.Millisecond)
 	defer cancel()
 
 	_, err := p.Infer(ctx, "test")
 	if err == nil {
-		t.Error("期望超时error")
+		t.Error("want timeout error")
 	}
 }
 
-// TestOllamaProvider_Infer_HTTPError test HTTP errorhandle
+// TestOllamaProvider_Infer_HTTPError tests HTTP error handling
 func TestOllamaProvider_Infer_HTTPError(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("内部服务器error"))
+		w.Write([]byte("internal server error"))
 	}))
 	defer server.Close()
 
@@ -181,14 +181,14 @@ func TestOllamaProvider_Infer_HTTPError(t *testing.T) {
 	ctx := context.Background()
 	_, err := p.Infer(ctx, "test")
 	if err == nil {
-		t.Error("期望 HTTP error")
+		t.Error("want HTTP error")
 	}
 	if !strings.Contains(err.Error(), "500") {
-		t.Errorf("error信息应包含状态码: %v", err)
+		t.Errorf("error message should contain status code: %v", err)
 	}
 }
 
-// TestOllamaProvider_Ping test健康检查功能
+// TestOllamaProvider_Ping tests the health check functionality
 func TestOllamaProvider_Ping(t *testing.T) {
 	tests := []struct {
 		name       string
@@ -196,12 +196,12 @@ func TestOllamaProvider_Ping(t *testing.T) {
 		wantErr    bool
 	}{
 		{
-			name:       "健康",
+			name:       "healthy",
 			statusCode: http.StatusOK,
 			wantErr:    false,
 		},
 		{
-			name:       "不健康",
+			name:       "unhealthy",
 			statusCode: http.StatusServiceUnavailable,
 			wantErr:    true,
 		},
@@ -225,7 +225,7 @@ func TestOllamaProvider_Ping(t *testing.T) {
 	}
 }
 
-// TestOllamaProvider_ListModels test列出模型功能
+// TestOllamaProvider_ListModels tests listing models
 func TestOllamaProvider_ListModels(t *testing.T) {
 	expectedModels := []string{
 		"llama2:latest",
@@ -235,7 +235,7 @@ func TestOllamaProvider_ListModels(t *testing.T) {
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/api/tags" {
-			t.Errorf("期望路径 /api/tags，得到 %s", r.URL.Path)
+			t.Errorf("want path /api/tags, got %s", r.URL.Path)
 		}
 
 		resp := ollamaTagsResponse{
@@ -255,16 +255,16 @@ func TestOllamaProvider_ListModels(t *testing.T) {
 	ctx := context.Background()
 	models, err := p.ListModels(ctx)
 	if err != nil {
-		t.Fatalf("ListModels() 失败: %v", err)
+		t.Fatalf("ListModels() failed: %v", err)
 	}
 
 	if len(models) != len(expectedModels) {
-		t.Errorf("ListModels() 返回 %d 个模型，期望 %d", len(models), len(expectedModels))
+		t.Errorf("ListModels() returned %d models, want %d", len(models), len(expectedModels))
 	}
 
 	for i, m := range models {
 		if m != expectedModels[i] {
-			t.Errorf("模型 %d: 得到 %s，期望 %s", i, m, expectedModels[i])
+			t.Errorf("model %d: got %s, want %s", i, m, expectedModels[i])
 		}
 	}
 }
@@ -283,60 +283,60 @@ func TestNewMockProvider(t *testing.T) {
 	p := NewMockProvider(config)
 
 	if len(p.ModelID()) != 32 {
-		t.Errorf("ModelID() 长度 = %v，期望 32", len(p.ModelID()))
+		t.Errorf("ModelID() length = %v, want 32", len(p.ModelID()))
 	}
 
 	if p.delay != 100*time.Millisecond {
-		t.Errorf("delay = %v，期望 100ms", p.delay)
+		t.Errorf("delay = %v, want 100ms", p.delay)
 	}
 
 	if p.failRate != 0 {
-		t.Errorf("failRate = %v，期望 0", p.failRate)
+		t.Errorf("failRate = %v, want 0", p.failRate)
 	}
 
-	// test预设响应
+	// test preset responses
 	result, err := p.Infer(context.Background(), "hello")
 	if err != nil {
-		t.Fatalf("Infer() 失败: %v", err)
+		t.Fatalf("Infer() failed: %v", err)
 	}
 	if result != "world" {
-		t.Errorf("Infer() = %v，期望 'world'", result)
+		t.Errorf("Infer() = %v, want 'world'", result)
 	}
 }
 
-// TestMockProvider_Infer test MockProvider 推理功能
+// TestMockProvider_Infer tests the MockProvider inference functionality
 func TestMockProvider_Infer(t *testing.T) {
 	p := NewMockProvider(nil)
 
 	ctx := context.Background()
 
-	// testdefaultresponse
-	result, err := p.Infer(ctx, "任意提示词")
+	// test default response
+	result, err := p.Infer(ctx, "any prompt")
 	if err != nil {
-		t.Fatalf("Infer() 失败: %v", err)
+		t.Fatalf("Infer() failed: %v", err)
 	}
-	if !strings.Contains(result, "任意提示词") {
-		t.Errorf("响应应包含提示词: %v", result)
+	if !strings.Contains(result, "any prompt") {
+		t.Errorf("response should contain the prompt: %v", result)
 	}
 
-	// test空提示词
+	// test empty prompt
 	_, err = p.Infer(ctx, "")
 	if err == nil {
-		t.Error("期望空提示词返回error")
+		t.Error("want error for empty prompt")
 	}
 
-	// test设置自定义响应
-	p.SetResponse("special", "特殊响应")
+	// test setting a custom response
+	p.SetResponse("special", "special response")
 	result, err = p.Infer(ctx, "special")
 	if err != nil {
-		t.Fatalf("Infer() 失败: %v", err)
+		t.Fatalf("Infer() failed: %v", err)
 	}
-	if result != "特殊响应" {
-		t.Errorf("Infer() = %v，期望 '特殊响应'", result)
+	if result != "special response" {
+		t.Errorf("Infer() = %v, want 'special response'", result)
 	}
 }
 
-// TestMockProvider_Infer_Delay test MockProvider 延迟功能
+// TestMockProvider_Infer_Delay tests the MockProvider delay functionality
 func TestMockProvider_Infer_Delay(t *testing.T) {
 	p := NewMockProvider(&MockConfig{
 		Delay: 100 * time.Millisecond,
@@ -348,13 +348,13 @@ func TestMockProvider_Infer_Delay(t *testing.T) {
 	elapsed := time.Since(start)
 
 	if elapsed < 100*time.Millisecond {
-		t.Errorf("延迟 = %v，期望至少 100ms", elapsed)
+		t.Errorf("delay = %v, want at least 100ms", elapsed)
 	}
 }
 
-// TestMockProvider_Infer_FailRate test MockProvider 失败率模拟
+// TestMockProvider_Infer_FailRate tests the MockProvider failure rate simulation
 func TestMockProvider_Infer_FailRate(t *testing.T) {
-	// 使用 100% 失败率
+	// Use a 100% failure rate
 	p := NewMockProvider(&MockConfig{
 		FailRate: 1.0,
 	})
@@ -362,20 +362,20 @@ func TestMockProvider_Infer_FailRate(t *testing.T) {
 	ctx := context.Background()
 	_, err := p.Infer(ctx, "test")
 	if err == nil {
-		t.Error("期望失败率 100% 时返回error")
+		t.Error("want error when failure rate is 100%")
 	}
 
-	// test 0% 失败率
+	// test 0% failure rate
 	p2 := NewMockProvider(&MockConfig{
 		FailRate: 0.0,
 	})
 	_, err = p2.Infer(ctx, "test")
 	if err != nil {
-		t.Errorf("失败率 0%% 不应返回error: %v", err)
+		t.Errorf("0%% failure rate should not return an error: %v", err)
 	}
 }
 
-// TestMockProvider_Infer_ContextCancel test MockProvider 上下文取消
+// TestMockProvider_Infer_ContextCancel tests MockProvider context cancellation
 func TestMockProvider_Infer_ContextCancel(t *testing.T) {
 	p := NewMockProvider(&MockConfig{
 		Delay: 500 * time.Millisecond,
@@ -389,11 +389,11 @@ func TestMockProvider_Infer_ContextCancel(t *testing.T) {
 
 	_, err := p.Infer(ctx, "test")
 	if err == nil {
-		t.Error("期望上下文取消返回error")
+		t.Error("want error on context cancellation")
 	}
 }
 
-// TestOllamaProvider_Concurrent test并发推理
+// TestOllamaProvider_Concurrent tests concurrent inference
 func TestOllamaProvider_Concurrent(t *testing.T) {
 	callCount := 0
 	var mu sync.Mutex
@@ -407,7 +407,7 @@ func TestOllamaProvider_Concurrent(t *testing.T) {
 		json.NewDecoder(r.Body).Decode(&reqBody)
 
 		resp := ollamaGenerateResponse{
-			Response: fmt.Sprintf("响应 %d", callCount),
+			Response: fmt.Sprintf("response %d", callCount),
 			Done:     true,
 		}
 		json.NewEncoder(w).Encode(resp)
@@ -425,7 +425,7 @@ func TestOllamaProvider_Concurrent(t *testing.T) {
 		wg.Add(1)
 		go func(n int) {
 			defer wg.Done()
-			result, err := p.Infer(ctx, fmt.Sprintf("请求 %d", n))
+			result, err := p.Infer(ctx, fmt.Sprintf("request %d", n))
 			if err == nil {
 				results <- result
 			}
@@ -441,37 +441,37 @@ func TestOllamaProvider_Concurrent(t *testing.T) {
 	}
 
 	if successCount != concurrency {
-		t.Errorf("成功 %d/%d", successCount, concurrency)
+		t.Errorf("succeeded %d/%d", successCount, concurrency)
 	}
 
 	if callCount != concurrency {
-		t.Errorf("服务器收到 %d 请求，期望 %d", callCount, concurrency)
+		t.Errorf("server received %d requests, want %d", callCount, concurrency)
 	}
 }
 
-// TestMockProvider_InferCount test推理计数功能
+// TestMockProvider_InferCount tests the inference count functionality
 func TestMockProvider_InferCount(t *testing.T) {
 	p := NewMockProvider(nil)
 	ctx := context.Background()
 
 	if p.InferCount() != 0 {
-		t.Errorf("初始计数应为 0，得到 %d", p.InferCount())
+		t.Errorf("initial count should be 0, got %d", p.InferCount())
 	}
 
 	p.Infer(ctx, "test1")
 	p.Infer(ctx, "test2")
 
 	if p.InferCount() != 2 {
-		t.Errorf("计数应为 2，得到 %d", p.InferCount())
+		t.Errorf("count should be 2, got %d", p.InferCount())
 	}
 
 	p.ResetCount()
 	if p.InferCount() != 0 {
-		t.Errorf("重置后计数应为 0，得到 %d", p.InferCount())
+		t.Errorf("count after reset should be 0, got %d", p.InferCount())
 	}
 }
 
-// TestOllamaProvider_ModelIDConsistency test ModelID 一致性
+// TestOllamaProvider_ModelIDConsistency tests ModelID consistency
 func TestOllamaProvider_ModelIDConsistency(t *testing.T) {
 	config := &OllamaConfig{
 		BaseURL: "http://localhost:11434",
@@ -485,17 +485,17 @@ func TestOllamaProvider_ModelIDConsistency(t *testing.T) {
 	id2 := p2.ModelID()
 
 	if len(id1) != 32 {
-		t.Errorf("ModelID 长度应为 32，得到 %d", len(id1))
+		t.Errorf("ModelID length should be 32, got %d", len(id1))
 	}
 
-	// 相同配置应生成相同的 ModelID
+	// identical configs should generate identical ModelIDs
 	for i := range id1 {
 		if id1[i] != id2[i] {
-			t.Errorf("相同配置应生成相同的 ModelID，位置 %d 不匹配", i)
+			t.Errorf("identical configs should generate identical ModelIDs, mismatch at position %d", i)
 		}
 	}
 
-	// 不同配置应生成不同的 ModelID
+	// different configs should generate different ModelIDs
 	p3 := NewOllamaProvider(&OllamaConfig{
 		BaseURL: "http://localhost:11434",
 		Model:   "mistral",
@@ -510,11 +510,11 @@ func TestOllamaProvider_ModelIDConsistency(t *testing.T) {
 		}
 	}
 	if match {
-		t.Error("不同模型应生成不同的 ModelID")
+		t.Error("different models should generate different ModelIDs")
 	}
 }
 
-// TestOllamaProvider_Infer_OllamaError test Ollama 返回error的情况
+// TestOllamaProvider_Infer_OllamaError tests the case where Ollama returns an error
 func TestOllamaProvider_Infer_OllamaError(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		resp := ollamaGenerateResponse{
@@ -531,9 +531,9 @@ func TestOllamaProvider_Infer_OllamaError(t *testing.T) {
 
 	_, err := p.Infer(ctx, "test")
 	if err == nil {
-		t.Error("期望 Ollama error")
+		t.Error("want Ollama error")
 	}
 	if !strings.Contains(err.Error(), "model not found") {
-		t.Errorf("error信息应包含 'model not found': %v", err)
+		t.Errorf("error message should contain 'model not found': %v", err)
 	}
 }
