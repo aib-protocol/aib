@@ -7,120 +7,120 @@ import (
 	"testing"
 )
 
-// ====================== StakeManager 测试 ======================
+// ====================== StakeManager tests ======================
 
 func TestStakeManager_NewStakeManager(t *testing.T) {
 	sm := NewStakeManager(100.0)
 	if sm == nil {
-		t.Fatal("NewStakeManager 返回 nil")
+		t.Fatal("NewStakeManager returned nil")
 	}
 	if sm.minStake != 100.0 {
-		t.Fatalf("最低质押要求应为 100.0, 实际: %f", sm.minStake)
+		t.Fatalf("minimum stake requirement should be 100.0, got: %f", sm.minStake)
 	}
 	if sm.GetTotalStaked() != 0 {
-		t.Fatal("初始总质押量应为 0")
+		t.Fatal("initial total staked should be 0")
 	}
 }
 
 func TestStakeManager_Stake(t *testing.T) {
 	sm := NewStakeManager(100.0)
 
-	// 正常质押
+	// normal stake
 	err := sm.Stake("node1", 500.0)
 	if err != nil {
-		t.Fatalf("质押失败: %v", err)
+		t.Fatalf("stake failed: %v", err)
 	}
 
-	// 验证质押信息
+	// verify stake info
 	stake, err := sm.GetStake("node1")
 	if err != nil {
-		t.Fatalf("获取质押信息失败: %v", err)
+		t.Fatalf("get stake info failed: %v", err)
 	}
 	if stake.Amount != 500.0 {
-		t.Fatalf("质押金额应为 500.0, 实际: %f", stake.Amount)
+		t.Fatalf("stake amount should be 500.0, got: %f", stake.Amount)
 	}
 	if stake.Status != StakeActive {
-		t.Fatalf("质押状态应为 active, 实际: %s", stake.Status)
+		t.Fatalf("stake status should be active, got: %s", stake.Status)
 	}
 }
 
 func TestStakeManager_Stake_Errors(t *testing.T) {
 	sm := NewStakeManager(100.0)
 
-	// 空节点ID
+	// empty node ID
 	if err := sm.Stake("", 500.0); err == nil {
-		t.Fatal("空节点ID应返回错误")
+		t.Fatal("empty node ID should return an error")
 	}
 
-	// 金额为零
+	// zero amount
 	if err := sm.Stake("node1", 0); err == nil {
-		t.Fatal("金额为0应返回错误")
+		t.Fatal("zero amount should return an error")
 	}
 
-	// 负金额
+	// negative amount
 	if err := sm.Stake("node1", -100); err == nil {
-		t.Fatal("负金额应返回错误")
+		t.Fatal("negative amount should return an error")
 	}
 
-	// 低于最低质押
+	// below minimum stake
 	if err := sm.Stake("node1", 50); err == nil {
-		t.Fatal("低于最低质押应返回错误")
+		t.Fatal("below minimum stake should return an error")
 	}
 
-	// 重复质押
+	// duplicate stake
 	if err := sm.Stake("node1", 500.0); err != nil {
-		t.Fatal("第一次质押不应失败")
+		t.Fatal("first stake should not fail")
 	}
 	if err := sm.Stake("node1", 500.0); err == nil {
-		t.Fatal("重复质押应返回错误")
+		t.Fatal("duplicate stake should return an error")
 	}
 }
 
 func TestStakeManager_Unstake(t *testing.T) {
 	sm := NewStakeManager(100.0)
 
-	// 先质押
+	// stake first
 	sm.Stake("node1", 500.0)
 
-	// 解除质押
+	// unstake
 	err := sm.Unstake("node1")
 	if err != nil {
-		t.Fatalf("解除质押失败: %v", err)
+		t.Fatalf("unstake failed: %v", err)
 	}
 
-	// 验证状态变为 locked
+	// verify status becomes locked
 	stake, _ := sm.GetStake("node1")
 	if stake.Status != StakeLocked {
-		t.Fatalf("状态应为 locked, 实际: %s", stake.Status)
+		t.Fatalf("status should be locked, got: %s", stake.Status)
 	}
 	if stake.LockedUntil <= 0 {
-		t.Fatal("锁定时间应该大于0")
+		t.Fatal("lock time should be greater than 0")
 	}
 
-	// 验证节点不再有资格
+	// verify node is no longer eligible
 	if sm.IsEligible("node1") {
-		t.Fatal("解除质押后节点不应有资格")
+		t.Fatal("node should be ineligible after unstaking")
 	}
 }
 
 func TestStakeManager_Unstake_Errors(t *testing.T) {
 	sm := NewStakeManager(100.0)
 
-	// 未质押的节点
+	// unstaked node
 	if err := sm.Unstake("node1"); err == nil {
-		t.Fatal("未质押节点应返回错误")
+		t.Fatal("unstaked node should return an error")
 	}
 
-	// 空节点ID
+	// empty node ID
 	if err := sm.Unstake(""); err == nil {
-		t.Fatal("空节点ID应返回错误")
+		t.Fatal("empty node ID should return an error")
 	}
 
-	// 重复解除质押
+	// duplicate unstake
 	sm.Stake("node1", 500.0)
 	sm.Unstake("node1")
 	if err := sm.Unstake("node1"); err == nil {
-		t.Fatal("重复解除质押应返回错误")
+		t.Fatal("duplicate unstake should return an error")
 	}
 }
 
@@ -128,22 +128,22 @@ func TestStakeManager_Slash(t *testing.T) {
 	sm := NewStakeManager(100.0)
 	sm.Stake("node1", 1000.0)
 
-	// 罚没 50%
+	// slash 50%
 	slashAmount, err := sm.Slash("node1", 0.5)
 	if err != nil {
-		t.Fatalf("罚没失败: %v", err)
+		t.Fatalf("slash failed: %v", err)
 	}
 	if slashAmount != 500.0 {
-		t.Fatalf("罚没金额应为 500.0, 实际: %f", slashAmount)
+		t.Fatalf("slash amount should be 500.0, got: %f", slashAmount)
 	}
 
-	// 验证剩余质押
+	// verify remaining stake
 	stake, _ := sm.GetStake("node1")
 	if stake.Amount != 500.0 {
-		t.Fatalf("剩余质押应为 500.0, 实际: %f", stake.Amount)
+		t.Fatalf("remaining stake should be 500.0, got: %f", stake.Amount)
 	}
 	if stake.SlashTotal != 500.0 {
-		t.Fatalf("累计罚没应为 500.0, 实际: %f", stake.SlashTotal)
+		t.Fatalf("cumulative slash should be 500.0, got: %f", stake.SlashTotal)
 	}
 }
 
@@ -151,80 +151,80 @@ func TestStakeManager_Slash_Full(t *testing.T) {
 	sm := NewStakeManager(100.0)
 	sm.Stake("node1", 1000.0)
 
-	// 全额罚没
+	// slash in full
 	slashAmount, err := sm.Slash("node1", 1.0)
 	if err != nil {
-		t.Fatalf("全额罚没失败: %v", err)
+		t.Fatalf("full slash failed: %v", err)
 	}
 	if slashAmount != 1000.0 {
-		t.Fatalf("罚没金额应为 1000.0, 实际: %f", slashAmount)
+		t.Fatalf("slash amount should be 1000.0, got: %f", slashAmount)
 	}
 
-	// 验证状态变为 slashed
+	// verify status becomes slashed
 	stake, _ := sm.GetStake("node1")
 	if stake.Status != StakeSlashed {
-		t.Fatalf("状态应为 slashed, 实际: %s", stake.Status)
+		t.Fatalf("status should be slashed, got: %s", stake.Status)
 	}
 	if stake.Amount != 0 {
-		t.Fatalf("质押金额应为 0, 实际: %f", stake.Amount)
+		t.Fatalf("stake amount should be 0, got: %f", stake.Amount)
 	}
 
-	// 被罚没后不再有资格
+	// ineligible after slashing
 	if sm.IsEligible("node1") {
-		t.Fatal("被全额罚没后不应有资格")
+		t.Fatal("ineligible after full slash")
 	}
 }
 
 func TestStakeManager_Slash_Errors(t *testing.T) {
 	sm := NewStakeManager(100.0)
 
-	// 未质押的节点
+	// unstaked node
 	_, err := sm.Slash("node1", 0.5)
 	if err == nil {
-		t.Fatal("未质押节点应返回错误")
+		t.Fatal("unstaked node should return an error")
 	}
 
-	// 空节点ID
+	// empty node ID
 	_, err = sm.Slash("", 0.5)
 	if err == nil {
-		t.Fatal("空节点ID应返回错误")
+		t.Fatal("empty node ID should return an error")
 	}
 
-	// 无效比例
+	// invalid ratio
 	sm.Stake("node1", 1000.0)
 	_, err = sm.Slash("node1", 1.5)
 	if err == nil {
-		t.Fatal("比例超过1应返回错误")
+		t.Fatal("ratio above 1 should return an error")
 	}
 	_, err = sm.Slash("node1", -0.1)
 	if err == nil {
-		t.Fatal("负比例应返回错误")
+		t.Fatal("negative ratio should return an error")
 	}
 }
 
 func TestStakeManager_IsEligible(t *testing.T) {
 	sm := NewStakeManager(100.0)
 
-	// 未质押
+	// not staked
 	if sm.IsEligible("node1") {
-		t.Fatal("未质押节点不应有资格")
+		t.Fatal("unstaked node should not be eligible")
 	}
 
-	// 空节点ID
+	// empty node ID
 	if sm.IsEligible("") {
-		t.Fatal("空节点ID不应有资格")
+		t.Fatal("empty node ID should not be eligible")
 	}
 
-	// 质押后有资格
+	// eligible after staking
 	sm.Stake("node1", 500.0)
 	if !sm.IsEligible("node1") {
-		t.Fatal("质押后节点应有资格")
+		t.Fatal("node should be eligible after staking")
 	}
 
-	// 部分罚没导致低于最低质押后无资格
-	sm.Slash("node1", 0.9) // 剩余50, 低于最低质押100
+	// ineligible after partial slash drops below minimum stake
+	sm.Slash("node1", 0.9) // 50 remains, below minimum stake 100
 	if sm.IsEligible("node1") {
-		t.Fatal("质押不足最低要求时不应有资格")
+		t.Fatal("ineligible when stake is below minimum")
 	}
 }
 
@@ -237,43 +237,43 @@ func TestStakeManager_GetTotalStaked(t *testing.T) {
 
 	total := sm.GetTotalStaked()
 	if total != 1000.0 {
-		t.Fatalf("总质押量应为 1000.0, 实际: %f", total)
+		t.Fatalf("total staked should be 1000.0, got: %f", total)
 	}
 
-	// 解除质押后不计入总量
+	// excluded from total after unstake
 	sm.Unstake("node3")
 	total = sm.GetTotalStaked()
 	if total != 800.0 {
-		t.Fatalf("解除质押后总量应为 800.0, 实际: %f", total)
+		t.Fatalf("total after unstake should be 800.0, got: %f", total)
 	}
 }
 
 func TestStakeManager_Restake(t *testing.T) {
 	sm := NewStakeManager(100.0)
 
-	// 质押 -> 解除 -> 提取 -> 重新质押
+	// stake -> unstake -> withdraw -> restake
 	sm.Stake("node1", 500.0)
 	sm.Unstake("node1")
 
-	// 手动设置 LockedUntil 为过去时间以模拟锁定期结束
+	// manually set LockedUntil in the past to simulate lock expiry
 	sm.mu.Lock()
 	sm.stakes["node1"].LockedUntil = 0
 	sm.mu.Unlock()
 
 	_, err := sm.Withdraw("node1")
 	if err != nil {
-		t.Fatalf("提取失败: %v", err)
+		t.Fatalf("withdraw failed: %v", err)
 	}
 
-	// 重新质押
+	// restake
 	err = sm.Stake("node1", 600.0)
 	if err != nil {
-		t.Fatalf("重新质押失败: %v", err)
+		t.Fatalf("restake failed: %v", err)
 	}
 
 	stake, _ := sm.GetStake("node1")
 	if stake.Amount != 600.0 {
-		t.Fatalf("重新质押金额应为 600.0, 实际: %f", stake.Amount)
+		t.Fatalf("restake amount should be 600.0, got: %f", stake.Amount)
 	}
 }
 
@@ -284,50 +284,50 @@ func TestStakeManager_ExportImport(t *testing.T) {
 	sm.Stake("node2", 300.0)
 	sm.Slash("node1", 0.1)
 
-	// 导出
+	// export
 	data, err := sm.Export()
 	if err != nil {
-		t.Fatalf("导出失败: %v", err)
+		t.Fatalf("export failed: %v", err)
 	}
 
-	// 创建新管理器并导入
+	// create new manager and import
 	sm2 := NewStakeManager(0)
 	err = sm2.Import(data)
 	if err != nil {
-		t.Fatalf("导入失败: %v", err)
+		t.Fatalf("import failed: %v", err)
 	}
 
-	// 验证导入后的状态
+	// verify state after import
 	stake1, _ := sm2.GetStake("node1")
 	if stake1.Amount != 450.0 {
-		t.Fatalf("导入后 node1 质押应为 450.0, 实际: %f", stake1.Amount)
+		t.Fatalf("node1 stake after import should be 450.0, got: %f", stake1.Amount)
 	}
 	if stake1.SlashTotal != 50.0 {
-		t.Fatalf("导入后 node1 罚没总额应为 50.0, 实际: %f", stake1.SlashTotal)
+		t.Fatalf("node1 slash total after import should be 50.0, got: %f", stake1.SlashTotal)
 	}
 
 	stake2, _ := sm2.GetStake("node2")
 	if stake2.Amount != 300.0 {
-		t.Fatalf("导入后 node2 质押应为 300.0, 实际: %f", stake2.Amount)
+		t.Fatalf("node2 stake after import should be 300.0, got: %f", stake2.Amount)
 	}
 
 	if sm2.minStake != 100.0 {
-		t.Fatalf("导入后最低质押应为 100.0, 实际: %f", sm2.minStake)
+		t.Fatalf("minimum stake after import should be 100.0, got: %f", sm2.minStake)
 	}
 }
 
-// ====================== RewardDistributor 测试 ======================
+// ====================== RewardDistributor tests ======================
 
 func TestRewardDistributor_NewRewardDistributor(t *testing.T) {
 	rd := NewRewardDistributor(10.0)
 	if rd == nil {
-		t.Fatal("NewRewardDistributor 返回 nil")
+		t.Fatal("NewRewardDistributor returned nil")
 	}
 	if rd.baseReward != 10.0 {
-		t.Fatalf("基础奖励应为 10.0, 实际: %f", rd.baseReward)
+		t.Fatalf("base reward should be 10.0, got: %f", rd.baseReward)
 	}
 	if rd.GetTotalDistributed() != 0 {
-		t.Fatal("初始总分发量应为 0")
+		t.Fatal("initial total distributed should be 0")
 	}
 }
 
@@ -336,34 +336,34 @@ func TestRewardDistributor_DistributeTaskReward(t *testing.T) {
 
 	err := rd.DistributeTaskReward("task1", []string{"node1", "node2"})
 	if err != nil {
-		t.Fatalf("分发任务奖励失败: %v", err)
+		t.Fatalf("distribute task reward failed: %v", err)
 	}
 
-	// 每个节点应得 5.0 (10.0 / 2)
+	// each node should get 5.0 (10.0 / 2)
 	balance1 := rd.GetBalance("node1")
 	if balance1 != 5.0 {
-		t.Fatalf("node1 余额应为 5.0, 实际: %f", balance1)
+		t.Fatalf("node1 balance should be 5.0, got: %f", balance1)
 	}
 	balance2 := rd.GetBalance("node2")
 	if balance2 != 5.0 {
-		t.Fatalf("node2 余额应为 5.0, 实际: %f", balance2)
+		t.Fatalf("node2 balance should be 5.0, got: %f", balance2)
 	}
 }
 
 func TestRewardDistributor_DistributeTaskReward_Errors(t *testing.T) {
 	rd := NewRewardDistributor(10.0)
 
-	// 空任务ID
+	// empty task ID
 	if err := rd.DistributeTaskReward("", []string{"node1"}); err == nil {
-		t.Fatal("空任务ID应返回错误")
+		t.Fatal("empty task ID should return an error")
 	}
 
-	// 空节点列表
+	// empty node list
 	if err := rd.DistributeTaskReward("task1", nil); err == nil {
-		t.Fatal("空节点列表应返回错误")
+		t.Fatal("empty node list should return an error")
 	}
 	if err := rd.DistributeTaskReward("task1", []string{}); err == nil {
-		t.Fatal("空节点列表应返回错误")
+		t.Fatal("empty node list should return an error")
 	}
 }
 
@@ -372,65 +372,65 @@ func TestRewardDistributor_DistributeReporterReward(t *testing.T) {
 
 	err := rd.DistributeReporterReward("reporter1", 50.0, "task1")
 	if err != nil {
-		t.Fatalf("分发举报奖励失败: %v", err)
+		t.Fatalf("distribute reporter reward failed: %v", err)
 	}
 
 	balance := rd.GetBalance("reporter1")
 	if balance != 50.0 {
-		t.Fatalf("举报者余额应为 50.0, 实际: %f", balance)
+		t.Fatalf("reporter balance should be 50.0, got: %f", balance)
 	}
 
-	// 查询历史
+	// query history
 	history := rd.GetHistory("reporter1")
 	if len(history) != 1 {
-		t.Fatalf("历史记录数应为 1, 实际: %d", len(history))
+		t.Fatalf("history record count should be 1, got: %d", len(history))
 	}
 	if history[0].Type != RewardReporter {
-		t.Fatalf("奖励类型应为 reporter, 实际: %s", history[0].Type)
+		t.Fatalf("reward type should be reporter, got: %s", history[0].Type)
 	}
 }
 
 func TestRewardDistributor_DistributeReporterReward_Errors(t *testing.T) {
 	rd := NewRewardDistributor(10.0)
 
-	// 空节点ID
+	// empty node ID
 	if err := rd.DistributeReporterReward("", 50.0, "task1"); err == nil {
-		t.Fatal("空节点ID应返回错误")
+		t.Fatal("empty node ID should return an error")
 	}
 
-	// 非正金额
+	// non-positive amount
 	if err := rd.DistributeReporterReward("reporter1", 0, "task1"); err == nil {
-		t.Fatal("金额为0应返回错误")
+		t.Fatal("zero amount should return an error")
 	}
 	if err := rd.DistributeReporterReward("reporter1", -10, "task1"); err == nil {
-		t.Fatal("负金额应返回错误")
+		t.Fatal("negative amount should return an error")
 	}
 }
 
 func TestRewardDistributor_GetHistory(t *testing.T) {
 	rd := NewRewardDistributor(10.0)
 
-	// 分发多个奖励
+	// distribute multiple rewards
 	rd.DistributeTaskReward("task1", []string{"node1", "node2"})
 	rd.DistributeTaskReward("task2", []string{"node1"})
 	rd.DistributeReporterReward("node1", 20.0, "task3")
 
-	// node1 应有 3 条记录
+	// node1 should have 3 records
 	history := rd.GetHistory("node1")
 	if len(history) != 3 {
-		t.Fatalf("node1 历史记录数应为 3, 实际: %d", len(history))
+		t.Fatalf("node1 history count should be 3, got: %d", len(history))
 	}
 
-	// node2 应有 1 条记录
+	// node2 should have 1 record
 	history = rd.GetHistory("node2")
 	if len(history) != 1 {
-		t.Fatalf("node2 历史记录数应为 1, 实际: %d", len(history))
+		t.Fatalf("node2 history count should be 1, got: %d", len(history))
 	}
 
-	// 不存在的节点应返回空
+	// nonexistent node should return empty
 	history = rd.GetHistory("node999")
 	if len(history) != 0 {
-		t.Fatalf("不存在节点历史记录数应为 0, 实际: %d", len(history))
+		t.Fatalf("nonexistent node history count should be 0, got: %d", len(history))
 	}
 }
 
@@ -442,33 +442,33 @@ func TestRewardDistributor_GetTotalDistributed(t *testing.T) {
 
 	total := rd.GetTotalDistributed()
 	if math.Abs(total-30.0) > 0.001 {
-		t.Fatalf("总分发量应为 30.0, 实际: %f", total)
+		t.Fatalf("total distributed should be 30.0, got: %f", total)
 	}
 }
 
 func TestRewardDistributor_PoCUMultiplier(t *testing.T) {
 	rd := NewRewardDistributor(10.0)
 
-	// 设置 PoCU 乘数为 2.0
+	// set PoCU multiplier to 2.0
 	err := rd.SetPoCUMultiplier(2.0)
 	if err != nil {
-		t.Fatalf("设置 PoCU 乘数失败: %v", err)
+		t.Fatalf("set PoCU multiplier failed: %v", err)
 	}
 
 	rd.DistributeTaskReward("task1", []string{"node1"})
 
-	// 奖励应为 10.0 * 2.0 = 20.0
+	// reward should be 10.0 * 2.0 = 20.0
 	balance := rd.GetBalance("node1")
 	if balance != 20.0 {
-		t.Fatalf("余额应为 20.0, 实际: %f", balance)
+		t.Fatalf("balance should be 20.0, got: %f", balance)
 	}
 
-	// 无效乘数
+	// invalid multiplier
 	if err := rd.SetPoCUMultiplier(0); err == nil {
-		t.Fatal("乘数为0应返回错误")
+		t.Fatal("zero multiplier should return an error")
 	}
 	if err := rd.SetPoCUMultiplier(-1); err == nil {
-		t.Fatal("负乘数应返回错误")
+		t.Fatal("negative multiplier should return an error")
 	}
 }
 
@@ -478,128 +478,128 @@ func TestRewardDistributor_ExportImport(t *testing.T) {
 	rd.DistributeTaskReward("task1", []string{"node1", "node2"})
 	rd.DistributeReporterReward("node1", 20.0, "task2")
 
-	// 导出
+	// export
 	data, err := rd.Export()
 	if err != nil {
-		t.Fatalf("导出失败: %v", err)
+		t.Fatalf("export failed: %v", err)
 	}
 
-	// 导入到新实例
+	// import into a new instance
 	rd2 := NewRewardDistributor(0)
 	err = rd2.Import(data)
 	if err != nil {
-		t.Fatalf("导入失败: %v", err)
+		t.Fatalf("import failed: %v", err)
 	}
 
-	// 验证余额
+	// verify balance
 	if rd2.GetBalance("node1") != rd.GetBalance("node1") {
-		t.Fatalf("导入后 node1 余额不一致: %.2f vs %.2f",
+		t.Fatalf("node1 balance mismatch after import: %.2f vs %.2f",
 			rd2.GetBalance("node1"), rd.GetBalance("node1"))
 	}
 	if rd2.GetBalance("node2") != rd.GetBalance("node2") {
-		t.Fatalf("导入后 node2 余额不一致: %.2f vs %.2f",
+		t.Fatalf("node2 balance mismatch after import: %.2f vs %.2f",
 			rd2.GetBalance("node2"), rd.GetBalance("node2"))
 	}
 
-	// 验证配置
+	// verify config
 	if rd2.baseReward != 10.0 {
-		t.Fatalf("导入后基础奖励应为 10.0, 实际: %f", rd2.baseReward)
+		t.Fatalf("base reward after import should be 10.0, got: %f", rd2.baseReward)
 	}
 	if rd2.pocuMultiplier != 1.5 {
-		t.Fatalf("导入后 PoCU 乘数应为 1.5, 实际: %f", rd2.pocuMultiplier)
+		t.Fatalf("PoCU multiplier after import should be 1.5, got: %f", rd2.pocuMultiplier)
 	}
 
-	// 验证历史记录
+	// verify history records
 	history := rd2.GetHistory("node1")
 	if len(history) != 2 {
-		t.Fatalf("导入后 node1 历史记录数应为 2, 实际: %d", len(history))
+		t.Fatalf("node1 history count after import should be 2, got: %d", len(history))
 	}
 }
 
-// ====================== Economy 集成测试 ======================
+// ====================== Economy integration tests ======================
 
 func TestEconomy_NewEconomy(t *testing.T) {
 	eco := NewEconomy(100.0, 10.0)
 	if eco == nil {
-		t.Fatal("NewEconomy 返回 nil")
+		t.Fatal("NewEconomy returned nil")
 	}
 	if eco.Stakes == nil {
-		t.Fatal("Stakes 不应为 nil")
+		t.Fatal("Stakes should not be nil")
 	}
 	if eco.Rewards == nil {
-		t.Fatal("Rewards 不应为 nil")
+		t.Fatal("Rewards should not be nil")
 	}
 }
 
 func TestEconomy_FullWorkflow(t *testing.T) {
 	eco := NewEconomy(100.0, 10.0)
 
-	// 1. 节点质押
+	// 1. node stakes
 	eco.Stakes.Stake("node1", 1000.0)
 	eco.Stakes.Stake("node2", 500.0)
 	eco.Stakes.Stake("node3", 200.0)
 
-	// 2. 处理任务完成（应只奖励有资格的节点）
+	// 2. process task completion (should only reward eligible nodes)
 	eligible, err := eco.ProcessTaskCompletion("task1", []string{"node1", "node2", "node3", "node_no_stake"})
 	if err != nil {
-		t.Fatalf("处理任务完成失败: %v", err)
+		t.Fatalf("process task completion failed: %v", err)
 	}
 	if len(eligible) != 3 {
-		t.Fatalf("有资格节点数应为 3, 实际: %d", len(eligible))
+		t.Fatalf("eligible node count should be 3, got: %d", len(eligible))
 	}
 
-	// 3. 验证奖励分发
+	// 3. verify reward distribution
 	// 10.0 / 3 = 3.333...
 	balance1 := eco.Rewards.GetBalance("node1")
 	expected := 10.0 / 3.0
 	if math.Abs(balance1-expected) > 0.001 {
-		t.Fatalf("node1 余额应约为 %.4f, 实际: %f", expected, balance1)
+		t.Fatalf("node1 balance should be about %.4f, got: %f", expected, balance1)
 	}
 
-	// node_no_stake 不应获得奖励
+	// node_no_stake should get no reward
 	if eco.Rewards.GetBalance("node_no_stake") != 0 {
-		t.Fatal("未质押节点不应获得奖励")
+		t.Fatal("unstaked node should get no reward")
 	}
 
-	// 4. 罚没 + 举报奖励
+	// 4. slashing + reporter reward
 	slashAmount, reporterReward, err := eco.ProcessSlash("node1", "node2", 0.5, "task2")
 	if err != nil {
-		t.Fatalf("罚没失败: %v", err)
+		t.Fatalf("slash failed: %v", err)
 	}
 	if slashAmount != 500.0 {
-		t.Fatalf("罚没金额应为 500.0, 实际: %f", slashAmount)
+		t.Fatalf("slash amount should be 500.0, got: %f", slashAmount)
 	}
 	if reporterReward != 100.0 {
-		t.Fatalf("举报奖励应为 100.0, 实际: %f", reporterReward)
+		t.Fatalf("reporter reward should be 100.0, got: %f", reporterReward)
 	}
 
-	// 验证 node2 获得举报奖励
+	// verify node2 gets the reporter reward
 	node2Balance := eco.Rewards.GetBalance("node2")
-	// 应该是 任务奖励(3.33..) + 举报奖励(100.0)
+	// should be task reward (3.33..) + reporter reward (100.0)
 	if node2Balance < 103.0 {
-		t.Fatalf("node2 余额应大于 103.0, 实际: %f", node2Balance)
+		t.Fatalf("node2 balance should exceed 103.0, got: %f", node2Balance)
 	}
 
-	// 5. 查看摘要
+	// 5. view summary
 	summary := eco.GetNodeSummary("node1")
 	if summary.StakeAmount != 500.0 {
-		t.Fatalf("node1 质押应为 500.0, 实际: %f", summary.StakeAmount)
+		t.Fatalf("node1 stake should be 500.0, got: %f", summary.StakeAmount)
 	}
 	if summary.SlashTotal != 500.0 {
-		t.Fatalf("node1 罚没总额应为 500.0, 实际: %f", summary.SlashTotal)
+		t.Fatalf("node1 slash total should be 500.0, got: %f", summary.SlashTotal)
 	}
 }
 
 func TestEconomy_ProcessTaskCompletion_NoEligible(t *testing.T) {
 	eco := NewEconomy(100.0, 10.0)
 
-	// 没有节点质押
+	// no nodes staked
 	eligible, err := eco.ProcessTaskCompletion("task1", []string{"node1", "node2"})
 	if err != nil {
-		t.Fatalf("不应返回错误: %v", err)
+		t.Fatalf("should not return error: %v", err)
 	}
 	if len(eligible) != 0 {
-		t.Fatalf("应无有资格节点, 实际: %d", len(eligible))
+		t.Fatalf("should have no eligible nodes, got: %d", len(eligible))
 	}
 }
 
@@ -609,36 +609,36 @@ func TestEconomy_ExportImport(t *testing.T) {
 	eco.Stakes.Stake("node1", 1000.0)
 	eco.Rewards.DistributeTaskReward("task1", []string{"node1"})
 
-	// 导出
+	// export
 	data, err := eco.Export()
 	if err != nil {
-		t.Fatalf("导出失败: %v", err)
+		t.Fatalf("export failed: %v", err)
 	}
 
-	// 导入到新实例
+	// import into a new instance
 	eco2 := NewEconomy(0, 0)
 	err = eco2.Import(data)
 	if err != nil {
-		t.Fatalf("导入失败: %v", err)
+		t.Fatalf("import failed: %v", err)
 	}
 
-	// 验证状态一致
+	// verify state consistency
 	stake1, _ := eco2.Stakes.GetStake("node1")
 	if stake1.Amount != 1000.0 {
-		t.Fatalf("导入后质押应为 1000.0, 实际: %f", stake1.Amount)
+		t.Fatalf("stake after import should be 1000.0, got: %f", stake1.Amount)
 	}
 	if eco2.Rewards.GetBalance("node1") != eco.Rewards.GetBalance("node1") {
-		t.Fatal("导入后余额不一致")
+		t.Fatal("balance mismatch after import")
 	}
 }
 
-// ====================== 并发测试 ======================
+// ====================== concurrency tests ======================
 
 func TestStakeManager_Concurrent(t *testing.T) {
 	sm := NewStakeManager(100.0)
 	var wg sync.WaitGroup
 
-	// 100 个并发质押
+	// 100 concurrent stakes
 	for i := 0; i < 100; i++ {
 		wg.Add(1)
 		go func(id int) {
@@ -649,15 +649,15 @@ func TestStakeManager_Concurrent(t *testing.T) {
 	}
 	wg.Wait()
 
-	// 验证所有节点都质押成功
+	// verify all nodes staked successfully
 	for i := 0; i < 100; i++ {
 		nodeID := fmt.Sprintf("node_%d", i)
 		if !sm.IsEligible(nodeID) {
-			t.Fatalf("并发质押后 %s 应有资格", nodeID)
+			t.Fatalf("%s should be eligible after concurrent staking", nodeID)
 		}
 	}
 
-	// 并发查询
+	// concurrent queries
 	for i := 0; i < 100; i++ {
 		wg.Add(1)
 		go func(id int) {
@@ -675,7 +675,7 @@ func TestRewardDistributor_Concurrent(t *testing.T) {
 	rd := NewRewardDistributor(10.0)
 	var wg sync.WaitGroup
 
-	// 100 个并发奖励分发
+	// 100 concurrent reward distributions
 	for i := 0; i < 100; i++ {
 		wg.Add(1)
 		go func(id int) {
@@ -687,25 +687,25 @@ func TestRewardDistributor_Concurrent(t *testing.T) {
 	}
 	wg.Wait()
 
-	// 验证总分发量
+	// verify total distributed
 	total := rd.GetTotalDistributed()
-	expected := 10.0 * 100 // 100个任务，每个10.0
+	expected := 10.0 * 100 // 100 tasks, 10.0 each
 	if math.Abs(total-expected) > 0.001 {
-		t.Fatalf("总分发量应为 %.0f, 实际: %f", expected, total)
+		t.Fatalf("total distributed should be %.0f, got: %f", expected, total)
 	}
 }
 
 func TestEconomy_Concurrent(t *testing.T) {
 	eco := NewEconomy(100.0, 10.0)
 
-	// 先质押
+	// stake first
 	for i := 0; i < 10; i++ {
 		nodeID := fmt.Sprintf("node_%d", i)
 		eco.Stakes.Stake(nodeID, 1000.0)
 	}
 
 	var wg sync.WaitGroup
-	// 并发处理任务完成和查询
+	// concurrent task completion and queries
 	for i := 0; i < 50; i++ {
 		wg.Add(1)
 		go func(id int) {
@@ -725,28 +725,28 @@ func TestEconomy_Concurrent(t *testing.T) {
 	}
 	wg.Wait()
 
-	// 验证没有 panic 即为通过
+	// pass if no panic
 }
 
-// ====================== 边界条件测试 ======================
+// ====================== edge-case tests ======================
 
 func TestStakeManager_SlashBelowMinStake(t *testing.T) {
 	sm := NewStakeManager(100.0)
 	sm.Stake("node1", 150.0)
 
-	// 罚没 50% 后剩余 75.0，低于最低质押 100.0
+	// after 50% slash, 75.0 remains, below minimum stake 100.0
 	sm.Slash("node1", 0.5)
 	if sm.IsEligible("node1") {
-		t.Fatal("罚没后低于最低质押时不应有资格")
+		t.Fatal("ineligible when below minimum stake after slashing")
 	}
 
-	// 仍然可以查询质押信息
+	// stake info should still be queryable
 	stake, err := sm.GetStake("node1")
 	if err != nil {
-		t.Fatalf("获取质押失败: %v", err)
+		t.Fatalf("get stake failed: %v", err)
 	}
 	if stake.Amount != 75.0 {
-		t.Fatalf("质押金额应为 75.0, 实际: %f", stake.Amount)
+		t.Fatalf("stake amount should be 75.0, got: %f", stake.Amount)
 	}
 }
 
@@ -754,39 +754,39 @@ func TestStakeManager_MultipleSlashes(t *testing.T) {
 	sm := NewStakeManager(100.0)
 	sm.Stake("node1", 1000.0)
 
-	// 连续罚没
-	sm.Slash("node1", 0.1) // 罚 100, 剩 900
-	sm.Slash("node1", 0.1) // 罚 90, 剩 810
-	sm.Slash("node1", 0.1) // 罚 81, 剩 729
+	// consecutive slashes
+	sm.Slash("node1", 0.1) // slash 100, 900 remains
+	sm.Slash("node1", 0.1) // slash 90, 810 remains
+	sm.Slash("node1", 0.1) // slash 81, 729 remains
 
 	stake, _ := sm.GetStake("node1")
 	if math.Abs(stake.Amount-729.0) > 0.001 {
-		t.Fatalf("连续罚没后质押应约为 729.0, 实际: %f", stake.Amount)
+		t.Fatalf("stake after consecutive slashes should be about 729.0, got: %f", stake.Amount)
 	}
 	expectedSlashTotal := 1000.0 - 729.0
 	if math.Abs(stake.SlashTotal-expectedSlashTotal) > 0.001 {
-		t.Fatalf("累计罚没应约为 %.1f, 实际: %f", expectedSlashTotal, stake.SlashTotal)
+		t.Fatalf("cumulative slash should be about %.1f, got: %f", expectedSlashTotal, stake.SlashTotal)
 	}
 }
 
 func TestRewardDistributor_SingleNodeMultipleTasks(t *testing.T) {
 	rd := NewRewardDistributor(10.0)
 
-	// 一个节点参与多个任务
+	// one node participates in multiple tasks
 	for i := 0; i < 5; i++ {
 		rd.DistributeTaskReward(fmt.Sprintf("task_%d", i), []string{"node1"})
 	}
 
-	// 余额应为 50.0
+	// balance should be 50.0
 	balance := rd.GetBalance("node1")
 	if balance != 50.0 {
-		t.Fatalf("余额应为 50.0, 实际: %f", balance)
+		t.Fatalf("balance should be 50.0, got: %f", balance)
 	}
 
-	// 历史记录应为 5 条
+	// history should have 5 records
 	history := rd.GetHistory("node1")
 	if len(history) != 5 {
-		t.Fatalf("历史记录数应为 5, 实际: %d", len(history))
+		t.Fatalf("history record count should be 5, got: %d", len(history))
 	}
 }
 
@@ -794,15 +794,15 @@ func TestEconomy_SlashWithNoReporter(t *testing.T) {
 	eco := NewEconomy(100.0, 10.0)
 	eco.Stakes.Stake("node1", 1000.0)
 
-	// 无举报者的罚没
+	// slashing without a reporter
 	slashAmount, reporterReward, err := eco.ProcessSlash("node1", "", 0.5, "task1")
 	if err != nil {
-		t.Fatalf("无举报者罚没失败: %v", err)
+		t.Fatalf("slash without reporter failed: %v", err)
 	}
 	if slashAmount != 500.0 {
-		t.Fatalf("罚没金额应为 500.0, 实际: %f", slashAmount)
+		t.Fatalf("slash amount should be 500.0, got: %f", slashAmount)
 	}
 	if reporterReward != 0 {
-		t.Fatalf("无举报者时奖励应为 0, 实际: %f", reporterReward)
+		t.Fatalf("reporter reward should be 0 with no reporter, got: %f", reporterReward)
 	}
 }
