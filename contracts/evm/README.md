@@ -1,81 +1,81 @@
-# AIB 智能合约
+# AIB Smart Contracts
 
-本目录包含 AIB 协议的核心智能合约实现。
+This directory contains the core smart contract implementations of the AIB protocol.
 
-## 合约说明
+## Contract Overview
 
 ### 1. AIBToken.sol
-AIB 生态代币合约，支持 ERC20 标准和以下功能：
+AIB ecosystem token contract, supporting the ERC20 standard with the following features:
 
-- 总供应量：3,141,592,653 AIB (精确到 10^18 位小数)
-- **质押功能** (stake/unstake)：允许用户质押代币获取奖励权重
-- **委托功能** (delegate)：允许质押者将投票权委托给其他地址
-- **投票权计算**：投票权重 = 余额 + 质押余额 + 收到的委托
+- Total supply: 3,141,592,653 AIB (precise to 10^18 decimals)
+- **Staking** (stake/unstake): allows users to stake tokens to earn reward weight
+- **Delegation** (delegate): allows stakers to delegate voting power to other addresses
+- **Voting power calculation**: voting weight = balance + staked balance + received delegations
 
-#### 核心事件
-- `Staked(address indexed user, uint256 amount)` - 质押事件
-- `Unstaked(address indexed user, uint256 amount)` - 解除质押事件
-- `Delegated(address indexed delegator, address indexed delegatee, uint256 amount)` - 委托事件
-- `Undelegated(address indexed delegator, address indexed delegatee, uint256 amount)` - 取消委托事件
+#### Core Events
+- `Staked(address indexed user, uint256 amount)` - staking event
+- `Unstaked(address indexed user, uint256 amount)` - unstaking event
+- `Delegated(address indexed delegator, address indexed delegatee, uint256 amount)` - delegation event
+- `Undelegated(address indexed delegator, address indexed delegatee, uint256 amount)` - undelegation event
 
 ### 2. StakingRewards.sol
-质押奖励合约，管理奖励分配和惩罚机制：
+Staking rewards contract, managing reward distribution and slashing:
 
-- **区块奖励分配**：每区块固定量奖励池
-- **奖励累积**：按时间累积用户应得奖励
-- **惩罚机制**：支持管理员的惩罚执行功能
-- **紧急提取**：用户在紧急情况下可提取质押代币
+- **Block reward distribution**: fixed reward pool per block
+- **Reward accumulation**: accrues user rewards over time
+- **Slashing mechanism**: admin-triggered slashing enforcement
+- **Emergency withdrawal**: users can withdraw staked tokens in emergencies
 
-#### 配置参数
-- `rewardPerBlock`：每区块奖励数量
-- `slashRate`：惩罚系数 (基数 10000，如 500 = 5%)
+#### Configuration Parameters
+- `rewardPerBlock`: reward amount per block
+- `slashRate`: slashing rate (basis 10000, e.g. 500 = 5%)
 
-#### 核心事件
-- `RewardsClaimed(address indexed user, uint256 amount)` - 奖励领取
-- `Slashed(address indexed account, uint256 amount)` - 惩罚执行
+#### Core Events
+- `RewardsClaimed(address indexed user, uint256 amount)` - reward claim
+- `Slashed(address indexed account, uint256 amount)` - slashing executed
 
 ### 3. Governance.sol
-治理合约，支持提案创建、投票和执行：
+Governance contract, supporting proposal creation, voting, and execution:
 
-- **提案系统**：多目标调用提案
-- **投票机制**：支持对于、反对、弃权
-- **投票权重**：基于代币余额、质押和委托
-- **提案门槛**：提案者需达到最低投票权
-- **法定票数**：提案有效需达到的至少投票权
+- **Proposal system**: multi-target call proposals
+- **Voting mechanism**: supports for, against, abstain
+- **Voting weight**: based on token balance, staking, and delegations
+- **Proposal threshold**: proposer must meet minimum voting power
+- **Quorum**: minimum voting power required for a proposal to be valid
 
-#### 配置参数
-- `votingPeriod`：投票周期（区块数）
-- `votingDelay`：投票延迟（悬赏期，区块数）
-- `proposalThreshold`：提案门槛（投票权）
-- `quorumVotes`：法定票数（有效投票权）
+#### Configuration Parameters
+- `votingPeriod`: voting period (in blocks)
+- `votingDelay`: voting delay (timelock, in blocks)
+- `proposalThreshold`: proposal threshold (voting power)
+- `quorumVotes`: quorum (required voting power)
 
-#### 提案状态
-- 0 Pending - 投票未开始
-- 1 Active - 投票进行中
-- 2 Canceled - 已取消
-- 3 Defeated - 未通过
-- 4 Succeeded - 通过待执行
-- 5 Queued - 排队中
-- 6 Expired - 已过期
-- 7 Executed - 已执行
+#### Proposal States
+- 0 Pending - voting not started
+- 1 Active - voting in progress
+- 2 Canceled - canceled
+- 3 Defeated - rejected
+- 4 Succeeded - passed, pending execution
+- 5 Queued - queued
+- 6 Expired - expired
+- 7 Executed - executed
 
-## 部署说明
+## Deployment Guide
 
-### 前置条件
-- Solidity 编译器 >= 0.8.20
-- 本地或测试网 EVM 节点
-- 部署者账户有充足 ETH 和 AIB 代币（初始全部在合约创建者）
+### Prerequisites
+- Solidity compiler >= 0.8.20
+- Local or testnet EVM node
+- Deployer account with sufficient ETH and AIB tokens (initially all tokens are at the contract creator)
 
-### 部署顺序
+### Deployment Order
 
 ```solidity
-// 1. 部署 AIBToken (自动创建总供应量)
+// 1. Deploy AIBToken (automatically creates total supply)
 AIBToken token = new AIBToken();
 
-// 2. 部署 StakingRewards
+// 2. Deploy StakingRewards
 StakingRewards rewards = new StakingRewards(address(token), rewardPerBlock);
 
-// 3. 部署 Governance
+// 3. Deploy Governance
 Governance gov = new Governance(
     address(token),
     votingPeriod,
@@ -85,58 +85,58 @@ Governance gov = new Governance(
 );
 ```
 
-### 初始化步骤
+### Initialization Steps
 
-1. 使用部署者账户（持有全部代币）调用 `AIBToken.approve(stakingRewards, amount)` 授权奖励池
-2. 用户需要先 `AIBToken.transfer` 获得代币，然后：
-   - `AIBToken.stake(amount)` 质押以获取投票权和奖励权重
-   - `AIBToken.delegate(delegatee)` 将投票权委托给他人
+1. Using the deployer account (holding all tokens), call `AIBToken.approve(stakingRewards, amount)` to authorize the reward pool
+2. Users must first `AIBToken.transfer` to receive tokens, then:
+   - `AIBToken.stake(amount)` to stake for voting power and reward weight
+   - `AIBToken.delegate(delegatee)` to delegate voting power to others
 
-3. 访问 `StakingRewards` 领取奖励：
-   - 定期检查 `getPendingRewards()`
-   - 调用 `claimRewards()` 领取
+3. Access `StakingRewards` to claim rewards:
+   - Periodically check `getPendingRewards()`
+   - Call `claimRewards()` to claim
 
-4. 治理参与：
-   - 确保当前投票权 >= `proposalThreshold` 才能创建提案
-   - 在投票期内调用 `vote(proposalId, support)` 投票
-   - 通过的提案可调用 `execute()` 执行
+4. Governance participation:
+   - Ensure current voting power >= `proposalThreshold` to create a proposal
+   - Call `vote(proposalId, support)` during the voting period
+   - Passed proposals can be executed via `execute()`
 
-## 安全考虑
+## Security Considerations
 
-### 重入攻击防护
-- 使用 "checks-effects-interactions" 模式
-- 关键操作前更新状态
+### Reentrancy Protection
+- Uses the "checks-effects-interactions" pattern
+- State is updated before critical operations
 
-### 整数溢出防护
-- Solidity 0.8.x 自带溢出检查
+### Integer Overflow Protection
+- Solidity 0.8.x includes built-in overflow checks
 
-### 授权验证
-- 管理函数使用 `onlyOwner` 限制权限
-- 提案创建验证投票权门槛
+### Authorization
+- Admin functions use `onlyOwner` for access control
+- Proposal creation validates voting power threshold
 
-## 测试建议
+## Testing Recommendations
 
-1. **AIBToken 测试**
-   - 转账、授权、从授权转账
-   - 质押、解除质押
-   - 委托、取消委托
-   - 投票权计算准确性
+1. **AIBToken tests**
+   - Transfer, approve, transferFrom
+   - Stake, unstake
+   - Delegate, undelegate
+   - Voting power calculation accuracy
 
-2. **StakingRewards 测试**
-   - 奖励累积计算
-   - 质押/解除质押奖励权益计算
-   - 惩罚逻辑
-   - 奖励领取
+2. **StakingRewards tests**
+   - Reward accumulation calculation
+   - Stake/unstake reward weight calculation
+   - Slashing logic
+   - Reward claiming
 
-3. **Governance 测试**
-   - 提案创建门槛验证
-   - 投票权重计算
-   - 提案状态转换
-   - 提案执行
+3. **Governance tests**
+   - Proposal creation threshold validation
+   - Voting weight calculation
+   - Proposal state transitions
+   - Proposal execution
 
-## 接口定义
+## Interface Definitions
 
-所有接口定义位于 `interfaces/` 目录：
-- `IAIBToken.sol` - 代币接口
-- `IStakingRewards.sol` - 奖励接口
-- `IGovernance.sol` - 治理接口
+All interface definitions are located in the `interfaces/` directory:
+- `IAIBToken.sol` - token interface
+- `IStakingRewards.sol` - rewards interface
+- `IGovernance.sol` - governance interface

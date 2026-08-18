@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AIB 2.0 安全审计报告</title>
+    <title>AIB 2.0 Security Audit Report</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -159,9 +159,9 @@
 </head>
 <body>
     <header>
-        <h1>AIB 2.0 安全审计报告</h1>
-        <p class="subtitle">主网预发布版本安全分析</p>
-        <p>审计日期: 2026年3月7日 | 审计团队: 安全审计团队</p>
+        <h1>AIB 2.0 Security Audit Report</h1>
+        <p class="subtitle">Security analysis of the pre-mainnet release</p>
+        <p>Audit date: March 7, 2026 | Audit team: Security Audit Team</p>
     </header>
 
     <div class="container">
@@ -169,205 +169,205 @@
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-number critical">6</div>
-                <div class="stat-label">严重问题</div>
+                <div class="stat-label">Critical Issues</div>
             </div>
             <div class="stat-card">
                 <div class="stat-number high">9</div>
-                <div class="stat-label">高风险问题</div>
+                <div class="stat-label">High Risk Issues</div>
             </div>
             <div class="stat-card">
                 <div class="stat-number medium">3</div>
-                <div class="stat-label">中风险问题</div>
+                <div class="stat-label">Medium Risk Issues</div>
             </div>
             <div class="stat-card">
                 <div class="stat-number low">2</div>
-                <div class="stat-label">低风险问题</div>
+                <div class="stat-label">Low Risk Issues</div>
             </div>
         </div>
 
         <!-- Overall Assessment -->
         <div class="section">
-            <h2>执行摘要</h2>
-            <p>本次安全审计对 AIB 2.0 的核心组件进行了全面的安全分析，包括 AAL 层（EVM 桥接）、UTXO 层、智能合约以及密码学实现。审计发现了 <strong>20 个安全问题</strong>，需要优先修复。</p>
-            <p style="margin-top: 15px; font-size: 1.1em;"><strong>总体风险评级: <span style="color: #e74c3c;">高风险</span></strong></p>
-            <p>建议在主网上线前优先修复所有 P0（严重）级别的问题，并建立持续的安全监控机制。</p>
+            <h2>Executive Summary</h2>
+            <p>This security audit performed a comprehensive security analysis of the core AIB 2.0 components, including the AAL layer (EVM bridge), the UTXO layer, smart contracts, and cryptographic implementations. The audit identified <strong>20 security issues</strong> that require priority remediation.</p>
+            <p style="margin-top: 15px; font-size: 1.1em;"><strong>Overall risk rating: <span style="color: #e74c3c;">High</span></strong></p>
+            <p>We recommend prioritizing the remediation of all P0 (critical) issues before mainnet launch, and establishing continuous security monitoring.</p>
         </div>
 
         <!-- Critical Vulnerabilities -->
         <div class="section">
-            <h2>严重问题 (Critical) - 必须立即修复</h2>
+            <h2>Critical Issues - Must Fix Immediately</h2>
 
             <div class="vulnerability critical">
                 <div class="vuln-header">
                     <span class="vuln-id">EVM-001</span>
-                    <span class="vuln-severity severity-critical">严重</span>
+                    <span class="vuln-severity severity-critical">Critical</span>
                 </div>
-                <h3>EVM 状态管理竞态条件</h3>
-                <p><strong>位置:</strong> <span class="path">./pkg/aal/state.go:45-50</span></p>
-                <p><strong>描述:</strong> StateManager 的并发访问缺乏适当的同步机制，可能导致状态不一致，造成资金损失或状态分裂。</p>
-                <p><strong>修复建议:</strong></p>
+                <h3>EVM State Management Race Condition</h3>
+                <p><strong>Location:</strong> <span class="path">./pkg/aal/state.go:45-50</span></p>
+                <p><strong>Description:</strong> Concurrent access to StateManager lacks proper synchronization, which can lead to inconsistent state, fund loss, or state divergence.</p>
+                <p><strong>Remediation:</strong></p>
                 <div class="code-block"><code>type StateManager struct {
     mu sync.RWMutex
-    // ... 其他字段
+    // ... other fields
 }
 
 func (sm *StateManager) GetBalance(addr Address) *big.Int {
     sm.mu.RLock()
     defer sm.mu.RUnlock()
-    // ... 实现
+    // ... implementation
 }</code></div>
             </div>
 
             <div class="vulnerability critical">
                 <div class="vuln-header">
                     <span class="vuln-id">UTXO-001</span>
-                    <span class="vuln-severity severity-critical">严重</span>
+                    <span class="vuln-severity severity-critical">Critical</span>
                 </div>
-                <h3>UTXO 交易验证绕过</h3>
-                <p><strong>位置:</strong> <span class="path">./pkg/utxo/validator.go:120-125</span></p>
-                <p><strong>描述:</strong> 交易验证器在某些边界条件下可能跳过签名验证，允许攻击者伪造交易和进行双花攻击。</p>
-                <p><strong>修复建议:</strong> 强化验证逻辑，确保所有输入都经过签名验证。</p>
+                <h3>UTXO Transaction Validation Bypass</h3>
+                <p><strong>Location:</strong> <span class="path">./pkg/utxo/validator.go:120-125</span></p>
+                <p><strong>Description:</strong> The transaction validator may skip signature verification under certain boundary conditions, allowing attackers to forge transactions and perform double-spend attacks.</p>
+                <p><strong>Remediation:</strong> Harden the validation logic to ensure every input is signature-verified.</p>
             </div>
 
             <div class="vulnerability critical">
                 <div class="vuln-header">
                     <span class="vuln-id">SOL-001</span>
-                    <span class="vuln-severity severity-critical">严重</span>
+                    <span class="vuln-severity severity-critical">Critical</span>
                 </div>
-                <h3>智能合约重入攻击风险</h3>
-                <p><strong>位置:</strong> <span class="path">./contracts/evm/StakingRewards.sol:150-160</span></p>
-                <p><strong>描述:</strong> StakingRewards 合约的 claimRewards 函数缺乏重入保护，可能被攻击者利用盗取资金。</p>
-                <p><strong>修复建议:</strong> 实现 ReentrancyGuard 模式或使用 OpenZeppelin 的 ReentrancyGuard 合约。</p>
+                <h3>Smart Contract Reentrancy Risk</h3>
+                <p><strong>Location:</strong> <span class="path">./contracts/evm/StakingRewards.sol:150-160</span></p>
+                <p><strong>Description:</strong> The claimRewards function of the StakingRewards contract lacks reentrancy protection and could be exploited by attackers to steal funds.</p>
+                <p><strong>Remediation:</strong> Implement the ReentrancyGuard pattern or use OpenZeppelin's ReentrancyGuard contract.</p>
             </div>
 
             <div class="vulnerability critical">
                 <div class="vuln-header">
                     <span class="vuln-id">EVM-002</span>
-                    <span class="vuln-severity severity-critical">严重</span>
+                    <span class="vuln-severity severity-critical">Critical</span>
                 </div>
-                <h3>Gas 计算不准确</h3>
-                <p><strong>位置:</strong> <span class="path">./pkg/aal/evm.go:450-460</span></p>
-                <p><strong>描述:</strong> Gas 计算可能低估复杂操作的实际消耗，导致 DoS 攻击或交易失败。</p>
-                <p><strong>修复建议:</strong> 实现更精确的 Gas 计价模型，参考以太坊黄皮书规范。</p>
+                <h3>Inaccurate Gas Calculation</h3>
+                <p><strong>Location:</strong> <span class="path">./pkg/aal/evm.go:450-460</span></p>
+                <p><strong>Description:</strong> Gas calculation may understate the actual cost of complex operations, leading to DoS attacks or transaction failures.</p>
+                <p><strong>Remediation:</strong> Implement a more precise gas pricing model, following the Ethereum Yellow Paper specification.</p>
             </div>
 
             <div class="vulnerability critical">
                 <div class="vuln-header">
                     <span class="vuln-id">CRYPTO-001</span>
-                    <span class="vuln-severity severity-critical">严重</span>
+                    <span class="vuln-severity severity-critical">Critical</span>
                 </div>
-                <h3>密码学随机数弱点</h3>
-                <p><strong>位置:</strong> <span class="path">./core/crypto/ed25519.go:18</span></p>
-                <p><strong>描述:</strong> 使用系统随机数生成器，可能存在熵不足问题，导致密钥可预测。</p>
-                <p><strong>修复建议:</strong> 使用加密安全的随机数生成器 (crypto/rand)。</p>
+                <h3>Cryptographic Randomness Weakness</h3>
+                <p><strong>Location:</strong> <span class="path">./core/crypto/ed25519.go:18</span></p>
+                <p><strong>Description:</strong> Uses the system random number generator, which may suffer from insufficient entropy, making keys predictable.</p>
+                <p><strong>Remediation:</strong> Use a cryptographically secure random number generator (crypto/rand).</p>
             </div>
 
             <div class="vulnerability critical">
                 <div class="vuln-header">
                     <span class="vuln-id">AAL-001</span>
-                    <span class="vuln-severity severity-critical">严重</span>
+                    <span class="vuln-severity severity-critical">Critical</span>
                 </div>
-                <h3>状态回滚不完整</h3>
-                <p><strong>位置:</strong> <span class="path">./pkg/aal/abstraction.go:200-210</span></p>
-                <p><strong>描述:</strong> 跨层调用失败时，状态回滚可能不完整，导致数据不一致。</p>
-                <p><strong>修复建议:</strong> 实现原子性事务和完整的回滚机制。</p>
+                <h3>Incomplete State Rollback</h3>
+                <p><strong>Location:</strong> <span class="path">./pkg/aal/abstraction.go:200-210</span></p>
+                <p><strong>Description:</strong> When cross-layer calls fail, state rollback may be incomplete, resulting in data inconsistency.</p>
+                <p><strong>Remediation:</strong> Implement atomic transactions and a complete rollback mechanism.</p>
             </div>
         </div>
 
         <!-- High Risk Vulnerabilities -->
         <div class="section">
-            <h2>高风险问题 (High)</h2>
+            <h2>High Risk Issues</h2>
 
             <div class="vulnerability high">
                 <div class="vuln-header">
                     <span class="vuln-id">SOL-002</span>
-                    <span class="vuln-severity severity-high">高风险</span>
+                    <span class="vuln-severity severity-high">High Risk</span>
                 </div>
-                <h3>整数溢出风险</h3>
-                <p><strong>位置:</strong> <span class="path">./contracts/evm/AIBToken.sol:200-210</span></p>
-                <p><strong>描述:</strong> 代币余额计算可能溢出，导致余额错误。</p>
-                <p><strong>修复建议:</strong> 确认使用 Solidity 0.8+ 或使用 SafeMath 库。</p>
+                <h3>Integer Overflow Risk</h3>
+                <p><strong>Location:</strong> <span class="path">./contracts/evm/AIBToken.sol:200-210</span></p>
+                <p><strong>Description:</strong> Token balance calculations may overflow, resulting in incorrect balances.</p>
+                <p><strong>Remediation:</strong> Confirm Solidity 0.8+ is used, or use the SafeMath library.</p>
             </div>
 
             <div class="vulnerability high">
                 <div class="vuln-header">
                     <span class="vuln-id">SOL-003</span>
-                    <span class="vuln-severity severity-high">高风险</span>
+                    <span class="vuln-severity severity-high">High Risk</span>
                 </div>
-                <h3>访问控制缺失</h3>
-                <p><strong>位置:</strong> <span class="path">./contracts/evm/Governance.sol:80-90</span></p>
-                <p><strong>描述:</strong> 某些管理函数缺乏访问控制检查，可能被未授权调用。</p>
-                <p><strong>修复建议:</strong> 添加适当的 onlyOwner 或基于角色的访问控制。</p>
+                <h3>Missing Access Control</h3>
+                <p><strong>Location:</strong> <span class="path">./contracts/evm/Governance.sol:80-90</span></p>
+                <p><strong>Description:</strong> Some administrative functions lack access control checks and could be called by unauthorized parties.</p>
+                <p><strong>Remediation:</strong> Add appropriate onlyOwner or role-based access control.</p>
             </div>
 
             <div class="vulnerability high">
                 <div class="vuln-header">
                     <span class="vuln-id">SOL-004</span>
-                    <span class="vuln-severity severity-high">高风险</span>
+                    <span class="vuln-severity severity-high">High Risk</span>
                 </div>
-                <h3>前端运行风险</h3>
-                <p><strong>位置:</strong> <span class="path">多个合约</span></p>
-                <p><strong>描述:</strong> 价格敏感操作易受前端运行攻击。</p>
-                <p><strong>修复建议:</strong> 实现时间锁和滑点保护机制。</p>
+                <h3>Front-Running Risk</h3>
+                <p><strong>Location:</strong> <span class="path">Multiple contracts</span></p>
+                <p><strong>Description:</strong> Price-sensitive operations are vulnerable to front-running attacks.</p>
+                <p><strong>Remediation:</strong> Implement time locks and slippage protection mechanisms.</p>
             </div>
         </div>
 
         <!-- Testing Tools -->
         <div class="section">
-            <h2>安全测试工具</h2>
-            <p>已创建以下测试工具以支持持续安全验证：</p>
+            <h2>Security Testing Tools</h2>
+            <p>The following testing tools have been created to support continuous security validation:</p>
 
-            <h3 style="margin-top: 20px;">1. 模糊测试套件</h3>
-            <p><strong>位置:</strong> <span class="path">./pkg/security/fuzzing.go</span></p>
+            <h3 style="margin-top: 20px;">1. Fuzzing Suite</h3>
+            <p><strong>Location:</strong> <span class="path">./pkg/security/fuzzing.go</span></p>
             <ul>
-                <li>EVM 事务模糊测试</li>
-                <li>UTXO 事务模糊测试</li>
-                <li>AAL 状态模糊测试</li>
-                <li>压力测试和并发测试</li>
+                <li>EVM transaction fuzzing</li>
+                <li>UTXO transaction fuzzing</li>
+                <li>AAL state fuzzing</li>
+                <li>Stress and concurrency testing</li>
             </ul>
 
-            <h3 style="margin-top: 20px;">2. 漏洞检测工具</h3>
-            <p><strong>位置:</strong> <span class="path">./pkg/security/vulnerabilities.go</span></p>
+            <h3 style="margin-top: 20px;">2. Vulnerability Detection Tool</h3>
+            <p><strong>Location:</strong> <span class="path">./pkg/security/vulnerabilities.go</span></p>
             <ul>
-                <li>静态漏洞模式检测</li>
-                <li>运行时安全检查</li>
-                <li>综合安全扫描</li>
+                <li>Static vulnerability pattern detection</li>
+                <li>Runtime security checks</li>
+                <li>Comprehensive security scanning</li>
             </ul>
 
-            <h3 style="margin-top: 20px;">使用方法</h3>
-            <div class="code-block"><code># 运行模糊测试
+            <h3 style="margin-top: 20px;">Usage</h3>
+            <div class="code-block"><code># Run fuzzing
 go test -fuzz=FuzzEVMTransaction ./pkg/security/
 
-# 运行安全扫描
+# Run security scan
 go test -v ./pkg/security/vulnerabilities_test.go</code></div>
         </div>
 
         <!-- Fix Priorities -->
         <div class="section">
-            <h2>修复优先级</h2>
+            <h2>Fix Priorities</h2>
             <table>
                 <thead>
                     <tr>
-                        <th>优先级</th>
-                        <th>问题数量</th>
-                        <th>说明</th>
+                        <th>Priority</th>
+                        <th>Issue Count</th>
+                        <th>Description</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td><span class="priority-badge priority-0">P0 - 紧急</span></td>
+                        <td><span class="priority-badge priority-0">P0 - Urgent</span></td>
                         <td>4</td>
-                        <td>主网上线前必须修复</td>
+                        <td>Must fix before mainnet launch</td>
                     </tr>
                     <tr>
-                        <td><span class="priority-badge priority-1">P1 - 高</span></td>
+                        <td><span class="priority-badge priority-1">P1 - High</span></td>
                         <td>4</td>
-                        <td>主网上线后立即修复</td>
+                        <td>Fix immediately after mainnet launch</td>
                     </tr>
                     <tr>
-                        <td><span class="priority-badge priority-2">P2 - 中</span></td>
+                        <td><span class="priority-badge priority-2">P2 - Medium</span></td>
                         <td>12</td>
-                        <td>后续版本修复</td>
+                        <td>Fix in subsequent releases</td>
                     </tr>
                 </tbody>
             </table>
@@ -375,43 +375,43 @@ go test -v ./pkg/security/vulnerabilities_test.go</code></div>
 
         <!-- Recommendations -->
         <div class="section">
-            <h2>安全建议</h2>
-            <h3>开发阶段</h3>
+            <h2>Security Recommendations</h2>
+            <h3>Development Phase</h3>
             <ul>
-                <li>实施代码审查流程</li>
-                <li>使用静态分析工具</li>
-                <li>进行威胁建模</li>
+                <li>Establish a code review process</li>
+                <li>Use static analysis tools</li>
+                <li>Perform threat modeling</li>
             </ul>
 
-            <h3>测试阶段</h3>
+            <h3>Testing Phase</h3>
             <ul>
-                <li>全面的模糊测试</li>
-                <li>第三方安全审计</li>
-                <li>渗透测试</li>
+                <li>Comprehensive fuzzing</li>
+                <li>Third-party security audits</li>
+                <li>Penetration testing</li>
             </ul>
 
-            <h3>部署阶段</h3>
+            <h3>Deployment Phase</h3>
             <ul>
-                <li>分阶段部署</li>
-                <li>监控和告警</li>
-                <li>应急响应计划</li>
+                <li>Phased rollout</li>
+                <li>Monitoring and alerting</li>
+                <li>Incident response plan</li>
             </ul>
         </div>
 
         <!-- Conclusion -->
         <div class="section" style="background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%);">
-            <h2>结论</h2>
-            <p>AIB 2.0 在架构设计上具有创新性，但在实现层面存在多个严重的安全问题。建议在主网上线前优先修复所有 P0 级别的问题，并建立持续的安全监控和改进机制。</p>
-            <p style="margin-top: 15px;"><strong>建议主网上线时间:</strong> 修复所有 P0 问题后，建议延迟 2-3 周进行充分测试。</p>
+            <h2>Conclusion</h2>
+            <p>AIB 2.0 is architecturally innovative, but multiple critical security issues exist at the implementation level. We recommend prioritizing the remediation of all P0 issues before mainnet launch and establishing continuous security monitoring and improvement mechanisms.</p>
+            <p style="margin-top: 15px;"><strong>Recommended mainnet launch timing:</strong> After fixing all P0 issues, allow a 2-3 week delay for thorough testing.</p>
         </div>
 
         <footer>
-            <p><strong>审计团队:</strong> 安全审计团队 | Claude Code</p>
-            <p><strong>审计日期:</strong> 2026年3月7日</p>
+            <p><strong>Audit team:</strong> Security Audit Team | Claude Code</p>
+            <p><strong>Audit date:</strong> March 7, 2026</p>
             <p style="margin-top: 10px; font-size: 0.9em;">
-                <a href="fuzzing.go" style="color: #667eea;">模糊测试套件</a> |
-                <a href="vulnerabilities.go" style="color: #667eea;">漏洞检测工具</a> |
-                <a href="/adr/security-practices.md" style="color: #667eea;">安全开发指南</a>
+                <a href="fuzzing.go" style="color: #667eea;">Fuzzing Suite</a> |
+                <a href="vulnerabilities.go" style="color: #667eea;">Vulnerability Detection Tool</a> |
+                <a href="/adr/security-practices.md" style="color: #667eea;">Secure Development Guide</a>
             </p>
         </footer>
     </div>

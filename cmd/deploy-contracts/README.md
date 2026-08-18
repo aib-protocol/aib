@@ -1,51 +1,51 @@
-# AIB DeFi 合约部署工具
+# AIB DeFi Contract Deployment Tool
 
-## 概述
+## Overview
 
-AIB DeFi 合约部署工具是一套完整的部署和验证解决方案，用于在 AIB 区块链上部署和验证 DeFi 合约。
+The AIB DeFi contract deployment tool is a complete deployment and verification solution for deploying and verifying DeFi contracts on the AIB blockchain.
 
-## 功能特性
+## Features
 
-- ✅ **完整的DeFi合约套件**: WETH, Uniswap V2 Factory, Router
-- ✅ **自动化部署工具**: Go语言编写的部署主程序
-- ✅ **多环境支持**: 开发网、测试网、主网配置
-- ✅ **验证脚本**: 自动化合约验证和测试
-- ✅ **详细文档**: 部署指南和使用手册
+- ✅ **Complete DeFi contract suite**: WETH, Uniswap V2 Factory, Router
+- ✅ **Automated deployment tool**: deployment main program written in Go
+- ✅ **Multi-environment support**: devnet, testnet, and mainnet configs
+- ✅ **Verification script**: automated contract verification and testing
+- ✅ **Detailed docs**: deployment guide and user manual
 
-## 目录结构
+## Directory Structure
 
 ```
 ./cmd/deploy-contracts/
-├── main.go              # 部署主程序 (Go)
-├── config.yaml          # 配置文件
-├── go.mod              # Go模块文件
-├── networks.json        # 网络配置
-├── contracts/          # 合约源码
-│   ├── WETH.sol        # WETH包装合约
-│   ├── UniswapV2.sol   # Factory和Pair合约
-│   ├── Router.sol      # Router合约
-│   └── AIBTestToken.sol # 测试代币
-├── deploy_genesis.sh   # Genesis初始化脚本
-├── deploy_contracts.sh # 合约部署脚本
-└── verify_contracts.sh # 验证脚本
+├── main.go              # Deployment main program (Go)
+├── config.yaml          # Config file
+├── go.mod              # Go module file
+├── networks.json        # Network configs
+├── contracts/          # Contract sources
+│   ├── WETH.sol        # WETH wrapper contract
+│   ├── UniswapV2.sol   # Factory and Pair contracts
+│   ├── Router.sol      # Router contract
+│   └── AIBTestToken.sol # Test token
+├── deploy_genesis.sh   # Genesis initialization script
+├── deploy_contracts.sh # Contract deployment script
+└── verify_contracts.sh # Verification script
 ```
 
-## 快速开始
+## Quick Start
 
-### 1. 环境准备
+### 1. Prepare Environment
 
 ```bash
-# 安装Go (1.22+)
+# Install Go (1.22+)
 go version
 
-# 设置环境变量
+# Set environment variables
 export RPC_ENDPOINT="http://localhost:8545"
 export PRIVATE_KEY="0xYOUR_PRIVATE_KEY"
 ```
 
-### 2. 配置
+### 2. Configure
 
-编辑 `config.yaml` 文件:
+Edit the `config.yaml` file:
 
 ```yaml
 rpc_endpoint: "http://localhost:8545"
@@ -55,70 +55,70 @@ gas_limit: 8000000
 timeout_sec: 300
 ```
 
-### 3. 部署
+### 3. Deploy
 
 ```bash
 cd ./cmd/deploy-contracts
 
-# 部署所有合约
+# Deploy all contracts
 ./deploy_contracts.sh --contract all
 
-# 单独部署
+# Deploy individually
 ./deploy_contracts.sh --contract weth
 ./deploy_contracts.sh --contract factory
 ./deploy_contracts.sh --contract router
 ```
 
-### 4. 验证
+### 4. Verify
 
 ```bash
-# 验证已部署的合约
+# Verify deployed contracts
 ./verify_contracts.sh
 ```
 
-## 合约说明
+## Contract Overview
 
 ### WETH (Wrapped Ether)
-- 将ETH包装为ERC20代币
-- 支持存款和提取功能
-- 用于与DeFi协议交互
+- Wraps ETH as an ERC20 token
+- Supports deposit and withdrawal
+- Used for interacting with DeFi protocols
 
 ### UniswapV2Factory
-- 创建和管理代币交易对
-- 核心DEX工厂合约
-- 支持任意代币对创建
+- Creates and manages token pairs
+- Core DEX factory contract
+- Supports creation of arbitrary token pairs
 
 ### UniswapV2Router
-- 用户交互的主要入口
-- 提供交换和流动性管理
-- 支持多种交换路径
+- Main entry point for user interaction
+- Provides swaps and liquidity management
+- Supports multiple swap paths
 
-## 文档链接
+## Documentation
 
-- [部署验证报告](https://www.aib.one:51200/docs/deployment/verification-report.html)
-- [用户部署指南](https://www.aib.one:51200/docs/developers/defi-deploy-guide.html)
-- [计划文档](https://www.aib.one:51200/plans/deploy-defi-verification.md)
+- [Deployment verification report](https://www.aib.one:51200/docs/deployment/verification-report.html)
+- [User deployment guide](https://www.aib.one:51200/docs/developers/defi-deploy-guide.html)
+- [Plan document](https://www.aib.one:51200/plans/deploy-defi-verification.md)
 
-## 技术栈
+## Tech Stack
 
-- **部署工具**: Go 1.22+
-- **合约语言**: Solidity 0.8.20+
-- **网络协议**: JSON-RPC
-- **脚本语言**: Bash
+- **Deployment tool**: Go 1.22+
+- **Contract language**: Solidity 0.8.20+
+- **Network protocol**: JSON-RPC
+- **Script language**: Bash
 
-## 测试
+## Testing
 
-工具包含完整的测试套件:
+The tool includes a complete test suite:
 
-- 合约部署测试
-- 功能验证测试
-- 性能测试
-- 用户体验测试
+- Contract deployment tests
+- Functionality verification tests
+- Performance tests
+- User experience tests
 
-## 许可证
+## License
 
 MIT License
 
-## 贡献
+## Contributing
 
-欢迎提交Issue和Pull Request来改进这个工具。
+Issues and Pull Requests are welcome to improve this tool.
