@@ -10,17 +10,17 @@ import (
 	"github.com/aib-protocol/aib/internal/interfaces"
 )
 
-// TestOrderBookBasicFunctionality 测试订单簿基本功能
+// TestOrderBookBasicFunctionality tests basic order book functionality
 func TestOrderBookBasicFunctionality(t *testing.T) {
 	ob := NewOrderBook("AIB/USDT")
 
-	// 创建测试地址
+	// create test addresses
 	addr1 := interfaces.Address{}
 	addr2 := interfaces.Address{}
 	copy(addr1[:], []byte("test_address_1__________"))
 	copy(addr2[:], []byte("test_address_2__________"))
 
-	// 测试1：添加买单
+	// Test 1: add a buy order
 	buyOrder := &Order{
 		Owner:     addr1,
 		Side:      OrderSideBuy,
@@ -44,7 +44,7 @@ func TestOrderBookBasicFunctionality(t *testing.T) {
 	t.Logf("Created buy order: %s", order.String())
 }
 
-// TestOrderMatching 测试订单匹配
+// TestOrderMatching tests order matching
 func TestOrderMatching(t *testing.T) {
 	ob := NewOrderBook("AIB/USDT")
 
@@ -53,7 +53,7 @@ func TestOrderMatching(t *testing.T) {
 	copy(addr1[:], []byte("test_address_1__________"))
 	copy(addr2[:], []byte("test_address_2__________"))
 
-	// 添加卖单
+	// add a sell order
 	sellOrder := &Order{
 		Owner:     addr2,
 		Side:      OrderSideSell,
@@ -68,7 +68,7 @@ func TestOrderMatching(t *testing.T) {
 		t.Fatalf("PlaceOrder sell failed: %v", err)
 	}
 
-	// 添加匹配的买单
+	// add a matching buy order
 	buyOrder := &Order{
 		Owner:     addr1,
 		Side:      OrderSideBuy,
@@ -98,7 +98,7 @@ func TestOrderMatching(t *testing.T) {
 	t.Logf("Trade executed: %s", trade.String())
 }
 
-// TestPartialFill 测试部分成交
+// TestPartialFill tests partial fill
 func TestPartialFill(t *testing.T) {
 	ob := NewOrderBook("AIB/USDT")
 
@@ -107,7 +107,7 @@ func TestPartialFill(t *testing.T) {
 	copy(addr1[:], []byte("test_address_1__________"))
 	copy(addr2[:], []byte("test_address_2__________"))
 
-	// 添加卖单 30
+	// add sell order 30
 	sellOrder1 := &Order{
 		Owner:     addr2,
 		Side:      OrderSideSell,
@@ -118,7 +118,7 @@ func TestPartialFill(t *testing.T) {
 	}
 	ob.PlaceOrder(sellOrder1)
 
-	// 添加卖单 30
+	// add sell order 30
 	sellOrder2 := &Order{
 		Owner:     addr2,
 		Side:      OrderSideSell,
@@ -129,7 +129,7 @@ func TestPartialFill(t *testing.T) {
 	}
 	ob.PlaceOrder(sellOrder2)
 
-	// 添加买单 50（应该部分成交）
+	// add buy order 50 (should partially fill)
 	buyOrder := &Order{
 		Owner:     addr1,
 		Side:      OrderSideBuy,
@@ -144,7 +144,7 @@ func TestPartialFill(t *testing.T) {
 		t.Fatalf("PlaceOrder failed: %v", err)
 	}
 
-	// 应该产生2笔成交：第一笔30，第二笔20
+	// should produce 2 trades: first 30, second 20
 	if len(trades) != 2 {
 		t.Fatalf("Expected 2 trades, got %d", len(trades))
 	}
@@ -159,7 +159,7 @@ func TestPartialFill(t *testing.T) {
 		t.Errorf("Expected total fill 50, got %d", totalFilled)
 	}
 
-	// 订单应该完全成交
+	// the order should be fully filled
 	if buyOrder.Status != OrderStatusFilled {
 		t.Errorf("Expected order status FILLED, got %s", buyOrder.Status)
 	}
@@ -167,7 +167,7 @@ func TestPartialFill(t *testing.T) {
 	t.Logf("Partial fill test passed")
 }
 
-// TestMarketOrder 测试市价单
+// TestMarketOrder tests market orders
 func TestMarketOrder(t *testing.T) {
 	ob := NewOrderBook("AIB/USDT")
 
@@ -176,7 +176,7 @@ func TestMarketOrder(t *testing.T) {
 	copy(addr1[:], []byte("test_address_1__________"))
 	copy(addr2[:], []byte("test_address_2__________"))
 
-	// 添加限价卖单
+	// add limit sell orders
 	sellOrder := &Order{
 		Owner:     addr2,
 		Side:      OrderSideSell,
@@ -187,7 +187,7 @@ func TestMarketOrder(t *testing.T) {
 	}
 	ob.PlaceOrder(sellOrder)
 
-	// 添加市价买单
+	// add a market buy order
 	marketBuy := &Order{
 		Owner:     addr1,
 		Side:      OrderSideBuy,
@@ -204,7 +204,7 @@ func TestMarketOrder(t *testing.T) {
 	if len(trades) != 1 {
 		t.Fatalf("Expected 1 trade, got %d", len(trades))
 	}
-	// 市价单应该以最优价格成交（最低卖价1000）
+	// the market order should fill at the best price (lowest ask 1000)
 	if trades[0].Price != 1000 {
 		t.Errorf("Expected trade price 1000, got %d", trades[0].Price)
 	}
@@ -212,14 +212,14 @@ func TestMarketOrder(t *testing.T) {
 	t.Logf("Market order test passed")
 }
 
-// TestCancelOrder 测试取消订单
+// TestCancelOrder tests order cancellation
 func TestCancelOrder(t *testing.T) {
 	ob := NewOrderBook("AIB/USDT")
 
 	addr1 := interfaces.Address{}
 	copy(addr1[:], []byte("test_address_1__________"))
 
-	// 添加订单
+	// add an order
 	order := &Order{
 		Owner:     addr1,
 		Side:      OrderSideBuy,
@@ -234,13 +234,13 @@ func TestCancelOrder(t *testing.T) {
 		t.Fatalf("PlaceOrder failed: %v", err)
 	}
 
-	// 取消订单
+	// cancel the order
 	err = ob.CancelOrder(order.ID, addr1)
 	if err != nil {
 		t.Fatalf("CancelOrder failed: %v", err)
 	}
 
-	// 验证订单状态
+	// verify the order status
 	retrievedOrder, err := ob.GetOrder(order.ID)
 	if err != nil {
 		t.Fatalf("GetOrder failed: %v", err)
@@ -252,7 +252,7 @@ func TestCancelOrder(t *testing.T) {
 	t.Logf("Cancel order test passed")
 }
 
-// TestGetOrdersByOwner 测试获取用户订单
+// TestGetOrdersByOwner tests getting orders by owner
 func TestGetOrdersByOwner(t *testing.T) {
 	ob := NewOrderBook("AIB/USDT")
 
@@ -261,7 +261,7 @@ func TestGetOrdersByOwner(t *testing.T) {
 	copy(addr1[:], []byte("test_address_1__________"))
 	copy(addr2[:], []byte("test_address_2__________"))
 
-	// 为 addr1 添加订单
+	// add orders for addr1
 	for i := 0; i < 3; i++ {
 		order := &Order{
 			Owner:     addr1,
@@ -274,7 +274,7 @@ func TestGetOrdersByOwner(t *testing.T) {
 		ob.PlaceOrder(order)
 	}
 
-	// 为 addr2 添加订单
+	// add orders for addr2
 	order := &Order{
 		Owner:     addr2,
 		Side:      OrderSideSell,
@@ -285,13 +285,13 @@ func TestGetOrdersByOwner(t *testing.T) {
 	}
 	ob.PlaceOrder(order)
 
-	// 获取 addr1 的订单（应该返回3个，因为它们没有匹配）
+	// get addr1's orders (should return 3 since they did not match)
 	orders := ob.GetOrdersByOwner(addr1)
 	if len(orders) != 3 {
 		t.Errorf("Expected 3 orders for addr1, got %d", len(orders))
 	}
 
-	// 获取 addr2 的订单（应该返回1个）
+	// get addr2's orders (should return 1)
 	orders2 := ob.GetOrdersByOwner(addr2)
 	if len(orders2) != 1 {
 		t.Errorf("Expected 1 order for addr2, got %d", len(orders2))
@@ -300,7 +300,7 @@ func TestGetOrdersByOwner(t *testing.T) {
 	t.Logf("GetOrdersByOwner test passed, found %d orders for addr1, %d for addr2", len(orders), len(orders2))
 }
 
-// TestGetDepth 测试订单簿深度
+// TestGetDepth tests order book depth
 func TestGetDepth(t *testing.T) {
 	ob := NewOrderBook("AIB/USDT")
 
@@ -309,7 +309,7 @@ func TestGetDepth(t *testing.T) {
 	copy(addr1[:], []byte("test_address_1__________"))
 	copy(addr2[:], []byte("test_address_2__________"))
 
-	// 添加多个买单价格级别
+	// add multiple bid price levels
 	for i := 0; i < 5; i++ {
 		order := &Order{
 			Owner:     addr1,
@@ -322,7 +322,7 @@ func TestGetDepth(t *testing.T) {
 		ob.PlaceOrder(order)
 	}
 
-	// 添加多个卖单价格级别
+	// add multiple ask price levels
 	for i := 0; i < 5; i++ {
 		order := &Order{
 			Owner:     addr2,
@@ -335,7 +335,7 @@ func TestGetDepth(t *testing.T) {
 		ob.PlaceOrder(order)
 	}
 
-	// 获取深度
+	// get depth
 	bids, asks := ob.GetDepth(3)
 
 	if len(bids) != 3 {
@@ -345,12 +345,12 @@ func TestGetDepth(t *testing.T) {
 		t.Errorf("Expected 3 ask levels, got %d", len(asks))
 	}
 
-	// 验证买单价格排序（降序）
+	// verify bid prices are sorted (descending)
 	if len(bids) > 1 && bids[0].Price < bids[1].Price {
 		t.Error("Bids should be in descending order")
 	}
 
-	// 验证卖单价格排序（升序）
+	// verify ask prices are sorted (ascending)
 	if len(asks) > 1 && asks[0].Price > asks[1].Price {
 		t.Error("Asks should be in ascending order")
 	}
@@ -358,26 +358,26 @@ func TestGetDepth(t *testing.T) {
 	t.Logf("GetDepth test passed: bids=%v, asks=%v", bids, asks)
 }
 
-// TestOrderBookManager 测试订单簿管理器
+// TestOrderBookManager tests the order book manager
 func TestOrderBookManager(t *testing.T) {
 	manager := NewOrderBookManager()
 
-	// 获取或创建订单簿
+	// get or create the order book
 	ob1 := manager.GetOrCreateOrderBook("AIB/USDT")
 	ob2 := manager.GetOrCreateOrderBook("AIB/USDT")
 
-	// 应该是同一个实例
+	// should be the same instance
 	if ob1 != ob2 {
 		t.Error("GetOrCreateOrderBook should return the same instance")
 	}
 
-	// 获取不存在的订单簿
+	// get a non-existent order book
 	_, err := manager.GetOrderBook("ETH/USDT")
 	if err != ErrOrderBookNotFound {
 		t.Errorf("Expected ErrOrderBookNotFound, got %v", err)
 	}
 
-	// 列出交易对
+	// list trading pairs
 	pairs := manager.ListTradingPairs()
 	if len(pairs) != 1 || pairs[0] != "AIB/USDT" {
 		t.Errorf("Expected [AIB/USDT], got %v", pairs)
@@ -386,7 +386,7 @@ func TestOrderBookManager(t *testing.T) {
 	t.Logf("OrderBookManager test passed")
 }
 
-// TestOrderStatusTransition 测试订单状态转换
+// TestOrderStatusTransition tests order status transitions
 func TestOrderStatusTransition(t *testing.T) {
 	order := &Order{
 		Quantity:       100,
@@ -394,7 +394,7 @@ func TestOrderStatusTransition(t *testing.T) {
 		Status:         OrderStatusPending,
 	}
 
-	// 测试部分成交
+	// tests partial fill
 	filled := order.Fill(30)
 	if filled != 30 {
 		t.Errorf("Expected fill 30, got %d", filled)
@@ -406,7 +406,7 @@ func TestOrderStatusTransition(t *testing.T) {
 		t.Errorf("Expected remaining 70, got %d", order.RemainingQuantity())
 	}
 
-	// 测试完全成交
+	// tests full fill
 	filled = order.Fill(70)
 	if filled != 70 {
 		t.Errorf("Expected fill 70, got %d", filled)
@@ -415,7 +415,7 @@ func TestOrderStatusTransition(t *testing.T) {
 		t.Errorf("Expected FILLED, got %s", order.Status)
 	}
 
-	// 测试再次成交（应该返回0）
+	// test filling again (should return 0)
 	filled = order.Fill(10)
 	if filled != 0 {
 		t.Errorf("Expected fill 0 for filled order, got %d", filled)
@@ -424,7 +424,7 @@ func TestOrderStatusTransition(t *testing.T) {
 	t.Logf("OrderStatusTransition test passed")
 }
 
-// TestPricePriority 测试价格优先原则
+// TestPricePriority tests price priority
 func TestPricePriority(t *testing.T) {
 	ob := NewOrderBook("AIB/USDT")
 
@@ -433,7 +433,7 @@ func TestPricePriority(t *testing.T) {
 	copy(addr1[:], []byte("test_address_1__________"))
 	copy(addr2[:], []byte("test_address_2__________"))
 
-	// 添加多个卖单（不同价格）
+	// add multiple sell orders (different prices)
 	sellPrices := []uint64{1000, 1010, 1020, 1030}
 	for _, price := range sellPrices {
 		order := &Order{
@@ -447,12 +447,12 @@ func TestPricePriority(t *testing.T) {
 		ob.PlaceOrder(order)
 	}
 
-	// 添加买单，应该匹配最低卖价1000
+	// add a buy order, should match the lowest ask 1000
 	buyOrder := &Order{
 		Owner:     addr1,
 		Side:      OrderSideBuy,
 		Quantity:  10,
-		Price:     1050, // 愿意出更高价
+		Price:     1050, // willing to pay a higher price
 		OrderType: OrderTypeLimit,
 		Timestamp: time.Now(),
 	}
@@ -465,7 +465,7 @@ func TestPricePriority(t *testing.T) {
 	if len(trades) != 1 {
 		t.Fatalf("Expected 1 trade, got %d", len(trades))
 	}
-	// 应该以最低卖价成交
+	// should fill at the lowest ask
 	if trades[0].Price != 1000 {
 		t.Errorf("Expected trade price 1000 (lowest ask), got %d", trades[0].Price)
 	}
@@ -473,7 +473,7 @@ func TestPricePriority(t *testing.T) {
 	t.Logf("Price priority test passed")
 }
 
-// TestTimePriority 测试时间优先原则
+// TestTimePriority tests time priority
 func TestTimePriority(t *testing.T) {
 	ob := NewOrderBook("AIB/USDT")
 
@@ -482,14 +482,14 @@ func TestTimePriority(t *testing.T) {
 	copy(addr1[:], []byte("test_address_1__________"))
 	copy(addr2[:], []byte("test_address_2__________"))
 
-	// 先添加两个卖单（相同价格）
+	// first add two sell orders (same price)
 	sellOrder1 := &Order{
 		Owner:     addr2,
 		Side:      OrderSideSell,
 		Quantity:  10,
 		Price:     1000,
 		OrderType: OrderTypeLimit,
-		Timestamp: time.Now().Add(-time.Second), // 较早
+		Timestamp: time.Now().Add(-time.Second), // earlier
 	}
 	ob.PlaceOrder(sellOrder1)
 
@@ -499,11 +499,11 @@ func TestTimePriority(t *testing.T) {
 		Quantity:  10,
 		Price:     1000,
 		OrderType: OrderTypeLimit,
-		Timestamp: time.Now(), // 较晚
+		Timestamp: time.Now(), // later
 	}
 	ob.PlaceOrder(sellOrder2)
 
-	// 添加买单
+	// add a buy order
 	buyOrder := &Order{
 		Owner:     addr1,
 		Side:      OrderSideBuy,
@@ -518,7 +518,7 @@ func TestTimePriority(t *testing.T) {
 		t.Fatalf("PlaceOrder failed: %v", err)
 	}
 
-	// 成交的应该是较早的订单（sellOrder1是maker）
+	// the earlier order should be filled (sellOrder1 is the maker)
 	if trades[0].MakerOrderID != sellOrder1.ID {
 		t.Errorf("Expected maker order ID %d, got %d", sellOrder1.ID, trades[0].MakerOrderID)
 	}
@@ -527,10 +527,10 @@ func TestTimePriority(t *testing.T) {
 }
 
 // ============================================================================
-// 增强测试：边界条件和错误场景
+// Additional tests: edge cases and error scenarios
 // ============================================================================
 
-// TestPlaceOrder_NilOrder 测试提交空订单
+// TestPlaceOrder_NilOrder tests placing a nil order
 func TestPlaceOrder_NilOrder(t *testing.T) {
 	ob := NewOrderBook("AIB/USDT")
 	_, _, err := ob.PlaceOrder(nil)
@@ -539,7 +539,7 @@ func TestPlaceOrder_NilOrder(t *testing.T) {
 	}
 }
 
-// TestPlaceOrder_ZeroQuantity 测试零数量订单
+// TestPlaceOrder_ZeroQuantity tests a zero-quantity order
 func TestPlaceOrder_ZeroQuantity(t *testing.T) {
 	ob := NewOrderBook("AIB/USDT")
 	addr := interfaces.Address{}
@@ -558,7 +558,7 @@ func TestPlaceOrder_ZeroQuantity(t *testing.T) {
 	}
 }
 
-// TestPlaceOrder_LimitOrderZeroPrice 测试限价单零价格
+// TestPlaceOrder_LimitOrderZeroPrice tests a limit order with zero price
 func TestPlaceOrder_LimitOrderZeroPrice(t *testing.T) {
 	ob := NewOrderBook("AIB/USDT")
 	addr := interfaces.Address{}
@@ -577,7 +577,7 @@ func TestPlaceOrder_LimitOrderZeroPrice(t *testing.T) {
 	}
 }
 
-// TestPlaceOrder_InvalidOwner 测试空所有者
+// TestPlaceOrder_InvalidOwner tests an empty owner
 func TestPlaceOrder_InvalidOwner(t *testing.T) {
 	ob := NewOrderBook("AIB/USDT")
 	order := &Order{
@@ -593,7 +593,7 @@ func TestPlaceOrder_InvalidOwner(t *testing.T) {
 	}
 }
 
-// TestCancelOrder_NotFound 测试取消不存在的订单
+// TestCancelOrder_NotFound tests cancelling a non-existent order
 func TestCancelOrder_NotFound(t *testing.T) {
 	ob := NewOrderBook("AIB/USDT")
 	addr := interfaces.Address{}
@@ -605,7 +605,7 @@ func TestCancelOrder_NotFound(t *testing.T) {
 	}
 }
 
-// TestCancelOrder_Unauthorized 测试未授权取消订单
+// TestCancelOrder_Unauthorized tests unauthorized order cancellation
 func TestCancelOrder_Unauthorized(t *testing.T) {
 	ob := NewOrderBook("AIB/USDT")
 	addr1 := interfaces.Address{}
@@ -627,7 +627,7 @@ func TestCancelOrder_Unauthorized(t *testing.T) {
 	}
 }
 
-// TestCancelOrder_AlreadyCancelled 测试取消已取消的订单
+// TestCancelOrder_AlreadyCancelled tests cancelling an already-cancelled order
 func TestCancelOrder_AlreadyCancelled(t *testing.T) {
 	ob := NewOrderBook("AIB/USDT")
 	addr := interfaces.Address{}
@@ -649,7 +649,7 @@ func TestCancelOrder_AlreadyCancelled(t *testing.T) {
 	}
 }
 
-// TestGetOrder_NotFound 测试获取不存在的订单
+// TestGetOrder_NotFound tests getting a non-existent order
 func TestGetOrder_NotFound(t *testing.T) {
 	ob := NewOrderBook("AIB/USDT")
 	_, err := ob.GetOrder(99999)
@@ -658,7 +658,7 @@ func TestGetOrder_NotFound(t *testing.T) {
 	}
 }
 
-// TestOrderBook_SellOrderMatchingBids 测试卖单匹配买单
+// TestOrderBook_SellOrderMatchingBids tests a sell order matching bids
 func TestOrderBook_SellOrderMatchingBids(t *testing.T) {
 	ob := NewOrderBook("AIB/USDT")
 	addr1 := interfaces.Address{}
@@ -666,7 +666,7 @@ func TestOrderBook_SellOrderMatchingBids(t *testing.T) {
 	copy(addr1[:], []byte("test_address_1__________"))
 	copy(addr2[:], []byte("test_address_2__________"))
 
-	// 先放买单
+	// first place bids
 	buyOrder := &Order{
 		Owner:     addr1,
 		Side:      OrderSideBuy,
@@ -676,7 +676,7 @@ func TestOrderBook_SellOrderMatchingBids(t *testing.T) {
 	}
 	ob.PlaceOrder(buyOrder)
 
-	// 放匹配的卖单
+	// place a matching sell order
 	sellOrder := &Order{
 		Owner:     addr2,
 		Side:      OrderSideSell,
@@ -696,7 +696,7 @@ func TestOrderBook_SellOrderMatchingBids(t *testing.T) {
 	}
 }
 
-// TestOrderBook_MarketSellMatchingBids 测试市价卖单匹配
+// TestOrderBook_MarketSellMatchingBids tests market sell order matching
 func TestOrderBook_MarketSellMatchingBids(t *testing.T) {
 	ob := NewOrderBook("AIB/USDT")
 	addr1 := interfaces.Address{}
@@ -704,11 +704,11 @@ func TestOrderBook_MarketSellMatchingBids(t *testing.T) {
 	copy(addr1[:], []byte("test_address_1__________"))
 	copy(addr2[:], []byte("test_address_2__________"))
 
-	// 先放多个买单
+	// first place multiple bids
 	ob.PlaceOrder(&Order{Owner: addr1, Side: OrderSideBuy, Quantity: 30, Price: 1000, OrderType: OrderTypeLimit})
 	ob.PlaceOrder(&Order{Owner: addr1, Side: OrderSideBuy, Quantity: 30, Price: 990, OrderType: OrderTypeLimit})
 
-	// 市价卖单
+	// market sell order
 	_, trades, err := ob.PlaceOrder(&Order{
 		Owner:     addr2,
 		Side:      OrderSideSell,
@@ -723,7 +723,7 @@ func TestOrderBook_MarketSellMatchingBids(t *testing.T) {
 	}
 }
 
-// TestOrderBook_NoMatchWhenPricesDontCross 测试价格不交叉时不成交
+// TestOrderBook_NoMatchWhenPricesDontCross tests no fill when prices do not cross
 func TestOrderBook_NoMatchWhenPricesDontCross(t *testing.T) {
 	ob := NewOrderBook("AIB/USDT")
 	addr1 := interfaces.Address{}
@@ -731,7 +731,7 @@ func TestOrderBook_NoMatchWhenPricesDontCross(t *testing.T) {
 	copy(addr1[:], []byte("test_address_1__________"))
 	copy(addr2[:], []byte("test_address_2__________"))
 
-	// 卖单价格高于买单
+	// sell price is above the bid
 	ob.PlaceOrder(&Order{Owner: addr2, Side: OrderSideSell, Quantity: 100, Price: 2000, OrderType: OrderTypeLimit})
 	_, trades, err := ob.PlaceOrder(&Order{Owner: addr1, Side: OrderSideBuy, Quantity: 100, Price: 1000, OrderType: OrderTypeLimit})
 	if err != nil {
@@ -742,7 +742,7 @@ func TestOrderBook_NoMatchWhenPricesDontCross(t *testing.T) {
 	}
 }
 
-// TestOrderBook_MultipleMatchesExhaustTaker 测试 taker 被完全成交
+// TestOrderBook_MultipleMatchesExhaustTaker tests the taker being fully filled
 func TestOrderBook_MultipleMatchesExhaustTaker(t *testing.T) {
 	ob := NewOrderBook("AIB/USDT")
 	addr1 := interfaces.Address{}
@@ -759,7 +759,7 @@ func TestOrderBook_MultipleMatchesExhaustTaker(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed: %v", err)
 	}
-	// 应该匹配 20@1000 + 15@1010 = 35 total
+	// should match 20@1000 + 15@1010 = 35 total
 	totalFilled := uint64(0)
 	for _, tr := range trades {
 		totalFilled += tr.Quantity
@@ -772,7 +772,7 @@ func TestOrderBook_MultipleMatchesExhaustTaker(t *testing.T) {
 	}
 }
 
-// TestOrderBook_GetTrades 测试获取成交记录
+// TestOrderBook_GetTrades tests getting trade records
 func TestOrderBook_GetTrades(t *testing.T) {
 	ob := NewOrderBook("AIB/USDT")
 	addr1 := interfaces.Address{}
@@ -789,7 +789,7 @@ func TestOrderBook_GetTrades(t *testing.T) {
 	}
 }
 
-// TestOrderBook_ConcurrentAccess 测试并发安全性
+// TestOrderBook_ConcurrentAccess tests concurrency safety
 func TestOrderBook_ConcurrentAccess(t *testing.T) {
 	ob := NewOrderBook("AIB/USDT")
 	addr1 := interfaces.Address{}
@@ -800,7 +800,7 @@ func TestOrderBook_ConcurrentAccess(t *testing.T) {
 	var wg sync.WaitGroup
 	orderCount := 50
 
-	// 并发下买单
+	// concurrent buy orders
 	for i := 0; i < orderCount; i++ {
 		wg.Add(1)
 		go func(idx int) {
@@ -816,7 +816,7 @@ func TestOrderBook_ConcurrentAccess(t *testing.T) {
 		}(i)
 	}
 
-	// 并发下卖单
+	// concurrent sell orders
 	for i := 0; i < orderCount; i++ {
 		wg.Add(1)
 		go func(idx int) {
@@ -834,17 +834,17 @@ func TestOrderBook_ConcurrentAccess(t *testing.T) {
 
 	wg.Wait()
 
-	// 验证没有 panic，状态一致
+	// verify no panic and consistent state
 	bids := ob.GetBids(0)
 	asks := ob.GetAsks(0)
 	t.Logf("Concurrent test: %d bids, %d asks", len(bids), len(asks))
 }
 
-// TestOrder_RemainingQuantityOverflow 测试 RemainingQuantity 边界
+// TestOrder_RemainingQuantityOverflow tests RemainingQuantity boundary
 func TestOrder_RemainingQuantityOverflow(t *testing.T) {
 	order := &Order{
 		Quantity:       50,
-		FilledQuantity: 100, // FilledQuantity > Quantity (异常场景)
+		FilledQuantity: 100, // FilledQuantity > Quantity (abnormal case)
 	}
 	remaining := order.RemainingQuantity()
 	if remaining != 0 {
@@ -852,7 +852,7 @@ func TestOrder_RemainingQuantityOverflow(t *testing.T) {
 	}
 }
 
-// TestOrder_IsActive 测试订单活跃状态
+// TestOrder_IsActive tests order active status
 func TestOrder_IsActive(t *testing.T) {
 	tests := []struct {
 		status   OrderStatus
@@ -873,7 +873,7 @@ func TestOrder_IsActive(t *testing.T) {
 	}
 }
 
-// TestOrder_IsFilled 测试完全成交判断
+// TestOrder_IsFilled tests fully-filled detection
 func TestOrder_IsFilled(t *testing.T) {
 	order1 := &Order{Quantity: 100, FilledQuantity: 100, Status: OrderStatusFilled}
 	if !order1.IsFilled() {
@@ -886,7 +886,7 @@ func TestOrder_IsFilled(t *testing.T) {
 	}
 }
 
-// TestOrderStatus_String 测试状态字符串
+// TestOrderStatus_String tests status strings
 func TestOrderStatus_String(t *testing.T) {
 	tests := []struct {
 		status   OrderStatus
@@ -906,7 +906,7 @@ func TestOrderStatus_String(t *testing.T) {
 	}
 }
 
-// TestOrderType_String 测试订单类型字符串
+// TestOrderType_String tests order type strings
 func TestOrderType_String(t *testing.T) {
 	if OrderTypeLimit.String() != "LIMIT" {
 		t.Errorf("expected LIMIT")
@@ -919,7 +919,7 @@ func TestOrderType_String(t *testing.T) {
 	}
 }
 
-// TestOrderSide_String 测试订单方向字符串
+// TestOrderSide_String tests order side strings
 func TestOrderSide_String(t *testing.T) {
 	if OrderSideBuy.String() != "BUY" {
 		t.Errorf("expected BUY")
@@ -932,7 +932,7 @@ func TestOrderSide_String(t *testing.T) {
 	}
 }
 
-// TestOrderSide_IsOpposite 测试对手方向判断
+// TestOrderSide_IsOpposite tests opposite-side detection
 func TestOrderSide_IsOpposite(t *testing.T) {
 	if !OrderSideBuy.IsOpposite(OrderSideSell) {
 		t.Error("BUY should be opposite to SELL")
@@ -945,7 +945,7 @@ func TestOrderSide_IsOpposite(t *testing.T) {
 	}
 }
 
-// TestGetDepth_Limit 测试深度限制
+// TestGetDepth_Limit tests depth limit
 func TestGetDepth_Limit(t *testing.T) {
 	ob := NewOrderBook("AIB/USDT")
 	addr := interfaces.Address{}
@@ -971,7 +971,7 @@ func TestGetDepth_Limit(t *testing.T) {
 	}
 }
 
-// TestOrderBookManager_MultiPairs 测试多交易对管理
+// TestOrderBookManager_MultiPairs tests multi-pair management
 func TestOrderBookManager_MultiPairs(t *testing.T) {
 	mgr := NewOrderBookManager()
 	pairs := []string{"AIB/USDT", "BTC/USDT", "ETH/USDT", "AIB/BTC"}
@@ -986,7 +986,7 @@ func TestOrderBookManager_MultiPairs(t *testing.T) {
 	}
 }
 
-// TestOrder_FillZero 测试 Fill(0) 边界
+// TestOrder_FillZero tests Fill(0) edge case
 func TestOrder_FillZero(t *testing.T) {
 	order := &Order{
 		Quantity:       100,
@@ -999,7 +999,7 @@ func TestOrder_FillZero(t *testing.T) {
 	}
 }
 
-// TestOrder_Expiration 测试过期逻辑
+// TestOrder_Expiration tests expiration logic
 func TestOrder_Expiration(t *testing.T) {
 	past := time.Now().Add(-1 * time.Hour)
 	future := time.Now().Add(1 * time.Hour)
@@ -1020,7 +1020,7 @@ func TestOrder_Expiration(t *testing.T) {
 	}
 }
 
-// TestGetBids_Empty 测试空订单簿的 GetBids
+// TestGetBids_Empty tests GetBids on an empty book
 func TestGetBids_Empty(t *testing.T) {
 	ob := NewOrderBook("AIB/USDT")
 	bids := ob.GetBids(10)
@@ -1029,7 +1029,7 @@ func TestGetBids_Empty(t *testing.T) {
 	}
 }
 
-// TestGetAsks_Empty 测试空订单簿的 GetAsks
+// TestGetAsks_Empty tests GetAsks on an empty book
 func TestGetAsks_Empty(t *testing.T) {
 	ob := NewOrderBook("AIB/USDT")
 	asks := ob.GetAsks(10)
@@ -1038,7 +1038,7 @@ func TestGetAsks_Empty(t *testing.T) {
 	}
 }
 
-// TestOrderString 测试 Order String 方法
+// TestOrderString tests the Order String method
 func TestOrderString(t *testing.T) {
 	addr := interfaces.Address{}
 	copy(addr[:], []byte("test_address_1__________"))
@@ -1053,7 +1053,7 @@ func TestOrderString(t *testing.T) {
 	}
 }
 
-// TestTradeString 测试 Trade String 方法
+// TestTradeString tests the Trade String method
 func TestTradeString(t *testing.T) {
 	addr1 := interfaces.Address{}
 	addr2 := interfaces.Address{}
@@ -1072,7 +1072,7 @@ func TestTradeString(t *testing.T) {
 	}
 }
 
-// TestOrderBookString 测试 OrderBook String 方法
+// TestOrderBookString tests the OrderBook String method
 func TestOrderBookString(t *testing.T) {
 	ob := NewOrderBook("AIB/USDT")
 	s := ob.String()
@@ -1081,7 +1081,7 @@ func TestOrderBookString(t *testing.T) {
 	}
 }
 
-// TestMarketOrderFullFill 测试市价单完全成交
+// TestMarketOrderFullFill tests full fill of a market order
 func TestMarketOrderFullFill(t *testing.T) {
 	ob := NewOrderBook("AIB/USDT")
 	addr1 := interfaces.Address{}
@@ -1089,11 +1089,11 @@ func TestMarketOrderFullFill(t *testing.T) {
 	copy(addr1[:], []byte("test_address_1__________"))
 	copy(addr2[:], []byte("test_address_2__________"))
 
-	// 添加多个卖单
+	// add multiple sell orders
 	ob.PlaceOrder(&Order{Owner: addr2, Side: OrderSideSell, Quantity: 30, Price: 1000, OrderType: OrderTypeLimit})
 	ob.PlaceOrder(&Order{Owner: addr2, Side: OrderSideSell, Quantity: 30, Price: 1010, OrderType: OrderTypeLimit})
 
-	// 市价买单，全部成交
+	// market buy order, fully filled
 	_, trades, err := ob.PlaceOrder(&Order{
 		Owner: addr1, Side: OrderSideBuy, Quantity: 60, OrderType: OrderTypeMarket,
 	})
@@ -1109,13 +1109,13 @@ func TestMarketOrderFullFill(t *testing.T) {
 	}
 }
 
-// TestMarketOrderNoMatch 测试没有对手单时的市价单
+// TestMarketOrderNoMatch tests a market order with no opposite orders
 func TestMarketOrderNoMatch(t *testing.T) {
 	ob := NewOrderBook("AIB/USDT")
 	addr := interfaces.Address{}
 	copy(addr[:], []byte("test_address_1__________"))
 
-	// 没有任何订单时添加市价单
+	// add a market order when the book is empty
 	_, trades, err := ob.PlaceOrder(&Order{
 		Owner: addr, Side: OrderSideBuy, Quantity: 100, OrderType: OrderTypeMarket,
 	})
@@ -1127,7 +1127,7 @@ func TestMarketOrderNoMatch(t *testing.T) {
 	}
 }
 
-// TestCancelFilledOrder 测试取消已成交订单
+// TestCancelFilledOrder tests cancelling a filled order
 func TestCancelFilledOrder(t *testing.T) {
 	ob := NewOrderBook("AIB/USDT")
 	addr1 := interfaces.Address{}
@@ -1135,22 +1135,22 @@ func TestCancelFilledOrder(t *testing.T) {
 	copy(addr1[:], []byte("test_address_1__________"))
 	copy(addr2[:], []byte("test_address_2__________"))
 
-	// 添加卖单
+	// add a sell order
 	sellOrder := &Order{Owner: addr2, Side: OrderSideSell, Quantity: 50, Price: 1000, OrderType: OrderTypeLimit}
 	ob.PlaceOrder(sellOrder)
 
-	// 添加完全成交的买单
+	// add a buy order that gets fully filled
 	buyOrder := &Order{Owner: addr1, Side: OrderSideBuy, Quantity: 50, Price: 1000, OrderType: OrderTypeLimit}
 	ob.PlaceOrder(buyOrder)
 
-	// 尝试取消已成交的订单
+	// try to cancel the filled order
 	err := ob.CancelOrder(buyOrder.ID, addr1)
 	if err != ErrOrderNotPending {
 		t.Errorf("expected ErrOrderNotPending, got %v", err)
 	}
 }
 
-// TestRemovePriceLevelAfterAllOrdersFilled 测试价格级别完全成交后移除
+// TestRemovePriceLevelAfterAllOrdersFilled tests price level removal after all orders filled
 func TestRemovePriceLevelAfterAllOrdersFilled(t *testing.T) {
 	ob := NewOrderBook("AIB/USDT")
 	addr1 := interfaces.Address{}
@@ -1158,20 +1158,20 @@ func TestRemovePriceLevelAfterAllOrdersFilled(t *testing.T) {
 	copy(addr1[:], []byte("test_address_1__________"))
 	copy(addr2[:], []byte("test_address_2__________"))
 
-	// 添加两个卖单在同一价格
+	// add two sell orders at the same price
 	ob.PlaceOrder(&Order{Owner: addr2, Side: OrderSideSell, Quantity: 10, Price: 1000, OrderType: OrderTypeLimit})
 	ob.PlaceOrder(&Order{Owner: addr2, Side: OrderSideSell, Quantity: 10, Price: 1000, OrderType: OrderTypeLimit})
 
-	// 添加买单完全成交
+	// add a buy order that fully fills them
 	ob.PlaceOrder(&Order{Owner: addr1, Side: OrderSideBuy, Quantity: 20, Price: 1000, OrderType: OrderTypeLimit})
 
-	// 验证asks为空
+	// verify asks is empty
 	asks := ob.GetAsks(10)
 	if len(asks) != 0 {
 		t.Errorf("expected 0 asks after full fill, got %d", len(asks))
 	}
 
-	// 验证深度为空
+	// verify depth is empty
 	bids, asksDepth := ob.GetDepth(5)
 	if len(asksDepth) != 0 {
 		t.Errorf("expected 0 ask levels in depth, got %d", len(asksDepth))
@@ -1179,16 +1179,16 @@ func TestRemovePriceLevelAfterAllOrdersFilled(t *testing.T) {
 	_ = bids
 }
 
-// TestLimitOrderNoMatch 测试限价单无法成交（价格不匹配）
+// TestLimitOrderNoMatch tests a limit order that cannot fill (price mismatch)
 func TestLimitOrderNoMatch(t *testing.T) {
 	ob := NewOrderBook("AIB/USDT")
 	addr := interfaces.Address{}
 	copy(addr[:], []byte("test_address_1__________"))
 
-	// 添加卖单 2000
+	// add sell order 2000
 	ob.PlaceOrder(&Order{Owner: addr, Side: OrderSideSell, Quantity: 100, Price: 2000, OrderType: OrderTypeLimit})
 
-	// 添加买单价格 1500（无法成交）
+	// add buy order at price 1500 (cannot fill)
 	order, trades, err := ob.PlaceOrder(&Order{
 		Owner: addr, Side: OrderSideBuy, Quantity: 100, Price: 1500, OrderType: OrderTypeLimit,
 	})
@@ -1202,14 +1202,14 @@ func TestLimitOrderNoMatch(t *testing.T) {
 		t.Errorf("expected PENDING status, got %s", order.Status)
 	}
 
-	// 验证订单在订单簿中
+	// verify the order is in the book
 	bids := ob.GetBids(10)
 	if len(bids) != 1 {
 		t.Errorf("expected 1 bid, got %d", len(bids))
 	}
 }
 
-// TestOrderBook_RemainingInBookAfterPartialFill 测试部分成交后剩余在订单簿
+// TestOrderBook_RemainingInBookAfterPartialFill tests remainder staying in the book after partial fill
 func TestOrderBook_RemainingInBookAfterPartialFill(t *testing.T) {
 	ob := NewOrderBook("AIB/USDT")
 	addr1 := interfaces.Address{}
@@ -1217,10 +1217,10 @@ func TestOrderBook_RemainingInBookAfterPartialFill(t *testing.T) {
 	copy(addr1[:], []byte("test_address_1__________"))
 	copy(addr2[:], []byte("test_address_2__________"))
 
-	// 添加小卖单
+	// add a small sell order
 	ob.PlaceOrder(&Order{Owner: addr2, Side: OrderSideSell, Quantity: 20, Price: 1000, OrderType: OrderTypeLimit})
 
-	// 添加大买单（部分成交）
+	// add a large buy order (partially filled)
 	buyOrder := &Order{Owner: addr1, Side: OrderSideBuy, Quantity: 50, Price: 1000, OrderType: OrderTypeLimit}
 	_, trades, err := ob.PlaceOrder(buyOrder)
 	if err != nil {
@@ -1234,7 +1234,7 @@ func TestOrderBook_RemainingInBookAfterPartialFill(t *testing.T) {
 		t.Errorf("expected PARTIAL_FILLED, got %s", buyOrder.Status)
 	}
 
-	// 验证剩余订单在订单簿中
+	// verify the remaining order is in the book
 	bids := ob.GetBids(10)
 	if len(bids) != 1 {
 		t.Errorf("expected 1 remaining bid, got %d", len(bids))
@@ -1244,7 +1244,7 @@ func TestOrderBook_RemainingInBookAfterPartialFill(t *testing.T) {
 	}
 }
 
-// TestTradeMakerTakerIdentification 测试成交中的Maker/Taker识别
+// TestTradeMakerTakerIdentification tests maker/taker identification in trades
 func TestTradeMakerTakerIdentification(t *testing.T) {
 	ob := NewOrderBook("AIB/USDT")
 	addr1 := interfaces.Address{}
@@ -1252,14 +1252,14 @@ func TestTradeMakerTakerIdentification(t *testing.T) {
 	copy(addr1[:], []byte("test_address_1__________"))
 	copy(addr2[:], []byte("test_address_2__________"))
 
-	// 先添加卖单（更早时间是maker）
+	// first add a sell order (earlier time is the maker)
 	sellOrder := &Order{
 		Owner: addr2, Side: OrderSideSell, Quantity: 10, Price: 1000,
 		OrderType: OrderTypeLimit, Timestamp: time.Now().Add(-time.Second),
 	}
 	ob.PlaceOrder(sellOrder)
 
-	// 后添加买单（taker）
+	// then add a buy order (taker)
 	buyOrder := &Order{
 		Owner: addr1, Side: OrderSideBuy, Quantity: 10, Price: 1000,
 		OrderType: OrderTypeLimit, Timestamp: time.Now(),
@@ -1281,7 +1281,7 @@ func TestTradeMakerTakerIdentification(t *testing.T) {
 	}
 }
 
-// TestMarketSellOrderHighPriorityBid 测试市价卖单匹配买单
+// TestMarketSellOrderHighPriorityBid tests a market sell order matching bids
 func TestMarketSellOrderHighPriorityBid(t *testing.T) {
 	ob := NewOrderBook("AIB/USDT")
 	addr1 := interfaces.Address{}
@@ -1289,13 +1289,13 @@ func TestMarketSellOrderHighPriorityBid(t *testing.T) {
 	copy(addr1[:], []byte("test_address_1__________"))
 	copy(addr2[:], []byte("test_address_2__________"))
 
-	// 添加多个买单（不同价格）
+	// add multiple buy orders (different prices)
 	ob.PlaceOrder(&Order{Owner: addr1, Side: OrderSideBuy, Quantity: 10, Price: 1000, OrderType: OrderTypeLimit})
 	ob.PlaceOrder(&Order{Owner: addr1, Side: OrderSideBuy, Quantity: 10, Price: 1010, OrderType: OrderTypeLimit})
 	ob.PlaceOrder(&Order{Owner: addr1, Side: OrderSideBuy, Quantity: 10, Price: 1020, OrderType: OrderTypeLimit})
 
-	// 市价卖单 -- 注意：当前 findBestPrice 对市价卖单取 bidPrices 的最后一个元素
-	// bidPrices 按降序排列 [1020, 1010, 1000]，所以 prices[len-1] = 1000
+	// market sell order -- note: current findBestPrice takes the last element of bidPrices for a market sell order
+	// bidPrices are sorted descending [1020, 1010, 1000], so prices[len-1] = 1000
 	_, trades, err := ob.PlaceOrder(&Order{
 		Owner: addr2, Side: OrderSideSell, Quantity: 5, OrderType: OrderTypeMarket,
 	})
@@ -1305,13 +1305,13 @@ func TestMarketSellOrderHighPriorityBid(t *testing.T) {
 	if len(trades) != 1 {
 		t.Fatalf("expected 1 trade, got %d", len(trades))
 	}
-	// 当前实现中市价卖单取最低买价
+	// in the current implementation a market sell order takes the lowest bid
 	if trades[0].Price != 1000 {
 		t.Errorf("expected price 1000 (current impl: lowest bid for market sell), got %d", trades[0].Price)
 	}
 }
 
-// TestOrderIDGeneration 测试订单ID生成唯一性
+// TestOrderIDGeneration tests order ID generation uniqueness
 func TestOrderIDGeneration(t *testing.T) {
 	ob := NewOrderBook("AIB/USDT")
 	addr := interfaces.Address{}
@@ -1328,7 +1328,7 @@ func TestOrderIDGeneration(t *testing.T) {
 	}
 }
 
-// TestTradeIDGeneration 测试成交ID生成唯一性
+// TestTradeIDGeneration tests trade ID generation uniqueness
 func TestTradeIDGeneration(t *testing.T) {
 	ob := NewOrderBook("AIB/USDT")
 	addr1 := interfaces.Address{}
@@ -1336,7 +1336,7 @@ func TestTradeIDGeneration(t *testing.T) {
 	copy(addr1[:], []byte("test_address_1__________"))
 	copy(addr2[:], []byte("test_address_2__________"))
 
-	// 多次成交
+	// multiple fills
 	for i := 0; i < 10; i++ {
 		ob.PlaceOrder(&Order{Owner: addr2, Side: OrderSideSell, Quantity: 1, Price: 1000, OrderType: OrderTypeLimit})
 		ob.PlaceOrder(&Order{Owner: addr1, Side: OrderSideBuy, Quantity: 1, Price: 1000, OrderType: OrderTypeLimit})
@@ -1347,7 +1347,7 @@ func TestTradeIDGeneration(t *testing.T) {
 		t.Errorf("expected 10 trades, got %d", len(trades))
 	}
 
-	// 验证ID唯一性
+	// verify ID uniqueness
 	tradeIDs := make(map[uint64]bool)
 	for _, tr := range trades {
 		if tradeIDs[tr.ID] {
@@ -1357,13 +1357,13 @@ func TestTradeIDGeneration(t *testing.T) {
 	}
 }
 
-// TestGetBidsWithLimit 测试获取买单时限制数量
+// TestGetBidsWithLimit tests limiting the number of bids returned
 func TestGetBidsWithLimit(t *testing.T) {
 	ob := NewOrderBook("AIB/USDT")
 	addr := interfaces.Address{}
 	copy(addr[:], []byte("test_address_1__________"))
 
-	// 添加10个订单
+	// add 10 orders
 	for i := 0; i < 10; i++ {
 		ob.PlaceOrder(&Order{
 			Owner: addr, Side: OrderSideBuy, Quantity: 10,
@@ -1371,26 +1371,26 @@ func TestGetBidsWithLimit(t *testing.T) {
 		})
 	}
 
-	// 限制获取3个
+	// limit to 3
 	bids := ob.GetBids(3)
 	if len(bids) != 3 {
 		t.Errorf("expected 3 bids, got %d", len(bids))
 	}
 
-	// 不限制
+	// no limit
 	bidsAll := ob.GetBids(0)
 	if len(bidsAll) != 10 {
 		t.Errorf("expected 10 bids with no limit, got %d", len(bidsAll))
 	}
 }
 
-// TestGetAsksWithLimit 测试获取卖单时限制数量
+// TestGetAsksWithLimit tests limiting the number of asks returned
 func TestGetAsksWithLimit(t *testing.T) {
 	ob := NewOrderBook("AIB/USDT")
 	addr := interfaces.Address{}
 	copy(addr[:], []byte("test_address_1__________"))
 
-	// 添加10个订单
+	// add 10 orders
 	for i := 0; i < 10; i++ {
 		ob.PlaceOrder(&Order{
 			Owner: addr, Side: OrderSideSell, Quantity: 10,
@@ -1398,20 +1398,20 @@ func TestGetAsksWithLimit(t *testing.T) {
 		})
 	}
 
-	// 限制获取3个
+	// limit to 3
 	asks := ob.GetAsks(3)
 	if len(asks) != 3 {
 		t.Errorf("expected 3 asks, got %d", len(asks))
 	}
 
-	// 不限制
+	// no limit
 	asksAll := ob.GetAsks(0)
 	if len(asksAll) != 10 {
 		t.Errorf("expected 10 asks with no limit, got %d", len(asksAll))
 	}
 }
 
-// TestOrderBook_TradingPairSet 测试交易对自动设置
+// TestOrderBook_TradingPairSet tests automatic trading pair assignment
 func TestOrderBook_TradingPairSet(t *testing.T) {
 	ob := NewOrderBook("AIB/USDT")
 	addr := interfaces.Address{}
@@ -1427,7 +1427,7 @@ func TestOrderBook_TradingPairSet(t *testing.T) {
 	}
 }
 
-// TestOrderTimestampAutoSet 测试时间戳自动设置
+// TestOrderTimestampAutoSet tests automatic timestamp assignment
 func TestOrderTimestampAutoSet(t *testing.T) {
 	ob := NewOrderBook("AIB/USDT")
 	addr := interfaces.Address{}
@@ -1445,13 +1445,13 @@ func TestOrderTimestampAutoSet(t *testing.T) {
 	}
 }
 
-// TestOrderBook_PresetOrderID 测试预设订单ID
+// TestOrderBook_PresetOrderID tests a preset order ID
 func TestOrderBook_PresetOrderID(t *testing.T) {
 	ob := NewOrderBook("AIB/USDT")
 	addr := interfaces.Address{}
 	copy(addr[:], []byte("test_address_1__________"))
 
-	// 使用预设ID下单
+	// place an order with a preset ID
 	order := &Order{
 		ID: 12345, Owner: addr, Side: OrderSideBuy, Quantity: 10, Price: 1000, OrderType: OrderTypeLimit,
 	}
@@ -1459,12 +1459,12 @@ func TestOrderBook_PresetOrderID(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed: %v", err)
 	}
-	// 预设ID应该被保留
+	// the preset ID should be preserved
 	if placed.ID != 12345 {
 		t.Errorf("expected preset ID 12345, got %d", placed.ID)
 	}
 
-	// 验证可以通过预设ID获取
+	// verify it can be fetched by the preset ID
 	retrieved, err := ob.GetOrder(12345)
 	if err != nil {
 		t.Fatalf("GetOrder failed: %v", err)
@@ -1474,13 +1474,13 @@ func TestOrderBook_PresetOrderID(t *testing.T) {
 	}
 }
 
-// TestOrderBook_AutoGenerateOrderID 测试自动生成订单ID
+// TestOrderBook_AutoGenerateOrderID tests automatic order ID generation
 func TestOrderBook_AutoGenerateOrderID(t *testing.T) {
 	ob := NewOrderBook("AIB/USDT")
 	addr := interfaces.Address{}
 	copy(addr[:], []byte("test_address_1__________"))
 
-	// 不设置ID（ID=0），应自动生成
+	// no ID set (ID=0), should be auto-generated
 	order := &Order{
 		Owner: addr, Side: OrderSideBuy, Quantity: 10, Price: 1000, OrderType: OrderTypeLimit,
 	}
@@ -1493,7 +1493,7 @@ func TestOrderBook_AutoGenerateOrderID(t *testing.T) {
 	}
 }
 
-// TestLargeQuantityFill 测试大批量成交
+// TestLargeQuantityFill tests large-quantity fills
 func TestLargeQuantityFill(t *testing.T) {
 	ob := NewOrderBook("AIB/USDT")
 	addr1 := interfaces.Address{}
@@ -1501,14 +1501,14 @@ func TestLargeQuantityFill(t *testing.T) {
 	copy(addr1[:], []byte("test_address_1__________"))
 	copy(addr2[:], []byte("test_address_2__________"))
 
-	// 添加100个小订单
+	// add 100 small orders
 	for i := 0; i < 100; i++ {
 		ob.PlaceOrder(&Order{
 			Owner: addr2, Side: OrderSideSell, Quantity: 10, Price: 1000, OrderType: OrderTypeLimit,
 		})
 	}
 
-	// 大买单一次成交
+	// a large buy order fills at once
 	_, trades, err := ob.PlaceOrder(&Order{
 		Owner: addr1, Side: OrderSideBuy, Quantity: 1000, Price: 1000, OrderType: OrderTypeLimit,
 	})
@@ -1516,30 +1516,30 @@ func TestLargeQuantityFill(t *testing.T) {
 		t.Fatalf("failed: %v", err)
 	}
 
-	// 应该产生100笔成交
+	// should produce 100 trades
 	if len(trades) != 100 {
 		t.Errorf("expected 100 trades, got %d", len(trades))
 	}
 
-	// 验证订单簿为空
+	// verify the order book is empty
 	asks := ob.GetAsks(10)
 	if len(asks) != 0 {
 		t.Errorf("expected 0 asks after fill, got %d", len(asks))
 	}
 }
 
-// TestSelfTradePrevention 测试自成交防止（相同 owner）
+// TestSelfTradePrevention tests self-trade prevention (same owner)
 func TestSelfTradePrevention(t *testing.T) {
 	ob := NewOrderBook("AIB/USDT")
 	addr := interfaces.Address{}
 	copy(addr[:], []byte("test_address_1__________"))
 
-	// 同一用户添加买卖单
+	// same user adds buy and sell orders
 	ob.PlaceOrder(&Order{Owner: addr, Side: OrderSideBuy, Quantity: 50, Price: 1000, OrderType: OrderTypeLimit})
 	_, trades, err := ob.PlaceOrder(&Order{Owner: addr, Side: OrderSideSell, Quantity: 50, Price: 1000, OrderType: OrderTypeLimit})
 
-	// 注意：当前实现没有防止自成交，这取决于业务需求
-	// 这里验证系统不会崩溃
+	// note: the current implementation does not prevent self-trades; this depends on business requirements
+	// here we verify the system does not crash
 	if err != nil {
 		t.Logf("Self-trade error (expected based on implementation): %v", err)
 	} else {

@@ -15,21 +15,21 @@ import (
 )
 
 // ============================================================================
-// 订单状态常量
+// Order status constants
 // ============================================================================
 
-// OrderStatus 表示订单的当前状态
+// OrderStatus represents the current status of an order
 type OrderStatus int
 
 const (
-	OrderStatusPending       OrderStatus = iota // 待成交
-	OrderStatusPartialFilled                    // 部分成交
-	OrderStatusFilled                           // 完全成交
-	OrderStatusCancelled                        // 已取消
-	OrderStatusExpired                          // 已过期
+	OrderStatusPending       OrderStatus = iota // pending
+	OrderStatusPartialFilled                    // partially filled
+	OrderStatusFilled                           // fully filled
+	OrderStatusCancelled                        // cancelled
+	OrderStatusExpired                          // expired
 )
 
-// String 返回订单状态的字符串表示
+// String returns the string representation of the order status
 func (s OrderStatus) String() string {
 	switch s {
 	case OrderStatusPending:
@@ -48,18 +48,18 @@ func (s OrderStatus) String() string {
 }
 
 // ============================================================================
-// 订单类型常量
+// Order type constants
 // ============================================================================
 
-// OrderType 表示订单类型
+// OrderType represents the order type
 type OrderType int
 
 const (
-	OrderTypeLimit  OrderType = iota // 限价单
-	OrderTypeMarket                  // 市价单
+	OrderTypeLimit  OrderType = iota // limit order
+	OrderTypeMarket                  // market order
 )
 
-// String 返回订单类型的字符串表示
+// String returns the string representation of the order type
 func (t OrderType) String() string {
 	switch t {
 	case OrderTypeLimit:
@@ -72,18 +72,18 @@ func (t OrderType) String() string {
 }
 
 // ============================================================================
-// 订单方向常量
+// Order side constants
 // ============================================================================
 
-// OrderSide 表示订单方向（买单或卖单）
+// OrderSide represents the order side (buy or sell)
 type OrderSide int
 
 const (
-	OrderSideBuy  OrderSide = iota // 买单
-	OrderSideSell                  // 卖单
+	OrderSideBuy  OrderSide = iota // buy order
+	OrderSideSell                  // sell order
 )
 
-// String 返回订单方向的字符串表示
+// String returns the string representation of the order side
 func (s OrderSide) String() string {
 	switch s {
 	case OrderSideBuy:
@@ -95,13 +95,13 @@ func (s OrderSide) String() string {
 	}
 }
 
-// IsOpposite 返回两个订单方向是否相反
+// IsOpposite returns whether two order sides are opposite
 func (s OrderSide) IsOpposite(other OrderSide) bool {
 	return s != other
 }
 
 // ============================================================================
-// 错误定义
+// Error definitions
 // ============================================================================
 
 var (
@@ -116,25 +116,25 @@ var (
 )
 
 // ============================================================================
-// Order 结构体
+// Order struct
 // ============================================================================
 
-// Order 代表一个订单
+// Order represents an order
 type Order struct {
-	ID             uint64             // 唯一订单ID
-	Owner          interfaces.Address // 订单所有者
-	TradingPair    string             // 交易对 (如 "AIB/USDT")
-	Side           OrderSide          // 订单方向 (BUY/SELL)
-	Quantity       uint64             // 订单总数量
-	FilledQuantity uint64             // 已成交数量
-	Price          uint64             // 订单价格 (0 表示市价单)
-	OrderType      OrderType          // 订单类型 (限价单/市价单)
-	Status         OrderStatus        // 订单状态
-	Timestamp      time.Time          // 创建时间
-	Expiration     *time.Time         // 过期时间 (可选)
+	ID             uint64             // unique order ID
+	Owner          interfaces.Address // order owner
+	TradingPair    string             // trading pair (e.g. "AIB/USDT")
+	Side           OrderSide          // order side (BUY/SELL)
+	Quantity       uint64             // total order quantity
+	FilledQuantity uint64             // filled quantity
+	Price          uint64             // order price (0 means market order)
+	OrderType      OrderType          // order type (limit/market)
+	Status         OrderStatus        // order status
+	Timestamp      time.Time          // creation time
+	Expiration     *time.Time         // expiration time (optional)
 }
 
-// RemainingQuantity 返回订单的剩余未成交数量
+// RemainingQuantity returns the remaining unfilled quantity of the order
 func (o *Order) RemainingQuantity() uint64 {
 	if o.Quantity >= o.FilledQuantity {
 		return o.Quantity - o.FilledQuantity
@@ -142,17 +142,17 @@ func (o *Order) RemainingQuantity() uint64 {
 	return 0
 }
 
-// IsFilled 检查订单是否完全成交
+// IsFilled checks whether the order is fully filled
 func (o *Order) IsFilled() bool {
 	return o.Status == OrderStatusFilled || o.FilledQuantity >= o.Quantity
 }
 
-// IsActive 检查订单是否处于活跃状态（可成交）
+// IsActive checks whether the order is active (fillable)
 func (o *Order) IsActive() bool {
 	return o.Status == OrderStatusPending || o.Status == OrderStatusPartialFilled
 }
 
-// IsExpired 检查订单是否已过期
+// IsExpired checks whether the order has expired
 func (o *Order) IsExpired() bool {
 	if o.Expiration == nil {
 		return false
@@ -160,66 +160,66 @@ func (o *Order) IsExpired() bool {
 	return time.Now().After(*o.Expiration)
 }
 
-// Fill 成交指定数量的订单
+// Fill fills the order with the given quantity
 func (o *Order) Fill(quantity uint64) uint64 {
 	remaining := o.RemainingQuantity()
 	if quantity >= remaining {
-		// 完全成交
+		// fully filled
 		o.FilledQuantity = o.Quantity
 		o.Status = OrderStatusFilled
 		return remaining
 	}
-	// 部分成交
+	// partially filled
 	o.FilledQuantity += quantity
 	o.Status = OrderStatusPartialFilled
 	return quantity
 }
 
 // ============================================================================
-// Trade 结构体
+// Trade struct
 // ============================================================================
 
-// Trade 代表一次成交记录
+// Trade represents a single trade record
 type Trade struct {
-	ID           uint64             // 唯一成交ID
-	TradingPair  string             // 交易对
-	MakerOrderID uint64             // Maker订单ID
-	TakerOrderID uint64             // Taker订单ID
-	Maker        interfaces.Address // Maker地址
-	Taker        interfaces.Address // Taker地址
-	Side         OrderSide          // 成交方向 (买单/卖单)
-	Quantity     uint64             // 成交数量
-	Price        uint64             // 成交价格
-	Timestamp    time.Time          // 成交时间
+	ID           uint64             // unique trade ID
+	TradingPair  string             // trading pair
+	MakerOrderID uint64             // maker order ID
+	TakerOrderID uint64             // taker order ID
+	Maker        interfaces.Address // maker address
+	Taker        interfaces.Address // taker address
+	Side         OrderSide          // trade side (buy/sell)
+	Quantity     uint64             // trade quantity
+	Price        uint64             // trade price
+	Timestamp    time.Time          // trade time
 }
 
 // ============================================================================
-// OrderBook 结构体
+// OrderBook struct
 // ============================================================================
 
-// priceLevel 表示同一价格的订单级别
+// priceLevel represents the order level at the same price
 type priceLevel struct {
-	price    uint64     // 价格
-	orders   *list.List // 订单列表 (按时间顺序)
-	totalQty uint64     // 该价格级别的总数量
+	price    uint64     // price
+	orders   *list.List // order list (in time order)
+	totalQty uint64     // total quantity at this price level
 }
 
-// OrderBook 代表一个交易对的订单簿
+// OrderBook represents the order book of a trading pair
 type OrderBook struct {
-	tradingPair string                   // 交易对
-	bids        map[uint64]*priceLevel   // 买单按价格索引 (价格 -> priceLevel)
-	asks        map[uint64]*priceLevel   // 卖单按价格索引 (价格 -> priceLevel)
-	bidPrices   []uint64                 // 买单价格排序 (降序)
-	askPrices   []uint64                 // 卖单价格排序 (升序)
-	orders      map[uint64]*list.Element // 活跃订单ID -> 订单列表中的元素 (仅包含在订单簿中的活跃订单)
-	allOrders   map[uint64]*Order        // 所有订单ID -> 订单 (包含已取消、已成交等所有状态)
-	trades      []*Trade                 // 成交记录
-	orderIDSeq  uint64                   // 订单ID序列号
-	tradeIDSeq  uint64                   // 成交ID序列号
-	mu          sync.RWMutex             // 读写锁
+	tradingPair string                   // trading pair
+	bids        map[uint64]*priceLevel   // bids indexed by price (price -> priceLevel)
+	asks        map[uint64]*priceLevel   // asks indexed by price (price -> priceLevel)
+	bidPrices   []uint64                 // sorted bid prices (descending)
+	askPrices   []uint64                 // sorted ask prices (ascending)
+	orders      map[uint64]*list.Element // active order ID -> list element (active orders in the book only)
+	allOrders   map[uint64]*Order        // all order IDs -> orders (including cancelled, filled, etc.)
+	trades      []*Trade                 // trade records
+	orderIDSeq  uint64                   // order ID sequence
+	tradeIDSeq  uint64                   // trade ID sequence
+	mu          sync.RWMutex             // read-write lock
 }
 
-// NewOrderBook 创建一个新的订单簿
+// NewOrderBook creates a new order book
 func NewOrderBook(tradingPair string) *OrderBook {
 	return &OrderBook{
 		tradingPair: tradingPair,
@@ -235,22 +235,22 @@ func NewOrderBook(tradingPair string) *OrderBook {
 	}
 }
 
-// generateOrderID 生成唯一的订单ID
+// generateOrderID generates a unique order ID
 func (ob *OrderBook) generateOrderID() uint64 {
 	ob.orderIDSeq++
-	// 使用时间戳和序列号生成唯一ID
+	// generate a unique ID from timestamp and sequence number
 	ts := uint64(time.Now().UnixNano())
 	return ts<<16 | ob.orderIDSeq
 }
 
-// generateTradeID 生成唯一的成交ID
+// generateTradeID generates a unique trade ID
 func (ob *OrderBook) generateTradeID() uint64 {
 	ob.tradeIDSeq++
 	ts := uint64(time.Now().UnixNano())
 	return ts<<16 | ob.tradeIDSeq
 }
 
-// generateOrderHash 生成订单的唯一哈希
+// generateOrderHash generates the unique hash of the order
 func generateOrderHash(owner interfaces.Address, tradingPair string, side OrderSide, quantity, price uint64, timestamp time.Time) [32]byte {
 	h := sha256.New()
 	h.Write(owner[:])
@@ -265,53 +265,53 @@ func generateOrderHash(owner interfaces.Address, tradingPair string, side OrderS
 }
 
 // ============================================================================
-// 订单操作方法
+// Order operation methods
 // ============================================================================
 
-// PlaceOrder 将订单添加到订单簿并尝试匹配
-// 返回更新后的订单和可能产生的成交记录
+// PlaceOrder adds an order to the book and tries to match it
+// returns the updated order and any resulting trades
 func (ob *OrderBook) PlaceOrder(order *Order) (*Order, []*Trade, error) {
 	ob.mu.Lock()
 	defer ob.mu.Unlock()
 
-	// 验证订单
+	// validate the order
 	if err := ob.validateOrder(order); err != nil {
 		return nil, nil, err
 	}
 
-	// 如果没有指定订单ID，则生成一个
+	// if no order ID is specified, generate one
 	if order.ID == 0 {
 		order.ID = ob.generateOrderID()
 	}
 
-	// 如果没有指定时间戳，则使用当前时间
+	// if no timestamp is specified, use the current time
 	if order.Timestamp.IsZero() {
 		order.Timestamp = time.Now()
 	}
 
-	// 设置初始状态
+	// set the initial status
 	if order.Status == 0 {
 		order.Status = OrderStatusPending
 	}
 
-	// 设置交易对
+	// set the trading pair
 	order.TradingPair = ob.tradingPair
 
-	// 尝试匹配订单
+	// tries to match an order
 	newTrades := ob.matchOrder(order)
 
-	// 如果订单还有剩余未成交，且状态为活跃，则添加到订单簿
+	// if the order has remaining quantity and is active, add it to the book
 	if order.IsActive() && order.RemainingQuantity() > 0 {
 		ob.addOrderToBook(order)
 	}
 
-	// 保存订单到allOrders
+	// save the order to allOrders
 	ob.allOrders[order.ID] = order
 
 	return order, newTrades, nil
 }
 
-// validateOrder 验证订单的有效性
+// validateOrder validates the order
 func (ob *OrderBook) validateOrder(order *Order) error {
 	if order == nil {
 		return errors.New("order is nil")
@@ -325,18 +325,18 @@ func (ob *OrderBook) validateOrder(order *Order) error {
 	if order.OrderType != OrderTypeLimit && order.OrderType != OrderTypeMarket {
 		return errors.New("invalid order type")
 	}
-	// 限价单必须有有效价格
+	// a limit order must have a valid price
 	if order.OrderType == OrderTypeLimit && order.Price == 0 {
 		return ErrInvalidPrice
 	}
-	// 检查订单所有者
+	// check the order owner
 	if order.Owner == (interfaces.Address{}) {
 		return errors.New("invalid order owner")
 	}
 	return nil
 }
 
-// addOrderToBook 将订单添加到订单簿
+// addOrderToBook adds an order to the book
 func (ob *OrderBook) addOrderToBook(order *Order) {
 	var (
 		priceMap  map[uint64]*priceLevel
@@ -351,7 +351,7 @@ func (ob *OrderBook) addOrderToBook(order *Order) {
 		priceList = &ob.askPrices
 	}
 
-	// 获取或创建价格级别
+	// get or create the price level
 	level, exists := priceMap[order.Price]
 	if !exists {
 		level = &priceLevel{
@@ -359,22 +359,22 @@ func (ob *OrderBook) addOrderToBook(order *Order) {
 			orders: list.New(),
 		}
 		priceMap[order.Price] = level
-		// 添加到价格列表并排序
+		// add to the price list and sort
 		*priceList = append(*priceList, order.Price)
 		ob.sortPriceList(priceList, order.Side == OrderSideBuy)
 	}
 
-	// 添加订单到价格级别
+	// add the order to the price level
 	elem := level.orders.PushBack(order)
 	ob.orders[order.ID] = elem
 	level.totalQty += order.RemainingQuantity()
 }
 
-// sortPriceList 对价格列表进行排序
-// isDescending: 买单为降序，卖单为升序
+// sortPriceList sorts the price list
+// isDescending: descending for bids, ascending for asks
 func (ob *OrderBook) sortPriceList(prices *[]uint64, isDescending bool) {
 	if isDescending {
-		// 买单：降序（高价在前）
+		// bids: descending (highest first)
 		for i := 0; i < len(*prices)-1; i++ {
 			for j := i + 1; j < len(*prices); j++ {
 				if (*prices)[i] < (*prices)[j] {
@@ -383,7 +383,7 @@ func (ob *OrderBook) sortPriceList(prices *[]uint64, isDescending bool) {
 			}
 		}
 	} else {
-		// 卖单：升序（低价在前）
+		// asks: ascending (lowest first)
 		for i := 0; i < len(*prices)-1; i++ {
 			for j := i + 1; j < len(*prices); j++ {
 				if (*prices)[i] > (*prices)[j] {
@@ -394,31 +394,31 @@ func (ob *OrderBook) sortPriceList(prices *[]uint64, isDescending bool) {
 	}
 }
 
-// CancelOrder 取消指定订单
+// CancelOrder cancels the specified order
 func (ob *OrderBook) CancelOrder(orderID uint64, owner interfaces.Address) error {
 	ob.mu.Lock()
 	defer ob.mu.Unlock()
 
-	// 先从allOrders查找订单
+	// look up the order in allOrders first
 	order, exists := ob.allOrders[orderID]
 	if !exists {
 		return ErrOrderNotFound
 	}
 
-	// 验证订单所有者
+	// verify the order owner
 	if order.Owner != owner {
 		return ErrUnauthorized
 	}
 
-	// 检查订单状态
+	// check the order status
 	if !order.IsActive() {
 		return ErrOrderNotPending
 	}
 
-	// 更新订单状态
+	// update the order status
 	order.Status = OrderStatusCancelled
 
-	// 从活跃订单簿中移除
+	// remove from the active book
 	if elem, ok := ob.orders[orderID]; ok {
 		ob.removeOrderFromBook(order, elem)
 	}
@@ -426,7 +426,7 @@ func (ob *OrderBook) CancelOrder(orderID uint64, owner interfaces.Address) error
 	return nil
 }
 
-// removeOrderFromBook 从订单簿中移除订单
+// removeOrderFromBook removes an order from the book
 func (ob *OrderBook) removeOrderFromBook(order *Order, elem *list.Element) {
 	var priceMap map[uint64]*priceLevel
 	if order.Side == OrderSideBuy {
@@ -440,22 +440,22 @@ func (ob *OrderBook) removeOrderFromBook(order *Order, elem *list.Element) {
 		return
 	}
 
-	// 从订单列表中移除
+	// remove from the order list
 	level.orders.Remove(elem)
 	level.totalQty -= order.RemainingQuantity()
 
-	// 如果该价格级别没有订单了，删除该级别
+	// if the price level has no orders left, delete the level
 	if level.orders.Len() == 0 {
 		delete(priceMap, order.Price)
-		// 从价格列表中移除
+		// remove from the price list
 		ob.removePriceFromList(order.Price, order.Side == OrderSideBuy)
 	}
 
-	// 从活跃订单映射中删除（但allOrders中仍然保留）
+	// remove from the active order map (allOrders keeps it)
 	delete(ob.orders, order.ID)
 }
 
-// removePriceFromList 从价格列表中移除指定价格
+// removePriceFromList removes the given price from the price list
 func (ob *OrderBook) removePriceFromList(price uint64, isBid bool) {
 	var priceList *[]uint64
 	if isBid {
@@ -472,7 +472,7 @@ func (ob *OrderBook) removePriceFromList(price uint64, isBid bool) {
 	}
 }
 
-// GetOrder 根据订单ID获取订单（包括所有状态的订单）
+// GetOrder returns the order by ID (any status)
 func (ob *OrderBook) GetOrder(orderID uint64) (*Order, error) {
 	ob.mu.RLock()
 	defer ob.mu.RUnlock()
@@ -482,12 +482,12 @@ func (ob *OrderBook) GetOrder(orderID uint64) (*Order, error) {
 		return nil, ErrOrderNotFound
 	}
 
-	// 返回订单的副本
+	// return a copy of the order
 	orderCopy := *order
 	return &orderCopy, nil
 }
 
-// GetOrdersByOwner 获取指定用户的所有订单（包括所有状态的订单）
+// GetOrdersByOwner returns all orders of the given owner (any status)
 func (ob *OrderBook) GetOrdersByOwner(owner interfaces.Address) []*Order {
 	ob.mu.RLock()
 	defer ob.mu.RUnlock()
@@ -502,7 +502,7 @@ func (ob *OrderBook) GetOrdersByOwner(owner interfaces.Address) []*Order {
 	return result
 }
 
-// GetBids 获取买单列表（按价格降序）
+// GetBids returns the bid list (descending by price)
 func (ob *OrderBook) GetBids(limit int) []*Order {
 	ob.mu.RLock()
 	defer ob.mu.RUnlock()
@@ -524,7 +524,7 @@ func (ob *OrderBook) GetBids(limit int) []*Order {
 	return result
 }
 
-// GetAsks 获取卖单列表（按价格升序）
+// GetAsks returns the ask list (ascending by price)
 func (ob *OrderBook) GetAsks(limit int) []*Order {
 	ob.mu.RLock()
 	defer ob.mu.RUnlock()
@@ -546,7 +546,7 @@ func (ob *OrderBook) GetAsks(limit int) []*Order {
 	return result
 }
 
-// GetTrades 获取成交记录
+// GetTrades returns the trade records
 func (ob *OrderBook) GetTrades() []*Trade {
 	ob.mu.RLock()
 	defer ob.mu.RUnlock()
@@ -556,7 +556,7 @@ func (ob *OrderBook) GetTrades() []*Trade {
 	return result
 }
 
-// GetDepth 获取订单簿深度
+// GetDepth returns the order book depth
 func (ob *OrderBook) GetDepth(levels int) (bids []struct {
 	Price    uint64
 	Quantity uint64
@@ -576,7 +576,7 @@ func (ob *OrderBook) GetDepth(levels int) (bids []struct {
 		Quantity uint64
 	}, 0, levels)
 
-	// 获取买单深度（按价格降序）
+	// get bid depth (descending by price)
 	for i := 0; i < len(ob.bidPrices) && i < levels; i++ {
 		price := ob.bidPrices[i]
 		if level, exists := ob.bids[price]; exists {
@@ -587,7 +587,7 @@ func (ob *OrderBook) GetDepth(levels int) (bids []struct {
 		}
 	}
 
-	// 获取卖单深度（按价格升序）
+	// get ask depth (ascending by price)
 	for i := 0; i < len(ob.askPrices) && i < levels; i++ {
 		price := ob.askPrices[i]
 		if level, exists := ob.asks[price]; exists {
@@ -602,57 +602,57 @@ func (ob *OrderBook) GetDepth(levels int) (bids []struct {
 }
 
 // ============================================================================
-// 订单匹配引擎
+// Order matching engine
 // ============================================================================
 
-// matchOrder 尝试匹配订单
-// 返回成交记录列表
+// matchOrder tries to match an order
+// returns the list of trades
 func (ob *OrderBook) matchOrder(order *Order) []*Trade {
 	var newTrades []*Trade
 
-	// 确定对手方订单簿
+	// determine the opposite-side book
 	var oppositeBook map[uint64]*priceLevel
 	var oppositePrices *[]uint64
 
 	if order.Side == OrderSideBuy {
-		// 买单寻找卖单（asks - 升序，最低卖价优先）
+		// a buy order looks for asks (asks - ascending, lowest first)
 		oppositeBook = ob.asks
 		oppositePrices = &ob.askPrices
 	} else {
-		// 卖单寻找买单（bids - 降序，最高买价优先）
+		// a sell order looks for bids (bids - descending, highest first)
 		oppositeBook = ob.bids
 		oppositePrices = &ob.bidPrices
 	}
 
-	// 遍历对手方价格列表
+	// iterate the opposite-side price list
 	for order.IsActive() && order.RemainingQuantity() > 0 {
-		// 找到最优价格
+		// find the best price
 		bestPrice := ob.findBestPrice(order, oppositeBook, oppositePrices)
 		if bestPrice == 0 {
-			// 没有可匹配的对手单
+			// no matching opposite order
 			break
 		}
 
-		// 检查价格是否可以成交
+		// check whether the price allows a fill
 		if !ob.canMatch(order, bestPrice) {
 			break
 		}
 
-		// 获取该价格级别的订单
+		// get orders at this price level
 		level, exists := oppositeBook[bestPrice]
 		if !exists || level.orders.Len() == 0 {
 			break
 		}
 
-		// 从最老的订单开始匹配（时间优先）
+		// match starting from the oldest order (time priority)
 		elem := level.orders.Front()
 		makerOrder := elem.Value.(*Order)
 
-		// 执行成交
+		// execute the fill
 		trade := ob.executeTrade(order, makerOrder, bestPrice)
 		newTrades = append(newTrades, trade)
 
-		// 更新订单簿
+		// update the order book
 		if makerOrder.IsFilled() || makerOrder.Status == OrderStatusCancelled {
 			ob.removeOrderFromBook(makerOrder, elem)
 		}
@@ -661,35 +661,35 @@ func (ob *OrderBook) matchOrder(order *Order) []*Trade {
 	return newTrades
 }
 
-// findBestPrice 找到最优可匹配价格
+// findBestPrice finds the best matchable price
 func (ob *OrderBook) findBestPrice(order *Order, oppositeBook map[uint64]*priceLevel, oppositePrices *[]uint64) uint64 {
 	if len(*oppositePrices) == 0 {
 		return 0
 	}
 
 	if order.OrderType == OrderTypeMarket {
-		// 市价单：以对手最优价格成交
-		// 买单找最低卖价，卖单找最高买价
+		// market order: fill at the opposite best price
+		// buy order takes the lowest ask, sell order takes the highest bid
 		if order.Side == OrderSideBuy {
-			// 买单：找最低卖价
+			// buy order: find the lowest ask
 			return (*oppositePrices)[0]
 		} else {
-			// 卖单：找最高买价
+			// sell order: find the highest bid
 			prices := *oppositePrices
 			return prices[len(prices)-1]
 		}
 	}
 
-	// 限价单：按价格规则匹配
+	// limit order: match by price rules
 	if order.Side == OrderSideBuy {
-		// 买单：找价格 <= 订单价格的最低卖单
+		// buy order: find the lowest ask with price <= order price
 		for _, price := range *oppositePrices {
 			if price <= order.Price {
 				return price
 			}
 		}
 	} else {
-		// 卖单：找价格 >= 订单价格的最高买单
+		// sell order: find the highest bid with price >= order price
 		prices := *oppositePrices
 		for i := len(prices) - 1; i >= 0; i-- {
 			if prices[i] >= order.Price {
@@ -701,24 +701,24 @@ func (ob *OrderBook) findBestPrice(order *Order, oppositeBook map[uint64]*priceL
 	return 0
 }
 
-// canMatch 检查价格是否允许成交
+// canMatch checks whether the price allows a fill
 func (ob *OrderBook) canMatch(order *Order, price uint64) bool {
 	if order.OrderType == OrderTypeMarket {
 		return true
 	}
 
 	if order.Side == OrderSideBuy {
-		// 买单：成交价不能高于订单价格
+		// buy order: fill price must not exceed the order price
 		return price <= order.Price
 	} else {
-		// 卖单：成交价不能低于订单价格
+		// sell order: fill price must not be below the order price
 		return price >= order.Price
 	}
 }
 
-// executeTrade 执行一次成交
+// executeTrade executes one fill
 func (ob *OrderBook) executeTrade(takerOrder, makerOrder *Order, price uint64) *Trade {
-	// 计算成交数量
+	// compute the fill quantity
 	quantity := takerOrder.RemainingQuantity()
 	makerRemaining := makerOrder.RemainingQuantity()
 
@@ -726,15 +726,15 @@ func (ob *OrderBook) executeTrade(takerOrder, makerOrder *Order, price uint64) *
 		quantity = makerRemaining
 	}
 
-	// 成交
+	// fill
 	takerFilled := takerOrder.Fill(quantity)
 	makerOrder.Fill(quantity)
 
-	// 确定谁是maker谁是taker
+	// determine who is maker and who is taker
 	var maker, taker interfaces.Address
 	var makerOrderID, takerOrderID uint64
 
-	// 按时间优先，先提交的订单是maker
+	// by time priority, the earlier order is the maker
 	if makerOrder.Timestamp.Before(takerOrder.Timestamp) ||
 		(makerOrder.Timestamp.Equal(takerOrder.Timestamp) && makerOrder.ID < takerOrder.ID) {
 		maker = makerOrder.Owner
@@ -755,7 +755,7 @@ func (ob *OrderBook) executeTrade(takerOrder, makerOrder *Order, price uint64) *
 		TakerOrderID: takerOrderID,
 		Maker:        maker,
 		Taker:        taker,
-		Side:         takerOrder.Side, // Taker的方向
+		Side:         takerOrder.Side, // taker's side
 		Quantity:     takerFilled,
 		Price:        price,
 		Timestamp:    time.Now(),
@@ -767,23 +767,23 @@ func (ob *OrderBook) executeTrade(takerOrder, makerOrder *Order, price uint64) *
 }
 
 // ============================================================================
-// OrderBookManager - 订单簿管理器
+// OrderBookManager - Order book manager
 // ============================================================================
 
-// OrderBookManager 管理多个交易对的订单簿
+// OrderBookManager manages order books for multiple trading pairs
 type OrderBookManager struct {
 	orderBooks map[string]*OrderBook // tradingPair -> OrderBook
 	mu         sync.RWMutex
 }
 
-// NewOrderBookManager 创建一个新的订单簿管理器
+// NewOrderBookManager creates a new order book manager
 func NewOrderBookManager() *OrderBookManager {
 	return &OrderBookManager{
 		orderBooks: make(map[string]*OrderBook),
 	}
 }
 
-// GetOrCreateOrderBook 获取或创建指定交易对的订单簿
+// GetOrCreateOrderBook gets or creates the order book for the given trading pair
 func (m *OrderBookManager) GetOrCreateOrderBook(tradingPair string) *OrderBook {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -797,7 +797,7 @@ func (m *OrderBookManager) GetOrCreateOrderBook(tradingPair string) *OrderBook {
 	return ob
 }
 
-// GetOrderBook 获取指定交易对的订单簿
+// GetOrderBook gets the order book for the given trading pair
 func (m *OrderBookManager) GetOrderBook(tradingPair string) (*OrderBook, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
@@ -808,7 +808,7 @@ func (m *OrderBookManager) GetOrderBook(tradingPair string) (*OrderBook, error) 
 	return nil, ErrOrderBookNotFound
 }
 
-// ListTradingPairs 列出所有支持的交易对
+// ListTradingPairs lists all supported trading pairs
 func (m *OrderBookManager) ListTradingPairs() []string {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
@@ -821,22 +821,22 @@ func (m *OrderBookManager) ListTradingPairs() []string {
 }
 
 // ============================================================================
-// 辅助方法
+// Helper methods
 // ============================================================================
 
-// String 返回订单的字符串表示
+// String returns the string representation of the order
 func (o *Order) String() string {
 	return fmt.Sprintf("Order{id=%d, owner=%s, pair=%s, side=%s, qty=%d, filled=%d, price=%d, type=%s, status=%s}",
 		o.ID, o.Owner[:8], o.TradingPair, o.Side, o.Quantity, o.FilledQuantity, o.Price, o.OrderType, o.Status)
 }
 
-// String 返回成交记录的字符串表示
+// String returns the string representation of the trade
 func (t *Trade) String() string {
 	return fmt.Sprintf("Trade{id=%d, pair=%s, maker=%s, taker=%s, side=%s, qty=%d, price=%d}",
 		t.ID, t.TradingPair, t.Maker[:8], t.Taker[:8], t.Side, t.Quantity, t.Price)
 }
 
-// String 返回订单簿的字符串表示
+// String returns the string representation of the order book
 func (ob *OrderBook) String() string {
 	ob.mu.RLock()
 	defer ob.mu.RUnlock()

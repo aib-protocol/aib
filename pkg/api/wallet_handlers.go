@@ -14,17 +14,17 @@ import (
 )
 
 // ============================================================================
-// 交易查询处理器
+// Transaction query handlers
 // ============================================================================
 
-// TransactionListRequest 交易列表请求参数
+// TransactionListRequest transaction list request parameters
 type TransactionListRequest struct {
-	Address string `json:"address"` // 可选：按地址过滤
-	Limit   int    `json:"limit"`   // 可选：限制数量，默认 100
-	Offset  int    `json:"offset"`  // 可选：偏移量，默认 0
+	Address string `json:"address"` // optional: filter by address
+	Limit   int    `json:"limit"`   // optional: limit, default 100
+	Offset  int    `json:"offset"`  // optional: offset, default 0
 }
 
-// TransactionInfo 交易信息
+// TransactionInfo transaction info
 type TransactionInfo struct {
 	Hash      string     `json:"hash"`
 	Version   uint32     `json:"version"`
@@ -32,14 +32,14 @@ type TransactionInfo struct {
 	Outputs   []TxOutput `json:"outputs"`
 	LockTime  uint32     `json:"lock_time"`
 	Sequence  uint64     `json:"sequence"`
-	Timestamp *uint64    `json:"timestamp,omitempty"`  // 如果在区块中
-	BlockHash *string    `json:"block_hash,omitempty"` // 如果在区块中
-	Height    *uint64    `json:"height,omitempty"`     // 如果在区块中
-	Fee       *uint64    `json:"fee,omitempty"`        // 交易费用
-	Size      int        `json:"size"`                 // 交易大小（字节）
+	Timestamp *uint64    `json:"timestamp,omitempty"`  // if in a block
+	BlockHash *string    `json:"block_hash,omitempty"` // if in a block
+	Height    *uint64    `json:"height,omitempty"`     // if in a block
+	Fee       *uint64    `json:"fee,omitempty"`        // transaction fee
+	Size      int        `json:"size"`                 // transaction size (bytes)
 }
 
-// TxInput 交易输入
+// TxInput transaction input
 type TxInput struct {
 	TxHash      string `json:"tx_hash"`
 	OutputIndex uint32 `json:"output_index"`
@@ -47,7 +47,7 @@ type TxInput struct {
 	PublicKey   string `json:"public_key"`
 }
 
-// TxOutput 交易输出
+// TxOutput transaction output
 type TxOutput struct {
 	Value   uint64  `json:"value"`
 	Address string  `json:"address"`
@@ -57,7 +57,7 @@ type TxOutput struct {
 	SpentBy *string `json:"spent_by,omitempty"`
 }
 
-// TransactionListResponse 交易列表响应
+// TransactionListResponse transaction list response
 type TransactionListResponse struct {
 	Transactions []TransactionInfo `json:"transactions"`
 	Total        int               `json:"total"`
@@ -65,13 +65,13 @@ type TransactionListResponse struct {
 	Offset       int               `json:"offset"`
 }
 
-// TransactionDetailResponse 交易详情响应
+// TransactionDetailResponse transaction detail response
 type TransactionDetailResponse struct {
 	Transaction   TransactionInfo `json:"transaction"`
 	Confirmations *uint64         `json:"confirmations,omitempty"`
 }
 
-// handleTransactionsList 处理交易列表查询
+// handleTransactionsList handles transaction list queries
 // GET /v1/transactions?address={address}&limit={limit}&offset={offset}
 func (s *Server) handleTransactionsList(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
@@ -79,7 +79,7 @@ func (s *Server) handleTransactionsList(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	// 解析查询参数
+	// parse query parameters
 	address := r.URL.Query().Get("address")
 	limitStr := r.URL.Query().Get("limit")
 	offsetStr := r.URL.Query().Get("offset")
@@ -101,12 +101,12 @@ func (s *Server) handleTransactionsList(w http.ResponseWriter, r *http.Request) 
 	var txInfos []TransactionInfo
 	total := 0
 
-	// 从内存池获取待确认交易
+	// get pending transactions from the mempool
 	if s.mempool != nil {
 		entries := s.mempool.GetAllEntries()
 		for _, entry := range entries[:min(len(entries), limit)] {
 			if address != "" {
-				// 检查交易是否与地址相关
+				// checks whether a transaction relates to an address
 				if !txIsRelatedToAddress(entry.Tx, address) {
 					continue
 				}
@@ -116,8 +116,8 @@ func (s *Server) handleTransactionsList(w http.ResponseWriter, r *http.Request) 
 		}
 	}
 
-	// TODO: 从已确认的区块中获取交易
-	// 需要遍历区块链查找相关交易
+	// TODO: fetch transactions from confirmed blocks
+	// requires walking the chain to find related transactions
 
 	total = len(txInfos)
 
@@ -129,7 +129,7 @@ func (s *Server) handleTransactionsList(w http.ResponseWriter, r *http.Request) 
 	})
 }
 
-// handleTransactionDetail 处理交易详情查询
+// handleTransactionDetail handles transaction detail queries
 // GET /v1/transaction/{hash}
 func (s *Server) handleTransactionDetail(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
@@ -137,8 +137,8 @@ func (s *Server) handleTransactionDetail(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	// 从 URL 路径中提取交易哈希
-	// URL 格式: /v1/transaction/{hash}
+	// extract the transaction hash from the URL path
+	// URL format: /v1/transaction/{hash}
 	hashStr := r.URL.Path[len("/v1/transaction/"):]
 	if hashStr == "" {
 		writeError(w, http.StatusBadRequest, ErrCodeInvalidRequest, "Transaction hash is required", "")
@@ -157,7 +157,7 @@ func (s *Server) handleTransactionDetail(w http.ResponseWriter, r *http.Request)
 	var txInfo *TransactionInfo
 	var confirmations *uint64
 
-	// 首先在内存池中查找
+	// first look in the mempool
 	if s.mempool != nil {
 		if tx := s.mempool.GetTransaction(hashArray); tx != nil {
 			info := transactionToInfo(tx)
@@ -167,22 +167,22 @@ func (s *Server) handleTransactionDetail(w http.ResponseWriter, r *http.Request)
 		}
 	}
 
-	// 如果在内存池中未找到，在区块链中查找
+	// if not found in the mempool, search the chain
 	if txInfo == nil && s.chain != nil && s.utxoStore != nil {
 		if height, err := s.utxoStore.GetTransactionIndex(hashArray); err == nil {
-			// 找到交易所在区块的高度
+			// find the height of the block containing the transaction
 			bestHeight, _ := s.chain.GetBestBlockHeight()
 			confirmationsVal := uint64(0)
 			if bestHeight >= height {
 				confirmationsVal = bestHeight - height + 1
 			}
 
-			// 获取区块中的交易 - 需要通过其他方式
-			// 简化：直接从 utxoStore 获取交易信息
-			// 暂时返回基本信息，不包含完整交易详情
+			// get transactions in the block - needs another approach
+			// simplified: get transaction info directly from utxoStore
+			// for now return basic info without full transaction details
 			txInfo = &TransactionInfo{
 				Hash:    hashStr,
-				Version: 0, // 需要从存储获取
+				Version: 0, // needs to be fetched from storage
 				Height:  &height,
 			}
 			confirmations = &confirmationsVal
@@ -201,16 +201,16 @@ func (s *Server) handleTransactionDetail(w http.ResponseWriter, r *http.Request)
 }
 
 // ============================================================================
-// 钱包管理处理器
+// Wallet management handlers
 // ============================================================================
 
-// CreateWalletRequest 创建钱包请求
+// CreateWalletRequest create wallet request
 type CreateWalletRequest struct {
-	Password string `json:"password"` // 加密密码（可选）
-	Label    string `json:"label"`    // 钱包标签
+	Password string `json:"password"` // encryption password (optional)
+	Label    string `json:"label"`    // wallet label
 }
 
-// CreateWalletResponse 创建钱包响应
+// CreateWalletResponse create wallet response
 type CreateWalletResponse struct {
 	Address   string `json:"address"`
 	PublicKey string `json:"public_key"`
@@ -218,72 +218,72 @@ type CreateWalletResponse struct {
 	CreatedAt int64  `json:"created_at"`
 }
 
-// RestoreWalletRequest 恢复钱包请求
+// RestoreWalletRequest restore wallet request
 type RestoreWalletRequest struct {
-	PrivateKey string `json:"private_key"` // 私钥的十六进制字符串
-	Password   string `json:"password"`    // 加密密码（可选）
-	Label      string `json:"label"`       // 钱包标签
+	PrivateKey string `json:"private_key"` // hex string of the private key
+	Password   string `json:"password"`    // encryption password (optional)
+	Label      string `json:"label"`       // wallet label
 }
 
-// ImportWalletRequest 导入钱包请求（从助记词或密钥文件）
+// ImportWalletRequest import wallet request (from mnemonic or key file)
 type ImportWalletRequest struct {
-	Source   string `json:"source"`   // 导入源：mnemonic, keystore, private_key
-	Data     string `json:"data"`     // 导入数据
-	Password string `json:"password"` // 解密密码（如需要）
-	Label    string `json:"label"`    // 钱包标签
+	Source   string `json:"source"`   // import source: mnemonic, keystore, private_key
+	Data     string `json:"data"`     // import data
+	Password string `json:"password"` // decryption password (if needed)
+	Label    string `json:"label"`    // wallet label
 }
 
-// ExportWalletRequest 导出钱包请求
+// ExportWalletRequest export wallet request
 type ExportWalletRequest struct {
-	Address  string `json:"address"`  // 钱包地址
-	Format   string `json:"format"`   // 导出格式：private_key, keystore
-	Password string `json:"password"` // 加密密码（如需要）
+	Address  string `json:"address"`  // wallet address
+	Format   string `json:"format"`   // export format: private_key, keystore
+	Password string `json:"password"` // encryption password (if needed)
 }
 
-// ExportWalletResponse 导出钱包响应
+// ExportWalletResponse export wallet response
 type ExportWalletResponse struct {
-	Data      string `json:"data"`      // 导出的数据
-	Format    string `json:"format"`    // 格式类型
-	Timestamp int64  `json:"timestamp"` // 导出时间
+	Data      string `json:"data"`      // exported data
+	Format    string `json:"format"`    // format type
+	Timestamp int64  `json:"timestamp"` // export time
 }
 
-// WalletBalanceRequest 钱包余额请求
+// WalletBalanceRequest wallet balance request
 type WalletBalanceRequest struct {
-	Address string `json:"address"` // 钱包地址
+	Address string `json:"address"` // wallet address
 }
 
-// WalletBalanceResponse 钱包余额响应
+// WalletBalanceResponse wallet balance response
 type WalletBalanceResponse struct {
 	Address          string  `json:"address"`
-	Balance          uint64  `json:"balance"`            // 可用余额（最小单位）
-	BalanceAIB       float64 `json:"balance_aib"`        // 可用余额（AIB）
-	Unconfirmed      uint64  `json:"unconfirmed"`        // 未确认余额
-	UnconfirmedAIB   float64 `json:"unconfirmed_aib"`    // 未确认余额（AIB）
-	UTXOCount        int     `json:"utxo_count"`         // UTXO 数量
-	PendingUTXOCount int     `json:"pending_utxo_count"` // 待确认 UTXO 数量
+	Balance          uint64  `json:"balance"`            // available balance (smallest unit)
+	BalanceAIB       float64 `json:"balance_aib"`        // available balance (AIB)
+	Unconfirmed      uint64  `json:"unconfirmed"`        // unconfirmed balance
+	UnconfirmedAIB   float64 `json:"unconfirmed_aib"`    // unconfirmed balance (AIB)
+	UTXOCount        int     `json:"utxo_count"`         // UTXO count
+	PendingUTXOCount int     `json:"pending_utxo_count"` // pending UTXO count
 }
 
-// SendTransactionRequest 发送交易请求
+// SendTransactionRequest send transaction request
 type SendTransactionRequest struct {
-	FromAddress string `json:"from_address"` // 发送方地址
-	ToAddress   string `json:"to_address"`   // 接收方地址
-	Amount      uint64 `json:"amount"`       // 金额（最小单位）
-	Fee         uint64 `json:"fee"`          // 交易费用（可选，自动计算）
-	PrivateKey  string `json:"private_key"`  // 私钥（用于签名）
-	Memo        string `json:"memo"`         // 备注（可选）
+	FromAddress string `json:"from_address"` // sender address
+	ToAddress   string `json:"to_address"`   // recipient address
+	Amount      uint64 `json:"amount"`       // amount (smallest unit)
+	Fee         uint64 `json:"fee"`          // transaction fee (optional, auto-computed)
+	PrivateKey  string `json:"private_key"`  // private key (for signing)
+	Memo        string `json:"memo"`         // memo (optional)
 }
 
-// SendTransactionResponse 发送交易响应
+// SendTransactionResponse send transaction response
 type SendTransactionResponse struct {
-	TxHash      string `json:"tx_hash"`      // 交易哈希
-	FromAddress string `json:"from_address"` // 发送方地址
-	ToAddress   string `json:"to_address"`   // 接收方地址
-	Amount      uint64 `json:"amount"`       // 金额
-	Fee         uint64 `json:"fee"`          // 实际费用
-	Timestamp   int64  `json:"timestamp"`    // 提交时间
+	TxHash      string `json:"tx_hash"`      // transaction hash
+	FromAddress string `json:"from_address"` // sender address
+	ToAddress   string `json:"to_address"`   // recipient address
+	Amount      uint64 `json:"amount"`       // amount
+	Fee         uint64 `json:"fee"`          // actual fee
+	Timestamp   int64  `json:"timestamp"`    // submission time
 }
 
-// handleCreateWallet 处理创建钱包
+// handleCreateWallet handles wallet creation
 // POST /v1/wallet/create
 func (s *Server) handleCreateWallet(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
@@ -297,7 +297,7 @@ func (s *Server) handleCreateWallet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 创建新钱包
+	// create a new wallet
 	walletInstance, err := wallet.NewWallet()
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, ErrCodeInternalError, "Failed to create wallet", err.Error())
@@ -313,13 +313,13 @@ func (s *Server) handleCreateWallet(w http.ResponseWriter, r *http.Request) {
 		CreatedAt: time.Now().Unix(),
 	}
 
-	// TODO: 如果提供了密码，应该加密存储私钥
-	// 这需要实现钱包存储功能
+	// TODO: if a password is provided, the private key should be stored encrypted
+	// this requires implementing wallet storage
 
 	writeSuccess(w, response)
 }
 
-// handleRestoreWallet 处理恢复钱包
+// handleRestoreWallet handles wallet restoration
 // POST /v1/wallet/restore
 func (s *Server) handleRestoreWallet(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
@@ -333,7 +333,7 @@ func (s *Server) handleRestoreWallet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 解码私钥
+	// decode the private key
 	privateKey, err := hex.DecodeString(req.PrivateKey)
 	if err != nil {
 		writeError(w, http.StatusBadRequest, ErrCodeInvalidRequest, "Invalid private key format", "")
@@ -345,7 +345,7 @@ func (s *Server) handleRestoreWallet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 从私钥恢复钱包
+	// restore the wallet from the private key
 	sdk, err := wallet.NewWalletSDK(&wallet.SDKConfig{
 		PrivateKey: privateKey,
 	})
@@ -367,7 +367,7 @@ func (s *Server) handleRestoreWallet(w http.ResponseWriter, r *http.Request) {
 	writeSuccess(w, response)
 }
 
-// handleImportWallet 处理导入钱包
+// handleImportWallet handles wallet import
 // POST /v1/wallet/import
 func (s *Server) handleImportWallet(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
@@ -383,7 +383,7 @@ func (s *Server) handleImportWallet(w http.ResponseWriter, r *http.Request) {
 
 	switch req.Source {
 	case "private_key":
-		// 直接导入私钥
+		// import the private key directly
 		privateKey, err := hex.DecodeString(req.Data)
 		if err != nil {
 			writeError(w, http.StatusBadRequest, ErrCodeInvalidRequest, "Invalid private key format", "")
@@ -416,12 +416,12 @@ func (s *Server) handleImportWallet(w http.ResponseWriter, r *http.Request) {
 		writeSuccess(w, response)
 
 	case "keystore":
-		// TODO: 实现 keystore 格式导入
+		// TODO: implement keystore import
 		writeError(w, http.StatusNotImplemented, ErrCodeNotImplemented, "Keystore import not implemented", "")
 		return
 
 	case "mnemonic":
-		// TODO: 实现助记词导入
+		// TODO: implement mnemonic import
 		writeError(w, http.StatusNotImplemented, ErrCodeNotImplemented, "Mnemonic import not implemented", "")
 		return
 
@@ -431,7 +431,7 @@ func (s *Server) handleImportWallet(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// handleExportWallet 处理导出钱包
+// handleExportWallet handles wallet export
 // POST /v1/wallet/export
 func (s *Server) handleExportWallet(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
@@ -445,13 +445,13 @@ func (s *Server) handleExportWallet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: 实现钱包导出功能
-	// 需要钱包存储功能来检索私钥
+	// TODO: implement wallet export
+	// wallet storage is needed to retrieve the private key
 
 	writeError(w, http.StatusNotImplemented, ErrCodeNotImplemented, "Wallet export not implemented", "Requires wallet storage")
 }
 
-// handleWalletBalance 处理钱包余额查询
+// handleWalletBalance handles wallet balance queries
 // GET /v1/wallet/balance?address={address}
 func (s *Server) handleWalletBalance(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
@@ -474,7 +474,7 @@ func (s *Server) handleWalletBalance(w http.ResponseWriter, r *http.Request) {
 	var addrArray [32]byte
 	copy(addrArray[:], addrBytes)
 
-	// 获取已确认的 UTXO
+	// get confirmed UTXOs
 	var balance uint64
 	utxoCount := 0
 
@@ -486,26 +486,26 @@ func (s *Server) handleWalletBalance(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// 获取未确认的 UTXO（从内存池）
+	// get unconfirmed UTXOs (from the mempool)
 	var unconfirmed uint64
 	pendingUTXOCount := 0
 
 	if s.mempool != nil {
-		// 计算待确认的余额
-		// 这需要分析内存池中的交易
+		// compute the pending balance
+		// this requires analyzing mempool transactions
 		entries := s.mempool.GetAllEntries()
 		for _, entry := range entries {
-			// 检查交易的输出是否发送到该地址
+			// check whether any transaction output is sent to this address
 			for _, output := range entry.Tx.Outputs {
 				if output.Address == addrArray {
 					unconfirmed += output.Value
 					pendingUTXOCount++
 				}
 			}
-			// 检查交易的输入是否花费了该地址的 UTXO
+			// check whether any transaction input spends a UTXO of this address
 			for range entry.Tx.Inputs {
-				// 需要查找输入引用的 UTXO 的地址
-				// 这需要访问 UTXO 存储来获取引用的输出
+				// need to find the address of the UTXO referenced by the input
+				// this requires accessing the UTXO store to get the referenced output
 			}
 		}
 	}
@@ -513,7 +513,7 @@ func (s *Server) handleWalletBalance(w http.ResponseWriter, r *http.Request) {
 	response := WalletBalanceResponse{
 		Address:          address,
 		Balance:          balance,
-		BalanceAIB:       float64(balance) / 1e6, // 假设 1 AIB = 1,000,000 最小单位
+		BalanceAIB:       float64(balance) / 1e6, // assume 1 AIB = 1,000,000 smallest units
 		Unconfirmed:      unconfirmed,
 		UnconfirmedAIB:   float64(unconfirmed) / 1e6,
 		UTXOCount:        utxoCount,
@@ -523,7 +523,7 @@ func (s *Server) handleWalletBalance(w http.ResponseWriter, r *http.Request) {
 	writeSuccess(w, response)
 }
 
-// handleSendTransaction 处理发送交易
+// handleSendTransaction handles sending transactions
 // POST /v1/wallet/send
 func (s *Server) handleSendTransaction(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
@@ -537,7 +537,7 @@ func (s *Server) handleSendTransaction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 解码私钥
+	// decode the private key
 	privateKey, err := hex.DecodeString(req.PrivateKey)
 	if err != nil {
 		writeError(w, http.StatusBadRequest, ErrCodeInvalidRequest, "Invalid private key format", "")
@@ -549,7 +549,7 @@ func (s *Server) handleSendTransaction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 创建钱包
+	// create the wallet
 	walletSDK, err := wallet.NewWalletSDK(&wallet.SDKConfig{
 		PrivateKey: privateKey,
 	})
@@ -558,7 +558,7 @@ func (s *Server) handleSendTransaction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 验证发送地址
+	// verify the sender address
 	fromAddr := walletSDK.GetAddress()
 	fromAddrStr := hex.EncodeToString(fromAddr[:])
 	if req.FromAddress != "" && req.FromAddress != fromAddrStr {
@@ -566,7 +566,7 @@ func (s *Server) handleSendTransaction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 解码接收地址
+	// decode the recipient address
 	toAddrBytes, err := hex.DecodeString(req.ToAddress)
 	if err != nil || len(toAddrBytes) != 32 {
 		writeError(w, http.StatusBadRequest, ErrCodeInvalidRequest, "Invalid to address format", "")
@@ -576,13 +576,13 @@ func (s *Server) handleSendTransaction(w http.ResponseWriter, r *http.Request) {
 	var toAddr [32]byte
 	copy(toAddr[:], toAddrBytes)
 
-	// 获取 UTXO Store 和 Mempool
+	// get the UTXO store and mempool
 	if s.utxoStore == nil {
 		writeError(w, http.StatusInternalServerError, ErrCodeInternalError, "UTXO store not available", "")
 		return
 	}
 
-	// 使用类型断言获取实际的 UTXO Store 和 Mempool
+	// use a type assertion to get the actual UTXO store and mempool
 	utxoStore, ok := s.utxoStore.(interface {
 		GetUTXOsForAmount(addr [32]byte, amount uint64) ([]*utxo.UTXO, uint64, error)
 	})
@@ -591,9 +591,9 @@ func (s *Server) handleSendTransaction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 计算费用
-	feePerByte := uint64(1)        // 默认费用率
-	estimatedTxSize := uint64(200) // 估算交易大小
+	// compute the fee
+	feePerByte := uint64(1)        // default fee rate
+	estimatedTxSize := uint64(200) // estimated transaction size
 	var actualFee uint64
 	if req.Fee > 0 {
 		actualFee = req.Fee
@@ -601,17 +601,17 @@ func (s *Server) handleSendTransaction(w http.ResponseWriter, r *http.Request) {
 		actualFee = feePerByte * estimatedTxSize
 	}
 
-	// 获取需要的总金额（发送金额 + 手续费）
+	// get the total amount needed (send amount + fee)
 	totalNeeded := req.Amount + actualFee
 
-	// 选择 UTXO
+	// select UTXOs
 	selectedUTXOs, totalValue, err := utxoStore.GetUTXOsForAmount(fromAddr, totalNeeded)
 	if err != nil {
 		writeError(w, http.StatusBadRequest, ErrCodeInsufficientBalance, "Failed to select UTXOs", err.Error())
 		return
 	}
 
-	// 构建交易输入
+	// build transaction inputs
 	inputs := make([]utxo.TXInput, len(selectedUTXOs))
 	for i, u := range selectedUTXOs {
 		inputs[i] = utxo.TXInput{
@@ -620,9 +620,9 @@ func (s *Server) handleSendTransaction(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// 构建交易输出
-	// 输出 0: 接收方
-	// 输出 1: 找零（如果有）
+	// build transaction outputs
+	// output 0: recipient
+	// output 1: change (if any)
 	outputs := []utxo.TXOutput{
 		{
 			Value:   req.Amount,
@@ -630,7 +630,7 @@ func (s *Server) handleSendTransaction(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 
-	// 计算找零
+	// compute the change
 	changeAmount := totalValue - req.Amount - actualFee
 	if changeAmount > 0 {
 		outputs = append(outputs, utxo.TXOutput{
@@ -639,10 +639,10 @@ func (s *Server) handleSendTransaction(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	// 创建交易
+	// create the transaction
 	tx := utxo.NewTransaction(inputs, outputs)
 
-	// 签名所有输入
+	// sign all inputs
 	privKey := ed25519.PrivateKey(privateKey)
 	for i := range inputs {
 		if err := tx.SignInput(i, privKey); err != nil {
@@ -651,13 +651,13 @@ func (s *Server) handleSendTransaction(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// 提交到内存池
+	// submit to the mempool
 	if s.mempool == nil {
 		writeError(w, http.StatusInternalServerError, ErrCodeInternalError, "Mempool not available", "")
 		return
 	}
 
-	// 使用类型断言获取实际的 Mempool
+	// use a type assertion to get the actual mempool
 	actualMempool, ok := s.mempool.(interface {
 		AddTransaction(tx *utxo.Transaction, utxoProvider utxo.UTXOProvider) error
 	})
@@ -666,23 +666,23 @@ func (s *Server) handleSendTransaction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 获取 UTXOProvider
+	// get the UTXOProvider
 	utxoProvider, ok := s.utxoStore.(utxo.UTXOProvider)
 	if !ok {
 		writeError(w, http.StatusInternalServerError, ErrCodeInternalError, "UTXO store does not implement UTXOProvider", "")
 		return
 	}
 
-	// 添加交易到内存池
+	// add the transaction to the mempool
 	if err := actualMempool.AddTransaction(tx, utxoProvider); err != nil {
 		writeError(w, http.StatusBadRequest, ErrCodeInvalidRequest, "Failed to add transaction to mempool", err.Error())
 		return
 	}
 
-	// 计算交易哈希
+	// compute the transaction hash
 	txHash := tx.Hash()
 
-	// 返回成功响应
+	// return the success response
 	response := SendTransactionResponse{
 		TxHash:      hex.EncodeToString(txHash[:]),
 		FromAddress: req.FromAddress,
@@ -696,15 +696,15 @@ func (s *Server) handleSendTransaction(w http.ResponseWriter, r *http.Request) {
 }
 
 // ============================================================================
-// 辅助函数
+// Helper functions
 // ============================================================================
 
-// mempoolEntryToInfo 将内存池条目转换为交易信息
+// mempoolEntryToInfo converts a mempool entry to transaction info
 func mempoolEntryToInfo(entry *utxo.MempoolEntry) TransactionInfo {
 	return transactionToInfo(entry.Tx)
 }
 
-// transactionToInfo 将交易转换为交易信息
+// transactionToInfo converts a transaction to transaction info
 func transactionToInfo(tx *utxo.Transaction) TransactionInfo {
 	inputs := make([]TxInput, len(tx.Inputs))
 	for i, input := range tx.Inputs {
@@ -721,9 +721,9 @@ func transactionToInfo(tx *utxo.Transaction) TransactionInfo {
 		outputs[i] = TxOutput{
 			Value:   output.Value,
 			Address: hex.EncodeToString(output.Address[:]),
-			PubKey:  "", // TXOutput 没有 PubKey 字段
+			PubKey:  "", // TXOutput has no PubKey field
 			Index:   uint32(i),
-			IsSpent: false, // 需要从 UTXO 存储查询
+			IsSpent: false, // needs to be queried from the UTXO store
 		}
 	}
 
@@ -739,7 +739,7 @@ func transactionToInfo(tx *utxo.Transaction) TransactionInfo {
 	}
 }
 
-// txIsRelatedToAddress 检查交易是否与地址相关
+// txIsRelatedToAddress checks whether a transaction relates to an address
 func txIsRelatedToAddress(tx *utxo.Transaction, address string) bool {
 	addrBytes, err := hex.DecodeString(address)
 	if err != nil || len(addrBytes) != 32 {
@@ -749,14 +749,14 @@ func txIsRelatedToAddress(tx *utxo.Transaction, address string) bool {
 	var addrArray [32]byte
 	copy(addrArray[:], addrBytes)
 
-	// 检查输入
+	// check inputs
 	for _, input := range tx.Inputs {
 		if bytesEqual(input.PublicKey, addrBytes) {
 			return true
 		}
 	}
 
-	// 检查输出
+	// check outputs
 	for _, output := range tx.Outputs {
 		if output.Address == addrArray {
 			return true
@@ -766,30 +766,30 @@ func txIsRelatedToAddress(tx *utxo.Transaction, address string) bool {
 	return false
 }
 
-// calculateTxFee 计算交易费用
+// calculateTxFee computes the transaction fee
 func calculateTxFee(tx *utxo.Transaction, block *utxo.Block) uint64 {
-	// 计算输入总和
+	// compute the sum of inputs
 	var inputSum uint64
 	for range tx.Inputs {
-		// 需要从 UTXO 存储中获取引用的输出的值
-		// 这是一个简化版本
-		// TODO: 实际实现需要查询 UTXO 存储
+		// need to get the value of the referenced output from the UTXO store
+		// this is a simplified version
+		// TODO: the real implementation needs to query the UTXO store
 	}
 
-	// 计算输出总和
+	// compute the sum of outputs
 	outputSum := uint64(0)
 	for _, output := range tx.Outputs {
 		outputSum += output.Value
 	}
 
-	// 费用 = 输入 - 输出
+	// fee = inputs - outputs
 	if inputSum > outputSum {
 		return inputSum - outputSum
 	}
 	return 0
 }
 
-// bytesEqual 比较字节切片是否相等
+// bytesEqual compares byte slices for equality
 func bytesEqual(a, b []byte) bool {
 	if len(a) != len(b) {
 		return false
@@ -802,7 +802,7 @@ func bytesEqual(a, b []byte) bool {
 	return true
 }
 
-// min 返回两个整数中的较小值
+// min returns the smaller of two integers
 func min(a, b int) int {
 	if a < b {
 		return a
