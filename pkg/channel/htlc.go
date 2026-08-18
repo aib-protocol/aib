@@ -15,24 +15,24 @@ import (
 )
 
 // ============================================================================
-// 原子交换 (AtomicSwap) 核心类型
+// AtomicSwap core types
 // ============================================================================
 
-// AtomicSwapStatus 定义原子交换的状态
+// AtomicSwapStatus defines the state of an atomic swap.
 type AtomicSwapStatus int
 
 const (
-	// SwapCreated - 交换已创建，等待接收方认领
+	// SwapCreated - swap created, waiting for the receiver to claim
 	SwapCreated AtomicSwapStatus = iota
-	// SwapClaimed - 接收方已通过密钥认领
+	// SwapClaimed - the receiver has claimed it with the secret
 	SwapClaimed
-	// SwapRefunded - 超时后已退款
+	// SwapRefunded - refunded after timeout
 	SwapRefunded
-	// SwapExpired - 交换已过期
+	// SwapExpired - the swap has expired
 	SwapExpired
 )
 
-// String 返回交换状态的字符串表示
+// String returns the string representation of the swap status.
 func (s AtomicSwapStatus) String() string {
 	switch s {
 	case SwapCreated:
@@ -48,34 +48,34 @@ func (s AtomicSwapStatus) String() string {
 	}
 }
 
-// AtomicSwap 代表一个原子交换协议
-// 用于在 L2 通道内实现不同资产之间的原子兑换
+// AtomicSwap represents an atomic swap protocol
+// used for atomic exchange between different assets within an L2 channel.
 type AtomicSwap struct {
-	ID           [32]byte           // 唯一交换ID
-	SwapID       string             // 人类可读的交换ID
-	Sender       interfaces.Address // 发送方
-	Receiver     interfaces.Address // 接收方
-	HashLock     [32]byte           // 哈希锁 SHA256(secret)
-	Secret       []byte             // 密钥（仅在认领后公开）
-	Amount       uint64             // 交换金额
-	AssetIn      string             // 输入资产类型 (如 "AIB", "BTC", "ETH")
-	AssetOut     string             // 输出资产类型
-	Rate         uint64             // 汇率 (AssetOut per AssetIn * 10^8)
-	TimeLock     time.Time          // 超时时间
-	Status       AtomicSwapStatus   // 交换状态
-	ChannelID    [32]byte           // 关联的通道ID
-	CreatedAt    time.Time          // 创建时间
-	ClaimedAt    *time.Time         // 认领时间
-	RefundedAt   *time.Time         // 退款时间
-	HTLCID       [32]byte           // 关联的HTLC ID
-	Initiator    interfaces.Address // 发起方（支付输入资产的一方）
-	Participant  interfaces.Address // 参与方（支付输出资产的一方）
-	IsCrossChain bool               // 是否跨链交换
-	ExternalTxID string             // 外部链交易ID（跨链用）
+	ID           [32]byte           // unique swap ID
+	SwapID       string             // human-readable swap ID
+	Sender       interfaces.Address // sender
+	Receiver     interfaces.Address // receiver
+	HashLock     [32]byte           // hash lock SHA256(secret)
+	Secret       []byte             // secret (revealed only after the claim)
+	Amount       uint64             // swap amount
+	AssetIn      string             // input asset type (e.g. "AIB", "BTC", "ETH")
+	AssetOut     string             // output asset type
+	Rate         uint64             // exchange rate (AssetOut per AssetIn * 10^8)
+	TimeLock     time.Time          // timeout time
+	Status       AtomicSwapStatus   // swap status
+	ChannelID    [32]byte           // associated channel ID
+	CreatedAt    time.Time          // creation time
+	ClaimedAt    *time.Time         // claim time
+	RefundedAt   *time.Time         // refund time
+	HTLCID       [32]byte           // associated HTLC ID
+	Initiator    interfaces.Address // initiator (the party paying the input asset)
+	Participant  interfaces.Address // participant (the party paying the output asset)
+	IsCrossChain bool               // whether this is a cross-chain swap
+	ExternalTxID string             // external chain transaction ID (for cross-chain)
 }
 
 // ============================================================================
-// 原子交换错误定义
+// Atomic swap error definitions
 // ============================================================================
 
 var (
@@ -91,10 +91,10 @@ var (
 )
 
 // ============================================================================
-// 原子交换管理器
+// Atomic swap manager
 // ============================================================================
 
-// AtomicSwapManager 管理通道内的原子交换
+// AtomicSwapManager manages atomic swaps within channels.
 type AtomicSwapManager struct {
 	manager        *Manager
 	swaps          map[[32]byte]*AtomicSwap // swapID -> AtomicSwap
@@ -102,7 +102,7 @@ type AtomicSwapManager struct {
 	mu             sync.RWMutex
 }
 
-// NewAtomicSwapManager 创建新的原子交换管理器
+// NewAtomicSwapManager creates a new atomic swap manager.
 func NewAtomicSwapManager(m *Manager) *AtomicSwapManager {
 	return &AtomicSwapManager{
 		manager:        m,
@@ -112,21 +112,21 @@ func NewAtomicSwapManager(m *Manager) *AtomicSwapManager {
 }
 
 // ============================================================================
-// 原子交换核心方法
+// Atomic swap core methods
 // ============================================================================
 
-// CreateSwap 创建新的原子交换
-// 参数:
-//   - channelID: 通道ID
-//   - sender: 发送方（发起交换的一方）
-//   - receiver: 接收方
-//   - amount: 交换金额
-//   - assetIn: 输入资产类型
-//   - assetOut: 输出资产类型
-//   - timeLockDuration: 锁定期时长
-//   - preimage: 预图像（可选，如果为nil则自动生成）
+// CreateSwap creates a new atomic swap.
+// Parameters:
+//   - channelID: the channel ID
+//   - sender: the sender (the party initiating the swap)
+//   - receiver: the receiver
+//   - amount: the swap amount
+//   - assetIn: the input asset type
+//   - assetOut: the output asset type
+//   - timeLockDuration: the lock duration
+//   - preimage: the preimage (optional; auto-generated if nil)
 //
-// 返回: 原子交换对象和密钥（preimage）
+// Returns: the atomic swap object and the secret (preimage).
 func (asm *AtomicSwapManager) CreateSwap(
 	channelID [32]byte,
 	sender, receiver interfaces.Address,
@@ -138,7 +138,7 @@ func (asm *AtomicSwapManager) CreateSwap(
 	asm.mu.Lock()
 	defer asm.mu.Unlock()
 
-	// 验证参数
+	// Validate parameters
 	if amount == 0 {
 		return nil, nil, ErrInvalidAmount
 	}
@@ -149,13 +149,13 @@ func (asm *AtomicSwapManager) CreateSwap(
 		return nil, nil, errors.New("sender and receiver cannot be the same")
 	}
 
-	// 验证通道存在
+	// Verify the channel exists
 	channel, err := asm.manager.GetChannelState(channelID)
 	if err != nil {
 		return nil, nil, ErrChannelNotFound
 	}
 
-	// 验证发送方是通道的一方
+	// Verify the sender is a party of the channel
 	if sender != channel.PartyA && sender != channel.PartyB {
 		return nil, nil, errors.New("sender is not a party in the channel")
 	}
@@ -163,14 +163,14 @@ func (asm *AtomicSwapManager) CreateSwap(
 		return nil, nil, errors.New("receiver is not a party in the channel")
 	}
 
-	// 获取或生成预图像
+	// Get or generate the preimage
 	var secret []byte
 	var hashLock [32]byte
 	if preimage != nil && len(preimage) > 0 {
 		secret = preimage
 		hashLock = sha256.Sum256(preimage)
 	} else {
-		// 自动生成随机密钥
+		// Automatically generate a random secret
 		secret = make([]byte, 32)
 		if _, err := rand.Read(secret); err != nil {
 			return nil, nil, fmt.Errorf("failed to generate secret: %w", err)
@@ -178,21 +178,21 @@ func (asm *AtomicSwapManager) CreateSwap(
 		hashLock = sha256.Sum256(secret)
 	}
 
-	// 生成唯一交换ID
+	// Generate a unique swap ID
 	swapID, err := generateSwapID(channelID, hashLock, amount, time.Now())
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to generate swap ID: %w", err)
 	}
 
-	// 检查交换是否已存在
+	// Check whether the swap already exists
 	if _, exists := asm.swaps[swapID]; exists {
 		return nil, nil, ErrSwapAlreadyExists
 	}
 
-	// 计算超时时间
+	// Calculate the timeout time
 	timeLock := time.Now().Add(timeLockDuration)
 
-	// 创建原子交换
+	// Create the atomic swap
 	swap := &AtomicSwap{
 		ID:          swapID,
 		SwapID:      fmt.Sprintf("swap-%x", swapID[:8]),
@@ -210,53 +210,53 @@ func (asm *AtomicSwapManager) CreateSwap(
 		Participant: receiver,
 	}
 
-	// 添加到交换映射
+	// Add to the swap map
 	asm.swaps[swapID] = swap
 	asm.swapsByChannel[channelID] = append(asm.swapsByChannel[channelID], swapID)
 
 	return swap, secret, nil
 }
 
-// ClaimSwap 使用密钥认领原子交换
-// 参数:
-//   - swapID: 交换ID
-//   - secret: 密钥
+// ClaimSwap claims an atomic swap using the secret.
+// Parameters:
+//   - swapID: the swap ID
+//   - secret: the secret
 //
-// 返回: 成功认领的交换对象
+// Returns: the successfully claimed swap object.
 func (asm *AtomicSwapManager) ClaimSwap(swapID [32]byte, secret []byte) (*AtomicSwap, error) {
 	asm.mu.Lock()
 	defer asm.mu.Unlock()
 
-	// 获取交换
+	// Get the swap
 	swap, exists := asm.swaps[swapID]
 	if !exists {
 		return nil, ErrSwapNotFound
 	}
 
-	// 验证状态
+	// Validate the status
 	if swap.Status != SwapCreated {
 		return nil, fmt.Errorf("%w: current status is %s", ErrInvalidSwapState, swap.Status)
 	}
 
-	// 验证超时
+	// Validate the timeout
 	if time.Now().After(swap.TimeLock) {
 		swap.Status = SwapExpired
 		return nil, ErrSwapExpired
 	}
 
-	// 验证密钥
+	// Validate the secret
 	hashLock := sha256.Sum256(secret)
 	if hashLock != swap.HashLock {
 		return nil, ErrInvalidSecret
 	}
 
-	// 更新状态
+	// Update the status
 	now := time.Now()
 	swap.Secret = secret
 	swap.Status = SwapClaimed
 	swap.ClaimedAt = &now
 
-	// 在通道内执行原子转账
+	// Execute the atomic transfer within the channel
 	if err := asm.executeSwapInChannel(swap); err != nil {
 		return nil, fmt.Errorf("failed to execute swap in channel: %w", err)
 	}
@@ -264,32 +264,32 @@ func (asm *AtomicSwapManager) ClaimSwap(swapID [32]byte, secret []byte) (*Atomic
 	return swap, nil
 }
 
-// RefundSwap 超时后退款原子交换
-// 参数:
-//   - swapID: 交换ID
+// RefundSwap refunds an atomic swap after timeout.
+// Parameters:
+//   - swapID: the swap ID
 //
-// 返回: 已退款的交换对象
+// Returns: the refunded swap object.
 func (asm *AtomicSwapManager) RefundSwap(swapID [32]byte) (*AtomicSwap, error) {
 	asm.mu.Lock()
 	defer asm.mu.Unlock()
 
-	// 获取交换
+	// Get the swap
 	swap, exists := asm.swaps[swapID]
 	if !exists {
 		return nil, ErrSwapNotFound
 	}
 
-	// 验证状态
+	// Validate the status
 	if swap.Status != SwapCreated {
 		return nil, fmt.Errorf("%w: current status is %s", ErrInvalidSwapState, swap.Status)
 	}
 
-	// 验证超时
+	// Validate the timeout
 	if time.Now().Before(swap.TimeLock) {
 		return nil, fmt.Errorf("%w: time lock expires at %v", ErrSwapNotExpired, swap.TimeLock)
 	}
 
-	// 更新状态
+	// Update the status
 	now := time.Now()
 	swap.Status = SwapRefunded
 	swap.RefundedAt = &now
@@ -297,12 +297,12 @@ func (asm *AtomicSwapManager) RefundSwap(swapID [32]byte) (*AtomicSwap, error) {
 	return swap, nil
 }
 
-// VerifyHash 验证密钥是否匹配哈希锁
-// 参数:
-//   - swapID: 交换ID
-//   - secret: 待验证的密钥
+// VerifyHash verifies that the secret matches the hash lock.
+// Parameters:
+//   - swapID: the swap ID
+//   - secret: the secret to verify
 //
-// 返回: 是否匹配
+// Returns: whether it matches.
 func (asm *AtomicSwapManager) VerifyHash(swapID [32]byte, secret []byte) (bool, error) {
 	asm.mu.RLock()
 	defer asm.mu.RUnlock()
@@ -316,7 +316,7 @@ func (asm *AtomicSwapManager) VerifyHash(swapID [32]byte, secret []byte) (bool, 
 	return hashLock == swap.HashLock, nil
 }
 
-// GetSwap 获取交换
+// GetSwap retrieves the swap.
 func (asm *AtomicSwapManager) GetSwap(swapID [32]byte) (*AtomicSwap, error) {
 	asm.mu.RLock()
 	defer asm.mu.RUnlock()
@@ -326,12 +326,12 @@ func (asm *AtomicSwapManager) GetSwap(swapID [32]byte) (*AtomicSwap, error) {
 		return nil, ErrSwapNotFound
 	}
 
-	// 返回副本
+	// Return a copy
 	swapCopy := *swap
 	return &swapCopy, nil
 }
 
-// GetSwapsByChannel 获取通道的所有交换
+// GetSwapsByChannel returns all swaps of a channel.
 func (asm *AtomicSwapManager) GetSwapsByChannel(channelID [32]byte) ([]*AtomicSwap, error) {
 	asm.mu.RLock()
 	defer asm.mu.RUnlock()
@@ -352,7 +352,7 @@ func (asm *AtomicSwapManager) GetSwapsByChannel(channelID [32]byte) ([]*AtomicSw
 	return result, nil
 }
 
-// GetPendingSwaps 获取所有待处理的交换
+// GetPendingSwaps returns all pending swaps.
 func (asm *AtomicSwapManager) GetPendingSwaps() []*AtomicSwap {
 	asm.mu.RLock()
 	defer asm.mu.RUnlock()
@@ -368,7 +368,7 @@ func (asm *AtomicSwapManager) GetPendingSwaps() []*AtomicSwap {
 	return result
 }
 
-// GetExpiredSwaps 获取所有已过期的交换
+// GetExpiredSwaps returns all expired swaps.
 func (asm *AtomicSwapManager) GetExpiredSwaps() []*AtomicSwap {
 	asm.mu.RLock()
 	defer asm.mu.RUnlock()
@@ -385,16 +385,16 @@ func (asm *AtomicSwapManager) GetExpiredSwaps() []*AtomicSwap {
 	return result
 }
 
-// executeSwapInChannel 在通道内执行原子转账
+// executeSwapInChannel executes an atomic transfer within the channel.
 func (asm *AtomicSwapManager) executeSwapInChannel(swap *AtomicSwap) error {
-	// 这里应该调用通道管理器执行实际的资金转账
-	// 由于这是一个简化实现，我们假设转账已经通过 HTLC 完成
-	// 在实际实现中，这里会更新通道余额或完成 HTLC
+	// This should call the channel manager to perform the actual fund transfer.
+	// Since this is a simplified implementation, the transfer is assumed to be done via HTLC.
+	// In a real implementation, this would update channel balances or complete the HTLC.
 	_ = asm.manager
 	return nil
 }
 
-// generateSwapID 生成唯一的交换ID
+// generateSwapID generates a unique swap ID.
 func generateSwapID(channelID [32]byte, hashLock [32]byte, amount uint64, timestamp time.Time) ([32]byte, error) {
 	h := sha256.New()
 	h.Write(channelID[:])
@@ -414,20 +414,20 @@ func generateSwapID(channelID [32]byte, hashLock [32]byte, amount uint64, timest
 }
 
 // ============================================================================
-// 资产交换辅助函数
+// Asset swap helper functions
 // ============================================================================
 
-// AssetInfo 代表资产信息
+// AssetInfo represents asset information.
 type AssetInfo struct {
 	Symbol       string
 	Name         string
 	Decimals     uint8
-	IsNative     bool // 是否是链原生资产
+	IsNative     bool // whether this is a chain-native asset
 	ChainID      string
-	ContractAddr string // 对于代币合约地址
+	ContractAddr string // token contract address
 }
 
-// 预定义的资产类型
+// Predefined asset types
 var (
 	AssetAIB = AssetInfo{
 		Symbol:   "AIB",
@@ -460,7 +460,7 @@ var (
 	}
 )
 
-// GetAssetInfo 获取资产信息
+// GetAssetInfo returns asset information.
 func GetAssetInfo(symbol string) (AssetInfo, bool) {
 	switch symbol {
 	case "AIB":
@@ -476,14 +476,14 @@ func GetAssetInfo(symbol string) (AssetInfo, bool) {
 	}
 }
 
-// IsValidAsset 检查资产是否有效
+// IsValidAsset checks whether an asset is valid.
 func IsValidAsset(symbol string) bool {
 	_, ok := GetAssetInfo(symbol)
 	return ok
 }
 
 // ============================================================================
-// HTLC 类型定义 (原有)
+// HTLC type definitions (original)
 // ============================================================================
 
 // HTLC represents a Hash Time-Locked Contract.
