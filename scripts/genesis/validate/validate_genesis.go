@@ -70,10 +70,11 @@ const (
 	ExpectedBlockReward = 50
 	ExpectedBlockTime   = 30
 
-	// BootstrapAllocation is the ONLY pre-mine in AIB: 10,000 AIB granted to
-	// the founder at genesis for early testnet bootstrapping. Every other
-	// AIB must be mined; treasury/ecosystem/airdrop allocations are zero.
-	BootstrapAllocation int64 = 10000
+	// BootstrapAllocation is ZERO: absolute no-premine. The genesis block
+	// allocates nothing to anyone — the founder is simply miner #1, earning
+	// coins by producing blocks from block 1, same as every participant.
+	// All allocations (team/ecosystem/community/airdrop) must be zero.
+	BootstrapAllocation int64 = 0
 )
 
 func main() {
@@ -256,9 +257,9 @@ func validateGenesis(genesis GenesisConfig, data string, verbose bool) Validatio
 		isRemainderBin bool // community pool receives integer division remainder
 	}
 
-	// No-premine policy: the ONLY pre-allocated AIB is the 10,000-unit
-	// bootstrap grant (early testnet bootstrapping). Everything else must
-	// be zero — all remaining supply is minted exclusively by mining.
+	// No-premine policy: absolute. Genesis allocates ZERO AIB to anyone.
+	// All entries must be zero — the entire supply is minted exclusively
+	// by mining. The founder is miner #1, nothing more.
 	allocList := []allocEntry{
 		{-1, genesis.Allocations.Team.Amount, genesis.Allocations.Team.Percentage, "Team (bootstrap)", false},
 		{0, genesis.Allocations.Ecosystem.Amount, genesis.Allocations.Ecosystem.Percentage, "Ecosystem", false},

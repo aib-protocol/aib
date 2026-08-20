@@ -7,7 +7,7 @@
   "validators": [],
   "allocations": {
     "team": {
-      "amount": "10000",
+      "amount": "0",
       "percentage": "0"
     },
     "ecosystem": {
