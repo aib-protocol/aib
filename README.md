@@ -28,13 +28,15 @@ curl -sSfL https://www.aib.one/install.sh | bash
 
 ## Overview
 
-AIB is a novel blockchain protocol designed from the ground up for the AI era. It combines:
+**AIB is a settlement layer that charges a transparent fee for the flow of value — decentralization removes the middleman, and the protocol collects the middleman's fee as public security budget.**
 
-- **PoAIW Consensus**: Proof of AI Work - miners contribute AI compute to earn block rewards
-- **UTXO Model**: Extended UTXO with support for smart contracts and AI inference requests
-- **Payment Channels**: Lightning-style channels for instant, low-fee AI service payments
-- **ZK Rollups**: Scalable layer 2 solutions with Merkle proof-based batch verification
-- **AI Inference**: Built-in protocol-level support for distributed AI inference
+Bitcoin settles value at rest. AIB settles value **in motion**: every on-chain trade pays a protocol fee φ that funds the network's security, so liquidity itself is the mining energy. The chain knows exactly three things — **signed transactions, fees, stake** — and nothing else:
+
+- **Fee-Burn Economy (RFC-002)**: no premine, absolute. Staking APR = φ·T/S — set by real transaction flow, market-discovered, never by whitepaper promise
+- **Simple core, complex edges**: like Bitcoin, the consensus layer stays minimal forever (UTXO + VRF + fee). All complexity — AI inference, contracts, DeFi — lives *outside* the chain and settles onto it. An exploit burns one channel, never the chain
+- **UTXO Model**: extended UTXO with payment channels and AI-inference settlement as first-class citizens
+- **Trustless asset anchoring (planned)**: BTC/ETH/USDT anchor in via light-client burn-and-mint (no multisig custodian), trade at AIB speed, redeem 1:1 anytime — value flows in for the yield, never trapped
+- **Native AI inference settlement**: providers and users settle inference trades on-chain; the chain verifies signatures and fees, never the AI output itself — service-agnostic for a century
 
 ## Features
 
