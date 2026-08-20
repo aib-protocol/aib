@@ -14,7 +14,7 @@
 1. Every on-chain settled inference transaction pays a fee φ (proposed 1%) into the current epoch reward pool.
 2. Staking APR: `APR = φ·T / S` (T = epoch transaction volume, S = total stake — floating, market-discovered).
 3. Block production: pure stake-weighted VRF. **The transaction-volume weight from RFC-001 §4 is removed** — washing volume grants zero block-selection advantage.
-4. Founder privilege: **veto only**. No mint key, no allocation key, no unilateral upgrade power.
+4. **No founder privilege. Zero.** There is no veto, no admin key, no special role of any kind. Governance weight is earned on-chain: the voice that matters belongs to the highest cumulative **fee-score** — the address that has contributed the most burned-fee work over the longest time. Contribution-weighted, time-accrued, fully decentralized.
 
 ## 3. Why cheating is strictly unprofitable
 
@@ -32,15 +32,14 @@ The security budget is not electricity (PoW) verification or fixed inflation (Po
 
 None of this requires re-running the inference (no verification computation). The chain never verifies the AI output itself; it verifies that **signed parties paid real money and burned fees**. This keeps the protocol service-agnostic for a century: AI today, HI or whatever comes next tomorrow — the settlement logic is identical.
 
-## 4. Long-term self-evolution (founder-decentralization roadmap)
+## 4. Long-term self-evolution (no-founder governance)
 
-- **Phase 0 (now)**: founder holds veto; community discussion via issues/PRs; RFC governance process established.
-- **Phase 1**: veto scope narrowed in writing — only proposals altering monetary policy or breaking the no-premine/no-fixed-emission invariant can be vetoed.
-- **Phase 1.5**: veto use is rate-limited and publicly logged; every veto must cite which invariant it protects.
+There is no founder role and no sunset roadmap for one — centralization was never introduced in the first place.
 
-- **Phase 2**: veto becomes *delayed veto* (delay + arbitration instead of kill); routine upgrades move to on-chain voting.
-- **Phase 3**: veto sunsets automatically (e.g., after N consecutive quarters of voter participation above threshold). Protocol fully self-governing.
-- **Adaptive parameters**: φ, epoch length, etc. adjust only via fixed governance formulas (e.g., an APR target band) — *rules amend rules; humans do not hand-pick numbers*.
+- **Governance weight = cumulative fee-score.** Every address accrues score from burned fees it has caused over time (work × duration). The largest contributors — those who have walked the farthest and paid the most real cost on-chain — hold the strongest voice. Buying it late costs real burned fees, not a token grant.
+- **Rules amend rules.** φ, epoch length, and all tunable parameters adjust only via fixed governance formulas (e.g., an APR target band) executed by the fee-score-weighted on-chain vote — *humans do not hand-pick numbers; the chain's own work-weight decides*.
+- **Attack-resistant by construction**: to capture governance you must out-contribute every honest participant cumulatively — an attack that pays real fees funds the very reward pool it seeks to drain (strictly negative EV, same table as §3).
+- Community discussion via issues/PRs; RFC governance process is the only off-chain artifact, and it is advisory, never authoritative.
 
 ## 5. Century / interplanetary scale
 
@@ -53,11 +52,10 @@ Latency-tolerant design:
 
 ## 6. Open questions
 
-1. Should the fee rate φ be fixed at 1%, or dynamic (an EIP-1559-style fee market)?
-2. Reward distribution: per-2block (daily) or per-block (continuous)?
-3. Veto sunset condition: participation threshold, time-based, or both?
-4. Interplanetary checkpoints: light-client proofs or a high-stake committee?
-5. What belongs in the untouchable invariant set? (no-premine, fixed supply π×10⁸, fee-only rewards … what else?)
+1. Fee rate φ: fixed at 1%, or **dynamic**? A PoW chain adjusts difficulty to hashpower; a fee-burn chain has no hashpower — but it has an equivalent: **fee throughput vs. stake (T/S)**. Proposal on the table: φ adapts like a difficulty adjustment, steering `APR = φ·T/S` toward a target band (e.g., 4–8%): if real usage pushes APR above the band, φ eases down; below the band, φ rises. Usage is the mining energy of this chain; φ becomes its difficulty knob — market-set, not human-set.
+2. Reward distribution: per-epoch (daily) or per-block (continuous)? *(epoch = 1 day is the working proposal)*
+3. Interplanetary checkpoints: light-client proofs or a high-stake committee?
+4. What belongs in the untouchable invariant set? (no-premine, fixed supply π×10⁸, fee-only rewards, **no founder/admin keys** … what else?)
 
 ## 7. Language policy
 
