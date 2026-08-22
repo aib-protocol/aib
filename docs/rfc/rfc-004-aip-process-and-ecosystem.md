@@ -38,6 +38,14 @@ Principles for incubated projects:
 3. **No treasury, no gatekeeper**: there is no foundation fund deciding who gets incubated. Anyone may build. Resources come from participants' own mined coins and voluntary contribution — the same absolute-decentralization rule as genesis.
 4. **Milestone-settled funding**: raised funds (aBTC/aETH/aUSDT) can be locked as plain UTXO with time/module locks and released by verifiable milestones — a primitive AIB already has, enough for honest teams, useless for frauds who can't ship.
 
+## 3.5 Commerce layering: centralize the business, decentralize the settlement
+
+Applications — on L2 or directly on L1 — are free to be highly centralized. A company or individual may operate an app, an exchange, a marketplace, or an AI service for its own commercial profit. Attracting businesses and profit to the chain is a feature, not a violation.
+
+The L0/L1 settlement layer, by contrast, must remain absolutely decentralized: permissionless to join, immune to interference, no operator privileged. Nobody needs permission to settle; no business can capture the ledger.
+
+**Rule of thumb: run your business as centrally as you like — settle on a chain nobody owns.**
+
 ## 4. Founder role: gardener, not king
 
 The founder holds **zero protocol privilege** — no premine, no veto, no admin key (RFC-002 §2.4). The founder's legitimate role is exactly one thing: **keep the project alive through its fragile early years** — keep building, keep the vision coherent, keep it from being abandoned.
