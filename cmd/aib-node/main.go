@@ -44,7 +44,7 @@ var TestnetConfig = NetworkConfig{
 	GenesisTime:    1741910400, // 2025-03-14T00:00:00Z
 	GenesisMsg:     "AIB 2.0 Testnet Genesis",
 	GenesisReward:  uint64(5000000000), // 50 AIB in satoshi
-	BootstrapNodes: []string{"www.aib.one:51413"},
+	BootstrapNodes: []string{"212.56.43.128:51413"},
 	DefaultP2PPort: 51413,
 	BlockVersion:   2,
 }
