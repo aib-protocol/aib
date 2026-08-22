@@ -54,6 +54,7 @@ type Server struct {
 	port           int
 	mu             sync.RWMutex
 	startTime      time.Time
+	miningStats    func() map[string]interface{}
 	chain          ChainReader
 	migrationHub   MigrationHubAPI
 	utxoStore      utxoStoreInterface
@@ -257,6 +258,9 @@ func (s *Server) RegisterRoutes() {
 	// Health check - basic
 	s.mux.HandleFunc("/health", s.handleHealth)
 	s.mux.HandleFunc("/v1/status", s.handleStatus)
+
+	// Mining/miner observability (fee-burn testnet)
+	s.mux.HandleFunc("/v1/mining", s.handleMining)
 
 	// P2P nodelist
 	s.mux.HandleFunc("/v1/peers", s.handlePeers)

@@ -98,6 +98,8 @@ type Node struct {
 
 	// PoAIW components
 	reputationMgr *utxoPkg.ReputationManager
+	miningStats   *MiningStats
+	epochFees     *epochFeeAccumulator
 
 	// P2P network
 	peerManager *p2p.ChainPeerManager
@@ -275,6 +277,8 @@ func (n *Node) Start() error {
 
 	// 3b. initialize ReputationManager (PoAIW)
 	n.reputationMgr = utxoPkg.NewReputationManager()
+	n.miningStats = NewMiningStats()
+	n.epochFees = &epochFeeAccumulator{}
 	n.logger.Println("    ✓ Reputation manager initialized (PoAIW)")
 
 	// 4. Generate or load node keys
@@ -316,6 +320,7 @@ func (n *Node) Start() error {
 	n.apiServer = api.NewServer(n.config.APIPort)
 	n.apiServer.SetChain(&chainAdapter{chainState: n.chainState})
 	n.apiServer.SetChainID(n.networkCfg.ChainID)
+	n.apiServer.SetMiningStats(n.miningStats.Snapshot)
 
 	n.wg.Add(1)
 	go func() {
@@ -745,32 +750,47 @@ func (n *Node) produceBlock() {
 	var newBlock *utxoPkg.Block
 
 	if n.networkCfg.BlockVersion >= 2 {
-		// V2: PoAIW block production
-		// Use SelectProposerV2 with reputation weighting
+		// V2+ (fee-burn trial): PURE-STAKE VRF sortition (RFC-002 Route C, 2026-08-22 decision)
+		// No reputation weighting — α=1.0, β=0.
 		seed := prevHash[:]
-		selectedProposer, err := n.consensus.SelectProposerV2(seed, n.reputationMgr)
+		proof, err := n.consensus.SelectProposerVRFDeterministic(seed)
 		if err != nil {
-			// Fallback: use self as proposer if selection fails (e.g. single node)
-			n.logger.Printf("[Block %d] SelectProposerV2 fallback: %v", height+1, err)
-			selectedProposer = proposer
+			// Fallback: single-node genesis phase — self proposes
+			n.logger.Printf("[Block %d] VRF selection fallback: %v", height+1, err)
+			proof = nil
 		}
-		if selectedProposer != proposer {
-			// Not our turn to propose
+		if proof != nil && proof.Winner != proposer {
+			// Not our slot — someone else won the sortition
+			n.miningStats.recordMiss(height+1, proof.Winner)
 			return
 		}
+		if proof != nil {
+			n.miningStats.recordWin(height+1, proof.Stakes)
+		}
 
-		// Create V2 coinbase: 30 AIB to proposer, 20 AIB to inference contributor
-		// For now, inference reward goes to proposer as well (until inference network is live)
-		coinbaseTx := utxoPkg.CreateCoinbaseV2Tx(proposer, proposer, height+1)
-		blockTxs := append([]*utxoPkg.Transaction{coinbaseTx}, txs...)
+		// Epoch fee-burn settlement: at each epoch boundary, split accumulated
+		// fees — stakers get up to φ·S/year, the excess is burned (pkg/economy).
+		n.settleEpochFees(height + 1)
+
+		// Coinbase: bootstrap-window low reward (RFC-003): 1 AIB/block during
+		// the first 10,000 blocks, then fee-share only (zero inflation path).
+		coinbaseAmount := uint64(1 * 1e8)
+		if height+1 > 10000 {
+			coinbaseAmount = 0
+		}
+		var coinbaseTx *utxoPkg.Transaction
+		if coinbaseAmount > 0 {
+			coinbaseTx = utxoPkg.CreateCoinbaseTransaction(proposer, coinbaseAmount, []byte("vrf-coinbase"))
+		}
+		var blockTxs []*utxoPkg.Transaction
+		if coinbaseTx != nil {
+			blockTxs = append([]*utxoPkg.Transaction{coinbaseTx}, txs...)
+		} else {
+			blockTxs = txs
+		}
 
 		newBlock = utxoPkg.NewBlock(blockTxs, prevHash, height+1, proposer)
 		newBlock.Header.Version = 2
-
-		// Set PoAIW fields
-		newBlock.Header.InferencePoW = utxoPkg.GenerateInferencePoW(proposer, prevHash, height+1)
-		newBlock.Header.ModelID = "aib-base-v1"
-		newBlock.Hash = newBlock.CalculateHash()
 	} else {
 		// V1: Legacy block production
 		coinbaseTx := utxoPkg.CreateCoinbaseTransaction(proposer, 50*1e8, []byte("block reward"))
