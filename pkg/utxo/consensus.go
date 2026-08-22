@@ -101,6 +101,14 @@ func NewConsensusState(config *PoSConfig) *ConsensusState {
 	}
 }
 
+// HasValidator reports whether the address is already a validator.
+func (cs *ConsensusState) HasValidator(address [32]byte) bool {
+	cs.mu.RLock()
+	defer cs.mu.RUnlock()
+	_, ok := cs.validators[address]
+	return ok
+}
+
 // AddValidator adds a new validator to the consensus.
 func (cs *ConsensusState) AddValidator(address [32]byte, stake uint64, publicKey ed25519.PublicKey) error {
 	cs.mu.Lock()
@@ -257,6 +265,16 @@ func (cs *ConsensusState) rebuildProposerQueue() {
 	cs.proposerQueue = make([][32]byte, 0, len(validators))
 	for _, v := range validators {
 		cs.proposerQueue = append(cs.proposerQueue, v.Address)
+	}
+}
+
+// RestoreHeight restores the consensus height tracker after a node restart
+// (chain data is loaded from DB but consensus in-memory height starts at 0).
+func (cs *ConsensusState) RestoreHeight(height uint64) {
+	cs.mu.Lock()
+	defer cs.mu.Unlock()
+	if height > cs.currentHeight {
+		cs.currentHeight = height
 	}
 }
 

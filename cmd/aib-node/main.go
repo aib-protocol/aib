@@ -291,10 +291,21 @@ func (n *Node) Start() error {
 	n.logger.Printf("    ✓ Address: %x", n.address[:8])
 
 	// Register node as validator
-	if err := n.consensus.AddValidator(n.address, 10000*1e8, n.publicKey); err != nil {
-		n.logger.Printf("    ⚠ Validator registration: %v (continuing)", err)
-	} else {
-		n.logger.Printf("    ✓ Registered as validator (10000 AIB stake)")
+	// Restore consensus height from persisted chain (restart-safe)
+	if h := n.chainState.GetBestBlockHeight(); h > 0 {
+		n.consensus.RestoreHeight(h)
+		n.logger.Printf("[Chain] Restored consensus height to %d from DB", h)
+	}
+
+	// Only validators join the sortition set. Followers stay out so the
+	// proposer selection is identical on every node (shared validator set
+	// comes from the chain; self-registration is testnet bootstrap only).
+	if n.config.Validator {
+		if err := n.consensus.AddValidator(n.address, 10000*1e8, n.publicKey); err != nil {
+			n.logger.Printf("    ⚠ Validator registration: %v (continuing)", err)
+		} else {
+			n.logger.Printf("    ✓ Registered as validator (10000 AIB stake)")
+		}
 	}
 
 	// 5. Initialize transaction mempool
@@ -581,6 +592,19 @@ func (n *Node) startP2P(nodeID string) error {
 
 // handleNewBlock processes a block received from a peer.
 func (n *Node) handleNewBlock(data p2p.BlockData) error {
+	// Learn the proposer pubkey carried by this block for future relays
+	n.learnProposerPubKey(data.Height, data.Proposer)
+	// Testnet validator-set learning: followers adopt the block proposer as
+	// a validator so sortition runs over the same set on every node.
+	if pub, err := hex.DecodeString(data.Proposer); err == nil && len(pub) == 32 {
+		var addr [32]byte
+		copy(addr[:], pub)
+		if !n.consensus.HasValidator(addr) {
+			if err := n.consensus.AddValidator(addr, 10000*1e8, pub); err == nil {
+				n.logger.Printf("[P2P] Learned validator %x from block %d", addr[:8], data.Height)
+			}
+		}
+	}
 	// Deserialize block
 	block, err := utxoPkg.DeserializeBlock(data.RawBlock)
 	if err != nil {
@@ -684,7 +708,14 @@ func (n *Node) handleGetBlocks(from, to uint64) ([]p2p.BlockData, error) {
 			PrevBlockHash: hex.EncodeToString(block.Header.PrevBlockHash[:]),
 			MerkleRoot:    hex.EncodeToString(block.Header.MerkleRoot[:]),
 			Timestamp:     block.Header.Timestamp,
+			// Full ed25519 pubkey + signature so receivers can verify.
+			// Header.Proposer is the address (pubkey-derived), but signature
+			// verification needs the raw pubkey; for self-produced blocks we
+			// know it. For relayed blocks the pubkey must come with the block
+			// — see proposerPubKeyForHeight cache.
 			Proposer:      hex.EncodeToString(block.Header.Proposer[:]),
+			Signature:     hex.EncodeToString(block.Header.Signature),
+			SignedHash:    func() string { sh := computeSignedHash(block); return hex.EncodeToString(sh[:]) }(),
 			TxCount:       len(block.Transactions),
 			RawBlock:      rawBlock,
 		})
@@ -833,7 +864,9 @@ func (n *Node) produceBlock() {
 			PrevBlockHash: hex.EncodeToString(newBlock.Header.PrevBlockHash[:]),
 			MerkleRoot:    hex.EncodeToString(newBlock.Header.MerkleRoot[:]),
 			Timestamp:     newBlock.Header.Timestamp,
-			Proposer:      hex.EncodeToString(newBlock.Header.Proposer[:]),
+			Proposer:      hex.EncodeToString(n.publicKey), // full ed25519 pubkey for verification
+			Signature:     hex.EncodeToString(newBlock.Header.Signature),
+			SignedHash:    hex.EncodeToString(newBlock.SignedHash[:]),
 			TxCount:       len(newBlock.Transactions),
 			RawBlock:      rawBlock,
 		})
@@ -971,3 +1004,37 @@ func main() {
 
 	node.Stop()
 }
+
+// proposerPubKeyCache: height -> proposer pubkey hex (learned from inbound blocks).
+var proposerPubKeyCache sync.Map
+
+// proposerPubKeyForHeight returns the raw pubkey for a historical block.
+// For blocks we produced, it's our own key. For relayed blocks, the pubkey
+// learned when we first received it (same network, same genesis assumption).
+func (n *Node) proposerPubKeyForHeight(height uint64, proposerAddr [32]byte) string {
+	if v, ok := proposerPubKeyCache.Load(height); ok {
+		return v.(string)
+	}
+	// Heuristic for single-validator testnet: assume our own key produced it
+	// when the proposer address matches ours.
+	if proposerAddr == n.address {
+		return hex.EncodeToString(n.publicKey)
+	}
+	return hex.EncodeToString(proposerAddr[:]) // fallback: address as pubkey (32B)
+}
+
+// learnProposerPubKey records the pubkey carried by an inbound block.
+func (n *Node) learnProposerPubKey(height uint64, pubkeyHex string) {
+	proposerPubKeyCache.Store(height, pubkeyHex)
+}
+
+// computeSignedHash reconstructs the hash that was signed: the header hash
+// with the signature field stripped (same semantics as VerifyBlockSignature).
+func computeSignedHash(b *utxoPkg.Block) [32]byte {
+	saved := b.Header.Signature
+	b.Header.Signature = nil
+	h := b.CalculateHash()
+	b.Header.Signature = saved
+	return h
+}
+

@@ -166,6 +166,7 @@ type BlockData struct {
 	Timestamp     uint64 `json:"timestamp"`
 	Proposer      string `json:"proposer"`
 	Signature     string `json:"signature"` // ed25519 signature of block hash by proposer
+	SignedHash    string `json:"signed_hash"` // hash that was signed (header without signature)
 	TxCount       int    `json:"tx_count"`
 	RawBlock      []byte `json:"raw_block"` // full serialized block
 }

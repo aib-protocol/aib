@@ -133,6 +133,11 @@ type Ed25519BlockVerifier struct{}
 
 // VerifyBlockSignature verifies the block hash was signed by the proposer.
 func (v *Ed25519BlockVerifier) VerifyBlockSignature(proposerPubKeyHex, blockHash, signature string) error {
+	return v.VerifyBlockSignatureFull(proposerPubKeyHex, blockHash, "", signature)
+}
+
+// VerifyBlockSignatureFull verifies with explicit signed-hash semantics.
+func (v *Ed25519BlockVerifier) VerifyBlockSignatureFull(proposerPubKeyHex, blockHash, signedHashHex, signature string) error {
 	if signature == "" {
 		return fmt.Errorf("block signature is empty")
 	}
@@ -156,7 +161,14 @@ func (v *Ed25519BlockVerifier) VerifyBlockSignature(proposerPubKeyHex, blockHash
 		return fmt.Errorf("invalid signature length: got %d, want %d", len(sigBytes), ed25519.SignatureSize)
 	}
 
-	hashBytes, err := hex.DecodeString(blockHash)
+	// The signature is over the "signed hash" — the header hash WITHOUT the
+	// signature field (SignBlock semantics). Fall back to the full block hash
+	// for legacy senders that signed the final hash directly.
+	targetHex := signedHashHex
+	if targetHex == "" {
+		targetHex = blockHash
+	}
+	hashBytes, err := hex.DecodeString(targetHex)
 	if err != nil {
 		return fmt.Errorf("invalid block hash hex: %w", err)
 	}
@@ -174,6 +186,9 @@ func (pm *ChainPeerManager) verifyBlockSignature(block BlockData) error {
 	verifier := pm.blockVerifier
 	if verifier == nil {
 		verifier = &Ed25519BlockVerifier{}
+	}
+	if fv, ok := verifier.(interface{ VerifyBlockSignatureFull(string, string, string, string) error }); ok {
+		return fv.VerifyBlockSignatureFull(block.Proposer, block.Hash, block.SignedHash, block.Signature)
 	}
 	return verifier.VerifyBlockSignature(block.Proposer, block.Hash, block.Signature)
 }
@@ -350,16 +365,43 @@ func (pm *ChainPeerManager) bootstrapConnect() {
 	// Wait a moment for listener to start
 	time.Sleep(time.Second)
 
-	for _, addr := range pm.bootstrap {
+	// Keep retrying bootstrap until we have at least one peer (seed may come
+	// online later than us).
+	for {
 		select {
 		case <-pm.ctx.Done():
 			return
 		default:
 		}
-
-		pm.logger.Printf("[P2P] Connecting to bootstrap node %s ...", addr)
-		if err := pm.connectToPeer(addr); err != nil {
-			pm.logger.Printf("[P2P] Bootstrap %s failed: %v", addr, err)
+		if pm.GetPeerCount() > 0 {
+			// We have peers; still refresh every 5 min in case we drop to zero.
+			select {
+			case <-pm.ctx.Done():
+				return
+			case <-time.After(5 * time.Minute):
+			}
+			if pm.GetPeerCount() > 0 {
+				continue
+			}
+		}
+		for _, addr := range pm.bootstrap {
+			select {
+			case <-pm.ctx.Done():
+				return
+			default:
+			}
+			pm.logger.Printf("[P2P] Connecting to bootstrap node %s ...", addr)
+			if err := pm.connectToPeer(addr); err != nil {
+				pm.logger.Printf("[P2P] Bootstrap %s failed: %v", addr, err)
+			}
+			if pm.GetPeerCount() > 0 {
+				break
+			}
+		}
+		select {
+		case <-pm.ctx.Done():
+			return
+		case <-time.After(10 * time.Second):
 		}
 	}
 }
