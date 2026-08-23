@@ -342,7 +342,7 @@ func (s *Server) RegisterRoutes() {
 	s.mux.Handle("/api/migration/claim-unlocked", authWrap(s.handleClaimUnlocked))
 
 	// Apply the logging middleware
-	s.httpServer.Handler = LoggingMiddleware(s.mux)
+	s.httpServer.Handler = corsMiddleware(LoggingMiddleware(s.mux))
 }
 
 // Start starts the server
