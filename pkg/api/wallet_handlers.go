@@ -212,10 +212,11 @@ type CreateWalletRequest struct {
 
 // CreateWalletResponse create wallet response
 type CreateWalletResponse struct {
-	Address   string `json:"address"`
-	PublicKey string `json:"public_key"`
-	Label     string `json:"label,omitempty"`
-	CreatedAt int64  `json:"created_at"`
+	Address    string `json:"address"`
+	PublicKey  string `json:"public_key"`
+	PrivateKey string `json:"private_key"` // seed hex — SAVE THIS, shown only once
+	Label      string `json:"label,omitempty"`
+	CreatedAt  int64  `json:"created_at"`
 }
 
 // RestoreWalletRequest restore wallet request
@@ -307,10 +308,11 @@ func (s *Server) handleCreateWallet(w http.ResponseWriter, r *http.Request) {
 	pubKey := walletInstance.GetPublicKey()
 
 	response := CreateWalletResponse{
-		Address:   hex.EncodeToString(address[:]),
-		PublicKey: hex.EncodeToString(pubKey),
-		Label:     req.Label,
-		CreatedAt: time.Now().Unix(),
+		Address:    hex.EncodeToString(address[:]),
+		PublicKey:  hex.EncodeToString(pubKey),
+		PrivateKey: hex.EncodeToString(walletInstance.ExportPrivateKey()),
+		Label:      req.Label,
+		CreatedAt:  time.Now().Unix(),
 	}
 
 	// TODO: if a password is provided, the private key should be stored encrypted

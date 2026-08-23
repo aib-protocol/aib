@@ -276,6 +276,12 @@ func AuthMiddleware(apiKeys []string) func(http.Handler) http.Handler {
 				return
 			}
 
+			// If no API keys are configured, the node runs in open local mode
+			if len(keySet) == 0 {
+				next.ServeHTTP(w, r)
+				return
+			}
+
 			// Check for an API Key
 			apiKey := r.Header.Get("X-API-Key")
 			if apiKey == "" {
