@@ -1,6 +1,8 @@
 package api
 
 import (
+	"fmt"
+	"github.com/aib-protocol/aib/pkg/utxo"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -925,25 +927,12 @@ func TestHandleGetLatestBlock(t *testing.T) {
 func TestHandleGetBlock(t *testing.T) {
 	server := NewServer(8080)
 
+	// Without a chain attached the endpoint must refuse (503), not fabricate data.
 	req := httptest.NewRequest("GET", "/v1/block/123", nil)
 	w := httptest.NewRecorder()
-
 	server.handleGetBlock(w, req)
-
-	if w.Code != http.StatusOK {
-		t.Errorf("expected status 200, got %d", w.Code)
-	}
-
-	var resp APIResponse
-	json.Unmarshal(w.Body.Bytes(), &resp)
-
-	data, ok := resp.Data.(map[string]interface{})
-	if !ok {
-		t.Fatal("response data should be a map")
-	}
-
-	if data["height"] != float64(123) {
-		t.Errorf("expected height 123, got %v", data["height"])
+	if w.Code != http.StatusServiceUnavailable {
+		t.Errorf("expected status 503 without chain, got %d", w.Code)
 	}
 }
 
@@ -2241,4 +2230,8 @@ func TestServer_EndToEnd_NewBlockchainEndpoints(t *testing.T) {
 		t.Errorf("expected status 200, got %d", resp.StatusCode)
 	}
 	resp.Body.Close()
+}
+
+func (m *mockChainReader) GetBlockByHeight(height uint64) (*utxo.Block, error) {
+	return nil, fmt.Errorf("block at height %d not found", height)
 }

@@ -1,6 +1,7 @@
 package api
 
 import (
+	"github.com/aib-protocol/aib/pkg/utxo"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -34,6 +35,7 @@ type ChainReader interface {
 	GetLatestBlock() Block
 	GetBestBlockHeight() (uint64, error)
 	GetBlockByHash(hash [32]byte) (Block, error)
+	GetBlockByHeight(height uint64) (*utxo.Block, error)
 }
 
 // MigrationHubAPI defines the migration hub API interface

@@ -140,6 +140,10 @@ func (a *chainAdapter) GetBestBlockHeight() (uint64, error) {
 	return a.chainState.GetBestBlockHeight(), nil
 }
 
+func (a *chainAdapter) GetBlockByHeight(height uint64) (*utxoPkg.Block, error) {
+	return a.chainState.GetBlockByHeight(height)
+}
+
 func (a *chainAdapter) GetBlockByHash(hash [32]byte) (api.Block, error) {
 	block, err := a.chainState.GetBlockByHash(hash)
 	if err != nil {

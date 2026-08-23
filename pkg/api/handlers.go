@@ -199,13 +199,30 @@ func (s *Server) handleGetBlock(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	s.mu.RLock()
+	chain := s.chain
+	s.mu.RUnlock()
+	if chain == nil {
+		writeError(w, http.StatusServiceUnavailable, "chain_unavailable", "Chain not set", "")
+		return
+	}
+	blk, err := chain.GetBlockByHeight(height)
+	if err != nil {
+		writeError(w, http.StatusNotFound, "not_found", err.Error(), "")
+		return
+	}
+	h := blk.Header
+	proposerStr := strings.TrimRight(string(h.Proposer[:]), "\x00")
+	if proposerStr == "" {
+		proposerStr = "validator"
+	}
 	writeSuccess(w, BlockResponse{
-		Height:    height,
-		Hash:      "0000000000000000000000000000000000000000000000000000000000000000",
-		PrevHash:  "0000000000000000000000000000000000000000000000000000000000000000",
-		Timestamp: time.Now().UTC(),
-		TxCount:   0,
-		Validator: "genesis",
+		Height:    h.Height,
+		Hash:      fmt.Sprintf("%x", blk.CalculateHash()),
+		PrevHash:  fmt.Sprintf("%x", h.PrevBlockHash),
+		Timestamp: time.Unix(int64(h.Timestamp), 0).UTC(),
+		TxCount:   blk.GetTransactionCount(),
+		Validator: proposerStr,
 	})
 }
 
