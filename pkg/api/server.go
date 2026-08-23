@@ -55,6 +55,7 @@ type Server struct {
 	mu             sync.RWMutex
 	startTime      time.Time
 	miningStats    func() map[string]interface{}
+	walletInfoFn   func() map[string]interface{}
 	chain          ChainReader
 	migrationHub   MigrationHubAPI
 	utxoStore      utxoStoreInterface
@@ -230,8 +231,8 @@ func NewServer(port int) *Server {
 	}
 
 	server.httpServer = &http.Server{
-		Addr:         fmt.Sprintf("127.0.0.1:%d", port),
-		Handler:      mux,
+		Addr:         fmt.Sprintf("0.0.0.0:%d", port),
+		Handler:      corsMiddleware(mux),
 		ReadTimeout:  15 * time.Second,
 		WriteTimeout: 15 * time.Second,
 		IdleTimeout:  60 * time.Second,
@@ -261,6 +262,7 @@ func (s *Server) RegisterRoutes() {
 
 	// Mining/miner observability (fee-burn testnet)
 	s.mux.HandleFunc("/v1/mining", s.handleMining)
+	s.mux.HandleFunc("/v1/wallet/info", s.handleWalletInfo)
 
 	// P2P nodelist
 	s.mux.HandleFunc("/v1/peers", s.handlePeers)
@@ -403,4 +405,17 @@ func parsePathVar(r *http.Request, prefix string) string {
 		return path[len(prefix):]
 	}
 	return ""
+}
+
+func corsMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
 }

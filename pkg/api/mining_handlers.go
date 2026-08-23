@@ -21,3 +21,10 @@ func (s *Server) handleMining(w http.ResponseWriter, r *http.Request) {
 	}
 	writeJSON(w, http.StatusOK, fn())
 }
+
+// SetWalletInfo plugs the node's own address/balance snapshot into the API.
+func (s *Server) SetWalletInfo(fn func() map[string]interface{}) {
+	s.mu.Lock()
+	s.walletInfoFn = fn
+	s.mu.Unlock()
+}

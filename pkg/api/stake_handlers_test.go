@@ -420,3 +420,5 @@ func TestHandleGetStake(t *testing.T) {
 		t.Logf("Response: %+v", resp)
 	})
 }
+
+func (m *mockUTXOStore) GetBalance(addr [32]byte) uint64 { return 0 }

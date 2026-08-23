@@ -332,6 +332,23 @@ func (n *Node) Start() error {
 	n.apiServer.SetChain(&chainAdapter{chainState: n.chainState})
 	n.apiServer.SetChainID(n.networkCfg.ChainID)
 	n.apiServer.SetMiningStats(n.miningStats.Snapshot)
+	n.apiServer.SetWalletInfo(func() map[string]interface{} {
+		bal := uint64(0)
+		utxoCount := 0
+		if n.utxoStore != nil {
+			bal = n.utxoStore.GetBalance(n.address)
+			utxoCount = len(n.utxoStore.GetAllUTXOs(n.address))
+		}
+		return map[string]interface{}{
+			"address":      hex.EncodeToString(n.address[:]),
+			"balance_aib":  float64(bal) / 1e8,
+			"balance_raw":  bal,
+			"utxo_count":   utxoCount,
+			"mining":       n.config.Validator,
+			"height":       n.chainState.GetBestBlockHeight(),
+		}
+	})
+	n.apiServer.SetUTXOStore(n.utxoStore)
 
 	n.wg.Add(1)
 	go func() {

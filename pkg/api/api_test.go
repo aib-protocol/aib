@@ -782,6 +782,7 @@ func TestHandleStatus(t *testing.T) {
 
 func TestHandleGetBalance(t *testing.T) {
 	server := NewServer(8080)
+	server.SetUTXOStore(&mockUTXOStore{})
 
 	req := httptest.NewRequest("GET", "/v1/balance/0000000000000000000000000000000000000000000000000000000000000001", nil)
 	w := httptest.NewRecorder()
@@ -1803,13 +1804,13 @@ func TestServer_EndToEnd(t *testing.T) {
 	}
 	resp.Body.Close()
 
-	// Test balance endpoint
+	// Test balance endpoint (invalid address must be rejected with 400)
 	resp, err = http.Get(ts.URL + "/v1/balance/0x123")
 	if err != nil {
 		t.Fatalf("failed to get balance: %v", err)
 	}
-	if resp.StatusCode != http.StatusOK {
-		t.Errorf("expected status 200, got %d", resp.StatusCode)
+	if resp.StatusCode != http.StatusBadRequest {
+		t.Errorf("expected status 400 for invalid address, got %d", resp.StatusCode)
 	}
 	resp.Body.Close()
 

@@ -522,6 +522,7 @@ func (s *Server) getProposals(ctx context.Context, statusFilter string) []Propos
 // utxoStoreInterface is the UTXO storage interface
 type utxoStoreInterface interface {
 	GetAllUTXOs(addr [32]byte) []*utxo.UTXO
+	GetBalance(addr [32]byte) uint64
 	GetTransactionIndex(txHash [32]byte) (uint64, error)
 }
 
@@ -560,4 +561,24 @@ type Proposal struct {
 	VotesFor     uint64
 	VotesAgainst uint64
 	Quorum       uint64
+}
+
+// handleWalletInfo returns this node's own address and REAL balance (mined coins).
+func (s *Server) handleWalletInfo(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		writeError(w, http.StatusMethodNotAllowed, ErrCodeInvalidRequest, "Method not allowed", "")
+		return
+	}
+	s.mu.RLock()
+	store := s.utxoStore
+	s.mu.RUnlock()
+	if store == nil {
+		writeError(w, http.StatusServiceUnavailable, "utxo_unavailable", "UTXO store not set", "")
+		return
+	}
+	info := map[string]interface{}{}
+	if s.walletInfoFn != nil {
+		info = s.walletInfoFn()
+	}
+	writeSuccess(w, info)
 }

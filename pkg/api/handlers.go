@@ -75,11 +75,30 @@ func (s *Server) handleGetBalance(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// MVP: return address info (real query pending integration)
+	// Real balance from the node's UTXO set.
+	addrBytes, err := hex.DecodeString(address)
+	if err != nil || len(addrBytes) != 32 {
+		writeError(w, http.StatusBadRequest, ErrCodeInvalidRequest, "Invalid address (need 64-char hex)", "")
+		return
+	}
+	var addr [32]byte
+	copy(addr[:], addrBytes)
+
+	s.mu.RLock()
+	store := s.utxoStore
+	s.mu.RUnlock()
+
+	if store == nil {
+		writeError(w, http.StatusServiceUnavailable, "utxo_unavailable", "UTXO store not set", "")
+		return
+	}
+
+	balance := store.GetBalance(addr)
+	utxos := store.GetAllUTXOs(addr)
 	writeSuccess(w, BalanceResponse{
 		Address:   address,
-		Balance:   0,
-		UTXOCount: 0,
+		Balance:   balance,
+		UTXOCount: len(utxos),
 	})
 }
 
