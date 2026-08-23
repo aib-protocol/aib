@@ -40,13 +40,13 @@ type NetworkConfig struct {
 }
 
 var TestnetConfig = NetworkConfig{
-	ChainID:        "aib-testnet-1",
-	GenesisTime:    1741910400, // 2025-03-14T00:00:00Z
-	GenesisMsg:     "AIB 2.0 Testnet Genesis",
-	GenesisReward:  uint64(5000000000), // 50 AIB in satoshi
+	ChainID: "aib-testnet-2",
+	GenesisTime: 1755916800, // 2026-08-23T00:00:00Z
+	GenesisMsg: "AIB Testnet v2 Genesis | Reuters 2026-08-18: Trump announces three-day pause on new 50% U.S. tariffs on Canadian goods | Consensus: SHA256d PoW era blocks 1..10000 @ 3.1415 AIB/block, then pure-stake VRF PoS (RFC-002 Route C)",
+	GenesisReward: 0,
 	BootstrapNodes: []string{"212.56.43.128:51413"},
 	DefaultP2PPort: 51413,
-	BlockVersion:   2,
+	BlockVersion:   3,
 }
 
 var MainnetConfig = NetworkConfig{
@@ -207,7 +207,16 @@ func createStandardGenesisBlock(cfg *NetworkConfig) *utxoPkg.Block {
 	genesis.Header.Timestamp = cfg.GenesisTime
 	genesis.Header.Version = cfg.BlockVersion
 	genesis.Hash = genesis.CalculateHash()
-
+	if cfg.BlockVersion >= 3 {
+		genesis.Header.Bits = utxoPkg.PoWGenesisBits
+		for nonce := uint64(0); ; nonce++ {
+			genesis.Header.Nonce = nonce
+			if utxoPkg.CheckProofOfWork(&genesis.Header) {
+				break
+			}
+		}
+		genesis.Hash = genesis.CalculateHash()
+	}
 	return genesis
 }
 
@@ -630,17 +639,8 @@ func (n *Node) startP2P(nodeID string) error {
 func (n *Node) handleNewBlock(data p2p.BlockData) error {
 	// Learn the proposer pubkey carried by this block for future relays
 	n.learnProposerPubKey(data.Height, data.Proposer)
-	// Testnet validator-set learning: followers adopt the block proposer as
-	// a validator so sortition runs over the same set on every node.
-	if pub, err := hex.DecodeString(data.Proposer); err == nil && len(pub) == 32 {
-		var addr [32]byte
-		copy(addr[:], pub)
-		if !n.consensus.HasValidator(addr) {
-			if err := n.consensus.AddValidator(addr, 10000*1e8, pub); err == nil {
-				n.logger.Printf("[P2P] Learned validator %x from block %d", addr[:8], data.Height)
-			}
-		}
-	}
+	// (v3) No validator learning from received blocks — PoW era has no
+	// validator set; PoS set is built deterministically from PoW history.
 	// Deserialize block
 	block, err := utxoPkg.DeserializeBlock(data.RawBlock)
 	if err != nil {
@@ -790,6 +790,7 @@ func (n *Node) runBlockProduction() {
 		n.logger.Println("[Validator] Sync complete, starting block production")
 	}
 
+	_ = ticker
 	n.produceBlock()
 
 	for {
@@ -799,6 +800,13 @@ func (n *Node) runBlockProduction() {
 		case <-n.shutdownCh:
 			n.logger.Println("Block production stopping...")
 			return
+		case <-time.After(200 * time.Millisecond):
+			// PoW era: mine continuously; produceBlock returns fast when
+			// someone else wins or we're not the expected producer.
+			h := n.chainState.GetBestBlockHeight()
+			if n.networkCfg.BlockVersion >= 3 && h < utxoPkg.PoWEraBlocks {
+				n.produceBlock()
+			}
 		}
 	}
 }
@@ -813,6 +821,47 @@ func (n *Node) produceBlock() {
 
 	prevHash := n.chainState.GetBestBlockHash()
 	proposer := n.address
+	height1 := height + 1
+
+	// ---- Consensus V3: PoW era (blocks 1..10000) ----
+	if n.networkCfg.BlockVersion >= 3 && height1 <= utxoPkg.PoWEraBlocks {
+		coinbaseTx := utxoPkg.CreateCoinbaseTransaction(proposer, utxoPkg.PoWBlockReward, []byte("pow-v3"))
+		blockTxs := append([]*utxoPkg.Transaction{coinbaseTx}, txs...)
+		newBlock := utxoPkg.NewBlock(blockTxs, prevHash, height1, proposer)
+		newBlock.Header.Version = 3
+		newBlock.Header.Bits = n.nextPoWBits(height)
+		newBlock.Header.Timestamp = uint64(time.Now().Unix())
+
+		for nonce := uint64(0); ; nonce++ {
+			select {
+			case <-n.shutdownCh:
+				return
+			default:
+			}
+			newBlock.Header.Nonce = nonce
+			if utxoPkg.CheckProofOfWork(&newBlock.Header) {
+				break
+			}
+			if nonce%100000 == 0 {
+				// check for a newer tip (another miner won the race)
+				if n.chainState.GetBestBlockHeight() >= height1 {
+					return
+				}
+			}
+		}
+		newBlock.Hash = newBlock.CalculateHash()
+		if err := newBlock.SignBlock(n.privateKey); err != nil {
+			n.logger.Printf("[PoW %d] sign failed: %v", height1, err)
+			return
+		}
+		n.acceptAndBroadcast(newBlock, txs)
+		return
+	}
+
+	// ---- PoS era (height > 10000): V2 pure-stake VRF path, validator set from PoW history ----
+	if n.networkCfg.BlockVersion >= 3 && height1 == utxoPkg.PoWEraBlocks+1 {
+		n.buildValidatorSetFromPoWHistory()
+	}
 
 	var newBlock *utxoPkg.Block
 
@@ -870,8 +919,15 @@ func (n *Node) produceBlock() {
 		return
 	}
 
+	n.acceptAndBroadcast(newBlock, txs)
+	return
+}
+
+// acceptAndBroadcast adds a locally-produced block to the chain and gossips it.
+func (n *Node) acceptAndBroadcast(newBlock *utxoPkg.Block, txs []*utxoPkg.Transaction) {
+	height := newBlock.Header.Height
 	if err := n.chainState.AddBlock(newBlock); err != nil {
-		n.logger.Printf("[Block %d] Failed to add: %v", height+1, err)
+		n.logger.Printf("[Block %d] Failed to add: %v", height, err)
 		return
 	}
 
@@ -881,18 +937,18 @@ func (n *Node) produceBlock() {
 	}
 	n.mempool.RemoveConfirmed(txHashes)
 
-	n.utxoStore.SetChainHead(height + 1)
+	n.utxoStore.SetChainHead(height)
 
 	versionTag := "V1"
 	if newBlock.Header.Version >= 2 {
 		versionTag = "V2-PoAIW"
 	}
 	n.logger.Printf("[Block %d] ✅ %s txs=%d hash=%x proposer=%x",
-		height+1, versionTag, len(newBlock.Transactions), newBlock.Hash[:8], proposer[:8])
+		height, versionTag, len(newBlock.Transactions), newBlock.Hash[:8], newBlock.Header.Proposer[:8])
 
 	// Broadcast to P2P network
 	if n.peerManager != nil {
-		n.peerManager.UpdateBestHeight(height + 1)
+		n.peerManager.UpdateBestHeight(height)
 		rawBlock := newBlock.SerializeBlock()
 		n.peerManager.BroadcastNewBlock(p2p.BlockData{
 			Height:        newBlock.Header.Height,
@@ -1074,3 +1130,43 @@ func computeSignedHash(b *utxoPkg.Block) [32]byte {
 	return h
 }
 
+// nextPoWBits computes Bits for the next PoW block at given prev height.
+func (n *Node) nextPoWBits(prevHeight uint64) uint32 {
+	if prevHeight == 0 {
+		return utxoPkg.PoWGenesisBits
+	}
+	prevBlock, _ := n.chainState.GetBlockByHeight(prevHeight)
+	if prevBlock == nil {
+		return utxoPkg.PoWGenesisBits
+	}
+	w := prevHeight - (prevHeight % utxoPkg.PoWRetargetWindow)
+	if w == 0 {
+		return prevBlock.Header.Bits
+	}
+	start, _ := n.chainState.GetBlockByHeight(w)
+	if start == nil {
+		return prevBlock.Header.Bits
+	}
+	return utxoPkg.NextWorkRequired(prevBlock.Header.Bits, prevHeight,
+		start.Header.Timestamp, prevBlock.Header.Timestamp)
+}
+
+// buildValidatorSetFromPoWHistory builds the PoS validator set from the
+// PoW era: stake weight = number of PoW blocks mined (hashrate share proxy).
+func (n *Node) buildValidatorSetFromPoWHistory() {
+	counts := map[[32]byte]uint64{}
+	for h := uint64(1); h <= utxoPkg.PoWEraBlocks; h++ {
+		b, _ := n.chainState.GetBlockByHeight(h)
+		if b == nil {
+			continue
+		}
+		counts[b.Header.Proposer]++
+	}
+	for addr, cnt := range counts {
+		stake := cnt * 1e8 // 1 AIB stake per mined block — proportional weight
+		if err := n.consensus.AddValidator(addr, stake, addr[:]); err == nil {
+			n.logger.Printf("[PoS] validator %x stake=%d blocks", addr[:8], cnt)
+		}
+	}
+	n.logger.Printf("[PoS] validator set built from PoW history: %d validators", len(counts))
+}

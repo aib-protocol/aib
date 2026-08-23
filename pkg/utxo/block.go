@@ -33,6 +33,10 @@ type BlockHeader struct {
 	InferencePoW []byte // PoW proof for inference work (optional, for Version >= 2)
 	ModelID      string // ID of the AI model used for inference (optional, for Version >= 2)
 	EnergyClaim  uint64 // Energy/token claim for inference work (optional, for Version >= 2)
+
+	// PoW fields (Version 3, consensus v3 era) — Bitcoin-style
+	Nonce uint64 // PoW nonce
+	Bits  uint32 // compact difficulty target
 }
 
 // Block represents a block in the blockchain.
@@ -140,6 +144,12 @@ func (h *BlockHeader) Serialize() []byte {
 		binary.Write(&buf, binary.LittleEndian, h.EnergyClaim)
 	}
 
+	// PoW fields (Version 3) — appended at END, old formats unaffected
+	if h.Version >= 3 {
+		binary.Write(&buf, binary.LittleEndian, h.Nonce)
+		binary.Write(&buf, binary.LittleEndian, h.Bits)
+	}
+
 	return buf.Bytes()
 }
 
@@ -227,6 +237,16 @@ func DeserializeBlockHeader(data []byte) (*BlockHeader, error) {
 
 		if err := binary.Read(buf, binary.LittleEndian, &header.EnergyClaim); err != nil {
 			return nil, fmt.Errorf("failed to read energy claim: %w", err)
+		}
+	}
+
+	// PoW fields (Version 3)
+	if header.Version >= 3 {
+		if err := binary.Read(buf, binary.LittleEndian, &header.Nonce); err != nil {
+			return nil, fmt.Errorf("failed to read nonce: %w", err)
+		}
+		if err := binary.Read(buf, binary.LittleEndian, &header.Bits); err != nil {
+			return nil, fmt.Errorf("failed to read bits: %w", err)
 		}
 	}
 

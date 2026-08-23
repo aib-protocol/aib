@@ -393,7 +393,22 @@ func (cs *ChainState) ValidateBlock(block *Block) error {
 		return fmt.Errorf("signature validation: %w", err)
 	}
 
-	// 6. Proposer validation (PoS)
+	// 6. PoW blocks (Version 3): verify proof-of-work instead of proposer sortition
+	if block.Header.Version >= 3 && block.Header.Height <= PoWEraBlocks {
+		if !CheckProofOfWork(&block.Header) {
+			return fmt.Errorf("proof of work invalid: hash above target")
+		}
+		// Bits must match expected retarget from parent
+		if block.Header.Height > 1 {
+			expected := cs.nextPoWBitsChain(block.Header.Height - 1)
+			if block.Header.Bits != expected {
+				return fmt.Errorf("bits mismatch: expected %08x got %08x", expected, block.Header.Bits)
+			}
+		}
+		return nil
+	}
+
+	// 7. Proposer validation (PoS)
 	if err := cs.validateBlockProposer(block); err != nil {
 		return fmt.Errorf("proposer validation: %w", err)
 	}
@@ -990,4 +1005,26 @@ func DeserializeChainState(data []byte) (bestHeight uint64, bestHash, genesisHas
 	}
 
 	return bestHeight, bestHash, genesisHash, nil
+}
+
+// nextPoWBitsChain computes expected Bits for the block AFTER prevHeight,
+// mirroring the miner's retarget logic (deterministic from chain history).
+func (cs *ChainState) nextPoWBitsChain(prevHeight uint64) uint32 {
+	if prevHeight == 0 {
+		return PoWGenesisBits
+	}
+	prevBlock, err := cs.GetBlockByHeight(prevHeight)
+	if err != nil || prevBlock == nil {
+		return PoWGenesisBits
+	}
+	w := prevHeight - (prevHeight % PoWRetargetWindow)
+	if w == 0 {
+		return prevBlock.Header.Bits
+	}
+	start, err2 := cs.GetBlockByHeight(w)
+	if err2 != nil || start == nil {
+		return prevBlock.Header.Bits
+	}
+	return NextWorkRequired(prevBlock.Header.Bits, prevHeight,
+		start.Header.Timestamp, prevBlock.Header.Timestamp)
 }
