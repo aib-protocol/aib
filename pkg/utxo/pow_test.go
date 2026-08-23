@@ -78,10 +78,10 @@ func TestNextWorkRequiredClamp(t *testing.T) {
 }
 
 func TestPoWEraReward(t *testing.T) {
-	if PoWBlockReward != 31415000000 {
-		t.Fatalf("PoW reward %d != 3.1415 AIB", PoWBlockReward)
+	if PoWBlockReward != 3141500000 {
+		t.Fatalf("PoW reward %d != 31.415 AIB", PoWBlockReward)
 	}
-	if PoWBlockReward*PoWEraBlocks != 314150000000000 {
+	if PoWBlockReward*PoWEraBlocks != 3141500000000 {
 		t.Fatalf("total era reward != 31415 AIB")
 	}
 }

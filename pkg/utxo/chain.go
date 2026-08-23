@@ -50,7 +50,8 @@ const (
 func NewChainState(dbPath string) (*ChainState, error) {
 	db, err := bbolt.Open(dbPath, 0600, &bbolt.Options{
 		Timeout:      5 * time.Second,
-		NoGrowSync:   false,
+		NoSync:       true, // testnet fast PoW era; crash may lose recent blocks (re-sync from peers)
+		NoGrowSync:   true,
 		FreelistType: bbolt.FreelistMapType,
 	})
 	if err != nil {
@@ -466,14 +467,14 @@ func (cs *ChainState) validateBlockTimestamp(block *Block) error {
 			return fmt.Errorf("failed to get parent block: %w", err)
 		}
 
-		if block.Header.Timestamp <= parent.Header.Timestamp {
-			return fmt.Errorf("block timestamp %d is not greater than parent timestamp %d",
+		if block.Header.Timestamp < parent.Header.Timestamp {
+			return fmt.Errorf("block timestamp %d is before parent timestamp %d",
 				block.Header.Timestamp, parent.Header.Timestamp)
 		}
 
 		// Check minimum block time
 		timeDiff := time.Duration(block.Header.Timestamp-parent.Header.Timestamp) * time.Second
-		if timeDiff < MinBlockTime {
+		if timeDiff < MinBlockTime && block.Header.Version < 3 {
 			return fmt.Errorf("block time difference %v is below minimum %v", timeDiff, MinBlockTime)
 		}
 

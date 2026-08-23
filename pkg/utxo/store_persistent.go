@@ -44,7 +44,8 @@ func NewPersistentUTXOStore(dbPath string) (*PersistentUTXOStore, error) {
 
 	db, err := bbolt.Open(dbPath, 0600, &bbolt.Options{
 		Timeout:      0,
-		NoGrowSync:   false,
+		NoSync:       true,
+		NoGrowSync:   true,
 		FreelistType: bbolt.FreelistMapType,
 	})
 	if err != nil {

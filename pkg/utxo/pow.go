@@ -17,8 +17,8 @@ import (
 
 // PoW era parameters.
 const (
-	PoWEraBlocks     uint64 = 10000             // blocks 1..10000 are PoW
-	PoWBlockReward   uint64 = 31415000000       // 3.1415 AIB per block (1e8 units) => 31415 AIB total
+	PoWEraBlocks     uint64 = 1000              // blocks 1..1000 are PoW (testnet fast era ~30-40 min)
+	PoWBlockReward   uint64 = 3141500000       // 31.415 AIB per block (1e8 units/AIB) => 31415 AIB total
 	PoWTargetSpacing        = 360 * time.Millisecond // testnet fast era: 10000 blocks ≈ 1 hour
 	PoWRetargetWindow uint64 = 64                // retarget every 64 blocks, clamp [1/4, 4x]
 	// Genesis / easiest target: difficulty-1 style easy limit (Bitcoin testnet-like)
