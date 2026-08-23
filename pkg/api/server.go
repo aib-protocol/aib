@@ -58,6 +58,7 @@ type Server struct {
 	startTime      time.Time
 	miningStats    func() map[string]interface{}
 	walletInfoFn   func() map[string]interface{}
+	peersFn        func() []PeerEntry
 	chain          ChainReader
 	migrationHub   MigrationHubAPI
 	utxoStore      utxoStoreInterface
@@ -420,4 +421,11 @@ func corsMiddleware(next http.Handler) http.Handler {
 		}
 		next.ServeHTTP(w, r)
 	})
+}
+
+// SetPeersProvider plugs the live P2P peer list into the API.
+func (s *Server) SetPeersProvider(fn func() []PeerEntry) {
+	s.mu.Lock()
+	s.peersFn = fn
+	s.mu.Unlock()
 }

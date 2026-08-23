@@ -462,11 +462,15 @@ func (cs *ChainState) validateBlockTimestamp(block *Block) error {
 			return fmt.Errorf("block time difference %v is below minimum %v", timeDiff, MinBlockTime)
 		}
 
-		// Check maximum block time drift
-		// Skip this check for blocks immediately after genesis (height <= 100)
-		// because genesis may have an old timestamp (like Bitcoin's)
-		if block.Header.Height > 100 && timeDiff > MaxBlockTimeDrift {
-			return fmt.Errorf("block time difference %v exceeds maximum drift %v", timeDiff, MaxBlockTimeDrift)
+		// Drift vs wall clock (not the parent interval — a stall would
+		// otherwise permanently wedge the chain). Skip early blocks: genesis
+		// carries a fixed historical timestamp (like Bitcoin's).
+		now := time.Now()
+		bt := time.Unix(int64(block.Header.Timestamp), 0)
+		if block.Header.Height > 100 {
+			if d := bt.Sub(now); d > MaxBlockTimeDrift || d < -MaxBlockTimeDrift {
+				return fmt.Errorf("block time %v exceeds maximum drift %v from now", d.Round(time.Second), MaxBlockTimeDrift)
+			}
 		}
 	}
 

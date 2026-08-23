@@ -607,6 +607,11 @@ func (pm *ChainPeerManager) handleInbound(conn net.Conn) {
 		verified:   true,
 	}
 
+if peer.nodeID == pm.nodeID {
+		conn.Close()
+		pm.logger.Printf("[P2P] Rejected self-connection from %s", remoteAddr)
+		return
+	}
 	pm.mu.Lock()
 	pm.peers[peer.nodeID] = peer
 	pm.mu.Unlock()

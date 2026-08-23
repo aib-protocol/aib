@@ -212,9 +212,9 @@ func (s *Server) handleGetBlock(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	h := blk.Header
-	proposerStr := strings.TrimRight(string(h.Proposer[:]), "\x00")
-	if proposerStr == "" {
-		proposerStr = "validator"
+	proposerStr := hex.EncodeToString(h.Proposer[:])
+	if h.Proposer == ([32]byte{}) {
+		proposerStr = "genesis"
 	}
 	writeSuccess(w, BlockResponse{
 		Height:    h.Height,
@@ -237,7 +237,19 @@ func (s *Server) handlePeers(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var peers []PeerResponse
-	if network := s.GetP2PNetwork(); network != nil {
+	s.mu.RLock()
+	pfn := s.peersFn
+	s.mu.RUnlock()
+	if pfn != nil {
+		for _, entry := range pfn() {
+			peers = append(peers, PeerResponse{
+				ID:        entry.ID,
+				Address:   entry.Address,
+				LastSeen:  entry.LastSeen,
+				Connected: entry.Connected,
+			})
+		}
+	} else if network := s.GetP2PNetwork(); network != nil {
 		for _, entry := range network.GetPeerList() {
 			peers = append(peers, PeerResponse{
 				ID:        entry.ID,

@@ -336,7 +336,22 @@ func (n *Node) Start() error {
 	n.apiServer.SetChain(&chainAdapter{chainState: n.chainState})
 	n.apiServer.SetChainID(n.networkCfg.ChainID)
 	n.apiServer.SetMiningStats(n.miningStats.Snapshot)
-	n.apiServer.SetWalletInfo(func() map[string]interface{} {
+	n.apiServer.SetPeersProvider(func() []api.PeerEntry {
+		if n.peerManager == nil {
+			return nil
+		}
+		entries := make([]api.PeerEntry, 0)
+		for _, ci := range n.peerManager.GetChainPeers() {
+			entries = append(entries, api.PeerEntry{
+				ID:        ci.NodeID,
+				Address:   ci.Address,
+				LastSeen:  time.Unix(ci.LastSeen, 0),
+				Connected: true,
+			})
+		}
+		return entries
+	})
+n.apiServer.SetWalletInfo(func() map[string]interface{} {
 		bal := uint64(0)
 		utxoCount := 0
 		if n.utxoStore != nil {
