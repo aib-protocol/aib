@@ -890,8 +890,10 @@ func (n *Node) produceBlock() {
 
 		// Coinbase: bootstrap-window low reward (RFC-003): 1 AIB/block during
 		// the first 10,000 blocks, then fee-share only (zero inflation path).
+		// After the PoW era (PoWEraBlocks) the fixed supply of 31415 AIB is
+		// fully mined; PoS blocks carry no coinbase (fee-only).
 		coinbaseAmount := uint64(1 * 1e8)
-		if height+1 > 10000 {
+		if height+1 > utxoPkg.PoWEraBlocks {
 			coinbaseAmount = 0
 		}
 		var coinbaseTx *utxoPkg.Transaction
