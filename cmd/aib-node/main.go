@@ -316,16 +316,11 @@ func (n *Node) Start() error {
 		n.logger.Printf("[Chain] Restored consensus height to %d from DB", h)
 	}
 
-	// Only validators join the sortition set. Followers stay out so the
-	// proposer selection is identical on every node (shared validator set
-	// comes from the chain; self-registration is testnet bootstrap only).
-	if n.config.Validator {
-		if err := n.consensus.AddValidator(n.address, 10000*1e8, n.publicKey); err != nil {
-			n.logger.Printf("    ⚠ Validator registration: %v (continuing)", err)
-		} else {
-			n.logger.Printf("    ✓ Registered as validator (10000 AIB stake)")
-		}
-	}
+		// Validator membership comes ONLY from on-chain PoW history
+	// (buildValidatorSetFromPoWHistory). Self-registration would let any node
+	// grant itself sortition weight with zero contribution — a consensus
+	// vulnerability. -validator mode just enables block PRODUCTION for
+	// validators already in the set.
 
 	// 5. Initialize transaction mempool
 	n.logger.Println("[5/7] Initializing transaction mempool...")
