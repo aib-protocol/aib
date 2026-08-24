@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/ed25519"
 	"crypto/rand"
+	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
 	"flag"
@@ -516,7 +517,10 @@ func (n *Node) initializeKeys() error {
 		}
 		n.privateKey = ed25519.PrivateKey(data[:ed25519.PrivateKeySize])
 		n.publicKey = n.privateKey.Public().(ed25519.PublicKey)
-		copy(n.address[:], n.publicKey)
+		// Address = SHA256(publicKey) — MUST match the wallet SDK derivation,
+		// otherwise mining rewards are unspendable via /v1/wallet/send.
+		h := sha256.Sum256(n.publicKey)
+		copy(n.address[:], h[:])
 		return nil
 	}
 
@@ -526,7 +530,8 @@ func (n *Node) initializeKeys() error {
 	}
 	n.privateKey = priv
 	n.publicKey = pub
-	copy(n.address[:], pub)
+	h2 := sha256.Sum256(pub)
+	copy(n.address[:], h2[:])
 
 	if err := os.WriteFile(keyPath, priv, 0600); err != nil {
 		return fmt.Errorf("failed to save key: %w", err)
