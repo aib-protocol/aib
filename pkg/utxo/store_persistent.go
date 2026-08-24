@@ -244,19 +244,18 @@ func (s *PersistentUTXOStore) GetAllUTXOs(addr [32]byte) []*UTXO {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
+	// NOTE: UTXO keys are "txHash:index", NOT address-prefixed, so a prefix
+	// seek on addr can never match. Scan the bucket and filter by Address.
 	var result []*UTXO
 	_ = s.db.View(func(tx *bbolt.Tx) error {
 		b := tx.Bucket(BucketUTXO)
-		c := b.Cursor()
-
-		prefix := addr[:]
-		for k, v := c.Seek(prefix); k != nil && len(k) >= 32 && string(k[:32]) == string(prefix); k, v = c.Next() {
+		return b.ForEach(func(_ []byte, v []byte) error {
 			utxo, err := deserializeUTXO(v)
-			if err == nil {
+			if err == nil && utxo.Address == addr {
 				result = append(result, utxo)
 			}
-		}
-		return nil
+			return nil
+		})
 	})
 
 	return result
