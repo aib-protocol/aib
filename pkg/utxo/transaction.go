@@ -207,8 +207,10 @@ func (tx *Transaction) SerializeForSigning() []byte {
 		binary.Write(&buf, binary.LittleEndian, in.Index)
 		// Write empty signature placeholder
 		binary.Write(&buf, binary.LittleEndian, uint32(0))
-		binary.Write(&buf, binary.LittleEndian, uint32(len(in.PublicKey)))
-		buf.Write(in.PublicKey)
+		// NOTE: PublicKey is intentionally EXCLUDED from the signing payload.
+		// SignInput signs BEFORE PublicKey is attached; including it here made
+		// every signature unverifiable (chicken-and-egg). PublicKeys are still
+		// serialized in the full tx for verification.
 	}
 
 	// Output count

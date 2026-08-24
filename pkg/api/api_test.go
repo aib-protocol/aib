@@ -1,14 +1,19 @@
 package api
 
 import (
-	"fmt"
-	"github.com/aib-protocol/aib/pkg/utxo"
+	"bytes"
+	"io"
+	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/aib-protocol/aib/pkg/utxo"
+	"github.com/aib-protocol/aib/pkg/wallet"
 
 	"github.com/aib-protocol/aib/internal/interfaces"
 	"github.com/aib-protocol/aib/pkg/migration"
@@ -2234,4 +2239,80 @@ func TestServer_EndToEnd_NewBlockchainEndpoints(t *testing.T) {
 
 func (m *mockChainReader) GetBlockByHeight(height uint64) (*utxo.Block, error) {
 	return nil, fmt.Errorf("block at height %d not found", height)
+}
+
+// TestWalletSendE2E covers the full transfer flow: create two wallets, fund A
+// via coinbase, send A->B through /v1/wallet/send, verify B's balance.
+func TestWalletSendE2E(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping E2E in short mode")
+	}
+	store := utxo.NewUTXOStore()
+	mp := utxo.NewMempool(1000, 0)
+	srv := NewServer(0)
+	srv.RegisterRoutes()
+	srv.SetUTXOStore(store)
+	srv.SetMempool(mp)
+	ts := httptest.NewServer(srv.mux)
+	defer ts.Close()
+
+	// wallet A (sender)
+	wa, err := wallet.NewWallet()
+	if err != nil {
+		t.Fatalf("wallet A: %v", err)
+	}
+	// wallet B (recipient)
+	wb, err := wallet.NewWallet()
+	if err != nil {
+		t.Fatalf("wallet B: %v", err)
+	}
+
+	// fund A with a coinbase of 100 AIB (add outputs directly; ApplyTransaction
+	// would reject the synthetic 0:0xffffffff input)
+	cb := utxo.CreateCoinbaseTransaction(wa.GetAddress(), 100*1e8, []byte("e2e"))
+	for i := range cb.Outputs {
+		store.AddUTXO(&utxo.UTXO{
+			TxHash:  cb.Hash(),
+			Index:   uint32(i),
+			Address: cb.Outputs[i].Address,
+			Value:   cb.Outputs[i].Value,
+		})
+	}
+
+	// send 40 AIB from A to B
+	toB := wb.GetAddress()
+	body, _ := json.Marshal(map[string]interface{}{
+		"private_key": hex.EncodeToString(wa.ExportPrivateKey()),
+		"to_address":  hex.EncodeToString(toB[:]),
+		"amount_aib":  40,
+	})
+	resp, err := http.Post(ts.URL+"/v1/wallet/send", "application/json", bytes.NewReader(body))
+	if err != nil {
+		t.Fatalf("send: %v", err)
+	}
+	rawBody, _ := io.ReadAll(resp.Body)
+	resp.Body.Close()
+	var out struct {
+		Success bool `json:"success"`
+		Data    struct {
+			TxHash string `json:"tx_hash"`
+		} `json:"data"`
+	}
+	if err := json.Unmarshal(rawBody, &out); err != nil {
+		t.Fatalf("decode %s: %v", string(rawBody), err)
+	}
+	if !out.Success {
+		t.Fatalf("send failed: %s", string(rawBody))
+	}
+	if out.Data.TxHash == "" {
+		t.Fatal("empty tx hash")
+	}
+
+	// tx must be in the mempool
+	b, _ := hex.DecodeString(out.Data.TxHash)
+	var h [32]byte
+	copy(h[:], b)
+	if mp.GetTransaction(h) == nil {
+		t.Fatal("tx not in mempool")
+	}
 }

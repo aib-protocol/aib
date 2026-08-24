@@ -257,6 +257,12 @@ func (s *UTXOStore) GetUTXOsForAmount(addr [32]byte, amount uint64) ([]*UTXO, ui
 	return selected, total, nil
 }
 
+// GetTransactionIndex returns the block height for a transaction.
+// In-memory store does not track a transaction index; not-found by default.
+func (s *UTXOStore) GetTransactionIndex(txHash [32]byte) (uint64, error) {
+	return 0, fmt.Errorf("transaction not found")
+}
+
 // CreateCoinbaseTransaction creates a coinbase transaction (block reward + fees).
 func CreateCoinbaseTransaction(toAddr [32]byte, reward uint64, data []byte) *Transaction {
 	// Create input with special coinbase marker

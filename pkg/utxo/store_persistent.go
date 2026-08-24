@@ -262,6 +262,24 @@ func (s *PersistentUTXOStore) GetAllUTXOs(addr [32]byte) []*UTXO {
 	return result
 }
 
+// GetUTXOsForAmount selects UTXOs that can cover the requested amount.
+func (s *PersistentUTXOStore) GetUTXOsForAmount(addr [32]byte, amount uint64) ([]*UTXO, uint64, error) {
+	all := s.GetAllUTXOs(addr)
+	var selected []*UTXO
+	var total uint64
+	for _, u := range all {
+		selected = append(selected, u)
+		total += u.Value
+		if total >= amount {
+			break
+		}
+	}
+	if total < amount {
+		return nil, 0, fmt.Errorf("insufficient balance: have %d, need %d", total, amount)
+	}
+	return selected, total, nil
+}
+
 // GetUTXOCount returns total UTXO count.
 func (s *PersistentUTXOStore) GetUTXOCount() int {
 	s.mu.RLock()
