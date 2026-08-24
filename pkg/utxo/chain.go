@@ -478,12 +478,16 @@ func (cs *ChainState) validateBlockTimestamp(block *Block) error {
 			return fmt.Errorf("block time difference %v is below minimum %v", timeDiff, MinBlockTime)
 		}
 
-		// Drift vs wall clock (not the parent interval — a stall would
-		// otherwise permanently wedge the chain). Skip early blocks: genesis
-		// carries a fixed historical timestamp (like Bitcoin's).
+		// Drift vs wall clock applies ONLY to blocks at the chain tip
+		// (catching up with historical blocks must not be rejected — their
+		// timestamps are legitimately old). A block is "at the tip" when it
+		// extends our current best height by at most one.
 		now := time.Now()
 		bt := time.Unix(int64(block.Header.Timestamp), 0)
-		if block.Header.Height > 100 {
+		cs.bestMu.RLock()
+		localBest := cs.bestHeight
+		cs.bestMu.RUnlock()
+		if block.Header.Height > 100 && block.Header.Height <= localBest+1 {
 			if d := bt.Sub(now); d > MaxBlockTimeDrift || d < -MaxBlockTimeDrift {
 				return fmt.Errorf("block time %v exceeds maximum drift %v from now", d.Round(time.Second), MaxBlockTimeDrift)
 			}

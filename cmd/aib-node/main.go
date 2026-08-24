@@ -1066,6 +1066,7 @@ func parseFlags() *NodeConfig {
 	flag.StringVar(&config.Network, "network", "testnet", "Network to join: testnet or mainnet")
 
 	flag.Parse()
+
 	return config
 }
 
@@ -1082,6 +1083,29 @@ func resolveNetworkConfig(network string) *NetworkConfig {
 }
 
 func main() {
+
+	// `aib-node setup` — interactive first-run wizard (see setup.go)
+	if len(os.Args) > 1 && os.Args[1] == "setup" {
+		home, _ := os.UserHomeDir()
+		sd := flag.String("data-dir", filepath.Join(home, ".aib"), "data dir")
+		sa := flag.Int("setup-api-port", 8080, "api port")
+		sp := flag.Int("setup-p2p-port", 0, "p2p port")
+		// re-parse just our flags
+		fs := flag.NewFlagSet("setup", flag.ExitOnError)
+		fs.StringVar(sd, "data-dir", filepath.Join(home, ".aib"), "data dir")
+		fs.IntVar(sa, "api-port", 8080, "api port")
+		fs.IntVar(sp, "p2p-port", 0, "p2p port")
+		_ = fs.Parse(os.Args[2:])
+		if *sp == 0 {
+			*sp = 51413
+		}
+		if err := runSetup(*sd, *sa, *sp, nil); err != nil {
+			fmt.Fprintf(os.Stderr, "[setup] %v\n", err)
+			os.Exit(1)
+		}
+		return
+	}
+
 	config := parseFlags()
 
 	node := NewNode(config)
