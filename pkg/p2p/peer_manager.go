@@ -124,6 +124,39 @@ func (pm *ChainPeerManager) SetHandlers(
 
 // SetBlockVerifier sets the block signature verifier.
 // If not set, a default Ed25519BlockVerifier is used.
+// StartAutoSync launches a periodic catch-up loop: if any verified peer's
+// best height exceeds ours, request missing blocks. This fixes nodes that
+// fall behind at runtime (GETBLOCKS used to fire only at startup).
+func (pm *ChainPeerManager) StartAutoSync(interval time.Duration) {
+	go func() {
+		ticker := time.NewTicker(interval)
+		defer ticker.Stop()
+		for range ticker.C {
+			local := uint64(0)
+			if pm.onBestHeight != nil {
+				local = pm.onBestHeight()
+				pm.mu.Lock()
+				pm.bestHeight = local
+				pm.mu.Unlock()
+			}
+			pm.mu.RLock()
+			var best uint64
+			for _, p := range pm.peers {
+				if p.verified && p.bestHeight > best {
+					best = p.bestHeight
+				}
+			}
+			pm.mu.RUnlock()
+			if best > local+1 {
+				pm.logger.Printf("[P2P] AutoSync: local height %d < peer best %d, requesting blocks", local, best)
+				if err := pm.RequestBlocksFromBestPeer(local + 1); err != nil {
+					pm.logger.Printf("[P2P] AutoSync request failed: %v", err)
+				}
+			}
+		}
+	}()
+}
+
 func (pm *ChainPeerManager) SetBlockVerifier(v BlockVerifier) {
 	pm.blockVerifier = v
 }
@@ -414,9 +447,10 @@ func (pm *ChainPeerManager) connectToPeer(addr string) error {
 	}
 
 	// Send VERSION message
-	pm.mu.RLock()
 	height := pm.bestHeight
-	pm.mu.RUnlock()
+	if pm.onBestHeight != nil {
+		height = pm.onBestHeight()
+	}
 
 	versionMsg := VersionMsg{
 		Version:     ProtocolVersion,
@@ -570,9 +604,10 @@ func (pm *ChainPeerManager) handleInbound(conn net.Conn) {
 	}
 
 	// Send VERACK
-	pm.mu.RLock()
 	height := pm.bestHeight
-	pm.mu.RUnlock()
+	if pm.onBestHeight != nil {
+		height = pm.onBestHeight()
+	}
 
 	verack := VerackMsg{
 		GenesisHash: pm.genesisHash,

@@ -285,6 +285,11 @@ func (n *Node) Start() error {
 	posConfig := utxoPkg.DefaultPoSConfig()
 	posConfig.EpochLength = 314
 	n.consensus = utxoPkg.NewConsensusState(posConfig)
+	// Rebuild the PoS validator set on demand when proposer validation finds
+	// no active validators (nodes syncing into the PoS era).
+	n.consensus.SetEmptyValidatorSetHook(func() {
+		n.buildValidatorSetFromPoWHistory()
+	})
 	chainState.SetConsensus(n.consensus)
 	n.logger.Println("    ✓ Consensus engine initialized")
 
@@ -618,6 +623,7 @@ func (n *Node) startP2P(nodeID string) error {
 		return fmt.Errorf("start P2P: %w", err)
 	}
 	n.peerManager = pm
+	pm.StartAutoSync(15 * time.Second)
 
 	// Start block syncer
 	syncer := p2p.NewChainBlockSyncer(pm, n.logger)
@@ -1189,8 +1195,7 @@ func (n *Node) buildValidatorSetFromPoWHistory() {
 		counts[b.Header.Proposer]++
 	}
 	for addr, cnt := range counts {
-		stake := cnt * 1e8 // 1 AIB stake per mined block — proportional weight
-		if err := n.consensus.AddValidator(addr, stake, addr[:]); err == nil {
+		if err := n.consensus.AddValidatorFromPoW(addr, cnt, addr[:]); err == nil {
 			n.logger.Printf("[PoS] validator %x stake=%d blocks", addr[:8], cnt)
 		}
 	}

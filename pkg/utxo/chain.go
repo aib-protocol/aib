@@ -478,16 +478,15 @@ func (cs *ChainState) validateBlockTimestamp(block *Block) error {
 			return fmt.Errorf("block time difference %v is below minimum %v", timeDiff, MinBlockTime)
 		}
 
-		// Drift vs wall clock applies ONLY to blocks at the chain tip
-		// (catching up with historical blocks must not be rejected — their
-		// timestamps are legitimately old). A block is "at the tip" when it
-		// extends our current best height by at most one.
+		// Drift vs wall clock applies only when we are AT the chain tip,
+		// i.e. the parent block itself is recent. While catching up on
+		// history (parent timestamp old), the drift check is skipped —
+		// historical timestamps are legitimately old.
 		now := time.Now()
+		pt := time.Unix(int64(parent.Header.Timestamp), 0)
 		bt := time.Unix(int64(block.Header.Timestamp), 0)
-		cs.bestMu.RLock()
-		localBest := cs.bestHeight
-		cs.bestMu.RUnlock()
-		if block.Header.Height > 100 && block.Header.Height <= localBest+1 {
+		parentIsRecent := now.Sub(pt) < 2*MaxBlockTimeDrift
+		if block.Header.Height > 100 && parentIsRecent {
 			if d := bt.Sub(now); d > MaxBlockTimeDrift || d < -MaxBlockTimeDrift {
 				return fmt.Errorf("block time %v exceeds maximum drift %v from now", d.Round(time.Second), MaxBlockTimeDrift)
 			}

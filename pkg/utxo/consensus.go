@@ -12,6 +12,7 @@ import (
 	"sort"
 	"sync"
 	"time"
+	"slices"
 )
 
 // block time configuration
@@ -60,10 +61,15 @@ type Validator struct {
 	TotalRewards uint64 // Total rewards earned
 	Commission   uint8  // Commission rate (0-100)
 	PublicKey    ed25519.PublicKey
+	FromPoW      bool // registered from PoW-era mining history (bootstrap set)
 }
 
 // IsActive returns true if the validator is active (has sufficient stake).
+// PoW-era validators are always active: their mined blocks ARE the stake.
 func (v *Validator) IsActive(config *PoSConfig) bool {
+	if v.FromPoW {
+		return true
+	}
 	return v.Stake >= config.MinStake
 }
 
@@ -87,6 +93,8 @@ type ConsensusState struct {
 	lastBlockTime time.Time
 	proposerQueue [][32]byte // Ordered list of validators for proposing
 	mu            sync.RWMutex
+
+	onEmptyValidatorSet func()
 }
 
 // NewConsensusState creates a new consensus state.
@@ -138,6 +146,30 @@ func (cs *ConsensusState) AddValidator(address [32]byte, stake uint64, publicKey
 
 	return nil
 }
+// AddValidatorFromPoW registers a validator derived from PoW-era mining
+// history (weight = blocks mined). Bypasses MinStake: the PoW era is the
+// stake — small miners must not be filtered out of the bootstrap set.
+func (cs *ConsensusState) AddValidatorFromPoW(address [32]byte, blocksMined uint64, publicKey ed25519.PublicKey) error {
+	cs.mu.Lock()
+	defer cs.mu.Unlock()
+
+	if blocksMined == 0 {
+		return fmt.Errorf("no blocks mined")
+	}
+	if _, exists := cs.validators[address]; exists {
+		return nil // already registered — idempotent
+	}
+	stake := blocksMined * 1e8 // 1 AIB weight per mined block
+	cs.validators[address] = &Validator{
+		Address:   address,
+		Stake:     stake,
+		JoinedAt:  cs.currentHeight,
+		PublicKey: publicKey,
+		FromPoW:   true,
+	}
+	return nil
+}
+
 
 // RemoveValidator removes a validator from the consensus.
 func (cs *ConsensusState) RemoveValidator(address [32]byte) error {
@@ -203,10 +235,24 @@ func (cs *ConsensusState) SelectProposer(seed []byte) ([32]byte, error) {
 
 // selectProposerLocked selects the proposer. Caller must hold mu.
 func (cs *ConsensusState) selectProposerLocked(seed []byte) ([32]byte, error) {
+	return cs.selectProposerAtHeightLocked(seed, cs.currentHeight)
+}
+
+// selectProposerAtHeightLocked selects the proposer for a SPECIFIC height.
+// Consensus-critical: the height must come from the block being produced or
+// validated, never from mutable local state, or nodes at different sync
+// positions compute different expected proposers.
+func (cs *ConsensusState) selectProposerAtHeightLocked(seed []byte, height uint64) ([32]byte, error) {
 	validators := cs.getActiveValidatorsLocked()
 	if len(validators) == 0 {
 		return [32]byte{}, fmt.Errorf("no active validators")
 	}
+
+	// Deterministic ordering: map iteration order is random in Go; without
+	// sorting, two nodes with identical state can select different proposers.
+	slices.SortFunc(validators, func(a, b *Validator) int {
+		return bytes.Compare(a.Address[:], b.Address[:])
+	})
 
 	// Calculate total stake
 	var totalStake uint64
@@ -220,9 +266,10 @@ func (cs *ConsensusState) selectProposerLocked(seed []byte) ([32]byte, error) {
 
 	// Use VRF-like selection based on seed and height
 	// Hash the seed with height to get a deterministic random value
+
 	hash := sha256.New()
 	hash.Write(seed)
-	binary.Write(hash, binary.BigEndian, cs.currentHeight)
+	binary.Write(hash, binary.BigEndian, height)
 	digest := hash.Sum(nil)
 
 	// Convert to big.Int for weighted selection
@@ -385,12 +432,18 @@ func (cs *ConsensusState) VerifyBlockProposer(block *Block, prevBlock *Block) *P
 		seed = make([]byte, 32)
 	}
 
+	// A syncing node may validate PoS-era blocks before the validator set
+	// has been built from PoW history — rebuild on demand.
+	if len(cs.GetActiveValidators()) == 0 && cs.onEmptyValidatorSet != nil {
+		cs.onEmptyValidatorSet()
+	}
+
 	// Step 2 & 3 & 4 & 5 & 6: Do all validation under a single lock
 	cs.mu.RLock()
 	defer cs.mu.RUnlock()
 
-	// Calculate expected proposer
-	expectedProposer, err := cs.selectProposerLocked(seed)
+	// Calculate expected proposer (deterministic: seed + the BLOCK's height)
+	expectedProposer, err := cs.selectProposerAtHeightLocked(seed, block.Header.Height)
 	if err != nil {
 		result.Error = fmt.Sprintf("failed to select proposer: %v", err)
 		return result
@@ -422,8 +475,9 @@ func (cs *ConsensusState) VerifyBlockProposer(block *Block, prevBlock *Block) *P
 		return result
 	}
 
-	// Verify proposer has minimum stake
-	if validator.Stake < cs.config.MinStake {
+	// Verify proposer has minimum stake (PoW-era validators exempt — their
+	// mined blocks are the stake; the bootstrap set must not be filtered)
+	if !validator.FromPoW && validator.Stake < cs.config.MinStake {
 		result.Error = fmt.Sprintf("proposer stake %d below minimum %d",
 			validator.Stake, cs.config.MinStake)
 		return result
@@ -527,3 +581,7 @@ func (cs *ConsensusState) VerifyValidatorStateRoot(root [32]byte) (bool, error) 
 	}
 	return calculated == root, nil
 }
+
+// SetEmptyValidatorSetHook installs a callback fired when proposer selection
+// finds no active validators (e.g. a syncing node entering the PoS era).
+func (cs *ConsensusState) SetEmptyValidatorSetHook(fn func()) { cs.onEmptyValidatorSet = fn }

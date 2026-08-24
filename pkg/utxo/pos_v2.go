@@ -105,6 +105,12 @@ func (cs *ConsensusState) SelectProposerV2(seed []byte, rm *ReputationManager) (
 	defer cs.mu.RUnlock()
 
 	validators := cs.getActiveValidatorsLocked()
+	if len(validators) == 0 && cs.onEmptyValidatorSet != nil {
+		cs.mu.RUnlock()
+		cs.onEmptyValidatorSet()
+		cs.mu.RLock()
+		validators = cs.getActiveValidatorsLocked()
+	}
 	if len(validators) == 0 {
 		return [32]byte{}, fmt.Errorf("no active validators")
 	}
@@ -198,6 +204,14 @@ func (cs *ConsensusState) ValidateProposerV2(proposer [32]byte, seed []byte, rm 
 // selectProposerV2Locked is the internal implementation of V2 proposer selection (lock must be held)
 func (cs *ConsensusState) selectProposerV2Locked(seed []byte, rm *ReputationManager) ([32]byte, error) {
 	validators := cs.getActiveValidatorsLocked()
+	if len(validators) == 0 && cs.onEmptyValidatorSet != nil {
+		// Called with RLock held from ValidateProposerV2: drop it while the
+		// hook rebuilds the set (hook takes the write lock internally).
+		cs.mu.RUnlock()
+		cs.onEmptyValidatorSet()
+		cs.mu.RLock()
+		validators = cs.getActiveValidatorsLocked()
+	}
 	if len(validators) == 0 {
 		return [32]byte{}, fmt.Errorf("no active validators")
 	}
