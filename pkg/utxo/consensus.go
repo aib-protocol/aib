@@ -450,8 +450,11 @@ func (cs *ConsensusState) VerifyBlockProposer(block *Block, prevBlock *Block) *P
 	}
 	result.ExpectedProposer = expectedProposer
 
-	// Compare with actual proposer
-	if block.Header.Proposer != expectedProposer {
+	// Compare with actual proposer. Header.Proposer carries the PUBLIC KEY
+	// (needed for the block signature); the validator set holds WALLET
+	// addresses (SHA256 of the public key). Hash before comparing.
+	proposerWallet := sha256.Sum256(block.Header.Proposer[:])
+	if proposerWallet != expectedProposer {
 		result.Error = fmt.Sprintf("proposer mismatch: expected %x, got %x",
 			expectedProposer, block.Header.Proposer)
 		return result

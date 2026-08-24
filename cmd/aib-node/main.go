@@ -512,10 +512,9 @@ func (n *Node) initializeKeys() error {
 		}
 		n.privateKey = ed25519.PrivateKey(data[:ed25519.PrivateKeySize])
 		n.publicKey = n.privateKey.Public().(ed25519.PublicKey)
-		// Address = SHA256(publicKey) — MUST match the wallet SDK derivation,
-		// otherwise mining rewards are unspendable via /v1/wallet/send.
-		h := sha256.Sum256(n.publicKey)
-		copy(n.address[:], h[:])
+		// Header.Proposer carries the PUBLIC KEY (signature verification
+		// requires it); the wallet-side address is SHA256(publicKey).
+		copy(n.address[:], n.publicKey)
 		return nil
 	}
 
@@ -525,8 +524,7 @@ func (n *Node) initializeKeys() error {
 	}
 	n.privateKey = priv
 	n.publicKey = pub
-	h2 := sha256.Sum256(pub)
-	copy(n.address[:], h2[:])
+	copy(n.address[:], pub)
 
 	if err := os.WriteFile(keyPath, priv, 0600); err != nil {
 		return fmt.Errorf("failed to save key: %w", err)
@@ -826,12 +824,15 @@ func (n *Node) produceBlock() {
 	}
 
 	prevHash := n.chainState.GetBestBlockHash()
-	proposer := n.address
+	proposer := n.address // public key (block header/signature requirement)
+	// Coinbase pays to the WALLET address (SHA256 of the public key) — this
+	// is what /v1/wallet/send and /v1/balance operate on.
+	walletAddr := n.walletAddress()
 	height1 := height + 1
 
 	// ---- Consensus V3: PoW era (blocks 1..10000) ----
 	if n.networkCfg.BlockVersion >= 3 && height1 <= utxoPkg.PoWEraBlocks {
-		coinbaseTx := utxoPkg.CreateCoinbaseTransaction(proposer, utxoPkg.PoWBlockReward, []byte("pow-v3"))
+		coinbaseTx := utxoPkg.CreateCoinbaseTransaction(walletAddr, utxoPkg.PoWBlockReward, []byte("pow-v3"))
 		blockTxs := append([]*utxoPkg.Transaction{coinbaseTx}, txs...)
 		newBlock := utxoPkg.NewBlock(blockTxs, prevHash, height1, proposer)
 		newBlock.Header.Version = 3
@@ -881,7 +882,9 @@ func (n *Node) produceBlock() {
 			n.logger.Printf("[Block %d] VRF selection fallback: %v", height+1, err)
 			proof = nil
 		}
-		if proof != nil && proof.Winner != proposer {
+		// Winner is a WALLET address (validator set); proposer var holds the
+		// public key. Compare against our wallet address.
+		if proof != nil && proof.Winner != walletAddr {
 			// Not our slot — someone else won the sortition
 			n.miningStats.recordMiss(height+1, proof.Winner)
 			return
@@ -1185,6 +1188,14 @@ func (n *Node) nextPoWBits(prevHeight uint64) uint32 {
 
 // buildValidatorSetFromPoWHistory builds the PoS validator set from the
 // PoW era: stake weight = number of PoW blocks mined (hashrate share proxy).
+
+// walletAddress returns the wallet-side address for this node's key
+// (SHA256 of the public key — matches the wallet SDK derivation).
+func (n *Node) walletAddress() [32]byte {
+	h := sha256.Sum256(n.publicKey)
+	return h
+}
+
 func (n *Node) buildValidatorSetFromPoWHistory() {
 	counts := map[[32]byte]uint64{}
 	for h := uint64(1); h <= utxoPkg.PoWEraBlocks; h++ {
@@ -1192,7 +1203,11 @@ func (n *Node) buildValidatorSetFromPoWHistory() {
 		if b == nil {
 			continue
 		}
-		counts[b.Header.Proposer]++
+		// Weight accrues to the WALLET address (coinbase recipient), not the
+		// raw public key — keeps consensus state consistent with balances.
+		if len(b.Transactions) > 0 && b.Transactions[0].IsCoinbase() && len(b.Transactions[0].Outputs) > 0 {
+			counts[b.Transactions[0].Outputs[0].Address]++
+		}
 	}
 	for addr, cnt := range counts {
 		if err := n.consensus.AddValidatorFromPoW(addr, cnt, addr[:]); err == nil {
