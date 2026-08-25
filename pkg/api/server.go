@@ -225,7 +225,25 @@ func (s *Server) GetAPIKeys() []string {
 }
 
 // NewServer creates a new API server
+// NewServer creates a new API server bound to all interfaces.
+// SECURITY: POST endpoints accept private keys for signing. Nodes that only
+// serve a local client (curl, agents, reverse proxy) should use
+// NewServerLoopback instead — never expose signing endpoints to the internet.
 func NewServer(port int) *Server {
+	return newServer("0.0.0.0", port)
+}
+
+// NewServerLoopback binds the API to 127.0.0.1 only.
+func NewServerLoopback(port int) *Server {
+	return newServer("127.0.0.1", port)
+}
+
+// NewServerBind binds the API to an explicit address.
+func NewServerBind(bind string, port int) *Server {
+	return newServer(bind, port)
+}
+
+func newServer(bind string, port int) *Server {
 	mux := http.NewServeMux()
 	server := &Server{
 		mux:       mux,
@@ -234,7 +252,7 @@ func NewServer(port int) *Server {
 	}
 
 	server.httpServer = &http.Server{
-		Addr:         fmt.Sprintf("0.0.0.0:%d", port),
+		Addr:         fmt.Sprintf("%s:%d", bind, port),
 		Handler:      corsMiddleware(mux),
 		ReadTimeout:  15 * time.Second,
 		WriteTimeout: 15 * time.Second,
@@ -415,7 +433,17 @@ func parsePathVar(r *http.Request, prefix string) string {
 
 func corsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
+		origin := r.Header.Get("Origin")
+		allowed := map[string]bool{
+			"https://aib.one": true,
+		}
+		if allowed[origin] || origin == "" {
+			// no Origin (curl / agents) or whitelisted site
+			if origin != "" {
+				w.Header().Set("Access-Control-Allow-Origin", origin)
+				w.Header().Set("Vary", "Origin")
+			}
+		}
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 		if r.Method == http.MethodOptions {

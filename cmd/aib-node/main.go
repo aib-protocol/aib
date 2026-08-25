@@ -70,6 +70,7 @@ const (
 type NodeConfig struct {
 	DataDir   string
 	APIPort   int
+	APIBind   string
 	P2PPort   int
 	Validator bool
 	LogLevel  string
@@ -342,7 +343,16 @@ func (n *Node) Start() error {
 
 	// Start API server
 	n.logger.Printf("\n[API] Starting API server on port %d...", n.config.APIPort)
-	n.apiServer = api.NewServer(n.config.APIPort)
+	// SECURITY: bind the API to loopback by default. The public aib.one
+	// endpoints are served by a local reverse proxy on the same host; remote
+	// curl/agents should talk to that proxy, never to the raw node API which
+	// accepts private keys for signing. Override with -api-bind if you really
+	// need external exposure (not recommended).
+	apiBind := n.config.APIBind
+	if apiBind == "" {
+		apiBind = "127.0.0.1"
+	}
+	n.apiServer = api.NewServerBind(apiBind, n.config.APIPort)
 	n.apiServer.SetChain(&chainAdapter{chainState: n.chainState})
 	n.apiServer.SetChainID(n.networkCfg.ChainID)
 	n.apiServer.SetMiningStats(n.miningStats.Snapshot)
@@ -1072,6 +1082,7 @@ func parseFlags() *NodeConfig {
 
 	flag.StringVar(&config.DataDir, "data-dir", defaultDataDir, "Data directory")
 	flag.IntVar(&config.APIPort, "api-port", 8080, "API port")
+	flag.StringVar(&config.APIBind, "api-bind", "127.0.0.1", "API bind address (default loopback — signing endpoints accept private keys)")
 	flag.IntVar(&config.P2PPort, "p2p-port", 0, "P2P port (default: per network)")
 	flag.IntVar(&config.BlockTime, "block-time", 60, "Block time in seconds (mainnet: 60s, testnet: 30s)")
 	flag.BoolVar(&config.Validator, "validator", false, "Enable validator mode")

@@ -4,6 +4,7 @@ package utxo
 
 import (
 	"crypto/ed25519"
+	"crypto/sha256"
 	"encoding/hex"
 	"path/filepath"
 	"testing"
@@ -358,8 +359,9 @@ func TestState_Transition_ChainReorg(t *testing.T) {
 
 	var proposerAddr1 [32]byte
 	var proposerAddr2 [32]byte
-	copy(proposerAddr1[:], pubKey1)
-	copy(proposerAddr2[:], pubKey2)
+	// V3 address model: wallet/validator address = SHA256(pubkey)
+	proposerAddr1 = sha256.Sum256(pubKey1)
+	proposerAddr2 = sha256.Sum256(pubKey2)
 
 	consensus.AddValidator(proposerAddr1, 1000*1e8, pubKey1)
 	consensus.AddValidator(proposerAddr2, 1000*1e8, pubKey2)

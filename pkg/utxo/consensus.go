@@ -444,7 +444,7 @@ func (cs *ConsensusState) VerifyBlockProposer(block *Block, prevBlock *Block) *P
 	// yet), any node may propose the transition block that carries the first
 	// stake transaction. The mempool-enforced stake tx is what activates the
 	// validator set; without this the chain deadlocks at the PoW/PoS boundary.
-	if len(cs.GetActiveValidators()) == 0 {
+	if len(cs.GetActiveValidators()) == 0 && block.Header.Height == PoWEraBlocks+1 {
 		result.Valid = true
 		result.Bootstrap = true
 		return result
