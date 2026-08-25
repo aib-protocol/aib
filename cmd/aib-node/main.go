@@ -364,12 +364,13 @@ func (n *Node) Start() error {
 n.apiServer.SetWalletInfo(func() map[string]interface{} {
 		bal := uint64(0)
 		utxoCount := 0
+		wAddr := n.walletAddress()
 		if n.utxoStore != nil {
-			bal = n.utxoStore.GetBalance(n.address)
-			utxoCount = len(n.utxoStore.GetAllUTXOs(n.address))
+			bal = n.utxoStore.GetBalance(wAddr)
+			utxoCount = len(n.utxoStore.GetAllUTXOs(wAddr))
 		}
 		return map[string]interface{}{
-			"address":      hex.EncodeToString(n.address[:]),
+			"address":      hex.EncodeToString(wAddr[:]),
 			"balance_aib":  float64(bal) / 1e8,
 			"balance_raw":  bal,
 			"utxo_count":   utxoCount,
