@@ -524,8 +524,12 @@ func (cs *ChainState) validateBlockParent(block *Block) error {
 
 // validateBlockTransactions validates all transactions in the block.
 func (cs *ChainState) validateBlockTransactions(block *Block) error {
-	// Must have at least one transaction (coinbase)
+	// After the PoW era there is no coinbase (fixed supply); empty blocks
+	// are valid — a fee-only block may legitimately have zero transactions.
 	if len(block.Transactions) == 0 {
+		if block.Header.Version >= 3 && block.Header.Height > PoWEraBlocks {
+			return nil
+		}
 		return fmt.Errorf("block has no transactions")
 	}
 
