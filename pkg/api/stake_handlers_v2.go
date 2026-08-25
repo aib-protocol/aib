@@ -266,17 +266,14 @@ func parseRawOrAIB(s string) uint64 {
 
 // submitToMempool pushes a signed tx into the mempool.
 func (s *Server) submitToMempool(tx *utxo.Transaction) error {
-	actualMempool, ok := s.mempool.(interface {
-		AddTransaction(tx *utxo.Transaction, utxoProvider utxo.UTXOProvider) error
-	})
-	if !ok {
+	if s.mempool == nil {
 		return errMempoolUnavailable
 	}
 	utxoProvider, ok := s.utxoStore.(utxo.UTXOProvider)
 	if !ok {
 		return errMempoolUnavailable
 	}
-	return actualMempool.AddTransaction(tx, utxoProvider)
+	return s.mempool.AddTransaction(tx, utxoProvider)
 }
 
 var errMempoolUnavailable = fmtError("mempool not available")

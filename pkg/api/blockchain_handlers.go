@@ -532,6 +532,7 @@ type utxoStoreInterface interface {
 type mempoolInterface interface {
 	GetAllEntries() []*utxo.MempoolEntry
 	GetTransaction(txHash [32]byte) *utxo.Transaction
+	AddTransaction(tx *utxo.Transaction, utxoProvider utxo.UTXOProvider) error
 }
 
 // consensusConfigInterface consensusstatusinterface
