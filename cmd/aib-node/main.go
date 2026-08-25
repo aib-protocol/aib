@@ -833,7 +833,7 @@ func (n *Node) produceBlock() {
 
 	// ---- Consensus V3: PoW era (blocks 1..10000) ----
 	if n.networkCfg.BlockVersion >= 3 && height1 <= utxoPkg.PoWEraBlocks {
-		coinbaseTx := utxoPkg.CreateCoinbaseTransaction(walletAddr, utxoPkg.PoWBlockReward, []byte("pow-v3"))
+		coinbaseTx := utxoPkg.CreateCoinbaseTransaction(walletAddr, utxoPkg.PoWBlockReward, []byte(fmt.Sprintf("pow-v3-h%d", height1)))
 		blockTxs := append([]*utxoPkg.Transaction{coinbaseTx}, txs...)
 		newBlock := utxoPkg.NewBlock(blockTxs, prevHash, height1, proposer)
 		newBlock.Header.Version = 3
@@ -911,7 +911,7 @@ func (n *Node) produceBlock() {
 		}
 		var coinbaseTx *utxoPkg.Transaction
 		if coinbaseAmount > 0 {
-			coinbaseTx = utxoPkg.CreateCoinbaseTransaction(proposer, coinbaseAmount, []byte("vrf-coinbase"))
+			coinbaseTx = utxoPkg.CreateCoinbaseTransaction(walletAddr, coinbaseAmount, []byte(fmt.Sprintf("vrf-coinbase-h%d", height+1)))
 		}
 		var blockTxs []*utxoPkg.Transaction
 		if coinbaseTx != nil {
