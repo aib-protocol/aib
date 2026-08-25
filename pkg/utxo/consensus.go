@@ -440,6 +440,16 @@ func (cs *ConsensusState) VerifyBlockProposer(block *Block, prevBlock *Block) *P
 		cs.onEmptyValidatorSet()
 	}
 
+	// Bootstrap exception: if the validator set is empty (no stakes on chain
+	// yet), any node may propose the transition block that carries the first
+	// stake transaction. The mempool-enforced stake tx is what activates the
+	// validator set; without this the chain deadlocks at the PoW/PoS boundary.
+	if len(cs.GetActiveValidators()) == 0 {
+		result.Valid = true
+		result.Bootstrap = true
+		return result
+	}
+
 	// Step 2 & 3 & 4 & 5 & 6: Do all validation under a single lock
 	cs.mu.RLock()
 	defer cs.mu.RUnlock()
@@ -505,6 +515,7 @@ func (cs *ConsensusState) getTotalStakeLocked() uint64 {
 // ProposerVerificationResult contains the result of proposer verification.
 type ProposerVerificationResult struct {
 	Valid            bool
+	Bootstrap        bool // accepted via empty-validator-set bootstrap exception
 	Error            string
 	ExpectedProposer [32]byte
 	Stake            uint64
