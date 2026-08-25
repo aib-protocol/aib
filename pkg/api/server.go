@@ -288,7 +288,7 @@ func (s *Server) RegisterRoutes() {
 	// Balance queries (read-only)
 	s.mux.HandleFunc("/v1/balance/", s.handleGetBalance)
 	s.mux.HandleFunc("/v1/distribution", s.handleDistribution)
-	s.mux.HandleFunc("/v1/validators", s.handleValidators)
+	s.mux.HandleFunc("/v1/stake/validators", s.handleStakeValidators)
 
 	// Blockchain queries - read-only endpoints
 	s.mux.HandleFunc("/v1/utxo/", s.handleUTXOByAddress)
