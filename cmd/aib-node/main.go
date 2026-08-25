@@ -379,6 +379,7 @@ n.apiServer.SetWalletInfo(func() map[string]interface{} {
 		}
 	})
 	n.apiServer.SetUTXOStore(n.utxoStore)
+	n.apiServer.SetMempool(n.mempool)
 
 	n.wg.Add(1)
 	go func() {

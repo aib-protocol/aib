@@ -533,8 +533,11 @@ func (cs *ChainState) validateBlockTransactions(block *Block) error {
 		return fmt.Errorf("block has no transactions")
 	}
 
-	// First transaction must be coinbase
-	if !block.Transactions[0].IsCoinbase() {
+	// In the PoW era the first transaction must be coinbase; after the PoW
+	// era there is no coinbase (fixed supply) — stake/transfer txs come first.
+	if block.Header.Version >= 3 && block.Header.Height > PoWEraBlocks {
+		// no coinbase requirement
+	} else if !block.Transactions[0].IsCoinbase() {
 		return fmt.Errorf("first transaction is not coinbase")
 	}
 
