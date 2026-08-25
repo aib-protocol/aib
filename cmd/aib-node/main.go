@@ -921,7 +921,9 @@ func (n *Node) produceBlock() {
 			blockTxs = txs
 		}
 
-		newBlock = utxoPkg.NewBlock(blockTxs, prevHash, height+1, proposer)
+		// PoS block: Header.Proposer must be the WALLET address (the staked
+		// identity) — matches validator set comparison.
+		newBlock = utxoPkg.NewBlock(blockTxs, prevHash, height+1, walletAddr)
 		newBlock.Header.Version = 3
 	} else {
 		// V1: Legacy block production
