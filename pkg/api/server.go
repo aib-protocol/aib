@@ -321,12 +321,13 @@ func (s *Server) RegisterRoutes() {
 	s.mux.Handle("/v1/wallet/balance", authWrap(s.handleWalletBalance))
 	s.mux.Handle("/v1/wallet/send", authWrap(s.handleSendTransaction))
 
-	// Staking operations (involve funds)
-	s.mux.Handle("/v1/stake", authWrap(s.handleStake))
-	s.mux.Handle("/v1/unstake", authWrap(s.handleUnstake))
+	// Staking operations (involve funds) — true-stake model
+	s.mux.Handle("/v1/stake", authWrap(s.handleStakeCreate))
+	s.mux.Handle("/v1/unstake", authWrap(s.handleStakeRelease))
 
 	// Staking queries (read-only)
 	s.mux.HandleFunc("/v1/wallet/stake", s.handleGetStake)
+	s.mux.HandleFunc("/v1/stake/info/", s.handleStakeInfo)
 
 	// Channel operations
 	s.mux.Handle("/v1/channel/open", authWrap(s.handleChannelOpen))

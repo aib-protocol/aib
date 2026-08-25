@@ -267,6 +267,9 @@ func (s *PersistentUTXOStore) GetUTXOsForAmount(addr [32]byte, amount uint64) ([
 	var selected []*UTXO
 	var total uint64
 	for _, u := range all {
+		if IsStakeOutput(u) {
+			continue // locked stake is not spendable
+		}
 		selected = append(selected, u)
 		total += u.Value
 		if total >= amount {
@@ -838,4 +841,23 @@ func CreateDB(path string) (*bbolt.DB, error) {
 	}
 
 	return db, nil
+}
+
+// GetAllUTXOsAll returns every UTXO in the store (for stake index building).
+func (s *PersistentUTXOStore) GetAllUTXOsAll() []*UTXO {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	var result []*UTXO
+	_ = s.db.View(func(tx *bbolt.Tx) error {
+		b := tx.Bucket(BucketUTXO)
+		if b == nil { return nil }
+		return b.ForEach(func(_ []byte, v []byte) error {
+			utxo, err := deserializeUTXO(v)
+			if err == nil {
+				result = append(result, utxo)
+			}
+			return nil
+		})
+	})
+	return result
 }

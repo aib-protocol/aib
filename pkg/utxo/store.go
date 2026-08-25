@@ -240,7 +240,7 @@ func (s *UTXOStore) GetUTXOsForAmount(addr [32]byte, amount uint64) ([]*UTXO, ui
 	var total uint64
 
 	for _, utxo := range s.utxos {
-		if utxo.Address == addr {
+		if utxo.Address == addr && !IsStakeOutput(utxo) {
 			selected = append(selected, utxo)
 			total += utxo.Value
 
@@ -299,4 +299,15 @@ func (s *UTXOStore) GetStats() (utxoCount int, addrCount int, totalValue uint64)
 	}
 
 	return
+}
+
+// GetAllUTXOsAll returns every UTXO (memory store; for stake index building).
+func (s *UTXOStore) GetAllUTXOsAll() []*UTXO {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	out := make([]*UTXO, 0, len(s.utxos))
+	for _, u := range s.utxos {
+		out = append(out, u)
+	}
+	return out
 }

@@ -62,6 +62,8 @@ type Validator struct {
 	Commission   uint8  // Commission rate (0-100)
 	PublicKey    ed25519.PublicKey
 	FromPoW      bool // registered from PoW-era mining history (bootstrap set)
+	// True-stake mode: weight comes ONLY from live stake UTXOs on chain.
+	StakeUTXOCnt uint64
 }
 
 // IsActive returns true if the validator is active (has sufficient stake).
@@ -450,11 +452,9 @@ func (cs *ConsensusState) VerifyBlockProposer(block *Block, prevBlock *Block) *P
 	}
 	result.ExpectedProposer = expectedProposer
 
-	// Compare with actual proposer. Header.Proposer carries the PUBLIC KEY
-	// (needed for the block signature); the validator set holds WALLET
-	// addresses (SHA256 of the public key). Hash before comparing.
-	proposerWallet := sha256.Sum256(block.Header.Proposer[:])
-	if proposerWallet != expectedProposer {
+	// Header.Proposer IS the wallet address now (ProposerKey carries the
+	// public key for signature verification). Compare directly.
+	if block.Header.Proposer != expectedProposer {
 		result.Error = fmt.Sprintf("proposer mismatch: expected %x, got %x",
 			expectedProposer, block.Header.Proposer)
 		return result
@@ -588,3 +588,30 @@ func (cs *ConsensusState) VerifyValidatorStateRoot(root [32]byte) (bool, error) 
 // SetEmptyValidatorSetHook installs a callback fired when proposer selection
 // finds no active validators (e.g. a syncing node entering the PoS era).
 func (cs *ConsensusState) SetEmptyValidatorSetHook(fn func()) { cs.onEmptyValidatorSet = fn }
+
+// ResetValidators clears the validator set (for stake-index rebuilds).
+func (cs *ConsensusState) ResetValidators() {
+	cs.mu.Lock()
+	defer cs.mu.Unlock()
+	cs.validators = make(map[[32]byte]*Validator)
+}
+
+// AddValidatorFromStake registers a validator whose weight is real locked
+// AIB (true-stake model). No MinStake gate: any staked amount earns
+// proportional sortition weight. PublicKey is unknown here — block
+// signature verification uses Header.Proposer (the key) and wallet-address
+// comparison happens at selection time.
+func (cs *ConsensusState) AddValidatorFromStake(address [32]byte, stake uint64) error {
+	cs.mu.Lock()
+	defer cs.mu.Unlock()
+	if v, ok := cs.validators[address]; ok {
+		v.Stake = stake
+		return nil
+	}
+	cs.validators[address] = &Validator{
+		Address:  address,
+		Stake:    stake,
+		JoinedAt: cs.currentHeight,
+	}
+	return nil
+}

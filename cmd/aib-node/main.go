@@ -1197,22 +1197,27 @@ func (n *Node) walletAddress() [32]byte {
 }
 
 func (n *Node) buildValidatorSetFromPoWHistory() {
-	counts := map[[32]byte]uint64{}
-	for h := uint64(1); h <= utxoPkg.PoWEraBlocks; h++ {
-		b, _ := n.chainState.GetBlockByHeight(h)
-		if b == nil {
+	// TRUE-STAKE model: validator weight comes ONLY from live stake UTXOs
+	// on chain. A miner who wants PoS weight must create a STAKE tx.
+	// The PoW-era mining history is irrelevant — coins, not hashrate.
+	n.rebuildValidatorSetFromStakes()
+}
+
+// rebuildValidatorSetFromStakes rebuilds the consensus validator set from
+// all live stake UTXOs (deterministic: derived from chain state alone).
+func (n *Node) rebuildValidatorSetFromStakes() {
+	if n.utxoStore == nil {
+		return
+	}
+	all := n.utxoStore.GetAllUTXOsAll()
+	entries := utxoPkg.BuildStakeIndex(all)
+	addrs, weights := utxoPkg.StakeWeights(entries)
+	n.consensus.ResetValidators()
+	for i, a := range addrs {
+		if weights[i] == 0 {
 			continue
 		}
-		// Weight accrues to the WALLET address (coinbase recipient), not the
-		// raw public key — keeps consensus state consistent with balances.
-		if len(b.Transactions) > 0 && b.Transactions[0].IsCoinbase() && len(b.Transactions[0].Outputs) > 0 {
-			counts[b.Transactions[0].Outputs[0].Address]++
-		}
+		_ = n.consensus.AddValidatorFromStake(a, weights[i])
 	}
-	for addr, cnt := range counts {
-		if err := n.consensus.AddValidatorFromPoW(addr, cnt, addr[:]); err == nil {
-			n.logger.Printf("[PoS] validator %x stake=%d blocks", addr[:8], cnt)
-		}
-	}
-	n.logger.Printf("[PoS] validator set built from PoW history: %d validators", len(counts))
+	n.logger.Printf("[PoS] validator set rebuilt from live stakes: %d validators", len(addrs))
 }

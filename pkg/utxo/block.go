@@ -18,7 +18,8 @@ type BlockHeader struct {
 	MerkleRoot    [32]byte
 	Timestamp     uint64
 	Height        uint64
-	Proposer      [32]byte // Address of the block proposer
+	Proposer      [32]byte // Wallet address of the block proposer
+	ProposerKey   [32]byte // Public key of the proposer (for signature verification)
 	Signature     []byte   // Signature of the block proposer
 
 	// VRF (Verifiable Random Function) for proposer selection
@@ -121,6 +122,7 @@ func (h *BlockHeader) Serialize() []byte {
 	binary.Write(&buf, binary.LittleEndian, h.Timestamp)
 	binary.Write(&buf, binary.LittleEndian, h.Height)
 	buf.Write(h.Proposer[:])
+	buf.Write(h.ProposerKey[:])
 	binary.Write(&buf, binary.LittleEndian, uint32(len(h.Signature)))
 	buf.Write(h.Signature)
 
@@ -179,6 +181,9 @@ func DeserializeBlockHeader(data []byte) (*BlockHeader, error) {
 	}
 
 	if _, err := buf.Read(header.Proposer[:]); err != nil {
+		return nil, err
+	}
+	if _, err := buf.Read(header.ProposerKey[:]); err != nil {
 		return nil, fmt.Errorf("failed to read proposer: %w", err)
 	}
 
@@ -255,7 +260,12 @@ func DeserializeBlockHeader(data []byte) (*BlockHeader, error) {
 
 // SignBlock signs the block with the proposer's private key.
 func (b *Block) SignBlock(privKey ed25519.PrivateKey) error {
-	// Store the unsigned hash (the hash that will be signed)
+	// Embed the public key so verification doesn't depend on out-of-band data
+	pub, ok := privKey.Public().(ed25519.PublicKey)
+	if ok && len(pub) == 32 {
+		copy(b.Header.ProposerKey[:], pub)
+	}
+	// Store the unsigned hash (the hash that was signed)
 	b.SignedHash = b.CalculateHash()
 	// Sign the unsigned hash
 	signature := ed25519.Sign(privKey, b.SignedHash[:])
@@ -279,7 +289,7 @@ func (b *Block) VerifyBlockSignature() bool {
 	unsignedHash := b.CalculateHash()
 	b.Header.Signature = savedSig
 
-	return ed25519.Verify(ed25519.PublicKey(b.Header.Proposer[:]), unsignedHash[:], b.Header.Signature)
+	return ed25519.Verify(ed25519.PublicKey(b.Header.ProposerKey[:]), unsignedHash[:], b.Header.Signature)
 }
 
 // ValidateBlock performs basic block validation.
