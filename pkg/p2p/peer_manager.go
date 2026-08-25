@@ -14,6 +14,8 @@ import (
 	"net"
 	"sync"
 	"time"
+
+	utxoPkg "github.com/aib-protocol/aib/pkg/utxo"
 )
 
 // BlockVerifier verifies block signatures before accepting them.
@@ -214,8 +216,37 @@ func (v *Ed25519BlockVerifier) VerifyBlockSignatureFull(proposerPubKeyHex, block
 	return nil
 }
 
+// proposerKeyFromRawBlock extracts the embedded proposer public key from a
+// serialized block. Kept in p2p (not calling pkg/utxo) to avoid an import
+// cycle; parses just the fixed-position header fields before variable data.
+func proposerKeyFromRawBlock(raw []byte) string {
+	b, err := utxoPkg.DeserializeBlock(raw)
+	if err != nil || b == nil {
+		return ""
+	}
+	return hex.EncodeToString(b.Header.ProposerKey[:])
+}
+
 // verifyBlockSignature verifies a block's signature using the configured verifier.
 func (pm *ChainPeerManager) verifyBlockSignature(block BlockData) error {
+	// V3 address model: block.Proposer is the WALLET address (SHA256 of the
+	// pubkey), not the pubkey itself. The real public key is carried in the
+	// serialized block (Header.ProposerKey). Prefer verifying against the
+	// deserialized block; fall back to the legacy Proposer field only when no
+	// raw block is available (older peers).
+	if len(block.RawBlock) > 0 {
+		if pubKeyHex := proposerKeyFromRawBlock(block.RawBlock); pubKeyHex != "" {
+			v := pm.blockVerifier
+			if v == nil {
+				v = &Ed25519BlockVerifier{}
+			}
+			if fv, ok := v.(interface {
+				VerifyBlockSignatureFull(string, string, string, string) error
+			}); ok {
+				return fv.VerifyBlockSignatureFull(pubKeyHex, block.Hash, block.SignedHash, block.Signature)
+			}
+		}
+	}
 	verifier := pm.blockVerifier
 	if verifier == nil {
 		verifier = &Ed25519BlockVerifier{}

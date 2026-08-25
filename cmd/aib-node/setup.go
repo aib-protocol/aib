@@ -96,8 +96,24 @@ func runSetup(dataDir string, apiPort, p2pPort int, nodeArgs []string) error {
 	}
 	fmt.Println("✓")
 
-	// 1. wallet
-	if askYesNo(r, "Create a new wallet now?", true) {
+	// 1. wallet — auto-skip if the node already has a key (existing wallet)
+	haveWallet := false
+	if _, err := os.Stat(filepath.Join(dataDir, "node_key.pem")); err == nil {
+		haveWallet = true
+	}
+	if haveWallet {
+		fmt.Println("  ✓ Existing wallet found (node_key.pem) — keeping it, no new wallet created.")
+		if body, code, err := setupGet("/v1/wallet/info"); err == nil && code == 200 {
+			var w struct {
+				Data struct {
+					Address string `json:"address"`
+				} `json:"data"`
+			}
+			if json.Unmarshal(body, &w) == nil && w.Data.Address != "" {
+				fmt.Printf("    Address: %s\n", w.Data.Address)
+			}
+		}
+	} else if askYesNo(r, "Create a new wallet now?", true) {
 		body, code, err := setupPost("/v1/wallet/create", map[string]string{"label": "main"})
 		if err != nil || code != 200 {
 			return fmt.Errorf("wallet create failed (HTTP %d): %s", code, string(body))
@@ -121,8 +137,23 @@ func runSetup(dataDir string, apiPort, p2pPort int, nodeArgs []string) error {
 		}
 	}
 
-	// 2. mining
-	if askYesNo(r, "Start CPU mining now (validator mode)?", true) {
+	// 2. mining — auto-skip when the PoW era is already over (chain height > 1000)
+	powEraOver := false
+	if body, code, err := setupGet("/v1/block/latest"); err == nil && code == 200 {
+		var b struct {
+			Data struct {
+				Header struct {
+					Height uint64 `json:"height"`
+				} `json:"header"`
+			} `json:"data"`
+		}
+		if json.Unmarshal(body, &b) == nil && b.Data.Header.Height > 1000 {
+			powEraOver = true
+		}
+	}
+	if powEraOver {
+		fmt.Println("  ✓ PoW era is over (height > 1000) — CPU mining skipped. To earn blocks, stake AIB: POST /v1/stake")
+	} else if askYesNo(r, "Start CPU mining now (validator mode)?", true) {
 		// stop current node instance (best-effort, cross-platform: ask user if it fails)
 		fmt.Println("  Restarting node in validator mode...")
 		if err := stopNodeForRestart(); err != nil {
