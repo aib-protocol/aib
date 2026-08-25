@@ -922,7 +922,7 @@ func (n *Node) produceBlock() {
 		}
 
 		newBlock = utxoPkg.NewBlock(blockTxs, prevHash, height+1, proposer)
-		newBlock.Header.Version = 2
+		newBlock.Header.Version = 3
 	} else {
 		// V1: Legacy block production
 		coinbaseTx := utxoPkg.CreateCoinbaseTransaction(proposer, 50*1e8, []byte("block reward"))
