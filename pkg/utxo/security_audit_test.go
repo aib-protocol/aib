@@ -7,6 +7,7 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"testing"
+	"time"
 )
 
 // ============================================================================
@@ -533,4 +534,48 @@ func TestSecuritySummary(t *testing.T) {
 	t.Log("   4. ✓ Maximum block size limits (1 MB)")
 	t.Log("   5. ✓ Double spend detection in ValidateBlockSecurity")
 	t.Log("===============================================================")
+}
+
+// ============================================================================
+// TIMESTAMP DEADLOCK REGRESSION
+// ============================================================================
+
+// TestValidateBlockChain_HistoricalCatchUp
+// A node catching up after a long outage must accept historical blocks whose
+// timestamps are legitimately older than MaxBlockTimeDrift from the wall
+// clock. Observed in the wild: fresh nodes stalled forever at the first
+// block older than 5 minutes ("block time -9h0m35s exceeds maximum drift").
+func TestValidateBlockChain_HistoricalCatchUp(t *testing.T) {
+	t.Log("=== Regression: historical catch-up after outage ===")
+
+	now := time.Now()
+
+	// Parent mined 9h ago, child 60s later — both far outside drift bounds.
+	block1 := NewBlock(nil, [32]byte{}, 1, [32]byte{1})
+	block1.Header.Timestamp = uint64(now.Add(-9 * time.Hour).Unix())
+	block1.Hash = block1.CalculateHash()
+
+	block2 := NewBlock(nil, block1.Hash, 2, [32]byte{2})
+	block2.Header.Timestamp = block1.Header.Timestamp + 60
+	block2.Hash = block2.CalculateHash()
+
+	if err := block2.ValidateBlockChain(block1); err != nil {
+		t.Fatalf("security hole: historical block rejected during catch-up: %v", err)
+	}
+	t.Log("✓ historical blocks accepted while catching up")
+
+	// Near the tip (recent parent) the drift bound must still be enforced.
+	recentParent := NewBlock(nil, [32]byte{}, 1, [32]byte{1})
+	recentParent.Header.Timestamp = uint64(now.Add(-30 * time.Second).Unix())
+	recentParent.Hash = recentParent.CalculateHash()
+
+	farFutureChild := NewBlock(nil, recentParent.Hash, 2, [32]byte{2})
+	farFutureChild.Header.Timestamp = uint64(now.Add(6 * time.Minute).Unix())
+	farFutureChild.Hash = farFutureChild.CalculateHash()
+
+	if err := farFutureChild.ValidateBlockChain(recentParent); err == nil {
+		t.Fatal("security hole: tip block beyond MaxBlockTimeDrift accepted!")
+	} else {
+		t.Logf("✓ defense ok: %v", err)
+	}
 }
