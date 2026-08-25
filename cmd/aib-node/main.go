@@ -838,6 +838,9 @@ func (n *Node) produceBlock() {
 		newBlock.Header.Version = 3
 		newBlock.Header.Bits = n.nextPoWBits(height)
 		newBlock.Header.Timestamp = uint64(time.Now().Unix())
+		// ProposerKey participates in the PoW hash — set it BEFORE mining
+		// (SignBlock would fill it later and invalidate the nonce).
+		copy(newBlock.Header.ProposerKey[:], n.publicKey)
 
 		for nonce := uint64(0); ; nonce++ {
 			select {

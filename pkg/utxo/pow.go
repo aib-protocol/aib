@@ -32,10 +32,24 @@ func PoWMaxTarget() *big.Int {
 }
 
 // HashHeaderSHA256d computes Bitcoin-style double SHA256 over the
-// serialized header (includes Nonce and Bits).
+// DETERMINISTIC PoW fields of the header. Critically, the Signature is
+// NOT included: mining finds a nonce on the unsigned header, and the
+// signature is appended afterwards — if it were hashed, every signed
+// block would fail its own proof of work.
 func HashHeaderSHA256d(h *BlockHeader) [32]byte {
-	data := h.Serialize()
-	h1 := sha256.Sum256(data)
+	var buf bytes.Buffer
+	binary.Write(&buf, binary.LittleEndian, h.Version)
+	buf.Write(h.PrevBlockHash[:])
+	buf.Write(h.MerkleRoot[:])
+	binary.Write(&buf, binary.LittleEndian, h.Timestamp)
+	binary.Write(&buf, binary.LittleEndian, h.Height)
+	buf.Write(h.Proposer[:])
+	buf.Write(h.ProposerKey[:])
+	buf.Write(h.VRFSeed[:])
+	buf.Write(h.ValidatorStateRoot[:])
+	binary.Write(&buf, binary.LittleEndian, h.Nonce)
+	binary.Write(&buf, binary.LittleEndian, h.Bits)
+	h1 := sha256.Sum256(buf.Bytes())
 	h2 := sha256.Sum256(h1[:])
 	return h2
 }
