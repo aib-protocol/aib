@@ -547,12 +547,18 @@ func (b *Block) ValidateBlockChain(parentBlock *Block) error {
 		return fmt.Errorf("block time %v below minimum %v", timeDiff, MinBlockTime)
 	}
 
-	// Drift = distance from wall clock, NOT block interval. Comparing the
-	// interval would deadlock the chain after any stall longer than the
-	// drift bound (the gap to the parent is already history we cannot fix).
+	// Drift vs wall clock applies only near the chain tip (parent recent):
+	// while catching up, historical block timestamps are legitimately old and
+	// must be accepted. Mirrors ChainState.validateBlockTimestamp. Comparing
+	// the parent-to-child interval, or applying an unconditional wall-clock
+	// bound, would deadlock catch-up after any outage longer than the drift
+	// bound (the gap is already history we cannot fix).
 	now := time.Now()
-	if d := blockTime.Sub(now); d > MaxBlockTimeDrift || d < -MaxBlockTimeDrift {
-		return fmt.Errorf("block time %v exceeds maximum drift %v from now", d.Round(time.Second), MaxBlockTimeDrift)
+	parentIsRecent := now.Sub(parentTime) < 2*MaxBlockTimeDrift
+	if parentIsRecent {
+		if d := blockTime.Sub(now); d > MaxBlockTimeDrift || d < -MaxBlockTimeDrift {
+			return fmt.Errorf("block time %v exceeds maximum drift %v from now", d.Round(time.Second), MaxBlockTimeDrift)
+		}
 	}
 
 	return nil

@@ -369,6 +369,12 @@ func TestChainState_ValidateBlockTimestamp(t *testing.T) {
 			parentTime:  now - 15, // 15 seconds is above MinBlockTime (10s)
 			expectValid: true,
 		},
+		{
+			name:        "valid after long stall (catch-up deadlock regression)",
+			timestamp:   now,
+			parentTime:  now - 9*3600, // parent mined 9h ago; gap must not invalidate child
+			expectValid: true,
+		},
 	}
 
 	for _, tt := range tests {

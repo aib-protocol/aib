@@ -286,6 +286,13 @@ var ValidationErrorCodes = struct {
 // ============================================================================
 
 // IsValidTimestamp checks if a timestamp is valid for a new block.
+//
+// The parent-to-child gap has NO upper bound on purpose: after any outage
+// longer than MaxBlockTimeDrift, the next block's gap to its parent is
+// already history that cannot be fixed, so bounding it would deadlock the
+// chain permanently. Monotonicity (after parent) plus the future bound are
+// the safety-relevant properties; tip freshness is enforced separately by
+// ChainState.validateBlockTimestamp for blocks near the chain tip.
 func IsValidTimestamp(timestamp uint64, parentTimestamp uint64) bool {
 	// Timestamp must be after parent
 	if timestamp <= parentTimestamp {
@@ -301,10 +308,6 @@ func IsValidTimestamp(timestamp uint64, parentTimestamp uint64) bool {
 	// Check minimum block time
 	diff := time.Duration(timestamp-parentTimestamp) * time.Second
 	if diff < MinBlockTime {
-		return false
-	}
-
-	if diff > MaxBlockTimeDrift {
 		return false
 	}
 
