@@ -2,6 +2,12 @@
 
 All notable changes to the AIB Protocol node software. Format: Keep a Changelog / semver-ish, testnet suffix until mainnet.
 
+
+## [v0.11.5-testnet] — 2026-08-26
+
+### Fixed — chain catch-up no longer deadlocks on historical timestamps
+- Merge of PR #4 (issue #3). `Block.ValidateBlockChain` and `ChainState.validateBlockTimestamp` used to enforce `MaxBlockTimeDrift = 5m` against the **wall clock** unconditionally, even while catching up. A node that fell behind (clock skew, downtime, slow sync) would reject the first historical block and stall forever at the catch-up boundary. Tip freshness is still enforced; only the unconditional future-bound during sync was lifted. New tests in `security_audit_test.go` cover the boundary. **Resolution of the "stuck at height 100" / "block time exceeds drift" symptom observed on remote test nodes.**
+
 ## [v0.11.3-testnet] — 2026-08-25
 
 ### Added — Smart setup wizard (`cmd/aib-node/setup.go`)
