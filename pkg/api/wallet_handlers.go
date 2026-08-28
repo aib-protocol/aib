@@ -681,6 +681,11 @@ func (s *Server) handleSendTransaction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// gossip the tx to peers (MsgTx)
+	if s.txBroadcaster != nil {
+		go s.txBroadcaster(tx)
+	}
+
 	// compute the transaction hash
 	txHash := tx.Hash()
 
