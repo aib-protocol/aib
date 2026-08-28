@@ -42,12 +42,13 @@ func (s *Server) handleStakeCreate(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, ErrCodeInvalidRequest, "private_key must be 64-byte hex (seed+pub)", "")
 		return
 	}
-	// amount_aib (preferred, float) takes precedence over amount (raw)
-	amtStr := req.AmountAIB
-	if amtStr == "" {
-		amtStr = req.Amount
+	// amount_aib is ALWAYS interpreted as AIB (float); amount is raw units.
+	var amount uint64
+	if req.AmountAIB != "" {
+		amount = aibToRaw(parseFloat(req.AmountAIB))
+	} else {
+		amount = parseRawOrAIB(req.Amount)
 	}
-	amount := parseRawOrAIB(amtStr)
 	if amount == 0 {
 		writeError(w, http.StatusBadRequest, ErrCodeInvalidRequest, "amount_aib must be > 0", "")
 		return
@@ -142,12 +143,13 @@ func (s *Server) handleStakeRelease(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// amount_aib (preferred, float) takes precedence over amount (raw)
-	amtStr := req.AmountAIB
-	if amtStr == "" {
-		amtStr = req.Amount
+	// amount_aib is ALWAYS interpreted as AIB (float); amount is raw units.
+	var amount uint64
+	if req.AmountAIB != "" {
+		amount = aibToRaw(parseFloat(req.AmountAIB))
+	} else {
+		amount = parseRawOrAIB(req.Amount)
 	}
-	amount := parseRawOrAIB(amtStr)
 	all := store.GetAllUTXOs(addr)
 	var stakeUTXOs []*utxo.UTXO
 	for _, u := range all {
@@ -258,6 +260,15 @@ func (s *Server) handleStakeInfo(w http.ResponseWriter, r *http.Request) {
 func walletAddrFromPub(pub ed25519.PublicKey) [32]byte {
 	h := sha256.Sum256(pub)
 	return h
+}
+
+// parseFloat parses a float string, returning 0 on error.
+func parseFloat(s string) float64 {
+	f, err := strconv.ParseFloat(s, 64)
+	if err != nil || f < 0 {
+		return 0
+	}
+	return f
 }
 
 // parseRawOrAIB accepts raw units (integer string) or AIB (float).
