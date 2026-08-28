@@ -57,6 +57,7 @@ type ChainPeerManager struct {
 	wg     sync.WaitGroup
 
 	maxPeers int
+	onTx func(tx *utxoPkg.Transaction)
 }
 
 // ChainPeer represents a connected blockchain peer.
@@ -341,6 +342,28 @@ func (pm *ChainPeerManager) GetChainPeers() []ChainPeerInfo {
 }
 
 // BroadcastNewBlock sends a new block to all connected peers.
+// SetTxCallback registers the handler invoked for gossiped transactions.
+func (pm *ChainPeerManager) SetTxCallback(fn func(tx *utxoPkg.Transaction)) {
+	pm.onTx = fn
+}
+
+// BroadcastTx gossips a signed transaction to all chain peers.
+func (pm *ChainPeerManager) BroadcastTx(tx *utxoPkg.Transaction) {
+	data := tx.Serialize()
+	msg, _ := MarshalMsg(MsgTx, data)
+	pm.mu.RLock()
+	defer pm.mu.RUnlock()
+	for _, p := range pm.peers {
+		p.mu.Lock()
+		if p.conn != nil {
+			p.conn.SetWriteDeadline(time.Now().Add(5 * time.Second))
+			p.conn.Write(msg)
+			p.conn.SetWriteDeadline(time.Time{})
+		}
+		p.mu.Unlock()
+	}
+}
+
 func (pm *ChainPeerManager) BroadcastNewBlock(block BlockData) {
 	msg := NewBlockMsg{Block: block}
 	data, err := MarshalMsg(MsgNewBlock, &msg)
@@ -738,6 +761,14 @@ func (pm *ChainPeerManager) handleChainMessage(peer *ChainPeer, msgType uint8, p
 		peer.mu.Lock()
 		peer.lastPong = time.Now()
 		peer.mu.Unlock()
+	case MsgTx:
+		// Transaction gossip: relay inbound transactions to the mempool via
+		// the registered callback. Dedup is the mempool's job (tx hash).
+		if pm.onTx != nil {
+			if tx, err := utxoPkg.DeserializeTransaction(payload); err == nil && tx != nil {
+				pm.onTx(tx)
+			}
+		}
 
 	case MsgGetPeers:
 		peers := pm.GetChainPeers()

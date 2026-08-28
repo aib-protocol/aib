@@ -63,6 +63,7 @@ type Server struct {
 	migrationHub   MigrationHubAPI
 	utxoStore      utxoStoreInterface
 	mempool        mempoolInterface
+	txBroadcaster  func(tx *utxo.Transaction)
 	consensusState consensusConfigInterface
 	governance     governanceInterface
 	p2pNetwork     p2pNetworkInterface
@@ -145,6 +146,14 @@ func (s *Server) SetMempool(mp mempoolInterface) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.mempool = mp
+}
+
+// SetTxBroadcaster registers the P2P gossip hook so API-submitted
+// transactions propagate to peers immediately (MsgTx).
+func (s *Server) SetTxBroadcaster(fn func(tx *utxo.Transaction)) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.txBroadcaster = fn
 }
 
 // GetMempool returns the mempool reference

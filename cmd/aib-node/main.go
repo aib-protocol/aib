@@ -329,6 +329,15 @@ func (n *Node) Start() error {
 	chainState.SetMempool(n.mempool)
 	n.logger.Println("    ✓ Mempool initialized")
 
+	// Transaction gossip: broadcast locally-submitted txs, accept gossiped ones.
+	if n.peerManager != nil {
+		n.peerManager.SetTxCallback(func(tx *utxoPkg.Transaction) {
+			if err := n.mempool.AddTransaction(tx, n.utxoStore); err == nil {
+				n.logger.Printf("[TX] gossiped tx %x accepted to mempool", tx.Hash())
+			}
+		})
+	}
+
 	// 6. Initialize chain state (shared genesis)
 	n.logger.Println("[6/7] Loading chain state...")
 	if err := n.initializeChain(); err != nil {
@@ -390,6 +399,8 @@ n.apiServer.SetWalletInfo(func() map[string]interface{} {
 	})
 	n.apiServer.SetUTXOStore(n.utxoStore)
 	n.apiServer.SetMempool(n.mempool)
+	// API-submitted transactions are gossiped to peers (MsgTx).
+	n.apiServer.SetTxBroadcaster(n.peerManager.BroadcastTx)
 
 	n.wg.Add(1)
 	go func() {

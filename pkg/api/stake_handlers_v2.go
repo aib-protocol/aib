@@ -279,6 +279,10 @@ func (s *Server) submitToMempool(tx *utxo.Transaction) error {
 	if s.mempool == nil {
 		return errMempoolUnavailable
 	}
+	// gossip to peers (best-effort)
+	if s.txBroadcaster != nil {
+		go s.txBroadcaster(tx)
+	}
 	utxoProvider, ok := s.utxoStore.(utxo.UTXOProvider)
 	if !ok {
 		return errMempoolUnavailable
