@@ -38,7 +38,8 @@ const (
 // StakeRequest stakerequest
 type StakeRequest struct {
 	PrivateKey string `json:"private_key"`
-	Amount     string `json:"amount"` // Amount as a string (smallest units)
+	Amount     string `json:"amount"`      // Amount as a string (smallest units)
+	AmountAIB  string `json:"amount_aib"`  // AIB (float); preferred over amount when set
 }
 
 // StakeResponse stakeresponse
@@ -55,7 +56,8 @@ type StakeResponse struct {
 // UnstakeRequest is the unstaking request
 type UnstakeRequest struct {
 	PrivateKey string `json:"private_key"`
-	Amount     string `json:"amount"` // Amount to unstake
+	Amount     string `json:"amount"`     // Amount to unstake
+	AmountAIB  string `json:"amount_aib"` // AIB (float); preferred over amount when set
 }
 
 // UnstakeResponse is the unstaking response

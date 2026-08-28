@@ -42,7 +42,12 @@ func (s *Server) handleStakeCreate(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, ErrCodeInvalidRequest, "private_key must be 64-byte hex (seed+pub)", "")
 		return
 	}
-	amount := parseRawOrAIB(req.Amount)
+	// amount_aib (preferred, float) takes precedence over amount (raw)
+	amtStr := req.AmountAIB
+	if amtStr == "" {
+		amtStr = req.Amount
+	}
+	amount := parseRawOrAIB(amtStr)
 	if amount == 0 {
 		writeError(w, http.StatusBadRequest, ErrCodeInvalidRequest, "amount_aib must be > 0", "")
 		return
@@ -137,7 +142,12 @@ func (s *Server) handleStakeRelease(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	amount := parseRawOrAIB(req.Amount)
+	// amount_aib (preferred, float) takes precedence over amount (raw)
+	amtStr := req.AmountAIB
+	if amtStr == "" {
+		amtStr = req.Amount
+	}
+	amount := parseRawOrAIB(amtStr)
 	all := store.GetAllUTXOs(addr)
 	var stakeUTXOs []*utxo.UTXO
 	for _, u := range all {
