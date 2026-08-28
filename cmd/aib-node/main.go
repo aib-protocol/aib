@@ -329,14 +329,6 @@ func (n *Node) Start() error {
 	chainState.SetMempool(n.mempool)
 	n.logger.Println("    ✓ Mempool initialized")
 
-	// Transaction gossip: broadcast locally-submitted txs, accept gossiped ones.
-	if n.peerManager != nil {
-		n.peerManager.SetTxCallback(func(tx *utxoPkg.Transaction) {
-			if err := n.mempool.AddTransaction(tx, n.utxoStore); err == nil {
-				n.logger.Printf("[TX] gossiped tx %x accepted to mempool", tx.Hash())
-			}
-		})
-	}
 
 	// 6. Initialize chain state (shared genesis)
 	n.logger.Println("[6/7] Loading chain state...")
@@ -644,6 +636,13 @@ func (n *Node) startP2P(nodeID string) error {
 		return fmt.Errorf("start P2P: %w", err)
 	}
 	n.peerManager = pm
+
+	// Transaction gossip: accept gossiped txs into the mempool (MsgTx).
+	pm.SetTxCallback(func(tx *utxoPkg.Transaction) {
+		if err := n.mempool.AddTransaction(tx, n.utxoStore); err == nil {
+			n.logger.Printf("[TX] gossiped tx %x accepted to mempool", tx.Hash())
+		}
+	})
 	pm.StartAutoSync(15 * time.Second)
 
 	// Start block syncer
