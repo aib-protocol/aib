@@ -348,9 +348,11 @@ func (pm *ChainPeerManager) SetTxCallback(fn func(tx *utxoPkg.Transaction)) {
 }
 
 // BroadcastTx gossips a signed transaction to all chain peers.
+// NOTE: payload is the RAW binary transaction (EncodeMessage), NOT JSON —
+// the receiver calls DeserializeTransaction on the payload directly.
 func (pm *ChainPeerManager) BroadcastTx(tx *utxoPkg.Transaction) {
 	data := tx.Serialize()
-	msg, _ := MarshalMsg(MsgTx, data)
+	msg := EncodeMessage(MsgTx, data)
 	pm.mu.RLock()
 	defer pm.mu.RUnlock()
 	for _, p := range pm.peers {
