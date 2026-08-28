@@ -9,9 +9,14 @@
 [![GoReportCard](https://goreportcard.com/badge/github.com/aib-protocol/aib)](https://goreportcard.com/report/github.com/aib-protocol/aib)
 
 ```
-ASCII-Art for AIB here
+ █████╗ ██╗██████╗       ██████╗ ██████╗  ██████╗ ████████╗ ██████╗  ██████╗ ██████╗ ██╗
+██╔══██╗██║██╔══██╗      ██╔══██╗██╔══██╗██╔═══██╗╚══██╔══╝██╔═══██╗██╔════╝██╔═══██╗██║
+███████║██║██████╔╝█████╗██████╔╝██████╔╝██║   ██║   ██║   ██║   ██║██║     ██║   ██║██║
+██╔══██║██║██╔══██╗╚════╝██╔═══╝ ██╔══██╗██║   ██║   ██║   ██║   ██║██║     ██║   ██║██║
+██║  ██║██║██████╔╝      ██║     ██║  ██║╚██████╔╝   ██║   ╚██████╔╝╚██████╗╚██████╔╝███████╗
+╚═╝  ╚═╝╚═╝╚═════╝       ╚═╝     ╚═╝  ╚═╝ ╚═════╝    ╚═╝    ╚═════╝  ╚═════╝ ╚═════╝ ╚══════╝
 
-            Where AI meets Blockchain
+                          Where AI meets Blockchain
 ```
 
 [Website](https://www.aib.one) | [Documentation](https://docs.aib.one) | [Community](https://community.aib.one)
