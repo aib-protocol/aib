@@ -771,6 +771,10 @@ func (pm *ChainPeerManager) handleChainMessage(peer *ChainPeer, msgType uint8, p
 				pm.onTx(tx)
 			}
 		}
+		// Relay to OTHER peers (2-hop reach in a star topology). The
+		// originator excluded; mempool dedup on our side prevents loops
+		// (a relayed tx we already have is dropped before re-broadcast).
+		pm.relayTx(peer, payload)
 
 	case MsgGetPeers:
 		peers := pm.GetChainPeers()
@@ -1105,4 +1109,20 @@ func isClosedError(err error) bool {
 // GenerateNodeID generates a node ID from ed25519 public key.
 func GenerateNodeID(pubKey []byte) string {
 	return hex.EncodeToString(pubKey[:16])
+}
+
+// relayTx forwards a raw MsgTx frame to all peers except its origin.
+func (pm *ChainPeerManager) relayTx(from *ChainPeer, payload []byte) {
+	msg := EncodeMessage(MsgTx, payload)
+	pm.mu.RLock()
+	defer pm.mu.RUnlock()
+	for _, p := range pm.peers {
+		if p == from || p.conn == nil {
+			continue
+		}
+		p.mu.Lock()
+		p.conn.SetWriteDeadline(time.Now().Add(5 * time.Second))
+		p.conn.Write(msg)
+		p.mu.Unlock()
+	}
 }
