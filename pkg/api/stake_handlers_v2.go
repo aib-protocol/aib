@@ -196,6 +196,13 @@ func (s *Server) handleStakeRelease(w http.ResponseWriter, r *http.Request) {
 		outVal = total - fee
 	}
 	outputs := []utxo.TXOutput{{Value: outVal, Address: addr}}
+	// BUGFIX: return the remainder as a second output to the SAME owner.
+	// Without change the un-staked excess was silently destroyed (seed lost
+	// 30700 AIB: 31000 in, only 300 out). Inputs - amount - fee must equal
+	// the sum of outputs.
+	if change := total - outVal - fee; change > 0 {
+		outputs = append(outputs, utxo.TXOutput{Value: change, Address: addr})
+	}
 
 	tx := utxo.NewTransaction(inputs, outputs)
 	for i := range inputs {
