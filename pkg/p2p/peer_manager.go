@@ -479,12 +479,12 @@ func (pm *ChainPeerManager) bootstrapConnect() {
 				return
 			default:
 			}
+			if pm.HasPeerAt(addr) {
+				continue // already connected to this bootstrap
+			}
 			pm.logger.Printf("[P2P] Connecting to bootstrap node %s ...", addr)
 			if err := pm.connectToPeer(addr); err != nil {
 				pm.logger.Printf("[P2P] Bootstrap %s failed: %v", addr, err)
-			}
-			if pm.GetPeerCount() > 0 {
-				break
 			}
 		}
 		select {
@@ -1125,4 +1125,16 @@ func (pm *ChainPeerManager) relayTx(from *ChainPeer, payload []byte) {
 		p.conn.Write(msg)
 		p.mu.Unlock()
 	}
+}
+
+// HasPeerAt reports whether we already maintain a connection to addr.
+func (pm *ChainPeerManager) HasPeerAt(addr string) bool {
+	pm.mu.RLock()
+	defer pm.mu.RUnlock()
+	for _, p := range pm.peers {
+		if p.address == addr {
+			return true
+		}
+	}
+	return false
 }
