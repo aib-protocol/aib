@@ -623,6 +623,10 @@ func (cs *ConsensusState) AddValidatorFromStake(address [32]byte, stake uint64) 
 		Address:  address,
 		Stake:    stake,
 		JoinedAt: cs.currentHeight,
+		// TRUE-STAKE (V4): staked coins alone confer sortition weight —
+		// no minimum. IsActive() must not gate on MinStake (which only
+		// applies to legacy delegated stakes).
+		FromPoW: true,
 	}
 	return nil
 }
