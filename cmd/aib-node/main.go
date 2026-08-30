@@ -901,6 +901,11 @@ func (n *Node) produceBlock() {
 	if n.networkCfg.BlockVersion >= 3 && height1 == utxoPkg.PoWEraBlocks+1 {
 		n.buildValidatorSetFromPoWHistory()
 	}
+	// CRITICAL: keep the consensus height tracker in lockstep with the chain.
+	// VRF seed = sha256(prevHash + currentHeight); if currentHeight lags
+	// behind the real chain height (ProcessNewBlock is never wired), every
+	// node picks a DIFFERENT winner and the network deadlocks.
+	n.consensus.RestoreHeight(height)
 	// TRUE-STAKE live sync: new stakes must enter (and unstakes leave) the
 	// sortition pool immediately. Rebuilding from live UTXOs every block is
 	// cheap (UTXO count is small) and deterministic — every node computes
