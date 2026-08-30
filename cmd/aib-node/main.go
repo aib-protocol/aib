@@ -16,6 +16,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"strings"
 	"sync"
 	"syscall"
 	"time"
@@ -606,8 +607,14 @@ func (n *Node) initializeChain() error {
 // ======================================================================
 
 func (n *Node) startP2P(nodeID string) error {
-	// Bootstrap is already resolved in NewNode from network config
-	bootstrapNodes := []string{n.config.Bootstrap}
+	// Bootstrap is already resolved in NewNode from network config.
+	// Accepts comma-separated addresses for mesh topologies.
+	bootstrapNodes := []string{}
+	for _, a := range strings.Split(n.config.Bootstrap, ",") {
+		if a = strings.TrimSpace(a); a != "" {
+			bootstrapNodes = append(bootstrapNodes, a)
+		}
+	}
 
 	nickname := n.config.Nickname
 	if nickname == "" {
