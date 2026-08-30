@@ -136,12 +136,13 @@ func (s *Server) handleStakeRelease(w http.ResponseWriter, r *http.Request) {
 	store, ok := s.utxoStore.(interface {
 		GetAllUTXOs(addr [32]byte) []*utxo.UTXO
 		GetTransactionIndex(txHash [32]byte) (uint64, error)
-		GetBestHeight() uint64
 	})
 	if !ok {
 		writeError(w, http.StatusInternalServerError, ErrCodeInternalError, "UTXO store not available", "")
 		return
 	}
+	bestChain, _ := s.chain.GetBestBlockHeight()
+	best := uint64(bestChain)
 
 	// amount_aib is ALWAYS interpreted as AIB (float); amount is raw units.
 	var amount uint64
@@ -162,7 +163,6 @@ func (s *Server) handleStakeRelease(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	best := store.GetBestHeight()
 	fee := uint64(200)
 	var selected []*utxo.UTXO
 	var total uint64
