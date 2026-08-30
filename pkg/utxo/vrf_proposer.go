@@ -3,12 +3,14 @@
 package utxo
 
 import (
+	"bytes"
 	"crypto/ed25519"
 	"crypto/sha256"
 	"crypto/sha512"
 	"encoding/binary"
 	"fmt"
 	"math/big"
+	"sort"
 )
 
 // VrfProof is the cryptographic evidence attached to every block.
@@ -154,6 +156,13 @@ func (cs *ConsensusState) SelectProposerVRFDeterministic(seed []byte) (*VrfProof
 	if len(validators) == 0 {
 		return nil, fmt.Errorf("no active validators")
 	}
+	// Deterministic ordering (CRITICAL): map iteration order is random in
+	// Go; without sorting, the producing node and the validating nodes can
+	// assign different cumulative-stake intervals and select DIFFERENT
+	// winners from the same seed — mutual proposer mismatch, chain stall.
+	sort.Slice(validators, func(i, j int) bool {
+		return bytes.Compare(validators[i].Address[:], validators[j].Address[:]) < 0
+	})
 
 	var total uint64
 	for _, v := range validators {
