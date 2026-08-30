@@ -917,8 +917,19 @@ func (n *Node) produceBlock() {
 	if n.networkCfg.BlockVersion >= 2 {
 		// V2+ (fee-burn trial): PURE-STAKE VRF sortition (RFC-002 Route C, 2026-08-22 decision)
 		// No reputation weighting — α=1.0, β=0.
-		seed := prevHash[:]
-		proof, err := n.consensus.SelectProposerVRFDeterministic(seed)
+		// SEED MUST MATCH the validation path, which uses
+		// prevBlock.Header.VRFSeed (NOT the block hash). Fetch the actual
+		// previous block and read its VRFSeed header field.
+		var seed []byte
+		if prevBlock, err := n.chainState.GetBlockByHash(prevHash); err == nil && prevBlock != nil {
+			seed = prevBlock.Header.VRFSeed[:]
+		} else {
+			seed = prevHash[:] // genesis fallback
+		}
+		// Pass the TARGET height (bestHeight+1) — identical to what the
+		// validation path hashes (block.Header.Height). Divergence here
+		// means producing and validating nodes select different winners.
+		proof, err := n.consensus.SelectProposerVRFAtHeight(seed, height1)
 		if err != nil {
 			// Fallback: single-node genesis phase — self proposes
 			n.logger.Printf("[Block %d] VRF selection fallback: %v", height+1, err)

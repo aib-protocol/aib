@@ -149,6 +149,17 @@ func (cs *ConsensusState) SelectProposerVRF(seed []byte, pubKeys map[[32]byte]ed
 // (no reputation multiplier), (b) emits a VrfProof-shaped evidence block
 // so downstream code and explorers already handle real VRF when it lands.
 func (cs *ConsensusState) SelectProposerVRFDeterministic(seed []byte) (*VrfProof, error) {
+	return cs.SelectProposerVRFAtHeight(seed, cs.currentHeight)
+}
+
+// SelectProposerVRFAtHeight selects the proposer for the block AT height
+// (i.e. the block whose Header.Height == height). Produce and validate
+// paths MUST pass the SAME height: produce passes bestHeight+1, validate
+// passes block.Header.Height — both equal the height of the block being
+// made. Any divergence (e.g. producing with cs.currentHeight=bestHeight)
+// hashes a different value into the VRF seed and selects a different
+// winner — mutual proposer mismatch, chain deadlock.
+func (cs *ConsensusState) SelectProposerVRFAtHeight(seed []byte, height uint64) (*VrfProof, error) {
 	cs.mu.RLock()
 	defer cs.mu.RUnlock()
 
@@ -174,7 +185,7 @@ func (cs *ConsensusState) SelectProposerVRFDeterministic(seed []byte) (*VrfProof
 
 	h := sha256.New()
 	h.Write(seed)
-	binary.Write(h, binary.BigEndian, cs.currentHeight)
+	binary.Write(h, binary.BigEndian, height)
 	digest := new(big.Int).SetBytes(h.Sum(nil))
 
 	totalBig := new(big.Int).SetUint64(total)
@@ -197,7 +208,7 @@ func (cs *ConsensusState) SelectProposerVRFDeterministic(seed []byte) (*VrfProof
 	}
 
 	var p VrfProof
-	p.Height = cs.currentHeight
+	p.Height = height
 	p.Winner = winner
 	p.Stakes = stakes
 	copy(p.Output[:32], h.Sum(nil)) // seed chain continuation
