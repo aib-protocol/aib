@@ -894,6 +894,11 @@ func (n *Node) produceBlock() {
 	if n.networkCfg.BlockVersion >= 3 && height1 == utxoPkg.PoWEraBlocks+1 {
 		n.buildValidatorSetFromPoWHistory()
 	}
+	// TRUE-STAKE live sync: new stakes must enter (and unstakes leave) the
+	// sortition pool immediately. Rebuilding from live UTXOs every block is
+	// cheap (UTXO count is small) and deterministic — every node computes
+	// the same set from the same chain state, so VRF selection stays in sync.
+	n.rebuildValidatorSetFromStakes()
 
 	var newBlock *utxoPkg.Block
 
