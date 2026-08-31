@@ -10,7 +10,7 @@ func TestAnchorIndexScan(t *testing.T) {
 		Header: BlockHeader{Height: 10880},
 		Transactions: []*Transaction{{
 			Version: 1,
-			Outputs: []TXOutput{{Value: 0, Script: BuildAnchorScript("v0.11.23-testnet", sha)}},
+			Outputs: []TXOutput{{Value: 0, Script: BuildAnchorScript("v0.11.23-testnet", sha, [32]byte{})}},
 		}},
 	}
 	ai.ScanBlock(b)

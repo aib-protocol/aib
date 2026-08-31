@@ -15,6 +15,15 @@ type AnchorIndex struct {
 }
 
 // NewAnchorIndex creates an empty index.
+func hexIfSet(sha [32]byte) string {
+	for _, b := range sha {
+		if b != 0 {
+			return hex.EncodeToString(sha[:])
+		}
+	}
+	return ""
+}
+
 func NewAnchorIndex() *AnchorIndex { return &AnchorIndex{} }
 
 // ScanBlock scans a block for anchor outputs and records any found.
@@ -24,16 +33,17 @@ func (ai *AnchorIndex) ScanBlock(b *Block) {
 			if !IsAnchorOutput(out) {
 				continue
 			}
-			name, sha, err := ParseAnchorScript(out.Script)
+			name, binSHA, insSHA, err := ParseAnchorScript(out.Script)
 			if err != nil {
 				continue
 			}
 			txh := tx.Hash()
 			rec := &ReleaseRecord{
-				Name:   name,
-				SHA256: hex.EncodeToString(sha[:]),
-				Height: b.Header.Height,
-				TxHash: hex.EncodeToString(txh[:]),
+				Name:            name,
+				SHA256:          hex.EncodeToString(binSHA[:]),
+				InstallerSHA256: hexIfSet(insSHA),
+				Height:          b.Header.Height,
+				TxHash:          hex.EncodeToString(txh[:]),
 			}
 			_ = ti
 			ai.mu.Lock()

@@ -7,12 +7,15 @@
 // validate it as a normal 0-value output (no rule rejects it), so this
 // is fully backward compatible — no chain split.
 //
-// Script layout (version-gated, max 128 bytes):
-//   [0]    = 0xA1  magic ("AIB anchor")
-//   [1]    = payload version (1)
-//   [2]    = name length N (tag e.g. "v0.11.23-testnet", N <= 32)
-//   [3:3+N]= name ASCII
-//   rest   = 32-byte SHA256 of the release binary
+// Script v1 layout (legacy, max 128 bytes):
+//
+//	[0]=0xA1 magic, [1]=1 version, [2]=name len N,
+//	[3:3+N]=name, rest = 32-byte SHA256 of the release binary
+//
+// Script v2 layout (adds installer hash):
+//
+//	[0]=0xA1 magic, [1]=2 version, [2]=name len N,
+//	[3:3+N]=name, next 32 = binary SHA256, next 32 = install.sh SHA256
 package utxo
 
 import (
@@ -23,9 +26,6 @@ import (
 
 // AnchorMagic marks a release-anchor output script.
 const AnchorMagic byte = 0xA1
-
-// AnchorScriptVersion is the current anchor payload version.
-const AnchorScriptVersion byte = 1
 
 // AnchorAddress is the deterministic destination for anchor outputs.
 // Anyone may verify the anchor was "paid" to this well-known address.
@@ -42,51 +42,57 @@ func computeAnchorAddress() [32]byte {
 // ErrNotAnchor indicates a script that is not a release anchor.
 var ErrNotAnchor = errors.New("not a release anchor")
 
-// BuildAnchorScript encodes a release name and artifact SHA256 into an
-// anchor output script.
-func BuildAnchorScript(name string, sha [32]byte) []byte {
+// BuildAnchorScript encodes release name + artifact hashes (v2).
+// installerSHA may be all-zero for binary-only anchors.
+func BuildAnchorScript(name string, binarySHA, installerSHA [32]byte) []byte {
 	n := len(name)
 	if n > 32 {
 		n = 32
 	}
-	s := make([]byte, 0, 3+n+32)
-	s = append(s, AnchorMagic, AnchorScriptVersion, byte(n))
+	s := make([]byte, 0, 3+n+64)
+	s = append(s, AnchorMagic, 2, byte(n))
 	s = append(s, []byte(name[:n])...)
-	s = append(s, sha[:]...)
+	s = append(s, binarySHA[:]...)
+	s = append(s, installerSHA[:]...)
 	return s
 }
 
-// ParseAnchorScript decodes an anchor script. Returns name + SHA256.
-func ParseAnchorScript(script []byte) (string, [32]byte, error) {
-	var sha [32]byte
-	if len(script) < 3+32 {
-		return "", sha, ErrNotAnchor
+// ParseAnchorScript decodes an anchor script (v1 or v2).
+// v1 yields a zero installer hash.
+func ParseAnchorScript(script []byte) (name string, binarySHA, installerSHA [32]byte, err error) {
+	if len(script) < 3 {
+		return "", binarySHA, installerSHA, ErrNotAnchor
 	}
 	if script[0] != AnchorMagic {
-		return "", sha, ErrNotAnchor
+		return "", binarySHA, installerSHA, ErrNotAnchor
 	}
-	if script[1] != AnchorScriptVersion {
-		return "", sha, fmt.Errorf("anchor version %d unsupported", script[1])
+	ver := script[1]
+	if ver != 1 && ver != 2 {
+		return "", binarySHA, installerSHA, fmt.Errorf("anchor version %d unsupported", ver)
 	}
 	n := int(script[2])
 	if n > 32 || len(script) < 3+n+32 {
-		return "", sha, ErrNotAnchor
+		return "", binarySHA, installerSHA, ErrNotAnchor
 	}
-	name := string(script[3 : 3+n])
-	copy(sha[:], script[3+n:3+n+32])
-	return name, sha, nil
+	name = string(script[3 : 3+n])
+	copy(binarySHA[:], script[3+n:3+n+32])
+	if ver == 2 && len(script) >= 3+n+64 {
+		copy(installerSHA[:], script[3+n+32:3+n+64])
+	}
+	return name, binarySHA, installerSHA, nil
 }
 
 // IsAnchorOutput reports whether a transaction output is an anchor.
 func IsAnchorOutput(o TXOutput) bool {
-	_, _, err := ParseAnchorScript(o.Script)
+	_, _, _, err := ParseAnchorScript(o.Script)
 	return err == nil
 }
 
 // ReleaseRecord is a decoded on-chain release anchor.
 type ReleaseRecord struct {
-	Name   string `json:"name"`    // e.g. "v0.11.23-testnet"
-	SHA256 string `json:"sha256"`  // hex, 64 chars
-	Height uint64 `json:"height"`  // block containing the anchor
-	TxHash string `json:"tx_hash"` // hex
+	Name            string `json:"name"`             // e.g. "v0.11.25-testnet"
+	SHA256          string `json:"sha256"`           // binary SHA256, hex
+	InstallerSHA256 string `json:"installer_sha256"` // install.sh SHA256, hex ("" for v1 anchors)
+	Height          uint64 `json:"height"`           // block containing the anchor
+	TxHash          string `json:"tx_hash"`          // hex
 }

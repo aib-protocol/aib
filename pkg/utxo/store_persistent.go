@@ -850,7 +850,9 @@ func (s *PersistentUTXOStore) GetAllUTXOsAll() []*UTXO {
 	var result []*UTXO
 	_ = s.db.View(func(tx *bbolt.Tx) error {
 		b := tx.Bucket(BucketUTXO)
-		if b == nil { return nil }
+		if b == nil {
+			return nil
+		}
 		return b.ForEach(func(_ []byte, v []byte) error {
 			utxo, err := deserializeUTXO(v)
 			if err == nil {

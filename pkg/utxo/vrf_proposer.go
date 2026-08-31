@@ -17,11 +17,11 @@ import (
 // Anyone can verify: output is the unique VRF evaluation of (seed, height)
 // under the proposer's public key, and the winner was stake-entitled.
 type VrfProof struct {
-	Output  [64]byte // VRF output — becomes next block's seed
-	Proof   [80]byte // VRF proof
-	Height  uint64
-	Winner  [32]byte // proposer address
-	Stakes  map[[32]byte]uint64 // snapshot of active stakes at height (for verification)
+	Output [64]byte // VRF output — becomes next block's seed
+	Proof  [80]byte // VRF proof
+	Height uint64
+	Winner [32]byte            // proposer address
+	Stakes map[[32]byte]uint64 // snapshot of active stakes at height (for verification)
 }
 
 // vrfHashToIndex is the domain-separated VRF hash: if the proposer can produce
@@ -116,7 +116,7 @@ func (cs *ConsensusState) SelectProposerVRF(seed []byte, pubKeys map[[32]byte]ed
 		return nil, fmt.Errorf("total stake is zero")
 	}
 
-	best := new(big.Int)      // lowest hash wins (standard sortition)
+	best := new(big.Int) // lowest hash wins (standard sortition)
 	var winner [32]byte
 	var found bool
 	var stakes = make(map[[32]byte]uint64, len(validators))

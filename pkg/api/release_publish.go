@@ -10,6 +10,15 @@ import (
 	"github.com/aib-protocol/aib/pkg/utxo"
 )
 
+func hexIfSetAPI(sha [32]byte) string {
+	for _, b := range sha {
+		if b != 0 {
+			return hex.EncodeToString(sha[:])
+		}
+	}
+	return ""
+}
+
 // POST /v1/release/publish
 //
 // Anchors a release record (name + SHA256) on chain via an ordinary
@@ -26,9 +35,10 @@ func (s *Server) handleReleasePublish(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var req struct {
-		PrivateKey string `json:"private_key"`
-		Name       string `json:"name"`
-		SHA256     string `json:"sha256"`
+		PrivateKey      string `json:"private_key"`
+		Name            string `json:"name"`
+		SHA256          string `json:"sha256"`
+		InstallerSHA256 string `json:"installer_sha256"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeError(w, http.StatusBadRequest, ErrCodeInvalidRequest, "Invalid JSON", err.Error())
@@ -47,6 +57,13 @@ func (s *Server) handleReleasePublish(w http.ResponseWriter, r *http.Request) {
 	if _, err := hex.Decode(sha[:], []byte(req.SHA256)); err != nil {
 		writeError(w, http.StatusBadRequest, ErrCodeInvalidRequest, "Invalid sha256", err.Error())
 		return
+	}
+	var insSHA [32]byte
+	if req.InstallerSHA256 != "" {
+		if _, err := hex.Decode(insSHA[:], []byte(req.InstallerSHA256)); err != nil || len(req.InstallerSHA256) != 64 {
+			writeError(w, http.StatusBadRequest, ErrCodeInvalidRequest, "Invalid installer_sha256", "expected 64 hex chars")
+			return
+		}
 	}
 	pkBytes, err := hex.DecodeString(req.PrivateKey)
 	if err != nil || len(pkBytes) != ed25519.PrivateKeySize {
@@ -76,7 +93,7 @@ func (s *Server) handleReleasePublish(w http.ResponseWriter, r *http.Request) {
 		{
 			Value:   0,
 			Address: utxo.AnchorAddress,
-			Script:  utxo.BuildAnchorScript(req.Name, sha),
+			Script:  utxo.BuildAnchorScript(req.Name, sha, insSHA),
 		},
 	}
 	if change := total - fee; change > 0 {
@@ -95,9 +112,10 @@ func (s *Server) handleReleasePublish(w http.ResponseWriter, r *http.Request) {
 	}
 	txh := tx.Hash()
 	writeSuccess(w, map[string]interface{}{
-		"published": true,
-		"name":      req.Name,
-		"sha256":    req.SHA256,
-		"tx_hash":   hex.EncodeToString(txh[:]),
+		"published":        true,
+		"name":             req.Name,
+		"sha256":           req.SHA256,
+		"installer_sha256": hexIfSetAPI(insSHA),
+		"tx_hash":          hex.EncodeToString(txh[:]),
 	})
 }

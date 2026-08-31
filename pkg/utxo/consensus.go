@@ -9,10 +9,10 @@ import (
 	"encoding/binary"
 	"fmt"
 	"math/big"
+	"slices"
 	"sort"
 	"sync"
 	"time"
-	"slices"
 )
 
 // block time configuration
@@ -148,6 +148,7 @@ func (cs *ConsensusState) AddValidator(address [32]byte, stake uint64, publicKey
 
 	return nil
 }
+
 // AddValidatorFromPoW registers a validator derived from PoW-era mining
 // history (weight = blocks mined). Bypasses MinStake: the PoW era is the
 // stake — small miners must not be filtered out of the bootstrap set.
@@ -171,7 +172,6 @@ func (cs *ConsensusState) AddValidatorFromPoW(address [32]byte, blocksMined uint
 	}
 	return nil
 }
-
 
 // RemoveValidator removes a validator from the consensus.
 func (cs *ConsensusState) RemoveValidator(address [32]byte) error {

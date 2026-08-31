@@ -30,6 +30,24 @@ type FileDistConfig struct {
 	Enabled bool
 }
 
+// ReleaseJSONProvider supplies the current on-chain release record.
+type ReleaseJSONProvider func() []byte
+
+// serveReleaseJSON serves the on-chain release record.
+func (pm *ChainPeerManager) serveReleaseJSON(conn net.Conn) {
+	body := []byte(nil)
+	if pm.releaseJSON != nil {
+		body = pm.releaseJSON()
+	}
+	if body == nil {
+		fmt.Fprintf(conn, "HTTP/1.1 503 Service Unavailable\r\nContent-Length: 0\r\nConnection: close\r\n\r\n")
+		return
+	}
+	hdr := fmt.Sprintf("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: %d\r\nConnection: close\r\n\r\n", len(body))
+	conn.Write([]byte(hdr))
+	conn.Write(body)
+}
+
 // looksLikeHTTP reports whether the first bytes are an HTTP request line.
 func looksLikeHTTP(b []byte) bool {
 	for _, m := range [][]byte{[]byte("GET "), []byte("POST "), []byte("HEAD ")} {
@@ -79,6 +97,12 @@ func (pm *ChainPeerManager) serveFileDist(conn net.Conn, firstRead []byte) {
 	}
 	rawPath := string(rest2[:space2])
 	isHead := strings.HasPrefix(line, "HEAD ")
+
+	// Dynamic release.json from the on-chain anchor index.
+	if rawPath == "/release.json" {
+		pm.serveReleaseJSON(conn)
+		return
+	}
 
 	// Sanitize: no traversal, no listing.
 	clean := filepath.Clean("/" + rawPath)

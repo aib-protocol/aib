@@ -36,6 +36,7 @@ type ChainPeerManager struct {
 	selfStakeAddr string
 	advertiseAddr string
 	fileDist      *FileDistConfig
+	releaseJSON   ReleaseJSONProvider
 	listenPort    int
 	genesisHash   string
 	chainID       string
@@ -91,10 +92,11 @@ type ChainPeerConfig struct {
 	ChainID       string // "aib-testnet-1" or "aib-mainnet-1"
 	Bootstrap     []string
 	MaxPeers      int
-	Validator     bool            // this node runs in validator mode
-	StakeAddr     string          // hex staking address (when staked)
-	AdvertiseAddr string          // "ip:port" to list OURSELF as (external IP; empty = skip self)
-	FileDist      *FileDistConfig // in-band HTTP distribution on the P2P port
+	Validator     bool                // this node runs in validator mode
+	StakeAddr     string              // hex staking address (when staked)
+	AdvertiseAddr string              // "ip:port" to list OURSELF as (external IP; empty = skip self)
+	FileDist      *FileDistConfig     // in-band HTTP distribution on the P2P port
+	ReleaseJSON   ReleaseJSONProvider // on-chain release record provider
 	Logger        *log.Logger
 }
 
@@ -116,6 +118,7 @@ func NewChainPeerManager(cfg ChainPeerConfig) *ChainPeerManager {
 		selfStakeAddr: cfg.StakeAddr,
 		advertiseAddr: cfg.AdvertiseAddr,
 		fileDist:      cfg.FileDist,
+		releaseJSON:   cfg.ReleaseJSON,
 		listenPort:    cfg.ListenPort,
 		genesisHash:   cfg.GenesisHash,
 		chainID:       cfg.ChainID,

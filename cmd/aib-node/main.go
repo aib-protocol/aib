@@ -663,9 +663,18 @@ func (n *Node) startP2P(nodeID string) error {
 		fileDist = &p2p.FileDistConfig{Dir: n.config.DistDir, Enabled: true}
 		n.logger.Printf("[Dist] Serving release files from %s on P2P port %d", n.config.DistDir, n.config.P2PPort)
 	}
+	releaseJSON := func() []byte {
+		rec := n.anchorIdx.Latest()
+		if rec == nil {
+			return nil
+		}
+		b, _ := json.Marshal(rec)
+		return b
+	}
 	pm := p2p.NewChainPeerManager(p2p.ChainPeerConfig{
 		AdvertiseAddr: advertiseAddr,
 		FileDist:      fileDist,
+		ReleaseJSON:   releaseJSON,
 		NodeID:        nodeID,
 		Nickname:      nickname,
 		ListenPort:    n.config.P2PPort,
