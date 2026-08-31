@@ -30,12 +30,14 @@ type ChainPeerManager struct {
 	mu sync.RWMutex
 
 	// Node identity
-	nodeID      string
-	nickname    string
-	listenPort  int
-	genesisHash string
-	chainID     string
-	bestHeight  uint64
+	nodeID        string
+	nickname      string
+	selfValidator bool
+	selfStakeAddr string
+	listenPort    int
+	genesisHash   string
+	chainID       string
+	bestHeight    uint64
 
 	// Network
 	listener  net.Listener
@@ -57,7 +59,7 @@ type ChainPeerManager struct {
 	wg     sync.WaitGroup
 
 	maxPeers int
-	onTx func(tx *utxoPkg.Transaction)
+	onTx     func(tx *utxoPkg.Transaction)
 }
 
 // ChainPeer represents a connected blockchain peer.
@@ -68,6 +70,8 @@ type ChainPeer struct {
 	nickname   string
 	address    string // remote ip:port
 	listenPort int    // port the peer listens on for P2P
+	validator  bool   // peer runs in validator mode
+	stakeAddr  string // hex staking address (when staked)
 	bestHeight uint64
 	lastPing   time.Time
 	lastPong   time.Time
@@ -85,6 +89,8 @@ type ChainPeerConfig struct {
 	ChainID     string // "aib-testnet-1" or "aib-mainnet-1"
 	Bootstrap   []string
 	MaxPeers    int
+	Validator   bool   // this node runs in validator mode
+	StakeAddr   string // hex staking address (when staked)
 	Logger      *log.Logger
 }
 
@@ -100,17 +106,19 @@ func NewChainPeerManager(cfg ChainPeerConfig) *ChainPeerManager {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	return &ChainPeerManager{
-		nodeID:      cfg.NodeID,
-		nickname:    cfg.Nickname,
-		listenPort:  cfg.ListenPort,
-		genesisHash: cfg.GenesisHash,
-		chainID:     cfg.ChainID,
-		bootstrap:   cfg.Bootstrap,
-		peers:       make(map[string]*ChainPeer),
-		maxPeers:    cfg.MaxPeers,
-		logger:      cfg.Logger,
-		ctx:         ctx,
-		cancel:      cancel,
+		nodeID:        cfg.NodeID,
+		nickname:      cfg.Nickname,
+		selfValidator: cfg.Validator,
+		selfStakeAddr: cfg.StakeAddr,
+		listenPort:    cfg.ListenPort,
+		genesisHash:   cfg.GenesisHash,
+		chainID:       cfg.ChainID,
+		bootstrap:     cfg.Bootstrap,
+		peers:         make(map[string]*ChainPeer),
+		maxPeers:      cfg.MaxPeers,
+		logger:        cfg.Logger,
+		ctx:           ctx,
+		cancel:        cancel,
 	}
 }
 
@@ -252,7 +260,9 @@ func (pm *ChainPeerManager) verifyBlockSignature(block BlockData) error {
 	if verifier == nil {
 		verifier = &Ed25519BlockVerifier{}
 	}
-	if fv, ok := verifier.(interface{ VerifyBlockSignatureFull(string, string, string, string) error }); ok {
+	if fv, ok := verifier.(interface {
+		VerifyBlockSignatureFull(string, string, string, string) error
+	}); ok {
 		return fv.VerifyBlockSignatureFull(block.Proposer, block.Hash, block.SignedHash, block.Signature)
 	}
 	return verifier.VerifyBlockSignature(block.Proposer, block.Hash, block.Signature)
@@ -334,6 +344,8 @@ func (pm *ChainPeerManager) GetChainPeers() []ChainPeerInfo {
 			NodeID:     p.nodeID,
 			Address:    p.address,
 			Nickname:   p.nickname,
+			Validator:  p.validator,
+			StakeAddr:  p.stakeAddr,
 			BestHeight: p.bestHeight,
 			LastSeen:   p.lastPong.Unix(),
 		})
@@ -515,6 +527,8 @@ func (pm *ChainPeerManager) connectToPeer(addr string) error {
 		NodeID:      pm.nodeID,
 		ListenPort:  pm.listenPort,
 		Nickname:    pm.nickname,
+		Validator:   pm.selfValidator,
+		StakeAddr:   pm.selfStakeAddr,
 		Timestamp:   time.Now().Unix(),
 		UserAgent:   "aib-node/2.0",
 	}
@@ -570,6 +584,8 @@ func (pm *ChainPeerManager) connectToPeer(addr string) error {
 		conn:       conn,
 		nodeID:     verack.NodeID,
 		nickname:   verack.Nickname,
+		validator:  verack.Validator,
+		stakeAddr:  verack.StakeAddr,
 		address:    addr,
 		bestHeight: verack.BestHeight,
 		connected:  time.Now(),
@@ -670,6 +686,8 @@ func (pm *ChainPeerManager) handleInbound(conn net.Conn) {
 		BestHeight:  height,
 		NodeID:      pm.nodeID,
 		Nickname:    pm.nickname,
+		Validator:   pm.selfValidator,
+		StakeAddr:   pm.selfStakeAddr,
 	}
 	data, _ := MarshalMsg(MsgVerack, &verack)
 	conn.SetWriteDeadline(time.Now().Add(10 * time.Second))
@@ -691,6 +709,8 @@ func (pm *ChainPeerManager) handleInbound(conn net.Conn) {
 		nickname:   version.Nickname,
 		address:    peerListenAddr,
 		listenPort: version.ListenPort,
+		validator:  version.Validator,
+		stakeAddr:  version.StakeAddr,
 		bestHeight: version.BestHeight,
 		connected:  time.Now(),
 		lastPong:   time.Now(),
@@ -698,7 +718,7 @@ func (pm *ChainPeerManager) handleInbound(conn net.Conn) {
 		verified:   true,
 	}
 
-if peer.nodeID == pm.nodeID {
+	if peer.nodeID == pm.nodeID {
 		conn.Close()
 		pm.logger.Printf("[P2P] Rejected self-connection from %s", remoteAddr)
 		return

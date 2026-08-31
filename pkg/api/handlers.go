@@ -245,6 +245,9 @@ func (s *Server) handlePeers(w http.ResponseWriter, r *http.Request) {
 			peers = append(peers, PeerResponse{
 				ID:        entry.ID,
 				Address:   entry.Address,
+				Nickname:  entry.Nickname,
+				Validator: entry.Validator,
+				StakeAddr: entry.StakeAddr,
 				LastSeen:  entry.LastSeen,
 				Connected: entry.Connected,
 			})
@@ -254,6 +257,9 @@ func (s *Server) handlePeers(w http.ResponseWriter, r *http.Request) {
 			peers = append(peers, PeerResponse{
 				ID:        entry.ID,
 				Address:   entry.Address,
+				Nickname:  entry.Nickname,
+				Validator: entry.Validator,
+				StakeAddr: entry.StakeAddr,
 				LastSeen:  entry.LastSeen,
 				Connected: entry.Connected,
 			})

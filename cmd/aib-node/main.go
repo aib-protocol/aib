@@ -42,10 +42,10 @@ type NetworkConfig struct {
 }
 
 var TestnetConfig = NetworkConfig{
-	ChainID: "aib-testnet-3",
-	GenesisTime: 1755916800, // 2026-08-23T00:00:00Z
-	GenesisMsg: "AIB Testnet v3 Genesis | Reuters 2026-08-18: Trump tariff pause | Consensus: SHA256d PoW era blocks 1..1000 @ 31.415 AIB/block, then pure-stake VRF PoS with deterministic proposer selection",
-	GenesisReward: 0,
+	ChainID:        "aib-testnet-3",
+	GenesisTime:    1755916800, // 2026-08-23T00:00:00Z
+	GenesisMsg:     "AIB Testnet v3 Genesis | Reuters 2026-08-18: Trump tariff pause | Consensus: SHA256d PoW era blocks 1..1000 @ 31.415 AIB/block, then pure-stake VRF PoS with deterministic proposer selection",
+	GenesisReward:  0,
 	BootstrapNodes: []string{"212.56.43.128:51413"},
 	DefaultP2PPort: 51413,
 	BlockVersion:   3,
@@ -318,7 +318,7 @@ func (n *Node) Start() error {
 		n.logger.Printf("[Chain] Restored consensus height to %d from DB", h)
 	}
 
-		// Validator membership comes ONLY from on-chain PoW history
+	// Validator membership comes ONLY from on-chain PoW history
 	// (buildValidatorSetFromPoWHistory). Self-registration would let any node
 	// grant itself sortition weight with zero contribution — a consensus
 	// vulnerability. -validator mode just enables block PRODUCTION for
@@ -329,7 +329,6 @@ func (n *Node) Start() error {
 	n.mempool = utxoPkg.NewMempool(10000, 100)
 	chainState.SetMempool(n.mempool)
 	n.logger.Println("    ✓ Mempool initialized")
-
 
 	// 6. Initialize chain state (shared genesis)
 	n.logger.Println("[6/7] Loading chain state...")
@@ -367,13 +366,16 @@ func (n *Node) Start() error {
 			entries = append(entries, api.PeerEntry{
 				ID:        ci.NodeID,
 				Address:   ci.Address,
+				Nickname:  ci.Nickname,
+				Validator: ci.Validator,
+				StakeAddr: ci.StakeAddr,
 				LastSeen:  time.Unix(ci.LastSeen, 0),
 				Connected: true,
 			})
 		}
 		return entries
 	})
-n.apiServer.SetWalletInfo(func() map[string]interface{} {
+	n.apiServer.SetWalletInfo(func() map[string]interface{} {
 		bal := uint64(0)
 		utxoCount := 0
 		wAddr := n.walletAddress()
@@ -382,12 +384,12 @@ n.apiServer.SetWalletInfo(func() map[string]interface{} {
 			utxoCount = len(n.utxoStore.GetAllUTXOs(wAddr))
 		}
 		return map[string]interface{}{
-			"address":      hex.EncodeToString(wAddr[:]),
-			"balance_aib":  float64(bal) / 1e8,
-			"balance_raw":  bal,
-			"utxo_count":   utxoCount,
-			"mining":       n.config.Validator,
-			"height":       n.chainState.GetBestBlockHeight(),
+			"address":     hex.EncodeToString(wAddr[:]),
+			"balance_aib": float64(bal) / 1e8,
+			"balance_raw": bal,
+			"utxo_count":  utxoCount,
+			"mining":      n.config.Validator,
+			"height":      n.chainState.GetBestBlockHeight(),
 		}
 	})
 	n.apiServer.SetUTXOStore(n.utxoStore)
@@ -621,6 +623,12 @@ func (n *Node) startP2P(nodeID string) error {
 		nickname = fmt.Sprintf("node-%s", nodeID[:8])
 	}
 
+	// Advertise validator status + stake address in the P2P handshake so
+	// peers (and the explorer) can see which IPs are actively staking.
+	selfStakeAddr := ""
+	if addr := n.walletAddress(); addr != [32]byte{} {
+		selfStakeAddr = hex.EncodeToString(addr[:])
+	}
 	pm := p2p.NewChainPeerManager(p2p.ChainPeerConfig{
 		NodeID:      nodeID,
 		Nickname:    nickname,
@@ -629,6 +637,8 @@ func (n *Node) startP2P(nodeID string) error {
 		ChainID:     n.networkCfg.ChainID,
 		Bootstrap:   bootstrapNodes,
 		MaxPeers:    25,
+		Validator:   n.config.Validator,
+		StakeAddr:   selfStakeAddr,
 		Logger:      n.logger,
 	})
 
@@ -782,11 +792,11 @@ func (n *Node) handleGetBlocks(from, to uint64) ([]p2p.BlockData, error) {
 			// verification needs the raw pubkey; for self-produced blocks we
 			// know it. For relayed blocks the pubkey must come with the block
 			// — see proposerPubKeyForHeight cache.
-			Proposer:      hex.EncodeToString(block.Header.Proposer[:]),
-			Signature:     hex.EncodeToString(block.Header.Signature),
-			SignedHash:    func() string { sh := computeSignedHash(block); return hex.EncodeToString(sh[:]) }(),
-			TxCount:       len(block.Transactions),
-			RawBlock:      rawBlock,
+			Proposer:   hex.EncodeToString(block.Header.Proposer[:]),
+			Signature:  hex.EncodeToString(block.Header.Signature),
+			SignedHash: func() string { sh := computeSignedHash(block); return hex.EncodeToString(sh[:]) }(),
+			TxCount:    len(block.Transactions),
+			RawBlock:   rawBlock,
 		})
 	}
 

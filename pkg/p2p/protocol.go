@@ -128,6 +128,8 @@ type VersionMsg struct {
 	NodeID      string `json:"node_id"`
 	ListenPort  int    `json:"listen_port"`
 	Nickname    string `json:"nickname,omitempty"`
+	Validator   bool   `json:"validator,omitempty"`     // node runs in validator mode
+	StakeAddr   string `json:"stake_addr,omitempty"`    // hex staking address (when staked)
 	Timestamp   int64  `json:"timestamp"`
 	UserAgent   string `json:"user_agent"`
 }
@@ -138,6 +140,8 @@ type VerackMsg struct {
 	BestHeight  uint64 `json:"best_height"`
 	NodeID      string `json:"node_id"`
 	Nickname    string `json:"nickname,omitempty"`
+	Validator   bool   `json:"validator,omitempty"`
+	StakeAddr   string `json:"stake_addr,omitempty"`
 }
 
 // PingMsg is a keepalive message.
@@ -186,6 +190,8 @@ type ChainPeerInfo struct {
 	NodeID     string `json:"node_id"`
 	Address    string `json:"address"` // ip:port
 	Nickname   string `json:"nickname,omitempty"`
+	Validator  bool   `json:"validator"`
+	StakeAddr  string `json:"stake_addr,omitempty"`
 	BestHeight uint64 `json:"best_height"`
 	LastSeen   int64  `json:"last_seen"`
 }

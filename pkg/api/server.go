@@ -1,10 +1,10 @@
 package api
 
 import (
-	"github.com/aib-protocol/aib/pkg/utxo"
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/aib-protocol/aib/pkg/utxo"
 	"log"
 	"net/http"
 	"sync"
@@ -80,6 +80,9 @@ type p2pNetworkInterface interface {
 type PeerEntry struct {
 	ID        string
 	Address   string
+	Nickname  string
+	Validator bool
+	StakeAddr string
 	LastSeen  time.Time
 	Connected bool
 }

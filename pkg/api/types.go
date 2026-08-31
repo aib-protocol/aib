@@ -339,6 +339,9 @@ func DefaultConfig() *Config {
 type PeerResponse struct {
 	ID        string    `json:"id"`
 	Address   string    `json:"address"`
+	Nickname  string    `json:"nickname,omitempty"`
+	Validator bool      `json:"validator"`
+	StakeAddr string    `json:"stake_addr,omitempty"`
 	LastSeen  time.Time `json:"last_seen"`
 	Connected bool      `json:"connected"`
 }
