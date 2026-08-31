@@ -75,6 +75,7 @@ type NodeConfig struct {
 	P2PPort     int
 	Validator   bool
 	AdvertiseIP string
+	DistDir     string
 	LogLevel    string
 	Bootstrap   string
 	NodeID      string
@@ -95,6 +96,7 @@ type Node struct {
 
 	// Core components - persistent storage
 	chainState *utxoPkg.ChainState
+	anchorIdx  *utxoPkg.AnchorIndex
 	utxoStore  *utxoPkg.PersistentUTXOStore
 	consensus  *utxoPkg.ConsensusState
 	mempool    *utxoPkg.Mempool
@@ -282,6 +284,7 @@ func (n *Node) Start() error {
 	}
 	chainState.SetUTXOStore(n.utxoStore)
 	n.chainState = chainState
+	n.anchorIdx = utxoPkg.NewAnchorIndex()
 	n.logger.Printf("    ✓ Chain state opened: %s", chainDBPath)
 
 	// 3. Initialize consensus engine
@@ -316,6 +319,12 @@ func (n *Node) Start() error {
 	// Restore consensus height from persisted chain (restart-safe)
 	if h := n.chainState.GetBestBlockHeight(); h > 0 {
 		n.consensus.RestoreHeight(h)
+		// Replay recent history for release anchors (best-effort)
+		for hh := uint64(1); hh <= h && h-hh < 5000; hh++ {
+			if b, err := n.chainState.GetBlockByHeight(hh); err == nil && b != nil {
+				n.anchorIdx.ScanBlock(b)
+			}
+		}
 		n.logger.Printf("[Chain] Restored consensus height to %d from DB", h)
 	}
 
@@ -387,6 +396,10 @@ func (n *Node) Start() error {
 		}
 		return entries
 	})
+	n.apiServer.SetReleaseIndex(
+		func() interface{} { return n.anchorIdx.Latest() },
+		func() interface{} { return n.anchorIdx.History() },
+	)
 	n.apiServer.SetWalletInfo(func() map[string]interface{} {
 		bal := uint64(0)
 		utxoCount := 0
@@ -645,8 +658,14 @@ func (n *Node) startP2P(nodeID string) error {
 	if n.config.AdvertiseIP != "" {
 		advertiseAddr = fmt.Sprintf("%s:%d", n.config.AdvertiseIP, n.config.P2PPort)
 	}
+	var fileDist *p2p.FileDistConfig
+	if n.config.DistDir != "" {
+		fileDist = &p2p.FileDistConfig{Dir: n.config.DistDir, Enabled: true}
+		n.logger.Printf("[Dist] Serving release files from %s on P2P port %d", n.config.DistDir, n.config.P2PPort)
+	}
 	pm := p2p.NewChainPeerManager(p2p.ChainPeerConfig{
 		AdvertiseAddr: advertiseAddr,
+		FileDist:      fileDist,
 		NodeID:        nodeID,
 		Nickname:      nickname,
 		ListenPort:    n.config.P2PPort,
@@ -735,6 +754,7 @@ func (n *Node) handleNewBlock(data p2p.BlockData) error {
 		return fmt.Errorf("add block %d: %w", data.Height, err)
 	}
 	n.utxoStore.SetChainHead(data.Height)
+	n.anchorIdx.ScanBlock(block)
 
 	// For V2 blocks, update reputation manager from block data
 	if block.Header.Version >= 2 && n.reputationMgr != nil {
@@ -1023,6 +1043,7 @@ func (n *Node) acceptAndBroadcast(newBlock *utxoPkg.Block, txs []*utxoPkg.Transa
 		n.logger.Printf("[Block %d] Failed to add: %v", height, err)
 		return
 	}
+	n.anchorIdx.ScanBlock(newBlock)
 
 	txHashes := make([][32]byte, len(txs))
 	for i, tx := range txs {
@@ -1152,6 +1173,7 @@ func parseFlags() *NodeConfig {
 	flag.IntVar(&config.BlockTime, "block-time", 60, "Block time in seconds (mainnet: 60s, testnet: 30s)")
 	flag.BoolVar(&config.Validator, "validator", false, "Enable validator mode")
 	flag.StringVar(&config.AdvertiseIP, "advertise-ip", "", "External IP to advertise ourselves in the peers list (testnet transparency)")
+	flag.StringVar(&config.DistDir, "dist-dir", "", "Serve install.sh + release binaries over HTTP on the P2P port (distribution mirror)")
 	flag.StringVar(&config.LogLevel, "log-level", "info", "Log level")
 	flag.StringVar(&config.Bootstrap, "bootstrap", "", "Bootstrap node address (default: per network)")
 	flag.StringVar(&config.NodeID, "node-id", "", "Node ID (auto-generated if empty)")

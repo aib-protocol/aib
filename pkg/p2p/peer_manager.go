@@ -35,6 +35,7 @@ type ChainPeerManager struct {
 	selfValidator bool
 	selfStakeAddr string
 	advertiseAddr string
+	fileDist      *FileDistConfig
 	listenPort    int
 	genesisHash   string
 	chainID       string
@@ -90,9 +91,10 @@ type ChainPeerConfig struct {
 	ChainID       string // "aib-testnet-1" or "aib-mainnet-1"
 	Bootstrap     []string
 	MaxPeers      int
-	Validator     bool   // this node runs in validator mode
-	StakeAddr     string // hex staking address (when staked)
-	AdvertiseAddr string // "ip:port" to list OURSELF as (external IP; empty = skip self)
+	Validator     bool            // this node runs in validator mode
+	StakeAddr     string          // hex staking address (when staked)
+	AdvertiseAddr string          // "ip:port" to list OURSELF as (external IP; empty = skip self)
+	FileDist      *FileDistConfig // in-band HTTP distribution on the P2P port
 	Logger        *log.Logger
 }
 
@@ -113,6 +115,7 @@ func NewChainPeerManager(cfg ChainPeerConfig) *ChainPeerManager {
 		selfValidator: cfg.Validator,
 		selfStakeAddr: cfg.StakeAddr,
 		advertiseAddr: cfg.AdvertiseAddr,
+		fileDist:      cfg.FileDist,
 		listenPort:    cfg.ListenPort,
 		genesisHash:   cfg.GenesisHash,
 		chainID:       cfg.ChainID,
@@ -642,9 +645,20 @@ func (pm *ChainPeerManager) handleInbound(conn net.Conn) {
 
 	remoteAddr := conn.RemoteAddr().String()
 
-	// Read VERSION message
+	// Protocol sniff: HTTP on the P2P port = in-band file distribution
+	// (install.sh / binaries). Anything else = normal P2P handshake.
 	conn.SetReadDeadline(time.Now().Add(10 * time.Second))
-	msgType, payload, err := ReadMessage(conn)
+	head := make([]byte, 5)
+	n, _ := io.ReadFull(conn, head)
+	head = head[:n]
+	if looksLikeHTTP(head) {
+		pm.serveFileDist(conn, head)
+		return
+	}
+	rest := make([]byte, 0, 64*1024)
+	rest = append(rest, head...)
+	// fall through to normal handshake with replayed bytes
+	msgType, payload, err := ReadMessageOn(conn, rest)
 	if err != nil {
 		pm.logger.Printf("[P2P] Inbound %s: read version failed: %v", remoteAddr, err)
 		conn.Close()

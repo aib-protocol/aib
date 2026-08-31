@@ -120,8 +120,8 @@ func runSetup(dataDir string, apiPort, p2pPort int, nodeArgs []string) error {
 		}
 		var resp struct {
 			Data struct {
-				Address     string `json:"address"`
-				PrivateKey  string `json:"private_key"`
+				Address    string `json:"address"`
+				PrivateKey string `json:"private_key"`
 			} `json:"data"`
 		}
 		if err := json.Unmarshal(body, &resp); err != nil || resp.Data.Address == "" {

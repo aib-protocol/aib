@@ -15,7 +15,6 @@ import (
 // ============================================================================
 
 // LoggingMiddleware logs each HTTP request's method, path, status code, and handling time
-//
 func LoggingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
@@ -67,7 +66,6 @@ func (rw *responseWriter) Write(b []byte) (int, error) {
 // ============================================================================
 
 // RecoveryMiddleware recovers from panics and returns a 500 error, preventing server crashes
-//
 func RecoveryMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
@@ -89,7 +87,6 @@ func RecoveryMiddleware(next http.Handler) http.Handler {
 // ============================================================================
 
 // CORSMiddleware handles cross-origin resource sharing requests
-//
 func CORSMiddleware(config *Config) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -162,7 +159,6 @@ func joinStrings(ss []string) string {
 // ============================================================================
 
 // RateLimitMiddleware rate-limits requests based on the token bucket algorithm
-//
 func RateLimitMiddleware(requestsPerSecond, burst int) func(http.Handler) http.Handler {
 	if requestsPerSecond <= 0 {
 		requestsPerSecond = 100
@@ -216,7 +212,6 @@ func NewTokenBucket(rate float64, capacity int) *TokenBucket {
 // Take attempts to acquire a token. Returns true on success, false if rate limited.
 //
 // key: used to track tokens for different clients
-//
 func (tb *TokenBucket) Take(key string) bool {
 	tb.mu.Lock()
 	defer tb.mu.Unlock()
@@ -245,7 +240,6 @@ func (tb *TokenBucket) Take(key string) bool {
 // ============================================================================
 
 // AuthMiddleware validates the API Key in the request
-//
 func AuthMiddleware(apiKeys []string) func(http.Handler) http.Handler {
 	// Convert API keys into a hash set for fast lookup
 	keySet := make(map[string]struct{})
@@ -319,7 +313,6 @@ func AuthMiddleware(apiKeys []string) func(http.Handler) http.Handler {
 }
 
 // OptionalAuthMiddleware validates the API Key if provided; otherwise authentication is skipped
-//
 func OptionalAuthMiddleware(apiKeys []string) func(http.Handler) http.Handler {
 	keySet := make(map[string]struct{})
 	for _, key := range apiKeys {

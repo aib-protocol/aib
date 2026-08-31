@@ -17,11 +17,11 @@ type MiningStats struct {
 	StartedAt time.Time
 
 	// Sortition
-	SlotsWon   uint64 // we were selected and produced
-	SlotsMissed uint64 // someone else won
-	LastWinHeight  uint64
-	LastWinAt      time.Time
-	LastWinner     string // who won the last slot we observed
+	SlotsWon      uint64 // we were selected and produced
+	SlotsMissed   uint64 // someone else won
+	LastWinHeight uint64
+	LastWinAt     time.Time
+	LastWinner    string // who won the last slot we observed
 
 	// Earnings (satoshi)
 	CoinbaseEarned uint64 // bootstrap-window coinbase total
@@ -86,23 +86,23 @@ func (m *MiningStats) Snapshot() map[string]interface{} {
 		winRate = float64(m.SlotsWon) / float64(total)
 	}
 	return map[string]interface{}{
-		"mining":          true,
-		"uptime":          uptime,
-		"slots_won":       m.SlotsWon,
-		"slots_missed":    m.SlotsMissed,
-		"win_rate":        winRate,
-		"last_win_height": m.LastWinHeight,
-		"last_win_at":     m.LastWinAt,
-		"last_winner":     m.LastWinner,
-		"distinct_winners": len(m.DistinctWinners),
+		"mining":              true,
+		"uptime":              uptime,
+		"slots_won":           m.SlotsWon,
+		"slots_missed":        m.SlotsMissed,
+		"win_rate":            winRate,
+		"last_win_height":     m.LastWinHeight,
+		"last_win_at":         m.LastWinAt,
+		"last_winner":         m.LastWinner,
+		"distinct_winners":    len(m.DistinctWinners),
 		"coinbase_earned_aib": float64(m.CoinbaseEarned) / 1e8,
 		"fee_payout_aib":      float64(m.FeePayoutTotal) / 1e8,
 		"burned_total_aib":    float64(m.BurnedTotal) / 1e8,
 		"epoch": map[string]interface{}{
-			"fees_aib":    float64(m.LastEpochFees) / 1e8,
-			"payout_aib":  float64(m.LastEpochPayout) / 1e8,
-			"burn_aib":    float64(m.LastEpochBurn) / 1e8,
-			"stake_aib":   float64(m.LastEpochStake) / 1e8,
+			"fees_aib":     float64(m.LastEpochFees) / 1e8,
+			"payout_aib":   float64(m.LastEpochPayout) / 1e8,
+			"burn_aib":     float64(m.LastEpochBurn) / 1e8,
+			"stake_aib":    float64(m.LastEpochStake) / 1e8,
 			"realized_apr": m.LastEpochAPR,
 		},
 	}

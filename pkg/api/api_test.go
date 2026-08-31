@@ -2,10 +2,10 @@ package api
 
 import (
 	"bytes"
-	"io"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"

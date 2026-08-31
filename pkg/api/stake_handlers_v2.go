@@ -255,10 +255,10 @@ func (s *Server) handleStakeInfo(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]interface{}{
 		"success": true,
 		"data": map[string]interface{}{
-			"address":      addrHex,
-			"staked_aib":   rawToAib(staked),
+			"address":       addrHex,
+			"staked_aib":    rawToAib(staked),
 			"stake_outputs": cnt,
-			"liquid_aib":   rawToAib(liquid),
+			"liquid_aib":    rawToAib(liquid),
 		},
 	})
 }

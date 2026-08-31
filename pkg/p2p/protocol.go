@@ -86,6 +86,15 @@ func EncodeMessage(msgType uint8, payload []byte) []byte {
 }
 
 // ReadMessage reads a single message from reader.
+// ReadMessageOn reads one message from r, replaying preRead bytes first
+// (used after protocol sniffing consumed the first bytes).
+func ReadMessageOn(r io.Reader, preRead []byte) (uint8, []byte, error) {
+	if len(preRead) > 0 {
+		return ReadMessage(io.MultiReader(bytes.NewReader(preRead), r))
+	}
+	return ReadMessage(r)
+}
+
 func ReadMessage(r io.Reader) (uint8, []byte, error) {
 	header := make([]byte, MessageHeaderSize)
 	if _, err := io.ReadFull(r, header); err != nil {
@@ -128,8 +137,8 @@ type VersionMsg struct {
 	NodeID      string `json:"node_id"`
 	ListenPort  int    `json:"listen_port"`
 	Nickname    string `json:"nickname,omitempty"`
-	Validator   bool   `json:"validator,omitempty"`     // node runs in validator mode
-	StakeAddr   string `json:"stake_addr,omitempty"`    // hex staking address (when staked)
+	Validator   bool   `json:"validator,omitempty"`  // node runs in validator mode
+	StakeAddr   string `json:"stake_addr,omitempty"` // hex staking address (when staked)
 	Timestamp   int64  `json:"timestamp"`
 	UserAgent   string `json:"user_agent"`
 }
@@ -169,7 +178,7 @@ type BlockData struct {
 	MerkleRoot    string `json:"merkle_root"`
 	Timestamp     uint64 `json:"timestamp"`
 	Proposer      string `json:"proposer"`
-	Signature     string `json:"signature"` // ed25519 signature of block hash by proposer
+	Signature     string `json:"signature"`   // ed25519 signature of block hash by proposer
 	SignedHash    string `json:"signed_hash"` // hash that was signed (header without signature)
 	TxCount       int    `json:"tx_count"`
 	RawBlock      []byte `json:"raw_block"` // full serialized block

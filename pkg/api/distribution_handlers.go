@@ -28,10 +28,10 @@ func (s *Server) handleDistribution(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	type entry struct {
-		Address  string  `json:"address"`
-		Liquid   float64 `json:"liquid_aib"`
-		Staked   float64 `json:"staked_aib"`
-		Total    float64 `json:"total_aib"`
+		Address string  `json:"address"`
+		Liquid  float64 `json:"liquid_aib"`
+		Staked  float64 `json:"staked_aib"`
+		Total   float64 `json:"total_aib"`
 	}
 	out := make([]entry, 0, len(liquid)+len(staked))
 	seen := map[[32]byte]bool{}

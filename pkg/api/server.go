@@ -51,24 +51,26 @@ type MigrationHubAPI interface {
 
 // Server is the HTTP server
 type Server struct {
-	httpServer     *http.Server
-	mux            *http.ServeMux
-	port           int
-	mu             sync.RWMutex
-	startTime      time.Time
-	miningStats    func() map[string]interface{}
-	walletInfoFn   func() map[string]interface{}
-	peersFn        func() []PeerEntry
-	chain          ChainReader
-	migrationHub   MigrationHubAPI
-	utxoStore      utxoStoreInterface
-	mempool        mempoolInterface
-	txBroadcaster  func(tx *utxo.Transaction)
-	consensusState consensusConfigInterface
-	governance     governanceInterface
-	p2pNetwork     p2pNetworkInterface
-	chainID        string
-	apiKeys        []string // API keys for authentication
+	httpServer       *http.Server
+	mux              *http.ServeMux
+	port             int
+	mu               sync.RWMutex
+	startTime        time.Time
+	miningStats      func() map[string]interface{}
+	walletInfoFn     func() map[string]interface{}
+	peersFn          func() []PeerEntry
+	releaseLatestFn  func() interface{}
+	releaseHistoryFn func() interface{}
+	chain            ChainReader
+	migrationHub     MigrationHubAPI
+	utxoStore        utxoStoreInterface
+	mempool          mempoolInterface
+	txBroadcaster    func(tx *utxo.Transaction)
+	consensusState   consensusConfigInterface
+	governance       governanceInterface
+	p2pNetwork       p2pNetworkInterface
+	chainID          string
+	apiKeys          []string // API keys for authentication
 }
 
 // p2pNetworkInterface P2P networkinterface
@@ -319,6 +321,9 @@ func (s *Server) RegisterRoutes() {
 	s.mux.HandleFunc("/v1/balance/", s.handleGetBalance)
 	s.mux.HandleFunc("/v1/distribution", s.handleDistribution)
 	s.mux.HandleFunc("/v1/stake/validators", s.handleStakeValidators)
+	s.mux.HandleFunc("/v1/release/latest", s.handleReleaseLatest)
+	s.mux.HandleFunc("/v1/release/publish", s.handleReleasePublish)
+	s.mux.HandleFunc("/v1/release/history", s.handleReleaseHistory)
 
 	// Blockchain queries - read-only endpoints
 	s.mux.HandleFunc("/v1/utxo/", s.handleUTXOByAddress)
@@ -464,6 +469,14 @@ func corsMiddleware(next http.Handler) http.Handler {
 		}
 		next.ServeHTTP(w, r)
 	})
+}
+
+// SetReleaseIndex plugs the on-chain release anchor index into the API.
+func (s *Server) SetReleaseIndex(latest func() interface{}, history func() interface{}) {
+	s.mu.Lock()
+	s.releaseLatestFn = latest
+	s.releaseHistoryFn = history
+	s.mu.Unlock()
 }
 
 // SetPeersProvider plugs the live P2P peer list into the API.

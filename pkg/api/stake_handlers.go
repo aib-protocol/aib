@@ -38,8 +38,8 @@ const (
 // StakeRequest stakerequest
 type StakeRequest struct {
 	PrivateKey string `json:"private_key"`
-	Amount     string `json:"amount"`      // Amount as a string (smallest units)
-	AmountAIB  string `json:"amount_aib"`  // AIB (float); preferred over amount when set
+	Amount     string `json:"amount"`     // Amount as a string (smallest units)
+	AmountAIB  string `json:"amount_aib"` // AIB (float); preferred over amount when set
 }
 
 // StakeResponse stakeresponse
