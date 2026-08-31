@@ -275,7 +275,10 @@ func (cs *ChainState) GetBlockByHash(hash [32]byte) (*Block, error) {
 		b := tx.Bucket(BucketBlocks)
 		data := b.Get(hash[:])
 		if data == nil {
-			return fmt.Errorf("block not found: %x", hash)
+			// Body missing. Was it pruned (header still in index) or
+			// never seen? Caller resolves via blockIndex; here we just
+			// report not-found - the API layer cross-checks height index.
+			return ErrPruned
 		}
 
 		var err error

@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	utxoPkg "github.com/aib-protocol/aib/pkg/utxo"
 )
 
 // ============================================================================
@@ -207,6 +208,13 @@ func (s *Server) handleGetBlock(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	blk, err := chain.GetBlockByHeight(height)
+	if err == utxoPkg.ErrPruned {
+		below := chain.PruneBelow()
+		hint := fmt.Sprintf("POST /v1/blocks/fetch with {\"from\":%d,\"to\":%d} to re-fetch from peers", below, height)
+		writeError(w, http.StatusGone, "pruned",
+			fmt.Sprintf("block %d body pruned (prune_below=%d)", height, below), hint)
+		return
+	}
 	if err != nil {
 		writeError(w, http.StatusNotFound, "not_found", err.Error(), "")
 		return

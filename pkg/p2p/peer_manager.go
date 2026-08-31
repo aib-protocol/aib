@@ -63,6 +63,13 @@ type ChainPeerManager struct {
 
 	maxPeers int
 	onTx     func(tx *utxoPkg.Transaction)
+
+	// History refetch (GET_BLOCKS_BY_RANGE) state.
+	onBlocksByRange func(from, to uint64) (blocks []BlockData, missing []uint64)
+	fetchMu         sync.Mutex // one outstanding FetchBlocksByRange
+	fetchChMu       sync.Mutex
+	fetchCh         chan BlocksByRangeRespMsg
+	fetchReqID      uint64
 }
 
 // ChainPeer represents a connected blockchain peer.

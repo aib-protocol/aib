@@ -30,6 +30,11 @@ const (
 	MsgPeers     uint8 = 9
 	MsgTx        uint8 = 10
 	MsgReject    uint8 = 11
+
+	// History refetch channel (full<->light): on-demand retrieval of pruned
+	// historical blocks from full nodes.
+	MsgGetBlocksByRange uint8 = 12
+	MsgBlocksByRangeResp uint8 = 13
 )
 
 // MsgTypeName returns human-readable name for message type
@@ -57,6 +62,10 @@ func MsgTypeName(t uint8) string {
 		return "TX"
 	case MsgReject:
 		return "REJECT"
+	case MsgGetBlocksByRange:
+		return "GETBLOCKSBYRANGE"
+	case MsgBlocksByRangeResp:
+		return "BLOCKSBYRANGERESP"
 	default:
 		return fmt.Sprintf("UNKNOWN(%d)", t)
 	}

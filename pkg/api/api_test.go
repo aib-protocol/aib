@@ -28,6 +28,8 @@ type mockChainReader struct {
 	blockHash [32]byte
 }
 
+func (m *mockChainReader) PruneBelow() uint64 { return 0 }
+
 func newMockChainReader() *mockChainReader {
 	return &mockChainReader{
 		height:    1000,

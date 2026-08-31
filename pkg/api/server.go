@@ -36,6 +36,7 @@ type ChainReader interface {
 	GetBestBlockHeight() (uint64, error)
 	GetBlockByHash(hash [32]byte) (Block, error)
 	GetBlockByHeight(height uint64) (*utxo.Block, error)
+	PruneBelow() uint64
 }
 
 // MigrationHubAPI defines the migration hub API interface

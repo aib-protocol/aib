@@ -69,19 +69,20 @@ const (
 
 // NodeConfig nodeconfig
 type NodeConfig struct {
-	DataDir     string
-	APIPort     int
-	APIBind     string
-	P2PPort     int
-	Validator   bool
-	AdvertiseIP string
-	DistDir     string
-	LogLevel    string
-	Bootstrap   string
-	NodeID      string
-	Nickname    string
-	BlockTime   int    // Block time (seconds)
-	Network     string // "testnet" or "mainnet"
+	DataDir         string
+	APIPort         int
+	APIBind         string
+	P2PPort         int
+	Validator       bool
+	AdvertiseIP     string
+	DistDir         string
+	PruneKeepBlocks uint64
+	LogLevel        string
+	Bootstrap       string
+	NodeID          string
+	Nickname        string
+	BlockTime       int    // Block time (seconds)
+	Network         string // "testnet" or "mainnet"
 }
 
 // Node is a production-grade AIB node implementation
@@ -148,6 +149,10 @@ func (a *chainAdapter) GetBestBlockHeight() (uint64, error) {
 
 func (a *chainAdapter) GetBlockByHeight(height uint64) (*utxoPkg.Block, error) {
 	return a.chainState.GetBlockByHeight(height)
+}
+
+func (a *chainAdapter) PruneBelow() uint64 {
+	return a.chainState.PruneBelow()
 }
 
 func (a *chainAdapter) GetBlockByHash(hash [32]byte) (api.Block, error) {
@@ -694,6 +699,26 @@ func (n *Node) startP2P(nodeID string) error {
 		func() uint64 { return n.chainState.GetBestBlockHeight() },
 	)
 
+	// Light-node pruning loop: drop old block bodies every 5 minutes.
+	if n.config.PruneKeepBlocks > 0 {
+		pruner := utxoPkg.NewPruner(n.config.PruneKeepBlocks)
+		go func() {
+			ticker := time.NewTicker(5 * time.Minute)
+			defer ticker.Stop()
+			for range ticker.C {
+				h := n.chainState.GetBestBlockHeight()
+				removed, err := pruner.Prune(n.chainState, h)
+				if err != nil {
+					n.logger.Printf("[Prune] error: %v", err)
+					continue
+				}
+				if removed > 0 {
+					n.logger.Printf("[Prune] removed %d block bodies (keep=%d, best=%d)", removed, n.config.PruneKeepBlocks, h)
+				}
+			}
+		}()
+	}
+
 	if err := pm.StartChainP2P(); err != nil {
 		return fmt.Errorf("start P2P: %w", err)
 	}
@@ -1182,6 +1207,7 @@ func parseFlags() *NodeConfig {
 	flag.IntVar(&config.BlockTime, "block-time", 60, "Block time in seconds (mainnet: 60s, testnet: 30s)")
 	flag.BoolVar(&config.Validator, "validator", false, "Enable validator mode")
 	flag.StringVar(&config.AdvertiseIP, "advertise-ip", "", "External IP to advertise ourselves in the peers list (testnet transparency)")
+	flag.Uint64Var(&config.PruneKeepBlocks, "prune-keep-blocks", 0, "Keep only the last N block bodies locally (0 = full history). Sync nodes only - validators must keep full history.")
 	flag.StringVar(&config.DistDir, "dist-dir", "", "Serve install.sh + release binaries over HTTP on the P2P port (distribution mirror)")
 	flag.StringVar(&config.LogLevel, "log-level", "info", "Log level")
 	flag.StringVar(&config.Bootstrap, "bootstrap", "", "Bootstrap node address (default: per network)")
@@ -1190,6 +1216,12 @@ func parseFlags() *NodeConfig {
 	flag.StringVar(&config.Network, "network", "testnet", "Network to join: testnet or mainnet")
 
 	flag.Parse()
+
+	// Light-node pruning: validators must keep the full UTXO history.
+	if config.PruneKeepBlocks > 0 && config.Validator {
+		fmt.Println("[AIB] ERROR: -prune-keep-blocks cannot be used with -validator (validators need full history)")
+		os.Exit(1)
+	}
 
 	return config
 }
