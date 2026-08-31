@@ -34,6 +34,7 @@ type ChainPeerManager struct {
 	nickname      string
 	selfValidator bool
 	selfStakeAddr string
+	advertiseAddr string
 	listenPort    int
 	genesisHash   string
 	chainID       string
@@ -82,16 +83,17 @@ type ChainPeer struct {
 
 // ChainPeerConfig configures ChainPeerManager.
 type ChainPeerConfig struct {
-	NodeID      string
-	Nickname    string
-	ListenPort  int
-	GenesisHash string
-	ChainID     string // "aib-testnet-1" or "aib-mainnet-1"
-	Bootstrap   []string
-	MaxPeers    int
-	Validator   bool   // this node runs in validator mode
-	StakeAddr   string // hex staking address (when staked)
-	Logger      *log.Logger
+	NodeID        string
+	Nickname      string
+	ListenPort    int
+	GenesisHash   string
+	ChainID       string // "aib-testnet-1" or "aib-mainnet-1"
+	Bootstrap     []string
+	MaxPeers      int
+	Validator     bool   // this node runs in validator mode
+	StakeAddr     string // hex staking address (when staked)
+	AdvertiseAddr string // "ip:port" to list OURSELF as (external IP; empty = skip self)
+	Logger        *log.Logger
 }
 
 // NewChainPeerManager creates a new ChainPeerManager.
@@ -110,6 +112,7 @@ func NewChainPeerManager(cfg ChainPeerConfig) *ChainPeerManager {
 		nickname:      cfg.Nickname,
 		selfValidator: cfg.Validator,
 		selfStakeAddr: cfg.StakeAddr,
+		advertiseAddr: cfg.AdvertiseAddr,
 		listenPort:    cfg.ListenPort,
 		genesisHash:   cfg.GenesisHash,
 		chainID:       cfg.ChainID,
@@ -351,6 +354,23 @@ func (pm *ChainPeerManager) GetChainPeers() []ChainPeerInfo {
 		})
 	}
 	return result
+}
+
+// SelfInfo returns this node's own peer info (for the peers API), or nil
+// when no advertise address is configured.
+func (pm *ChainPeerManager) SelfInfo() *ChainPeerInfo {
+	if pm.advertiseAddr == "" {
+		return nil
+	}
+	return &ChainPeerInfo{
+		NodeID:     pm.nodeID,
+		Address:    pm.advertiseAddr,
+		Nickname:   pm.nickname,
+		Validator:  pm.selfValidator,
+		StakeAddr:  pm.selfStakeAddr,
+		BestHeight: pm.bestHeight,
+		LastSeen:   time.Now().Unix(),
+	}
 }
 
 // BroadcastNewBlock sends a new block to all connected peers.

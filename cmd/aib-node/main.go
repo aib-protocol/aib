@@ -69,17 +69,18 @@ const (
 
 // NodeConfig nodeconfig
 type NodeConfig struct {
-	DataDir   string
-	APIPort   int
-	APIBind   string
-	P2PPort   int
-	Validator bool
-	LogLevel  string
-	Bootstrap string
-	NodeID    string
-	Nickname  string
-	BlockTime int    // Block time (seconds)
-	Network   string // "testnet" or "mainnet"
+	DataDir     string
+	APIPort     int
+	APIBind     string
+	P2PPort     int
+	Validator   bool
+	AdvertiseIP string
+	LogLevel    string
+	Bootstrap   string
+	NodeID      string
+	Nickname    string
+	BlockTime   int    // Block time (seconds)
+	Network     string // "testnet" or "mainnet"
 }
 
 // Node is a production-grade AIB node implementation
@@ -362,6 +363,17 @@ func (n *Node) Start() error {
 			return nil
 		}
 		entries := make([]api.PeerEntry, 0)
+		if self := n.peerManager.SelfInfo(); self != nil {
+			entries = append(entries, api.PeerEntry{
+				ID:        self.NodeID,
+				Address:   self.Address,
+				Nickname:  self.Nickname,
+				Validator: self.Validator,
+				StakeAddr: self.StakeAddr,
+				LastSeen:  time.Unix(self.LastSeen, 0),
+				Connected: true,
+			})
+		}
 		for _, ci := range n.peerManager.GetChainPeers() {
 			entries = append(entries, api.PeerEntry{
 				ID:        ci.NodeID,
@@ -629,17 +641,22 @@ func (n *Node) startP2P(nodeID string) error {
 	if addr := n.walletAddress(); addr != [32]byte{} {
 		selfStakeAddr = hex.EncodeToString(addr[:])
 	}
+	advertiseAddr := ""
+	if n.config.AdvertiseIP != "" {
+		advertiseAddr = fmt.Sprintf("%s:%d", n.config.AdvertiseIP, n.config.P2PPort)
+	}
 	pm := p2p.NewChainPeerManager(p2p.ChainPeerConfig{
-		NodeID:      nodeID,
-		Nickname:    nickname,
-		ListenPort:  n.config.P2PPort,
-		GenesisHash: n.genesisHash,
-		ChainID:     n.networkCfg.ChainID,
-		Bootstrap:   bootstrapNodes,
-		MaxPeers:    25,
-		Validator:   n.config.Validator,
-		StakeAddr:   selfStakeAddr,
-		Logger:      n.logger,
+		AdvertiseAddr: advertiseAddr,
+		NodeID:        nodeID,
+		Nickname:      nickname,
+		ListenPort:    n.config.P2PPort,
+		GenesisHash:   n.genesisHash,
+		ChainID:       n.networkCfg.ChainID,
+		Bootstrap:     bootstrapNodes,
+		MaxPeers:      25,
+		Validator:     n.config.Validator,
+		StakeAddr:     selfStakeAddr,
+		Logger:        n.logger,
 	})
 
 	// Set block handlers
@@ -1134,6 +1151,7 @@ func parseFlags() *NodeConfig {
 	flag.IntVar(&config.P2PPort, "p2p-port", 0, "P2P port (default: per network)")
 	flag.IntVar(&config.BlockTime, "block-time", 60, "Block time in seconds (mainnet: 60s, testnet: 30s)")
 	flag.BoolVar(&config.Validator, "validator", false, "Enable validator mode")
+	flag.StringVar(&config.AdvertiseIP, "advertise-ip", "", "External IP to advertise ourselves in the peers list (testnet transparency)")
 	flag.StringVar(&config.LogLevel, "log-level", "info", "Log level")
 	flag.StringVar(&config.Bootstrap, "bootstrap", "", "Bootstrap node address (default: per network)")
 	flag.StringVar(&config.NodeID, "node-id", "", "Node ID (auto-generated if empty)")
