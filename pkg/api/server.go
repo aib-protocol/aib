@@ -62,6 +62,7 @@ type Server struct {
 	peersFn          func() []PeerEntry
 	releaseLatestFn  func() interface{}
 	releaseHistoryFn func() interface{}
+	blocksFetcher    func(from, to uint64) (*BlocksFetchResult, error)
 	chain            ChainReader
 	migrationHub     MigrationHubAPI
 	utxoStore        utxoStoreInterface
@@ -313,6 +314,7 @@ func (s *Server) RegisterRoutes() {
 	// Blocks (read-only queries)
 	s.mux.HandleFunc("/v1/block/latest", s.handleGetLatestBlock)
 	s.mux.HandleFunc("/v1/block/", s.handleGetBlock)
+	s.mux.HandleFunc("/v1/blocks/fetch", s.handleBlocksFetch)
 
 	// Transaction queries (read-only)
 	s.mux.HandleFunc("/v1/transactions", s.handleTransactionsList)
@@ -484,5 +486,12 @@ func (s *Server) SetReleaseIndex(latest func() interface{}, history func() inter
 func (s *Server) SetPeersProvider(fn func() []PeerEntry) {
 	s.mu.Lock()
 	s.peersFn = fn
+	s.mu.Unlock()
+}
+
+// SetBlocksFetcher wires the on-demand history refetch provider.
+func (s *Server) SetBlocksFetcher(fn func(from, to uint64) (*BlocksFetchResult, error)) {
+	s.mu.Lock()
+	s.blocksFetcher = fn
 	s.mu.Unlock()
 }

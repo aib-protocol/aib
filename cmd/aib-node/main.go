@@ -370,6 +370,37 @@ func (n *Node) Start() error {
 	}
 	n.apiServer = api.NewServerBind(apiBind, n.config.APIPort)
 	n.apiServer.SetChain(&chainAdapter{chainState: n.chainState})
+	// On-demand history refetch: ask peers, validate against local
+	// header chain, persist block bodies into the store.
+	n.apiServer.SetBlocksFetcher(func(from, to uint64) (*api.BlocksFetchResult, error) {
+		blocks, err := n.peerManager.FetchBlocksByRange(from, to, 15*time.Second)
+		if err != nil {
+			return nil, err
+		}
+		res := &api.BlocksFetchResult{}
+		lookup := func(height uint64) (string, bool) {
+			h, err := n.chainState.GetBlockByHeight(height)
+			if err != nil || h == nil {
+				return "", false
+			}
+			return fmt.Sprintf("%x", h.Header.PrevBlockHash), true
+		}
+		valid := p2p.ValidateFetchedBlocks(blocks, from, to, "", lookup)
+		for _, bd := range valid {
+			blk, err := utxoPkg.DeserializeBlock(bd.RawBlock)
+			if err != nil {
+				res.Rejected++
+				continue
+			}
+			if err := n.chainState.StoreFetchedBlock(blk); err != nil {
+				res.Rejected++
+				continue
+			}
+			res.Stored++
+		}
+		res.Fetched = len(blocks)
+		return res, nil
+	})
 	n.apiServer.SetChainID(n.networkCfg.ChainID)
 	n.apiServer.SetMiningStats(n.miningStats.Snapshot)
 	n.apiServer.SetPeersProvider(func() []api.PeerEntry {
@@ -698,6 +729,14 @@ func (n *Node) startP2P(nodeID string) error {
 		n.handleGetBlocks,
 		func() uint64 { return n.chainState.GetBestBlockHeight() },
 	)
+	// Serve historical blocks to peers (history refetch, pruned-node support).
+	pm.SetBlocksByRangeHandler(func(from, to uint64) ([]p2p.BlockData, []uint64) {
+		blocks, err := n.handleGetBlocks(from, to)
+		if err != nil {
+			return nil, nil
+		}
+		return blocks, nil
+	})
 
 	// Light-node pruning loop: drop old block bodies every 5 minutes.
 	if n.config.PruneKeepBlocks > 0 {

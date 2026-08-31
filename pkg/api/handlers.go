@@ -3,11 +3,11 @@ package api
 import (
 	"encoding/hex"
 	"fmt"
+	utxoPkg "github.com/aib-protocol/aib/pkg/utxo"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
-	utxoPkg "github.com/aib-protocol/aib/pkg/utxo"
 )
 
 // ============================================================================

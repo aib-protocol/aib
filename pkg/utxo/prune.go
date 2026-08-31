@@ -112,3 +112,13 @@ func (cs *ChainState) PruneBelow() uint64 {
 	})
 	return v
 }
+
+// StoreFetchedBlock persists a re-fetched historical block body back
+// into the blocks bucket (light-node history refetch). The block index
+// (height -> hash) is untouched: it was never pruned.
+func (cs *ChainState) StoreFetchedBlock(block *Block) error {
+	hash := block.CalculateHash()
+	return cs.db.Update(func(tx *bbolt.Tx) error {
+		return tx.Bucket(BucketBlocks).Put(hash[:], block.SerializeBlock())
+	})
+}
