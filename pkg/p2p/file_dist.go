@@ -12,9 +12,10 @@
 package p2p
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"net"
-	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -40,49 +41,73 @@ func looksLikeHTTP(b []byte) bool {
 }
 
 // serveFileDist handles one HTTP connection on the P2P listener.
-// Connection is closed after the response. Only GET/HEAD, no listings.
+// Minimal hand-rolled HTTP/1.1 responder (GET/HEAD only, no keep-alive):
+// the request head has already been partially consumed by sniffing, so
+// we buffer until "\r\n\r\n", parse the path, and stream the file.
 func (pm *ChainPeerManager) serveFileDist(conn net.Conn, firstRead []byte) {
 	defer conn.Close()
 	_ = conn.SetReadDeadline(time.Now().Add(10 * time.Second))
 
 	if pm.fileDist == nil || !pm.fileDist.Enabled {
-		// Minimal 404 without touching the filesystem.
 		fmt.Fprintf(conn, "HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\nConnection: close\r\n\r\n")
 		return
 	}
 
-	// One-shot serve: wrap the replaying conn in a single-accept listener.
-	srv := &http.Server{
-		Handler:           pm.fileDistHandler(),
-		ReadHeaderTimeout: 10 * time.Second,
+	// Buffer the request head (first bytes already read by the sniffer).
+	buf := make([]byte, 0, 4096)
+	buf = append(buf, firstRead...)
+	tmp := make([]byte, 512)
+	for i := 0; i < 64 && !bytes.Contains(buf, []byte("\r\n\r\n")); i++ {
+		n, err := conn.Read(tmp)
+		buf = append(buf, tmp[:n]...)
+		if err != nil || n == 0 {
+			break
+		}
 	}
-	_ = srv.Serve(newOneShotListener(newReplayConn(conn, firstRead)))
-}
 
-// fileDistHandler builds the read-only file handler.
-func (pm *ChainPeerManager) fileDistHandler() http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodGet && r.Method != http.MethodHead {
-			w.WriteHeader(http.StatusMethodNotAllowed)
-			return
-		}
-		// Sanitize: no traversal, no listing.
-		clean := filepath.Clean("/" + r.URL.Path)
-		if strings.Contains(clean, "..") {
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-		full := filepath.Join(pm.fileDist.Dir, clean)
-		if !strings.HasPrefix(full, filepath.Clean(pm.fileDist.Dir)+string(os.PathSeparator)) {
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-		fi, err := os.Stat(full)
-		if err != nil || fi.IsDir() {
-			w.WriteHeader(http.StatusNotFound)
-			return
-		}
-		w.Header().Set("Content-Type", "application/octet-stream")
-		http.ServeFile(w, r, full)
-	})
+	// Parse "GET /path HTTP/1.1"
+	line := string(buf)
+	space := bytes.IndexByte(buf, ' ')
+	if space < 0 || !strings.HasPrefix(line, "GET ") && !strings.HasPrefix(line, "HEAD ") {
+		fmt.Fprintf(conn, "HTTP/1.1 405 Method Not Allowed\r\nContent-Length: 0\r\nConnection: close\r\n\r\n")
+		return
+	}
+	rest2 := buf[space+1:]
+	space2 := bytes.IndexByte(rest2, ' ')
+	if space2 < 0 {
+		space2 = len(rest2)
+	}
+	rawPath := string(rest2[:space2])
+	isHead := strings.HasPrefix(line, "HEAD ")
+
+	// Sanitize: no traversal, no listing.
+	clean := filepath.Clean("/" + rawPath)
+	if strings.Contains(clean, "..") {
+		fmt.Fprintf(conn, "HTTP/1.1 400 Bad Request\r\nContent-Length: 0\r\nConnection: close\r\n\r\n")
+		return
+	}
+	full := filepath.Join(pm.fileDist.Dir, clean)
+	if !strings.HasPrefix(full, filepath.Clean(pm.fileDist.Dir)+string(os.PathSeparator)) {
+		fmt.Fprintf(conn, "HTTP/1.1 400 Bad Request\r\nContent-Length: 0\r\nConnection: close\r\n\r\n")
+		return
+	}
+	fi, err := os.Stat(full)
+	if err != nil || fi.IsDir() {
+		fmt.Fprintf(conn, "HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\nConnection: close\r\n\r\n")
+		return
+	}
+
+	header := fmt.Sprintf("HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: %d\r\nConnection: close\r\n\r\n", fi.Size())
+	if _, err := conn.Write([]byte(header)); err != nil {
+		return
+	}
+	if isHead {
+		return
+	}
+	f, err := os.Open(full)
+	if err != nil {
+		return
+	}
+	defer f.Close()
+	_, _ = io.Copy(conn, f)
 }
