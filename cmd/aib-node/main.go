@@ -324,8 +324,15 @@ func (n *Node) Start() error {
 	// Restore consensus height from persisted chain (restart-safe)
 	if h := n.chainState.GetBestBlockHeight(); h > 0 {
 		n.consensus.RestoreHeight(h)
-		// Replay recent history for release anchors (best-effort)
-		for hh := uint64(1); hh <= h && h-hh < 5000; hh++ {
+		// Replay recent history for release anchors (best-effort).
+		// Scan the NEWEST 5000 blocks (h-4999..h), not the oldest:
+		// a node that restarts above the anchor height must still
+		// rediscover the latest on-chain release record.
+		replayFrom := h - 4999
+		if replayFrom < 1 {
+			replayFrom = 1
+		}
+		for hh := replayFrom; hh <= h; hh++ {
 			if b, err := n.chainState.GetBlockByHeight(hh); err == nil && b != nil {
 				n.anchorIdx.ScanBlock(b)
 			}
