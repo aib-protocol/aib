@@ -33,7 +33,7 @@ const (
 
 	// History refetch channel (full<->light): on-demand retrieval of pruned
 	// historical blocks from full nodes.
-	MsgGetBlocksByRange uint8 = 12
+	MsgGetBlocksByRange  uint8 = 12
 	MsgBlocksByRangeResp uint8 = 13
 )
 

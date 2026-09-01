@@ -937,6 +937,25 @@ func (pm *ChainPeerManager) handleChainMessage(peer *ChainPeer, msgType uint8, p
 		}
 		peer.mu.Unlock()
 
+	case MsgGetBlocksByRange:
+		pm.serveGetBlocksByRange(peer, payload)
+
+	case MsgBlocksByRangeResp:
+		var resp BlocksByRangeRespMsg
+		if err := UnmarshalMsg(payload, &resp); err != nil {
+			return
+		}
+		pm.fetchChMu.Lock()
+		ch := pm.fetchCh
+		want := pm.fetchReqID
+		pm.fetchChMu.Unlock()
+		if ch != nil && resp.RequestID == want {
+			select {
+			case ch <- resp:
+			default:
+			}
+		}
+
 	default:
 		pm.logger.Printf("[P2P] Unknown message type %s from %s", MsgTypeName(msgType), peer.nodeID[:8])
 	}

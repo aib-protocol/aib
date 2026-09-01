@@ -244,6 +244,9 @@ func ValidateFetchedBlocks(blocks []BlockData, from, to uint64, anchor string, l
 		if blk.Header.Height != bd.Height {
 			continue
 		}
+		// blk.Hash is a cache field not carried through serialization:
+		// recompute it before comparing with the advertised hash.
+		blk.Hash = blk.CalculateHash()
 		if hex.EncodeToString(blk.Hash[:]) != bd.Hash {
 			continue
 		}
@@ -272,15 +275,26 @@ func ValidateFetchedBlocks(blocks []BlockData, from, to uint64, anchor string, l
 		}
 		// New run head: must be anchored on something we already know.
 		anchored := false
-		switch {
-		case e.bd.Height == from && anchor != "" && e.prev == anchor:
-			anchored = true // anchored on caller-supplied expected hash
-		case lookup != nil:
+		// 1) caller-supplied expected hash (strongest anchor)
+		if e.bd.Height == from && anchor != "" && e.prev == anchor {
+			anchored = true
+		}
+		// 2) locally stored block at height-1 (works even when its body
+		//    was pruned: the height->hash index is always available)
+		if !anchored && lookup != nil {
 			if localHash, ok := lookup(e.bd.Height - 1); ok && e.prev == localHash {
-				anchored = true // anchored on a locally stored block
+				anchored = true
 			}
-		case e.bd.Height == from && anchor == "":
-			anchored = true // no anchor reference available: accept the head
+		}
+		// 3) Last resort — the height->hash index entry for height
+		//    `from` itself. On a pruned node all bodies below `from`
+		//    may be gone, but the index still knows which hash *should*
+		//    sit at `from`; the fetched block must match it. This is
+		//    the normal re-fetch-after-prune path.
+		if !anchored && e.bd.Height == from && lookup != nil {
+			if idxHash, ok := lookup(e.bd.Height); ok && e.hash == idxHash {
+				anchored = true
+			}
 		}
 		if anchored {
 			out = append(out, e.bd)

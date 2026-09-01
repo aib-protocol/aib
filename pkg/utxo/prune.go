@@ -122,3 +122,12 @@ func (cs *ChainState) StoreFetchedBlock(block *Block) error {
 		return tx.Bucket(BucketBlocks).Put(hash[:], block.SerializeBlock())
 	})
 }
+
+// GetBlockHashByHeight returns the block hash for a height from the
+// in-memory index (never pruned). ok=false when unknown.
+func (cs *ChainState) GetBlockHashByHeight(height uint64) ([32]byte, bool) {
+	cs.blockIndexMu.RLock()
+	hash, ok := cs.blockIndex[height]
+	cs.blockIndexMu.RUnlock()
+	return hash, ok
+}

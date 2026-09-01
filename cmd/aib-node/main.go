@@ -379,11 +379,12 @@ func (n *Node) Start() error {
 		}
 		res := &api.BlocksFetchResult{}
 		lookup := func(height uint64) (string, bool) {
-			h, err := n.chainState.GetBlockByHeight(height)
-			if err != nil || h == nil {
+			// Works on pruned nodes: the height->hash index is never pruned.
+			hash, ok := n.chainState.GetBlockHashByHeight(height)
+			if !ok {
 				return "", false
 			}
-			return fmt.Sprintf("%x", h.Header.PrevBlockHash), true
+			return fmt.Sprintf("%x", hash[:]), true
 		}
 		valid := p2p.ValidateFetchedBlocks(blocks, from, to, "", lookup)
 		for _, bd := range valid {
@@ -625,11 +626,20 @@ func (n *Node) initializeChain() error {
 	if height > 0 {
 		// Chain exists - verify genesis hash
 		genesisBlock, err := n.chainState.GetBlockByHeight(0)
-		if err != nil {
+		var localGenesisHash string
+		switch {
+		case err == utxoPkg.ErrPruned:
+			// Light node: genesis body pruned; verify via height index.
+			idxHash, ok := n.chainState.GetBlockHashByHeight(0)
+			if !ok {
+				return fmt.Errorf("genesis pruned and height index empty")
+			}
+			localGenesisHash = hex.EncodeToString(idxHash[:])
+		case err != nil:
 			return fmt.Errorf("failed to get genesis block: %w", err)
+		default:
+			localGenesisHash = hex.EncodeToString(genesisBlock.Hash[:])
 		}
-
-		localGenesisHash := hex.EncodeToString(genesisBlock.Hash[:])
 		if localGenesisHash != n.genesisHash {
 			return fmt.Errorf(
 				"GENESIS HASH MISMATCH! Local: %s, Expected: %s. "+
