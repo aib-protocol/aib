@@ -342,6 +342,7 @@ type PeerResponse struct {
 	Nickname  string    `json:"nickname,omitempty"`
 	Validator bool      `json:"validator"`
 	StakeAddr string    `json:"stake_addr,omitempty"`
+	Height    uint64    `json:"height,omitempty"`
 	LastSeen  time.Time `json:"last_seen"`
 	Connected bool      `json:"connected"`
 }

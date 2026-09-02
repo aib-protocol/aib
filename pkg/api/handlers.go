@@ -256,6 +256,7 @@ func (s *Server) handlePeers(w http.ResponseWriter, r *http.Request) {
 				Nickname:  entry.Nickname,
 				Validator: entry.Validator,
 				StakeAddr: entry.StakeAddr,
+				Height:    entry.Height,
 				LastSeen:  entry.LastSeen,
 				Connected: entry.Connected,
 			})
@@ -268,6 +269,7 @@ func (s *Server) handlePeers(w http.ResponseWriter, r *http.Request) {
 				Nickname:  entry.Nickname,
 				Validator: entry.Validator,
 				StakeAddr: entry.StakeAddr,
+				Height:    entry.Height,
 				LastSeen:  entry.LastSeen,
 				Connected: entry.Connected,
 			})

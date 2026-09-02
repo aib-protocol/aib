@@ -423,6 +423,7 @@ func (n *Node) Start() error {
 				Nickname:  self.Nickname,
 				Validator: self.Validator,
 				StakeAddr: self.StakeAddr,
+				Height:    n.chainState.GetBestBlockHeight(),
 				LastSeen:  time.Unix(self.LastSeen, 0),
 				Connected: true,
 			})
@@ -434,6 +435,7 @@ func (n *Node) Start() error {
 				Nickname:  ci.Nickname,
 				Validator: ci.Validator,
 				StakeAddr: ci.StakeAddr,
+				Height:    ci.BestHeight,
 				LastSeen:  time.Unix(ci.LastSeen, 0),
 				Connected: true,
 			})
@@ -728,6 +730,7 @@ func (n *Node) startP2P(nodeID string) error {
 		AdvertiseAddr: advertiseAddr,
 		FileDist:      fileDist,
 		ReleaseJSON:   releaseJSON,
+		LocalHeight:   func() uint64 { return n.chainState.GetBestBlockHeight() },
 		NodeID:        nodeID,
 		Nickname:      nickname,
 		ListenPort:    n.config.P2PPort,

@@ -87,6 +87,7 @@ type PeerEntry struct {
 	Nickname  string
 	Validator bool
 	StakeAddr string
+	Height    uint64
 	LastSeen  time.Time
 	Connected bool
 }

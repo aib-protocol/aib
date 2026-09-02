@@ -37,6 +37,7 @@ type ChainPeerManager struct {
 	advertiseAddr string
 	fileDist      *FileDistConfig
 	releaseJSON   ReleaseJSONProvider
+	onLocalHeight func() uint64
 	listenPort    int
 	genesisHash   string
 	chainID       string
@@ -104,6 +105,7 @@ type ChainPeerConfig struct {
 	AdvertiseAddr string              // "ip:port" to list OURSELF as (external IP; empty = skip self)
 	FileDist      *FileDistConfig     // in-band HTTP distribution on the P2P port
 	ReleaseJSON   ReleaseJSONProvider // on-chain release record provider
+	LocalHeight   func() uint64       // local best height for pongs (peer view)
 	Logger        *log.Logger
 }
 
@@ -126,6 +128,7 @@ func NewChainPeerManager(cfg ChainPeerConfig) *ChainPeerManager {
 		advertiseAddr: cfg.AdvertiseAddr,
 		fileDist:      cfg.FileDist,
 		releaseJSON:   cfg.ReleaseJSON,
+		onLocalHeight: cfg.LocalHeight,
 		listenPort:    cfg.ListenPort,
 		genesisHash:   cfg.GenesisHash,
 		chainID:       cfg.ChainID,
@@ -818,14 +821,24 @@ func (pm *ChainPeerManager) handleChainMessage(peer *ChainPeer, msgType uint8, p
 			return
 		}
 		pong := PongMsg{Nonce: ping.Nonce}
+		if pm.onLocalHeight != nil {
+			pong.Height = pm.onLocalHeight()
+		}
 		data, _ := MarshalMsg(MsgPong, &pong)
 		peer.mu.Lock()
 		peer.conn.Write(data)
 		peer.mu.Unlock()
 
 	case MsgPong:
+		var pong PongMsg
+		if err := UnmarshalMsg(payload, &pong); err != nil {
+			return
+		}
 		peer.mu.Lock()
 		peer.lastPong = time.Now()
+		if pong.Height > peer.bestHeight {
+			peer.bestHeight = pong.Height
+		}
 		peer.mu.Unlock()
 	case MsgTx:
 		// Transaction gossip: relay inbound transactions to the mempool via
