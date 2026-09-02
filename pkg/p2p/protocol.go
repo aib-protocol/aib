@@ -210,6 +210,7 @@ type ChainPeerInfo struct {
 	Address    string `json:"address"` // ip:port
 	Nickname   string `json:"nickname,omitempty"`
 	Validator  bool   `json:"validator"`
+	UserAgent  string
 	StakeAddr  string `json:"stake_addr,omitempty"`
 	BestHeight uint64 `json:"best_height"`
 	LastSeen   int64  `json:"last_seen"`
@@ -257,3 +258,12 @@ func MarshalMsg(msgType uint8, v interface{}) ([]byte, error) {
 func UnmarshalMsg(payload []byte, v interface{}) error {
 	return json.NewDecoder(bytes.NewReader(payload)).Decode(v)
 }
+
+// NodeVersion is injected at build time (-ldflags "-X ...NodeVersion=v0.11.27").
+// Defaults to "dev" for local builds — nodes exchange it via UserAgent and
+// each peer independently warns about outdated counterparts. No central
+// version authority: version awareness is purely peer-to-peer.
+var NodeVersion = "dev"
+
+// UserAgent returns this node's wire user-agent string.
+func UserAgent() string { return "aib-node/" + NodeVersion }

@@ -435,6 +435,7 @@ func (n *Node) Start() error {
 				Nickname:  ci.Nickname,
 				Validator: ci.Validator,
 				StakeAddr: ci.StakeAddr,
+				UserAgent: ci.UserAgent,
 				Height:    ci.BestHeight,
 				LastSeen:  time.Unix(ci.LastSeen, 0),
 				Connected: true,

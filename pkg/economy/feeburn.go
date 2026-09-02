@@ -1,9 +1,10 @@
 // Package economy — Fee-Burn economy (RFC-002).
 //
 // Core identity:  APR = φ·T / S
-//   φ (phi)  — protocol cut of transaction flow (TRIAL FIXED: 7%)
-//   T        — annual settled transaction volume
-//   S        — total staked supply (the security budget)
+//
+//	φ (phi)  — protocol cut of transaction flow (TRIAL FIXED: 7%)
+//	T        — annual settled transaction volume
+//	S        — total staked supply (the security budget)
 //
 // The protocol burns a share of every fee, so stakers earn exactly the
 // burn-driven scarcity; idle coins earn nothing and are diluted — the
@@ -17,7 +18,7 @@ import (
 
 // Trial parameters (decision 2026-08-22: φ = 7% fixed, option B, trial run).
 const (
-	PhiFixedNumerator   = 7  // φ = 7%
+	PhiFixedNumerator   = 7 // φ = 7%
 	PhiFixedDenominator = 100
 )
 
@@ -28,18 +29,19 @@ func PhiFixed() *big.Rat {
 
 // State is the per-epoch economic snapshot.
 type State struct {
-	EpochHeight    uint64   // epoch boundary height
-	TxFeeSatoshi   uint64   // T: fees paid by transactions this epoch (in satoshi)
-	FeeBurned      uint64   // fees burned this epoch (removed from supply forever)
-	TotalStakeSat  uint64   // S: total active stake (satoshi)
-	EffectiveSupply uint64  // circulating supply for APR math (satoshi)
+	EpochHeight     uint64 // epoch boundary height
+	TxFeeSatoshi    uint64 // T: fees paid by transactions this epoch (in satoshi)
+	FeeBurned       uint64 // fees burned this epoch (removed from supply forever)
+	TotalStakeSat   uint64 // S: total active stake (satoshi)
+	EffectiveSupply uint64 // circulating supply for APR math (satoshi)
 }
 
 // BurnSplit divides an epoch's fees: burn share φ_burn, staker share rest.
 // Trial simplification (documented in RFC-002 §6.1 open question 3):
-//   100% of fees go to stakers pro-rata this epoch; the *inflation ceiling*
-//   of the year is bounded by φ·T — if realized staker APR would exceed
-//   the φ target, the excess above target is burned instead of paid.
+//
+//	100% of fees go to stakers pro-rata this epoch; the *inflation ceiling*
+//	of the year is bounded by φ·T — if realized staker APR would exceed
+//	the φ target, the excess above target is burned instead of paid.
 func BurnSplit(feesSatoshi uint64, stakersStakeSatoshi, totalSupplySatoshi uint64, epochSeconds uint64) (payToStakers, burn uint64, targetApr *big.Rat, err error) {
 	if feesSatoshi == 0 {
 		return 0, 0, nil, fmt.Errorf("no fees this epoch")

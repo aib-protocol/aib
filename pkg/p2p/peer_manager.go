@@ -83,6 +83,7 @@ type ChainPeer struct {
 	listenPort int    // port the peer listens on for P2P
 	validator  bool   // peer runs in validator mode
 	stakeAddr  string // hex staking address (when staked)
+	userAgent  string // peer's reported /aib-node/<version> string
 	bestHeight uint64
 	lastPing   time.Time
 	lastPong   time.Time
@@ -365,6 +366,7 @@ func (pm *ChainPeerManager) GetChainPeers() []ChainPeerInfo {
 			Nickname:   p.nickname,
 			Validator:  p.validator,
 			StakeAddr:  p.stakeAddr,
+			UserAgent:  p.userAgent,
 			BestHeight: p.bestHeight,
 			LastSeen:   p.lastPong.Unix(),
 		})
@@ -566,7 +568,7 @@ func (pm *ChainPeerManager) connectToPeer(addr string) error {
 		Validator:   pm.selfValidator,
 		StakeAddr:   pm.selfStakeAddr,
 		Timestamp:   time.Now().Unix(),
-		UserAgent:   "aib-node/2.0",
+		UserAgent:   UserAgent(),
 	}
 
 	data, err := MarshalMsg(MsgVersion, &versionMsg)
@@ -582,29 +584,39 @@ func (pm *ChainPeerManager) connectToPeer(addr string) error {
 	}
 	conn.SetWriteDeadline(time.Time{})
 
-	// Read VERACK or REJECT
+	// Read the PEER's VERSION, then VERACK or REJECT.
+	// The peer sends its version right after accepting our dial; we must
+	// consume it (and capture its UserAgent) before the verack.
 	conn.SetReadDeadline(time.Now().Add(10 * time.Second))
-	msgType, payload, err := ReadMessage(conn)
-	if err != nil {
-		conn.Close()
-		return fmt.Errorf("read verack: %w", err)
+	var peerVersion VersionMsg
+	var verackPayload []byte
+	for range 2 {
+		msgType, payload, err := ReadMessage(conn)
+		if err != nil {
+			conn.Close()
+			return fmt.Errorf("read verack: %w", err)
+		}
+		switch msgType {
+		case MsgReject:
+			var reject RejectMsg
+			UnmarshalMsg(payload, &reject)
+			conn.Close()
+			return fmt.Errorf("rejected: %s", reject.Reason)
+		case MsgVersion:
+			_ = UnmarshalMsg(payload, &peerVersion)
+		case MsgVerack:
+			verackPayload = payload
+			goto haveVerack
+		}
 	}
+	conn.Close()
+	return fmt.Errorf("expected VERACK, got nothing useful")
+
+haveVerack:
 	conn.SetReadDeadline(time.Time{})
 
-	if msgType == MsgReject {
-		var reject RejectMsg
-		UnmarshalMsg(payload, &reject)
-		conn.Close()
-		return fmt.Errorf("rejected: %s", reject.Reason)
-	}
-
-	if msgType != MsgVerack {
-		conn.Close()
-		return fmt.Errorf("expected VERACK, got %s", MsgTypeName(msgType))
-	}
-
 	var verack VerackMsg
-	if err := UnmarshalMsg(payload, &verack); err != nil {
+	if err := UnmarshalMsg(verackPayload, &verack); err != nil {
 		conn.Close()
 		return fmt.Errorf("unmarshal verack: %w", err)
 	}
@@ -622,6 +634,7 @@ func (pm *ChainPeerManager) connectToPeer(addr string) error {
 		nickname:   verack.Nickname,
 		validator:  verack.Validator,
 		stakeAddr:  verack.StakeAddr,
+		userAgent:  peerVersion.UserAgent,
 		address:    addr,
 		bestHeight: verack.BestHeight,
 		connected:  time.Now(),
@@ -629,6 +642,7 @@ func (pm *ChainPeerManager) connectToPeer(addr string) error {
 		outbound:   true,
 		verified:   true,
 	}
+	pm.warnIfOutdated(peer.userAgent, addr)
 
 	pm.mu.Lock()
 	if _, exists := pm.peers[peer.nodeID]; exists {
@@ -758,12 +772,14 @@ func (pm *ChainPeerManager) handleInbound(conn net.Conn) {
 		listenPort: version.ListenPort,
 		validator:  version.Validator,
 		stakeAddr:  version.StakeAddr,
+		userAgent:  version.UserAgent,
 		bestHeight: version.BestHeight,
 		connected:  time.Now(),
 		lastPong:   time.Now(),
 		outbound:   false,
 		verified:   true,
 	}
+	pm.warnIfOutdated(peer.userAgent, remoteAddr)
 
 	if peer.nodeID == pm.nodeID {
 		conn.Close()
@@ -1233,4 +1249,18 @@ func (pm *ChainPeerManager) HasPeerAt(addr string) bool {
 		}
 	}
 	return false
+}
+
+// warnIfOutdated logs a local, per-peer advisory when a peer runs a
+// different node version. Decentralized by design: each node judges for
+// itself from the peer's UserAgent; nothing is enforced network-wide.
+func (pm *ChainPeerManager) warnIfOutdated(peerUA, addr string) {
+	if peerUA == "" {
+		return // old node that doesn't send a user agent
+	}
+	mine := UserAgent()
+	if peerUA == mine {
+		return
+	}
+	pm.logger.Printf("[P2P] version advisory: peer %s runs %s (we run %s) — consider aligning node versions", addr, peerUA, mine)
 }
