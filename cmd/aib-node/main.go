@@ -423,6 +423,7 @@ func (n *Node) Start() error {
 				Nickname:  self.Nickname,
 				Validator: self.Validator,
 				StakeAddr: self.StakeAddr,
+				UserAgent: self.UserAgent,
 				Height:    n.chainState.GetBestBlockHeight(),
 				LastSeen:  time.Unix(self.LastSeen, 0),
 				Connected: true,

@@ -388,6 +388,7 @@ func (pm *ChainPeerManager) SelfInfo() *ChainPeerInfo {
 		StakeAddr:  pm.selfStakeAddr,
 		BestHeight: pm.bestHeight,
 		LastSeen:   time.Now().Unix(),
+		UserAgent:  UserAgent(),
 	}
 }
 
