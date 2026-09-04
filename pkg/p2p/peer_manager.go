@@ -737,10 +737,27 @@ func (pm *ChainPeerManager) handleInbound(conn net.Conn) {
 		return
 	}
 
-	// Send VERACK
+	// Send our VERSION first (so the dialer can capture our UserAgent),
+	// then VERACK.
 	height := pm.bestHeight
 	if pm.onBestHeight != nil {
 		height = pm.onBestHeight()
+	}
+
+	ourVersion := VersionMsg{
+		Version:     ProtocolVersion,
+		GenesisHash: pm.genesisHash,
+		BestHeight:  height,
+		NodeID:      pm.nodeID,
+		ListenPort:  pm.listenPort,
+		Nickname:    pm.nickname,
+		Validator:   pm.selfValidator,
+		StakeAddr:   pm.selfStakeAddr,
+		Timestamp:   time.Now().Unix(),
+		UserAgent:   UserAgent(),
+	}
+	if vdata, err := MarshalMsg(MsgVersion, &ourVersion); err == nil {
+		conn.Write(vdata)
 	}
 
 	verack := VerackMsg{
