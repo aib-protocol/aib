@@ -886,6 +886,17 @@ func (n *Node) handleNewBlock(data p2p.BlockData) error {
 	n.utxoStore.SetChainHead(data.Height)
 	n.anchorIdx.ScanBlock(block)
 
+	// TRUE-STAKE live sync (mirror of the production path): rebuild the
+	// validator set from live stake UTXOs after EVERY applied block. Without
+	// this, a syncing/fresh node validates historical blocks against a stale
+	// validator set and hits permanent "proposer mismatch" (observed:
+	// fresh-sync stalled forever at the first stake-set change, e.g. h8247).
+	// Deterministic from chain state alone, so all nodes agree.
+	n.rebuildValidatorSetFromStakes()
+	// Keep the consensus height tracker in lockstep (VRF seed needs the
+	// height of the block being validated, not a stale local height).
+	n.consensus.RestoreHeight(data.Height)
+
 	// For V2 blocks, update reputation manager from block data
 	if block.Header.Version >= 2 && n.reputationMgr != nil {
 		n.applyBlockReputationUpdates(block)
