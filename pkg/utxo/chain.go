@@ -485,12 +485,17 @@ func (cs *ChainState) validateBlockTimestamp(block *Block) error {
 		// i.e. the parent block itself is recent. While catching up on
 		// history (parent timestamp old), the drift check is skipped —
 		// historical timestamps are legitimately old.
+		// REV (sync-health): future-direction only — rejecting the past
+		// direction deadlocks nodes that fall 5–10 min behind (parent still
+		// "recent", every historical block older than drift → permanent
+		// rejection, catch-up limited to block-production speed). Mirrors
+		// ValidateBlockChain in block.go and Bitcoin's rule (future only).
 		now := time.Now()
 		pt := time.Unix(int64(parent.Header.Timestamp), 0)
 		bt := time.Unix(int64(block.Header.Timestamp), 0)
 		parentIsRecent := now.Sub(pt) < 2*MaxBlockTimeDrift
 		if block.Header.Height > 100 && parentIsRecent {
-			if d := bt.Sub(now); d > MaxBlockTimeDrift || d < -MaxBlockTimeDrift {
+			if d := bt.Sub(now); d > MaxBlockTimeDrift {
 				return fmt.Errorf("block time %v exceeds maximum drift %v from now", d.Round(time.Second), MaxBlockTimeDrift)
 			}
 		}

@@ -549,14 +549,20 @@ func (b *Block) ValidateBlockChain(parentBlock *Block) error {
 
 	// Drift vs wall clock applies only near the chain tip (parent recent):
 	// while catching up, historical block timestamps are legitimately old and
-	// must be accepted. Mirrors ChainState.validateBlockTimestamp. Comparing
-	// the parent-to-child interval, or applying an unconditional wall-clock
-	// bound, would deadlock catch-up after any outage longer than the drift
-	// bound (the gap is already history we cannot fix).
+	// must be accepted. Mirrors ChainState.validateBlockTimestamp.
+	//
+	// REV (sync-health): only the FUTURE direction is enforced near the tip.
+	// Rejecting the past direction deadlocks any node that falls 5–10 minutes
+	// behind: its parent still counts as "recent" (< 2×drift) so the check
+	// fires, yet every incoming historical block is by definition older than
+	// drift — the node can then only advance at block-production speed and
+	// never catches up (observed on testnet: 1 block / 30 s crawl at -9 min).
+	// Bitcoin never rejects past timestamps either (only future +2 h);
+	// monotonicity vs the parent is already enforced above.
 	now := time.Now()
 	parentIsRecent := now.Sub(parentTime) < 2*MaxBlockTimeDrift
 	if parentIsRecent {
-		if d := blockTime.Sub(now); d > MaxBlockTimeDrift || d < -MaxBlockTimeDrift {
+		if d := blockTime.Sub(now); d > MaxBlockTimeDrift {
 			return fmt.Errorf("block time %v exceeds maximum drift %v from now", d.Round(time.Second), MaxBlockTimeDrift)
 		}
 	}
