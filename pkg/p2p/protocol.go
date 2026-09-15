@@ -169,8 +169,9 @@ type PingMsg struct {
 
 // PongMsg responds to a ping.
 type PongMsg struct {
-	Nonce  uint64 `json:"nonce"`
-	Height uint64 `json:"height,omitempty"`
+	Nonce      uint64 `json:"nonce"`
+	Height     uint64 `json:"height,omitempty"`
+	UserAgent  string `json:"user_agent,omitempty"` // version advisory: longest-chain versioning
 }
 
 // GetBlocksMsg requests blocks from a peer.

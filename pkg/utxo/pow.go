@@ -6,6 +6,8 @@ import (
 	"encoding/binary"
 	"fmt"
 	"math/big"
+	"os"
+	"strconv"
 	"time"
 )
 
@@ -18,10 +20,25 @@ import (
 // PoW era parameters — MAINNET-SPEC values (RFC-002/003, README tokenomics).
 // The previous constants (1000 blocks × 31.415 AIB, 360ms spacing) were a
 // TESTNET fast-era compression; retired 2026-09-15.
+//
+// AIB_POW_ERA_BLOCKS env override (node startup): shortens the PoW bootstrap
+// window for DEMO/TEST chains only (e.g. 64) so PoS can be exercised without
+// waiting 7 days. Production nodes never set it.
+var PoWEraBlocks = powEraBlocks()
+
+const defaultPoWEraBlocks uint64 = 10000 // bootstrap window K (RFC-003)
+
+func powEraBlocks() uint64 {
+	if v := os.Getenv("AIB_POW_ERA_BLOCKS"); v != "" {
+		if n, err := strconv.ParseUint(v, 10, 64); err == nil && n > 0 {
+			return n
+		}
+	}
+	return defaultPoWEraBlocks
+}
+// Initial subsidy 747 AIB/block, halving every 4 years of blocks
+// (2,102,400 @ 60s), total emission ≡ 2·R0·B = 3,141,592,653 AIB (π×10⁹).
 const (
-	PoWEraBlocks uint64 = 10000 // bootstrap window K (RFC-003) — measured in blocks, chain stays PoW this long
-	// Initial subsidy 747 AIB/block, halving every 4 years of blocks
-	// (2,102,400 @ 60s), total emission ≡ 2·R0·B = 3,141,592,653 AIB (π×10⁹).
 	PoWBlockReward  uint64 = 747 * 1e8 // 747.00000000 AIB initial subsidy
 	PoWHalvingBlocks uint64 = 2102400  // 4 years of 60s blocks
 	PoWTargetSpacing        = 60 * time.Second // mainnet spec block interval

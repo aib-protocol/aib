@@ -1066,7 +1066,7 @@ func (n *Node) produceBlock() {
 				powFees += inSum - outSum
 			}
 		}
-		coinbaseTx := utxoPkg.CreateCoinbaseTransaction(walletAddr, subsidy+powFees, []byte(fmt.Sprintf("pow-v3-h%d", height1)))
+		coinbaseTx := utxoPkg.CreateStakeCoinbaseTransaction(walletAddr, subsidy+powFees, []byte(fmt.Sprintf("pow-v3-h%d", height1)))
 		blockTxs := append([]*utxoPkg.Transaction{coinbaseTx}, txs...)
 		newBlock := utxoPkg.NewBlock(blockTxs, prevHash, height1, proposer)
 		newBlock.Header.Version = 3

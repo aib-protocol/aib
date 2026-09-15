@@ -12,6 +12,7 @@ import (
 	"log"
 	"math/rand"
 	"net"
+	"strings"
 	"sync"
 	"time"
 
@@ -27,6 +28,9 @@ type BlockVerifier interface {
 
 // ChainPeerManager manages chain-level P2P peer connections.
 type ChainPeerManager struct {
+	adviseMu    sync.Mutex
+	lastAdvise  time.Time
+
 	mu sync.RWMutex
 
 	// Node identity
@@ -854,7 +858,7 @@ func (pm *ChainPeerManager) handleChainMessage(peer *ChainPeer, msgType uint8, p
 		if err := UnmarshalMsg(payload, &ping); err != nil {
 			return
 		}
-		pong := PongMsg{Nonce: ping.Nonce}
+		pong := PongMsg{Nonce: ping.Nonce, UserAgent: UserAgent()}
 		if pm.onLocalHeight != nil {
 			pong.Height = pm.onLocalHeight()
 		}
@@ -873,7 +877,14 @@ func (pm *ChainPeerManager) handleChainMessage(peer *ChainPeer, msgType uint8, p
 		if pong.Height > peer.bestHeight {
 			peer.bestHeight = pong.Height
 		}
+		if pong.UserAgent != "" && pong.UserAgent != peer.userAgent {
+			peer.userAgent = pong.UserAgent
+		}
 		peer.mu.Unlock()
+		// Version advisory on the LONGEST CHAIN: a peer that is ahead of us
+		// (or at our height, i.e. same tip) running a newer build means the
+		// longest chain is moving to that version — advise upgrade, throttled.
+		pm.adviseIfLongestChainNewer(peer, pong.Height, pong.UserAgent)
 	case MsgTx:
 		// Transaction gossip: relay inbound transactions to the mempool via
 		// the registered callback. Dedup is the mempool's job (tx hash).
@@ -1280,5 +1291,63 @@ func (pm *ChainPeerManager) warnIfOutdated(peerUA, addr string) {
 	if peerUA == mine {
 		return
 	}
-	pm.logger.Printf("[P2P] version advisory: peer %s runs %s (we run %s) — consider aligning node versions", addr, peerUA, mine)
+	// Semver-ish comparison: aib-node/vX.Y.Z — warn (log + explicit banner)
+	// when ANY peer on our longest chain runs a NEWER version than us.
+	peerNewer := versionCompare(peerUA, mine) > 0
+	if peerNewer {
+		pm.logger.Printf("[P2P] ⚠ UPGRADE ADVISED: peer %s runs %s > our %s — the network is moving; download the latest from any peer's install.sh (dist on P2P port) or https://aib.one", addr, peerUA, mine)
+	} else {
+		pm.logger.Printf("[P2P] version advisory: peer %s runs %s (we run %s) — consider aligning node versions", addr, peerUA, mine)
+	}
+}
+
+// versionCompare compares two "aib-node/vX.Y.Z" user agents.
+// Returns >0 if a is newer than b, <0 if older, 0 if equal.
+func versionCompare(a, b string) int {
+	parse := func(s string) (int, int, int) {
+		var x, y, z int
+		parts := strings.Split(s, "/")
+		if len(parts) == 2 {
+			var v string = parts[1]
+			if strings.HasPrefix(v, "v") {
+				v = v[1:]
+			}
+			n, _ := fmt.Sscanf(v, "%d.%d.%d", &x, &y, &z)
+			_ = n
+		}
+		return x, y, z
+	}
+	ax, ay, az := parse(a)
+	bx, by, bz := parse(b)
+	if ax != bx {
+		return ax - bx
+	}
+	if ay != by {
+		return ay - by
+	}
+	return az - bz
+}
+
+
+// adviseIfLongestChainNewer warns (max once/hour) when a peer at or above our
+// height runs a newer node version — the longest chain is moving without us.
+func (pm *ChainPeerManager) adviseIfLongestChainNewer(peer *ChainPeer, peerHeight uint64, peerUA string) {
+	if peerUA == "" || versionCompare(peerUA, UserAgent()) <= 0 {
+		return
+	}
+	var local uint64
+	if pm.onLocalHeight != nil {
+		local = pm.onLocalHeight()
+	}
+	if peerHeight+1 < local { // peer far behind — its version doesn't speak for the chain
+		return
+	}
+	pm.adviseMu.Lock()
+	defer pm.adviseMu.Unlock()
+	if time.Since(pm.lastAdvise) < time.Hour {
+		return
+	}
+	pm.lastAdvise = time.Now()
+	pm.logger.Printf("[P2P] ⚠ NETWORK UPGRADE IN PROGRESS: peer %s (height %d ≥ our %d) runs %s > our %s — the longest chain is upgrading. Fetch the latest: curl -sSL <any-peer>:<p2p-port>/install.sh | bash  (or https://aib.one)",
+		peer.nodeID[:8], peerHeight, local, peerUA, UserAgent())
 }

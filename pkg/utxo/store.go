@@ -281,6 +281,25 @@ func CreateCoinbaseTransaction(toAddr [32]byte, reward uint64, data []byte) *Tra
 	return NewTransaction([]TXInput{input}, []TXOutput{output})
 }
 
+// CreateStakeCoinbaseTransaction creates a coinbase whose output is
+// STAKE-LOCKED (StakeScriptTag) — RFC-003 §3.4 auto-stake: the bootstrap-window
+// coinbase is automatically recorded as stake for the producer, so the chain
+// always has live stake weight when the PoW era ends. Without this the first
+// PoS block deadlocks ("no active validators") because stake txs can only be
+// confirmed inside blocks that require validators to exist.
+func CreateStakeCoinbaseTransaction(toAddr [32]byte, reward uint64, data []byte) *Transaction {
+	input := TXInput{
+		TxHash: [32]byte{}, // All zeros for coinbase
+		Index:  0xffffffff, // Max uint32 for coinbase
+	}
+	output := TXOutput{
+		Value:   reward,
+		Script:  append([]byte{StakeScriptTag}, data...), // stake-locked coinbase
+		Address: toAddr,
+	}
+	return NewTransaction([]TXInput{input}, []TXOutput{output})
+}
+
 // CreateCoinbaseWithFees creates a coinbase transaction where reward = subsidy + fees.
 func CreateCoinbaseWithFees(toAddr [32]byte, blockSubsidy uint64, txFees uint64, data []byte) *Transaction {
 	return CreateCoinbaseTransaction(toAddr, blockSubsidy+txFees, data)
