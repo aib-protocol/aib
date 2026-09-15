@@ -44,7 +44,7 @@ type NetworkConfig struct {
 var TestnetConfig = NetworkConfig{
 	ChainID:        "aib-testnet-3",
 	GenesisTime:    1755916800, // 2026-08-23T00:00:00Z
-	GenesisMsg:     "AIB Testnet v3 Genesis | Reuters 2026-08-18: Trump tariff pause | Consensus: SHA256d PoW era blocks 1..1000 @ 31.415 AIB/block, then pure-stake VRF PoS with deterministic proposer selection",
+	GenesisMsg:     "AIB Testnet-4 Genesis 2026-09-15 | MAINNET-SPEC economics: SHA256d PoW era blocks 1..10000, 747 AIB/block halving every 2102400 blocks (60s), total 3,140,985,600 AIB, then pure-stake VRF PoS fee-burn",
 	GenesisReward:  0,
 	BootstrapNodes: []string{"212.56.43.128:51413"},
 	DefaultP2PPort: 51413,
