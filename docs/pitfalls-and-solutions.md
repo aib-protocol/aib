@@ -123,6 +123,13 @@
 
 ---
 
+### P24. PoW 难度逐块复合 retarget → 链卡死 (CRITICAL, 2026-09-15 实录)
+- **症状**: 新链 h64 后出块间隔指数变慢(h77 112s, h78 9min),h79 起 CPU 永远挖不出,链卡死。节点 CPU 100% 但无产出
+- **根因**: `nextPoWBitsChain` 在**每个块**重算 retarget,且每次都用上一块(已 retarget 过)的 bits 再乘一次 clamp 比例 → 快窗口下难度每块 ×4 复合膨胀(4¹⁴ ≈ 2.7 亿倍)。矿工侧/验证侧双实现同病
+- **修复**: commit `1903e6b` — Bitcoin 语义:难度只在 PoWRetargetWindow 边界(每 64 块)用**上一个完整窗口**重算,窗口内沿用父块 bits。矿工侧 nextPoWBits 委托验证侧 NextPoWBitsForHeight(单一事实源)
+- **回归测试**: `retarget_regression_test.go` — 3 窗口快链(1s/块 vs 60s 目标)断言窗口内 bits 不变 + 边界降幅 ≤4x
+- **教训**: ① retarget 必须**只在边界**触发,窗口内 carry-forward ② bits 是"compact 编码"(mantissa 3 字节),精确比较要容忍 ~1% 舍入 ③ 双实现(矿工/验证)必然漂移,收敛到单函数
+
 ## 快速诊断手册
 
 | 症状 | 首查 |
