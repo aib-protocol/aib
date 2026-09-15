@@ -404,7 +404,7 @@ func (cs *ChainState) ValidateBlock(block *Block) error {
 		}
 		// Bits must match expected retarget from parent
 		if block.Header.Height > 1 {
-			expected := cs.nextPoWBitsChain(block.Header.Height - 1)
+			expected := cs.NextPoWBitsForHeight(block.Header.Height - 1)
 			if block.Header.Bits != expected {
 				return fmt.Errorf("bits mismatch: expected %08x got %08x", expected, block.Header.Bits)
 			}
@@ -1053,7 +1053,17 @@ func DeserializeChainState(data []byte) (bestHeight uint64, bestHash, genesisHas
 
 // nextPoWBitsChain computes expected Bits for the block AFTER prevHeight,
 // mirroring the miner's retarget logic (deterministic from chain history).
-func (cs *ChainState) nextPoWBitsChain(prevHeight uint64) uint32 {
+// NextPoWBitsForHeight returns the required Bits for the block AFTER the tip
+// at prevHeight. Bitcoin semantics: difficulty changes ONLY at window
+// boundaries (every PoWRetargetWindow blocks) using the last FULL window;
+// within a window the parent's bits carry forward unchanged.
+//
+// REGRESSION FIXED here: the previous implementation recomputed the retarget
+// at EVERY block with the previous block's (already-retargeted) bits, so a
+// fast window compounded the 4x clamp per block — difficulty exploded 4^n
+// within minutes and the chain wedged (observed live: h64..h78, each block
+// ~4x harder, h79 unmineable by CPU).
+func (cs *ChainState) NextPoWBitsForHeight(prevHeight uint64) uint32 {
 	if prevHeight == 0 {
 		return PoWGenesisBits
 	}
@@ -1061,10 +1071,12 @@ func (cs *ChainState) nextPoWBitsChain(prevHeight uint64) uint32 {
 	if err != nil || prevBlock == nil {
 		return PoWGenesisBits
 	}
-	w := prevHeight - (prevHeight % PoWRetargetWindow)
-	if w == 0 {
+	// Carry forward inside the window — NO per-block retarget.
+	if prevHeight%PoWRetargetWindow != 0 {
 		return prevBlock.Header.Bits
 	}
+	// Boundary: window = (prevHeight-PoWRetargetWindow, prevHeight], 64 blocks.
+	w := prevHeight - PoWRetargetWindow
 	start, err2 := cs.GetBlockByHeight(w)
 	if err2 != nil || start == nil {
 		return prevBlock.Header.Bits

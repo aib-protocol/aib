@@ -1457,23 +1457,10 @@ func computeSignedHash(b *utxoPkg.Block) [32]byte {
 
 // nextPoWBits computes Bits for the next PoW block at given prev height.
 func (n *Node) nextPoWBits(prevHeight uint64) uint32 {
-	if prevHeight == 0 {
-		return utxoPkg.PoWGenesisBits
-	}
-	prevBlock, _ := n.chainState.GetBlockByHeight(prevHeight)
-	if prevBlock == nil {
-		return utxoPkg.PoWGenesisBits
-	}
-	w := prevHeight - (prevHeight % utxoPkg.PoWRetargetWindow)
-	if w == 0 {
-		return prevBlock.Header.Bits
-	}
-	start, _ := n.chainState.GetBlockByHeight(w)
-	if start == nil {
-		return prevBlock.Header.Bits
-	}
-	return utxoPkg.NextWorkRequired(prevBlock.Header.Bits, prevHeight,
-		start.Header.Timestamp, prevBlock.Header.Timestamp)
+	// Single source of truth: the chain's validator-side calculation.
+	// (Old miner-side copy had the compounding-retarget bug that wedged
+	// the chain at h79 — see NextPoWBitsForHeight doc comment.)
+	return n.chainState.NextPoWBitsForHeight(prevHeight)
 }
 
 // buildValidatorSetFromPoWHistory builds the PoS validator set from the
