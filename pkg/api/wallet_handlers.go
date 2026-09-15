@@ -594,11 +594,18 @@ func (s *Server) handleSendTransaction(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// compute the fee
-	feePerByte := uint64(1)        // default fee rate
-	estimatedTxSize := uint64(200) // estimated transaction size
+	// Minimum relay/mine fee is BaseFeePerByte (consensus); the old default
+	// (1 sat/B × 200B estimate) produced sub-minimum fees that stranded txs
+	// in the mempool forever (never packed, never rejected).
+	feePerByte := uint64(10)       // consensus BaseFeePerByte
+	estimatedTxSize := uint64(300) // conservative estimate (observed 244-290B)
 	var actualFee uint64
 	if req.Fee > 0 {
 		actualFee = req.Fee
+		if actualFee < feePerByte*estimatedTxSize/2 {
+			// caller-supplied fee below half the minimum bundle: bump to minimum
+			actualFee = feePerByte * estimatedTxSize
+		}
 	} else {
 		actualFee = feePerByte * estimatedTxSize
 	}

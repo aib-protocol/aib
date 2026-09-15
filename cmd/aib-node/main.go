@@ -1140,12 +1140,31 @@ func (n *Node) produceBlock() {
 
 		// Coinbase: bootstrap-window low reward (RFC-003): 1 AIB/block during
 		// the first 10,000 blocks, then fee-share only (zero inflation path).
-		// After the PoW era (PoWEraBlocks) the fixed supply of 31415 AIB is
-		// fully mined; PoS blocks carry no coinbase (fee-only).
+		//
+		// Fee-to-validator: block fees (inputs - outputs across all packed
+		// txs) are paid to the proposer via the coinbase. Previously fees
+		// were silently destroyed (nobody claimed the inputs>outputs delta)
+		// and stakers earned nothing.
+		var feesSat uint64
+		for _, tx := range txs {
+			var inSum, outSum uint64
+			for _, in := range tx.Inputs {
+				if u, err := n.utxoStore.GetUTXO(in.TxHash, in.Index); err == nil && u != nil {
+					inSum += u.Value
+				}
+			}
+			for _, out := range tx.Outputs {
+				outSum += uint64(out.Value)
+			}
+			if inSum > outSum {
+				feesSat += inSum - outSum
+			}
+		}
 		coinbaseAmount := uint64(1 * 1e8)
 		if height+1 > utxoPkg.PoWEraBlocks {
 			coinbaseAmount = 0
 		}
+		coinbaseAmount += feesSat
 		var coinbaseTx *utxoPkg.Transaction
 		if coinbaseAmount > 0 {
 			coinbaseTx = utxoPkg.CreateCoinbaseTransaction(walletAddr, coinbaseAmount, []byte(fmt.Sprintf("vrf-coinbase-h%d", height+1)))
