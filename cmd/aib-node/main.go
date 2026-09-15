@@ -1049,7 +1049,24 @@ func (n *Node) produceBlock() {
 
 	// ---- Consensus V3: PoW era (blocks 1..10000) ----
 	if n.networkCfg.BlockVersion >= 3 && height1 <= utxoPkg.PoWEraBlocks {
-		coinbaseTx := utxoPkg.CreateCoinbaseTransaction(walletAddr, utxoPkg.PoWBlockReward, []byte(fmt.Sprintf("pow-v3-h%d", height1)))
+		// Mainnet subsidy schedule (halving) + block fees
+		subsidy := utxoPkg.PoWSubsidyAtHeight(height1)
+		var powFees uint64
+		for _, tx := range txs {
+			var inSum, outSum uint64
+			for _, in := range tx.Inputs {
+				if u, err := n.utxoStore.GetUTXO(in.TxHash, in.Index); err == nil && u != nil {
+					inSum += u.Value
+				}
+			}
+			for _, out := range tx.Outputs {
+				outSum += uint64(out.Value)
+			}
+			if inSum > outSum {
+				powFees += inSum - outSum
+			}
+		}
+		coinbaseTx := utxoPkg.CreateCoinbaseTransaction(walletAddr, subsidy+powFees, []byte(fmt.Sprintf("pow-v3-h%d", height1)))
 		blockTxs := append([]*utxoPkg.Transaction{coinbaseTx}, txs...)
 		newBlock := utxoPkg.NewBlock(blockTxs, prevHash, height1, proposer)
 		newBlock.Header.Version = 3

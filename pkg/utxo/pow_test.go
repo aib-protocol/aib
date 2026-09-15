@@ -60,7 +60,7 @@ func TestNextWorkRequiredClamp(t *testing.T) {
 	// very slow window => target should grow (difficulty drop), capped at 4x
 	prev, _ := TargetFromBits(PoWGenesisBits)
 	ts := uint64(1700000000)
-	slow := NextWorkRequired(PoWGenesisBits, PoWRetargetWindow, ts, ts+3600)
+	slow := NextWorkRequired(PoWGenesisBits, PoWRetargetWindow, ts, ts+36000)
 	// genesis bits == max target already; slow window must stay at max (easiest)
 	if slow != PoWGenesisBits {
 		t.Fatalf("capped slow window should stay at genesis bits, got %08x", slow)
@@ -78,10 +78,13 @@ func TestNextWorkRequiredClamp(t *testing.T) {
 }
 
 func TestPoWEraReward(t *testing.T) {
-	if PoWBlockReward != 3141500000 {
-		t.Fatalf("PoW reward %d != 31.415 AIB", PoWBlockReward)
+	// Mainnet schedule: 747 AIB initial, halving every 2,102,400 blocks.
+	// Integer subsidy gives total emission 3,140,985,600 AIB — the remaining
+	// 0.019% of the π×10⁹ cap is never minted (Bitcoin-style tail behavior).
+	if PoWBlockReward != 747*1e8 {
+		t.Fatalf("PoW reward %d != 747 AIB", PoWBlockReward)
 	}
-	if PoWBlockReward*PoWEraBlocks != 3141500000000 {
-		t.Fatalf("total era reward != 31415 AIB")
+	if 2*PoWBlockReward*PoWHalvingBlocks != 3140985600*1e8 {
+		t.Fatalf("total emission != 3,140,985,600 AIB, got %d AIB", 2*PoWBlockReward*PoWHalvingBlocks/1e8)
 	}
 }

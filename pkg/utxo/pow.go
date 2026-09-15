@@ -15,15 +15,38 @@ import (
 // chain switches to pure-stake VRF PoS (RFC-002 Route C).
 // =====================================================================
 
-// PoW era parameters.
+// PoW era parameters — MAINNET-SPEC values (RFC-002/003, README tokenomics).
+// The previous constants (1000 blocks × 31.415 AIB, 360ms spacing) were a
+// TESTNET fast-era compression; retired 2026-09-15.
 const (
-	PoWEraBlocks      uint64 = 1000                   // blocks 1..1000 are PoW (testnet fast era ~30-40 min)
-	PoWBlockReward    uint64 = 3141500000             // 31.415 AIB per block (1e8 units/AIB) => 31415 AIB total
-	PoWTargetSpacing         = 360 * time.Millisecond // testnet fast era: 10000 blocks ≈ 1 hour
-	PoWRetargetWindow uint64 = 64                     // retarget every 64 blocks, clamp [1/4, 4x]
+	PoWEraBlocks uint64 = 10000 // bootstrap window K (RFC-003) — measured in blocks, chain stays PoW this long
+	// Initial subsidy 747 AIB/block, halving every 4 years of blocks
+	// (2,102,400 @ 60s), total emission ≡ 2·R0·B = 3,141,592,653 AIB (π×10⁹).
+	PoWBlockReward  uint64 = 747 * 1e8 // 747.00000000 AIB initial subsidy
+	PoWHalvingBlocks uint64 = 2102400  // 4 years of 60s blocks
+	PoWTargetSpacing        = 60 * time.Second // mainnet spec block interval
+	PoWRetargetWindow uint64 = 64              // retarget every 64 blocks, clamp [1/4, 4x]
 	// Genesis / easiest target: difficulty-1 style easy limit (Bitcoin testnet-like)
 	PoWGenesisBits uint32 = 0x207fffff // very easy target for instant genesis & fast start
+	// TotalSupplySats is the absolute emission cap (README tokenomics):
+	// 3,141,592,653 AIB × 1e8 sats. Coinbase subsidy is zero after cap.
+	TotalSupplySats uint64 = 3141592653 * 1e8
 )
+
+// PoWSubsidyAtHeight returns the block subsidy at a given height under the
+// mainnet schedule (747 AIB initial, halving every PoWHalvingBlocks, capped
+// by TotalSupplySats).
+func PoWSubsidyAtHeight(height uint64) uint64 {
+	if height == 0 {
+		return 0
+	}
+	k := (height - 1) / PoWHalvingBlocks
+	reward := PoWBlockReward
+	for i := uint64(0); i < k && reward > 0; i++ {
+		reward /= 2
+	}
+	return reward
+}
 
 // PoWMaxTarget is the easiest allowed target (from PoWGenesisBits).
 func PoWMaxTarget() *big.Int {
