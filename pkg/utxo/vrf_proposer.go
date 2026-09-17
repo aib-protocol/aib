@@ -160,6 +160,17 @@ func (cs *ConsensusState) SelectProposerVRFDeterministic(seed []byte) (*VrfProof
 // hashes a different value into the VRF seed and selects a different
 // winner — mutual proposer mismatch, chain deadlock.
 func (cs *ConsensusState) SelectProposerVRFAtHeight(seed []byte, height uint64) (*VrfProof, error) {
+	return cs.SelectProposerVRFAtHeightAttempt(seed, height, 0)
+}
+
+// SelectProposerVRFAtHeightAttempt is the slot-skip (P27) variant: when the
+// sortition winner for a height is offline, the whole network stalls forever
+// because the winner is a deterministic function of (seed, height). The
+// attempt parameter rotates the sortition: attempt N means "N block-time
+// windows have elapsed since the parent block with no block produced".
+// Producing and validating nodes MUST compute attempt identically from
+// wall-clock distance to the parent block timestamp.
+func (cs *ConsensusState) SelectProposerVRFAtHeightAttempt(seed []byte, height, attempt uint64) (*VrfProof, error) {
 	cs.mu.RLock()
 	defer cs.mu.RUnlock()
 
@@ -186,6 +197,7 @@ func (cs *ConsensusState) SelectProposerVRFAtHeight(seed []byte, height uint64) 
 	h := sha256.New()
 	h.Write(seed)
 	binary.Write(h, binary.BigEndian, height)
+	binary.Write(h, binary.BigEndian, attempt)
 	digest := new(big.Int).SetBytes(h.Sum(nil))
 
 	totalBig := new(big.Int).SetUint64(total)

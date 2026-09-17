@@ -4,9 +4,11 @@ package utxo
 
 import (
 	"bytes"
+	"crypto/sha256"
 	"encoding/binary"
 	"encoding/hex"
 	"fmt"
+	"sort"
 	"sync"
 	"time"
 
@@ -1083,4 +1085,76 @@ func (cs *ChainState) NextPoWBitsForHeight(prevHeight uint64) uint32 {
 	}
 	return NextWorkRequired(prevBlock.Header.Bits, prevHeight,
 		start.Header.Timestamp, prevBlock.Header.Timestamp)
+}
+
+// ============================================================================
+// Startup UTXO reconciliation (P26 fix)
+// ============================================================================
+
+// ReplayUTXOSetFromChain rebuilds the UTXO set deterministically from genesis
+// to the current best height. It is the source of truth for the validator set:
+// the chain data itself, never a node's mutable utxo.db state. Returns the
+// number of blocks replayed.
+func (cs *ChainState) ReplayUTXOSetFromChain() (uint64, error) {
+	if cs.utxoStore == nil {
+		return 0, fmt.Errorf("no utxo store attached")
+	}
+	if err := cs.utxoStore.ResetAll(); err != nil {
+		return 0, fmt.Errorf("reset utxo store: %w", err)
+	}
+	best := cs.GetBestBlockHeight()
+	for h := uint64(1); h <= best; h++ {
+		blk, err := cs.GetBlockByHeight(h)
+		if err != nil {
+			return h - 1, fmt.Errorf("get block %d: %w", h, err)
+		}
+		for _, tx := range blk.Transactions {
+			if tx.IsCoinbase() {
+				if err := cs.applyCoinbaseTransaction(tx); err != nil {
+					return h, fmt.Errorf("apply coinbase h%d: %w", h, err)
+				}
+			} else {
+				// Skip signature verification on replay: the block was already
+				// fully validated when it was accepted. Inputs may reference
+				// UTXOs spent earlier in the same block — apply in order.
+				if err := cs.utxoStore.ApplyTransactionUnchecked(tx); err != nil {
+					return h, fmt.Errorf("apply tx h%d: %w", h, err)
+				}
+			}
+		}
+	}
+	cs.utxoStore.SetChainHead(best)
+	return best, nil
+}
+
+// UTXOSetRootHash computes a deterministic digest of the current UTXO set:
+// sha256 over sorted (txid:index, value, address, script). Two nodes with the
+// same chain MUST produce the same root hash; divergence = state drift.
+func (cs *ChainState) UTXOSetRootHash() [32]byte {
+	all := cs.utxoStore.GetAllUTXOsAll()
+	type entry struct {
+		key  string
+		utxo *UTXO
+	}
+	list := make([]entry, 0, len(all))
+	for _, u := range all {
+		list = append(list, entry{UTXOKey(u.TxHash, u.Index), u})
+	}
+	sort.Slice(list, func(i, j int) bool { return list[i].key < list[j].key })
+	h := sha256.New()
+	var countBytes [8]byte
+	binary.BigEndian.PutUint64(countBytes[:], uint64(len(list)))
+	h.Write(countBytes[:])
+	for _, e := range list {
+		h.Write([]byte(e.key))
+		var vb [8]byte
+		binary.BigEndian.PutUint64(vb[:], e.utxo.Value)
+		h.Write(vb[:])
+		h.Write(e.utxo.Address[:])
+		h.Write([]byte{byte(len(e.utxo.Script))})
+		h.Write(e.utxo.Script)
+	}
+	var out [32]byte
+	copy(out[:], h.Sum(nil))
+	return out
 }

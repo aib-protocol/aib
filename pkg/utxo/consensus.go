@@ -245,6 +245,12 @@ func (cs *ConsensusState) selectProposerLocked(seed []byte) ([32]byte, error) {
 // validated, never from mutable local state, or nodes at different sync
 // positions compute different expected proposers.
 func (cs *ConsensusState) selectProposerAtHeightLocked(seed []byte, height uint64) ([32]byte, error) {
+	return cs.selectProposerAttemptLocked(seed, height, 0)
+}
+
+// selectProposerAttemptLocked is the P27 slot-skip sortition: attempt rotates
+// the winner when the deterministic winner for the height is offline.
+func (cs *ConsensusState) selectProposerAttemptLocked(seed []byte, height, attempt uint64) ([32]byte, error) {
 	validators := cs.getActiveValidatorsLocked()
 	if len(validators) == 0 {
 		return [32]byte{}, fmt.Errorf("no active validators")
@@ -266,12 +272,11 @@ func (cs *ConsensusState) selectProposerAtHeightLocked(seed []byte, height uint6
 		return [32]byte{}, fmt.Errorf("total stake is zero")
 	}
 
-	// Use VRF-like selection based on seed and height
-	// Hash the seed with height to get a deterministic random value
-
+	// Use VRF-like selection based on seed and height (and P27 attempt)
 	hash := sha256.New()
 	hash.Write(seed)
 	binary.Write(hash, binary.BigEndian, height)
+	binary.Write(hash, binary.BigEndian, attempt)
 	digest := hash.Sum(nil)
 
 	// Convert to big.Int for weighted selection
@@ -454,8 +459,17 @@ func (cs *ConsensusState) VerifyBlockProposer(block *Block, prevBlock *Block) *P
 	cs.mu.RLock()
 	defer cs.mu.RUnlock()
 
-	// Calculate expected proposer (deterministic: seed + the BLOCK's height)
-	expectedProposer, err := cs.selectProposerAtHeightLocked(seed, block.Header.Height)
+	// Calculate expected proposer (deterministic: seed + the BLOCK's height
+	// + the P27 attempt derived from how long after the parent this block
+	// was produced). A block produced in the first window has attempt 0;
+	// every window of silence rotates the sortition once. Using the BLOCK's
+	// OWN timestamp (not wall clock) keeps verification of historical blocks
+	// deterministic forever.
+	var attempt uint64
+	if prevBlock != nil {
+		attempt = SlotAttemptFor(prevBlock.Header.Timestamp, block.Header.Timestamp, block.Header.Height)
+	}
+	expectedProposer, err := cs.selectProposerAttemptLocked(seed, block.Header.Height, attempt)
 	if err != nil {
 		result.Error = fmt.Sprintf("failed to select proposer: %v", err)
 		return result
@@ -465,6 +479,24 @@ func (cs *ConsensusState) VerifyBlockProposer(block *Block, prevBlock *Block) *P
 	// Header.Proposer IS the wallet address now (ProposerKey carries the
 	// public key for signature verification). Compare directly.
 	if block.Header.Proposer != expectedProposer {
+		// P27 tolerance: a block may arrive while verifiers are still on a
+		// lower attempt (block produced at window boundary). Accept if the
+		// proposer matches ANY attempt within +/- 1 window of our estimate.
+		now := uint64(time.Now().Unix())
+		var alt uint64
+		if prevBlock != nil {
+			alt = SlotAttemptFor(prevBlock.Header.Timestamp, now, block.Header.Height)
+		}
+		for _, a := range []uint64{attempt + 1, alt} {
+			if a == attempt {
+				continue
+			}
+			p2, err2 := cs.selectProposerAttemptLocked(seed, block.Header.Height, a)
+			if err2 == nil && p2 == block.Header.Proposer {
+				result.ExpectedProposer = p2
+				return &ProposerVerificationResult{Valid: true, ExpectedProposer: p2}
+			}
+		}
 		result.Error = fmt.Sprintf("proposer mismatch: expected %x, got %x",
 			expectedProposer, block.Header.Proposer)
 		return result
@@ -629,4 +661,23 @@ func (cs *ConsensusState) AddValidatorFromStake(address [32]byte, stake uint64) 
 		FromPoW: true,
 	}
 	return nil
+}
+
+
+// SlotAttemptFor computes the deterministic sortition attempt number for a
+// block at `height` whose parent was mined at parentTime, evaluated at now.
+// attempt = elapsed_windows - 1 clamped to >=0, where a window is one target
+// block time plus a small propagation guard. Producing and validating nodes
+// evaluate the same wall clock and therefore derive the same attempt.
+func SlotAttemptFor(parentTime, now uint64, height uint64) uint64 {
+	elapsed := int64(now) - int64(parentTime)
+	if elapsed <= 0 {
+		return 0
+	}
+	window := int64(TargetBlockTime.Seconds()) + 10 // block time + 10s guard
+	att := uint64(elapsed/window)
+	if att > 1000 { // sanity clamp
+		att = 1000
+	}
+	return att
 }

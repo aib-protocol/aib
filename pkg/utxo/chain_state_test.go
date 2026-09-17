@@ -381,14 +381,29 @@ func TestState_Transition_ChainReorg(t *testing.T) {
 		t.Fatalf("Failed to init genesis: %v", err)
 	}
 
-	// Add block A (from validator 1)
-	coinbaseTxA := CreateCoinbaseV2(proposerAddr1, 1)
-	coinbaseTxA.SignInput(0, privKey1)
+	// Add block A — from whoever the VRF sortition actually selects for h1
+	// (fresh random keys each run ⇒ sorted order differs run-to-run; using a
+	// hardcoded proposer made this test a coin flip).
+	winnerProof1, err := consensus.SelectProposerVRFAtHeight(genesisBlock.Header.VRFSeed[:], 1)
+	if err != nil {
+		t.Fatalf("select proposer: %v", err)
+	}
+	winnerAddr1 := winnerProof1.Winner
+	var aPriv ed25519.PrivateKey
+	aProposer := proposerAddr1
+	if winnerAddr1 == proposerAddr2 {
+		aProposer = proposerAddr2
+		aPriv = privKey2
+	} else {
+		aPriv = privKey1
+	}
+	coinbaseTxA := CreateCoinbaseV2(aProposer, 1)
+	coinbaseTxA.SignInput(0, aPriv)
 
-	blockA := NewBlock([]*Transaction{coinbaseTxA}, genesisBlock.Hash, 1, proposerAddr1)
+	blockA := NewBlock([]*Transaction{coinbaseTxA}, genesisBlock.Hash, 1, aProposer)
 	blockA.Header.Timestamp = now - 60
 	blockA.Header.VRFSeed = [32]byte{1}
-	blockA.SignBlock(privKey1)
+	blockA.SignBlock(aPriv)
 
 	err = cs.AddBlock(blockA)
 	if err != nil {

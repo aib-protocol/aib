@@ -340,6 +340,37 @@ func (n *Node) Start() error {
 		n.logger.Printf("[Chain] Restored consensus height to %d from DB", h)
 	}
 
+	// ---- P26 fix: startup UTXO-set reconciliation ----
+	// The UTXO set (and thus the validator set / VRF sortition) must be a
+	// pure function of the chain. A node whose local utxo.db has drifted
+	// (ghost coinbases from orphaned forks, reset residue) computes a
+	// DIFFERENT total stake and flips the VRF winner — observed as a
+	// 13-hour network deadlock at h10115 (nodes waited on each other).
+	// On startup we replay the chain deterministically and verify the
+	// local UTXO root hash; on mismatch we rebuild from the replay.
+	if h := n.chainState.GetBestBlockHeight(); h > 0 {
+		localRoot := n.chainState.UTXOSetRootHash()
+		n.logger.Printf("[UTXO-Audit] local UTXO root  = %x (h%d, %d utxos)",
+			localRoot, h, n.utxoStore.GetUTXOCount())
+		// forensic copy (never rename a live bbolt handle)
+		src := filepath.Join(n.config.DataDir, "utxo.db")
+		dst := filepath.Join(n.config.DataDir, "utxo.db.pre-replay.bak")
+		if data, err := os.ReadFile(src); err == nil {
+			_ = os.WriteFile(dst, data, 0600)
+		}
+		if replayed, err := n.chainState.ReplayUTXOSetFromChain(); err != nil {
+			n.logger.Printf("[UTXO-Audit] replay FAILED at h%d: %v — state left as replayed, investigate", replayed, err)
+		} else {
+			replayRoot := n.chainState.UTXOSetRootHash()
+			if replayRoot != localRoot {
+				n.logger.Printf("[UTXO-Audit] ⚠ DRIFT DETECTED: local=%x replay=%x — UTXO set REBUILT from chain (replayed %d blocks); pre-replay copy at utxo.db.pre-replay.bak", localRoot, replayRoot, replayed)
+			} else {
+				n.logger.Printf("[UTXO-Audit] ✓ root match — UTXO set is chain-consistent (replayed %d blocks)", replayed)
+				_ = os.Remove(dst)
+			}
+		}
+	}
+
 	// Validator membership comes ONLY from on-chain PoW history
 	// (buildValidatorSetFromPoWHistory). Self-registration would let any node
 	// grant itself sortition weight with zero contribution — a consensus
@@ -1126,15 +1157,22 @@ func (n *Node) produceBlock() {
 		// prevBlock.Header.VRFSeed (NOT the block hash). Fetch the actual
 		// previous block and read its VRFSeed header field.
 		var seed []byte
-		if prevBlock, err := n.chainState.GetBlockByHash(prevHash); err == nil && prevBlock != nil {
-			seed = prevBlock.Header.VRFSeed[:]
+		var parentTimestamp uint64
+		if pb, err := n.chainState.GetBlockByHash(prevHash); err == nil && pb != nil {
+			seed = pb.Header.VRFSeed[:]
+			parentTimestamp = pb.Header.Timestamp
 		} else {
 			seed = prevHash[:] // genesis fallback
 		}
 		// Pass the TARGET height (bestHeight+1) — identical to what the
 		// validation path hashes (block.Header.Height). Divergence here
 		// means producing and validating nodes select different winners.
-		proof, err := n.consensus.SelectProposerVRFAtHeight(seed, height1)
+		// P27 slot-skip: if the deterministic winner for this height is
+		// offline, the chain stalls forever on a single slot. Compute the
+		// attempt (elapsed windows since parent) identically to the
+		// validation path and rotate the sortition with it.
+		attempt := utxoPkg.SlotAttemptFor(parentTimestamp, uint64(time.Now().Unix()), height1)
+		proof, err := n.consensus.SelectProposerVRFAtHeightAttempt(seed, height1, attempt)
 		if err != nil {
 			// Fallback: single-node genesis phase — self proposes
 			n.logger.Printf("[Block %d] VRF selection fallback: %v", height+1, err)

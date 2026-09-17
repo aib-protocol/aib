@@ -863,3 +863,89 @@ func (s *PersistentUTXOStore) GetAllUTXOsAll() []*UTXO {
 	})
 	return result
 }
+
+// ============================================================================
+// Chain-replay reconciliation (P26 fix)
+// ============================================================================
+
+// ResetAll wipes every UTXO, balance, tx-index and chain-head marker so the
+// store can be rebuilt deterministically from the block chain. Used when
+// startup audit detects local UTXO set drift vs chain replay (ghost coinbase
+// from orphaned forks, reset residue, etc. — P26 deadlock root cause).
+func (s *PersistentUTXOStore) ResetAll() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.readOnly {
+		return fmt.Errorf("store is read-only")
+	}
+	return s.db.Update(func(tx *bbolt.Tx) error {
+		for _, name := range [][]byte{BucketUTXO, BucketBalances, BucketTXIndex} {
+			if err := tx.DeleteBucket(name); err != nil && err != bbolt.ErrBucketNotFound {
+				return err
+			}
+			if _, err := tx.CreateBucketIfNotExists(name); err != nil {
+				return err
+			}
+		}
+		// keep meta, reset head marker
+		return tx.Bucket(BucketMeta).Put([]byte("chain_head"), make([]byte, 8))
+	})
+}
+
+// ApplyTransactionUnchecked applies a transaction's UTXO effects without
+// signature validation or input-existence pre-checks. Chain-replay ONLY: the
+// block containing this tx was already fully validated at accept time.
+func (s *PersistentUTXOStore) ApplyTransactionUnchecked(tx *Transaction) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.readOnly {
+		return fmt.Errorf("store is read-only")
+	}
+	return s.db.Update(func(txDB *bbolt.Tx) error {
+		utxoBkt := txDB.Bucket(BucketUTXO)
+		// Spend inputs (tolerate missing = already spent or same-block order)
+		for _, in := range tx.Inputs {
+			key := UTXOKey(in.TxHash, in.Index)
+			data := utxoBkt.Get([]byte(key))
+			if data == nil {
+				continue
+			}
+			utxo, err := deserializeUTXO(data)
+			if err != nil {
+				return err
+			}
+			if err := s.updateBalance(txDB, utxo.Address, -int64(utxo.Value)); err != nil {
+				return err
+			}
+			if err := utxoBkt.Delete([]byte(key)); err != nil {
+				return err
+			}
+		}
+		// Add outputs
+		txHash := tx.Hash()
+		for i, out := range tx.Outputs {
+			u := &UTXO{
+				TxHash:  txHash,
+				Index:   uint32(i),
+				Value:   out.Value,
+				Script:  out.Script,
+				Address: out.Address,
+			}
+			data, err := serializeUTXO(u)
+			if err != nil {
+				return err
+			}
+			if err := utxoBkt.Put([]byte(UTXOKey(txHash, uint32(i))), data); err != nil {
+				return err
+			}
+			if err := s.updateBalance(txDB, out.Address, int64(out.Value)); err != nil {
+				return err
+			}
+		}
+		// keep tx-history index alive across replays
+		if err := s.indexTransaction(txDB, tx); err != nil {
+			return err
+		}
+		return nil
+	})
+}
