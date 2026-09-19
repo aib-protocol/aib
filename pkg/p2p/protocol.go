@@ -35,6 +35,18 @@ const (
 	// historical blocks from full nodes.
 	MsgGetBlocksByRange  uint8 = 12
 	MsgBlocksByRangeResp uint8 = 13
+
+	// Headers-first sync (v0.11.33, Bitcoin-style): fetch a skeleton of
+	// headers before committing to block downloads; detect fork divergence
+	// cheaply and repair from the exact fork point.
+	MsgGetHeaders          uint8 = 14
+	MsgHeaders             uint8 = 15
+	MsgGetBlockByHash      uint8 = 16
+	MsgBlockByHashResp     uint8 = 17
+
+	// Finality votes (v0.11.33): validators gossip attestations for tip
+	// heights; 2/3 stake majority marks a height finalized (no rollback).
+	MsgFinalityVote uint8 = 18
 )
 
 // MsgTypeName returns human-readable name for message type
@@ -66,6 +78,16 @@ func MsgTypeName(t uint8) string {
 		return "GETBLOCKSBYRANGE"
 	case MsgBlocksByRangeResp:
 		return "BLOCKSBYRANGERESP"
+	case MsgGetHeaders:
+		return "GETHEADERS"
+	case MsgHeaders:
+		return "HEADERS"
+	case MsgGetBlockByHash:
+		return "GETBLOCKBYHASH"
+	case MsgBlockByHashResp:
+		return "BLOCKBYHASHRESP"
+	case MsgFinalityVote:
+		return "FINALITYVOTE"
 	default:
 		return fmt.Sprintf("UNKNOWN(%d)", t)
 	}
@@ -268,3 +290,53 @@ var NodeVersion = "dev"
 
 // UserAgent returns this node's wire user-agent string.
 func UserAgent() string { return "aib-node/" + NodeVersion }
+
+
+// ======================================================================
+// Headers-first sync messages (v0.11.33)
+// ======================================================================
+
+// GetHeadersMsg requests block headers from a height onward.
+type GetHeadersMsg struct {
+	FromHeight uint64 `json:"from_height"`
+	MaxHeaders int    `json:"max_headers"` // default 2000
+}
+
+// BlockHeaderData is a lightweight chain header for fork detection.
+type BlockHeaderData struct {
+	Height    uint64 `json:"height"`
+	Hash      string `json:"hash"`
+	PrevHash  string `json:"prev_hash"`
+	Timestamp uint64 `json:"timestamp"`
+	Proposer  string `json:"proposer"`
+	Bits      uint32 `json:"bits"`
+}
+
+// HeadersMsg carries a batch of headers (ascending height).
+type HeadersMsg struct {
+	Headers []BlockHeaderData `json:"headers"`
+}
+
+// GetBlockByHashMsg requests one full block by its hash (fork repair).
+type GetBlockByHashMsg struct {
+	Hash string `json:"hash"`
+}
+
+// BlockByHashRespMsg carries one full block.
+type BlockByHashRespMsg struct {
+	Hash  string    `json:"hash"`
+	Block BlockData `json:"block"`
+}
+
+
+// FinalityVoteMsg is a validator's attestation that it has validated and
+// adopted the block `Hash` at `Height`. Gossiped among peers; each node
+// tallies votes weighted by stake. 2/3 of active validator stake marks the
+// height finalized — forks that would roll back below it are rejected.
+type FinalityVoteMsg struct {
+	Height uint64 `json:"height"`
+	Hash   string `json:"hash"`
+	Voter  string `json:"voter"`  // validator stake address (hex)
+	PubKey string `json:"pubkey"` // ed25519 pubkey hex (verify signature)
+	Sig    string `json:"sig"`    // signature over "AIB-FINALITY:"+height+":"+hash
+}

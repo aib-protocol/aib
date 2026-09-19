@@ -162,6 +162,7 @@ func (bs *ChainBlockSyncer) checkAndSync() {
 
 	// Request blocks in batches
 	fromHeight := localHeight + 1
+	stallCount := 0
 	for fromHeight <= peerBestHeight {
 		select {
 		case <-bs.stopCh:
@@ -190,13 +191,38 @@ func (bs *ChainBlockSyncer) checkAndSync() {
 			bs.logger.Printf("[SYNC] Progress: %d -> %d", localHeight, newHeight)
 			localHeight = newHeight
 			fromHeight = newHeight + 1
+			stallCount = 0
 
 			bs.mu.Lock()
 			bs.localHeight = localHeight
 			bs.mu.Unlock()
 		} else {
-			bs.logger.Printf("[SYNC] Stalled at height %d", localHeight)
-			break
+			stallCount++
+			bs.logger.Printf("[SYNC] Stalled at height %d (attempt %d)", localHeight, stallCount)
+			// v0.11.33 stall recovery: request headers around the stall point
+			// from the best peer. If our chain diverged from the network's,
+			// handleHeaders detects it and requests the fork block by hash
+			// (fork repair); if our chain matches, the requested blocks will
+			// arrive normally. After 3 stalls, rotate to a different peer to
+			// rule out a serving-bad-blocks peer.
+			if hs := bs.pm.GetHeaderProbeSender(); hs != nil {
+				from := uint64(1)
+				if localHeight > 20 {
+					from = localHeight - 20
+				}
+				hs(GetHeadersMsg{FromHeight: from, MaxHeaders: 500})
+			}
+			if stallCount >= 3 {
+				stallCount = 0
+				bs.logger.Printf("[SYNC] Persistent stall — rotating sync peer")
+				if err := bs.pm.RequestBlocksFromBestPeer(localHeight + 1); err == nil {
+					time.Sleep(5 * time.Second)
+				}
+			}
+			if stallCount >= 5 {
+				break
+			}
+			continue
 		}
 	}
 

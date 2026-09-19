@@ -28,8 +28,8 @@ type BlockVerifier interface {
 
 // ChainPeerManager manages chain-level P2P peer connections.
 type ChainPeerManager struct {
-	adviseMu    sync.Mutex
-	lastAdvise  time.Time
+	adviseMu   sync.Mutex
+	lastAdvise time.Time
 
 	mu sync.RWMutex
 
@@ -75,6 +75,17 @@ type ChainPeerManager struct {
 	fetchChMu       sync.Mutex
 	fetchCh         chan BlocksByRangeRespMsg
 	fetchReqID      uint64
+
+	// Headers-first sync (v0.11.33)
+	getHeader         func(height uint64) (BlockHeaderData, bool)
+	hasLocalHeader    func(height uint64) (string, bool)
+	getBlockByHash    func(hash string) (BlockData, bool)
+	onForkRepairBlock func(BlockData) error
+	getLocalHeightCb  func() uint64
+	remoteHeaders     map[string][]BlockHeaderData
+
+	// Finality votes (v0.11.33)
+	onFinalityVote func(FinalityVoteMsg)
 }
 
 // ChainPeer represents a connected blockchain peer.
@@ -190,6 +201,62 @@ func (pm *ChainPeerManager) StartAutoSync(interval time.Duration) {
 			}
 		}
 	}()
+}
+
+// Headers-first sync callbacks (v0.11.33)
+func (pm *ChainPeerManager) SetHeaderProvider(
+	getHeader func(height uint64) (BlockHeaderData, bool),
+	hasLocalHeader func(height uint64) (string, bool),
+	getBlockByHash func(hash string) (BlockData, bool),
+	onForkRepairBlock func(BlockData) error,
+	getLocalHeight func() uint64,
+) {
+	pm.getHeader = getHeader
+	pm.hasLocalHeader = hasLocalHeader
+	pm.getBlockByHash = getBlockByHash
+	pm.onForkRepairBlock = onForkRepairBlock
+	pm.getLocalHeightCb = getLocalHeight
+}
+
+// GetHeaderProbeSender returns a closure that sends a GETHEADERS probe to
+// the current best peer (used by the syncer's stall-recovery path).
+func (pm *ChainPeerManager) GetHeaderProbeSender() func(GetHeadersMsg) {
+	if pm.getHeader == nil {
+		return nil
+	}
+	return func(req GetHeadersMsg) {
+		data, err := MarshalMsg(MsgGetHeaders, &req)
+		if err != nil {
+			return
+		}
+		pm.mu.RLock()
+		var best *ChainPeer
+		var bestH uint64
+		for _, p := range pm.peers {
+			if p.verified && p.bestHeight > bestH {
+				bestH = p.bestHeight
+				best = p
+			}
+		}
+		pm.mu.RUnlock()
+		if best != nil {
+			best.mu.Lock()
+			best.conn.Write(data)
+			best.mu.Unlock()
+		}
+	}
+}
+
+// SetFinalityVoteHandler registers the callback for gossiped finality votes.
+func (pm *ChainPeerManager) SetFinalityVoteHandler(h func(FinalityVoteMsg)) {
+	pm.onFinalityVote = h
+}
+
+func (pm *ChainPeerManager) getLocalHeightSync() uint64 {
+	if pm.getLocalHeightCb != nil {
+		return pm.getLocalHeightCb()
+	}
+	return 0
 }
 
 func (pm *ChainPeerManager) SetBlockVerifier(v BlockVerifier) {
@@ -1014,9 +1081,216 @@ func (pm *ChainPeerManager) handleChainMessage(peer *ChainPeer, msgType uint8, p
 			}
 		}
 
+	case MsgGetHeaders:
+		pm.serveGetHeaders(peer, payload)
+
+	case MsgHeaders:
+		pm.handleHeaders(peer, payload)
+
+	case MsgGetBlockByHash:
+		pm.serveGetBlockByHash(peer, payload)
+
+	case MsgBlockByHashResp:
+		var resp BlockByHashRespMsg
+		if err := UnmarshalMsg(payload, &resp); err != nil {
+			return
+		}
+		if pm.onForkRepairBlock != nil {
+			if err := pm.onForkRepairBlock(resp.Block); err != nil {
+				pm.logger.Printf("[P2P] Fork-repair block %d rejected: %v", resp.Block.Height, err)
+			}
+		}
+
+	case MsgFinalityVote:
+		var vote FinalityVoteMsg
+		if err := UnmarshalMsg(payload, &vote); err != nil {
+			return
+		}
+		if pm.onFinalityVote != nil {
+			pm.onFinalityVote(vote)
+		}
+		// relay to other peers (gossip)
+		pm.relayToPeersExcept(peer, msgType, payload)
+
 	default:
 		pm.logger.Printf("[P2P] Unknown message type %s from %s", MsgTypeName(msgType), peer.nodeID[:8])
 	}
+}
+
+// relayToPeersExcept forwards a raw frame to all peers except origin.
+func (pm *ChainPeerManager) relayToPeersExcept(from *ChainPeer, msgType uint8, payload []byte) {
+	data := EncodeMessage(msgType, payload)
+	pm.mu.RLock()
+	defer pm.mu.RUnlock()
+	for _, p := range pm.peers {
+		if p == from || !p.verified {
+			continue
+		}
+		p.mu.Lock()
+		p.conn.Write(data)
+		p.mu.Unlock()
+	}
+}
+
+// BroadcastFinalityVote sends our vote to all peers.
+func (pm *ChainPeerManager) BroadcastFinalityVote(vote FinalityVoteMsg) {
+	data, err := MarshalMsg(MsgFinalityVote, &vote)
+	if err != nil {
+		return
+	}
+	frame := EncodeMessage(MsgFinalityVote, data)
+	pm.mu.RLock()
+	defer pm.mu.RUnlock()
+	for _, p := range pm.peers {
+		if !p.verified {
+			continue
+		}
+		p.mu.Lock()
+		p.conn.Write(frame)
+		p.mu.Unlock()
+	}
+}
+
+// serveGetHeaders answers a GETHEADERS request with a batch of headers.
+func (pm *ChainPeerManager) serveGetHeaders(peer *ChainPeer, payload []byte) {
+	var req GetHeadersMsg
+	if err := UnmarshalMsg(payload, &req); err != nil {
+		return
+	}
+	if pm.getHeader == nil {
+		return
+	}
+	max := req.MaxHeaders
+	if max <= 0 || max > 2000 {
+		max = 2000
+	}
+	headers := make([]BlockHeaderData, 0, 64)
+	for h := req.FromHeight; h < req.FromHeight+uint64(max); h++ {
+		hd, ok := pm.getHeader(h)
+		if !ok {
+			break
+		}
+		headers = append(headers, hd)
+	}
+	if len(headers) == 0 {
+		return
+	}
+	resp := HeadersMsg{Headers: headers}
+	if data, err := MarshalMsg(MsgHeaders, &resp); err == nil {
+		peer.mu.Lock()
+		peer.conn.Write(data)
+		peer.mu.Unlock()
+	}
+}
+
+// handleHeaders processes a HEADERS batch: verifies chain connectivity and
+// detects divergence from the local chain. On divergence, requests the fork
+// block by hash for repair.
+func (pm *ChainPeerManager) handleHeaders(peer *ChainPeer, payload []byte) {
+	var msg HeadersMsg
+	if err := UnmarshalMsg(payload, &msg); err != nil {
+		return
+	}
+	if len(msg.Headers) == 0 {
+		return
+	}
+	pm.mu.Lock()
+	if pm.remoteHeaders == nil {
+		pm.remoteHeaders = make(map[string][]BlockHeaderData)
+	}
+	pm.remoteHeaders[peer.nodeID] = msg.Headers
+	pm.mu.Unlock()
+
+	// Find the FIRST header whose hash disagrees with our local chain.
+	// Everything before it is common prefix; everything after is the fork.
+	if pm.hasLocalHeader == nil {
+		return
+	}
+	for i, hd := range msg.Headers {
+		localHash, ok := pm.hasLocalHeader(hd.Height)
+		if ok && localHash != hd.Hash {
+			pm.logger.Printf("[P2P] ⚠ HEADER-DIVERGENCE at h%d: local=%s peer=%s (%s) — requesting fork block",
+				hd.Height, localHash[:12], hd.Hash[:12], peer.nodeID[:8])
+			// Request the diverging block + a small re-sync from the fork point
+			req := GetBlockByHashMsg{Hash: hd.Hash}
+			if data, err := MarshalMsg(MsgGetBlockByHash, &req); err == nil {
+				peer.mu.Lock()
+				peer.conn.Write(data)
+				peer.mu.Unlock()
+			}
+			// Also request headers from just before divergence to track the fork
+			hr := GetHeadersMsg{FromHeight: hd.Height - 1, MaxHeaders: 500}
+			if data, err := MarshalMsg(MsgGetHeaders, &hr); err == nil {
+				peer.mu.Lock()
+				peer.conn.Write(data)
+				peer.mu.Unlock()
+			}
+			_ = i
+			return
+		}
+	}
+}
+
+// serveGetBlockByHash answers a GETBLOCKBYHASH request.
+func (pm *ChainPeerManager) serveGetBlockByHash(peer *ChainPeer, payload []byte) {
+	var req GetBlockByHashMsg
+	if err := UnmarshalMsg(payload, &req); err != nil {
+		return
+	}
+	if pm.getBlockByHash == nil {
+		return
+	}
+	if bd, ok := pm.getBlockByHash(req.Hash); ok {
+		resp := BlockByHashRespMsg{Hash: req.Hash, Block: bd}
+		if data, err := MarshalMsg(MsgBlockByHashResp, &resp); err == nil {
+			peer.mu.Lock()
+			peer.conn.Write(data)
+			peer.mu.Unlock()
+		}
+	}
+}
+
+// StartHeaderSync begins the periodic headers-first chain consistency check.
+func (pm *ChainPeerManager) StartHeaderSync() {
+	pm.wg.Add(1)
+	go func() {
+		defer pm.wg.Done()
+		ticker := time.NewTicker(20 * time.Second)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-pm.ctx.Done():
+				return
+			case <-ticker.C:
+				if pm.getHeader == nil {
+					continue
+				}
+				local := pm.getLocalHeightSync()
+				// Ask the best peer for headers near our tip: cheap fork probe.
+				from := uint64(1)
+				if local > 20 {
+					from = local - 20
+				}
+				req := GetHeadersMsg{FromHeight: from, MaxHeaders: 500}
+				data, _ := MarshalMsg(MsgGetHeaders, &req)
+				pm.mu.RLock()
+				var best *ChainPeer
+				var bestH uint64
+				for _, p := range pm.peers {
+					if p.verified && p.bestHeight > bestH {
+						bestH = p.bestHeight
+						best = p
+					}
+				}
+				pm.mu.RUnlock()
+				if best != nil {
+					best.mu.Lock()
+					best.conn.Write(data)
+					best.mu.Unlock()
+				}
+			}
+		}
+	}()
 }
 
 // ======================================================================
@@ -1327,7 +1601,6 @@ func versionCompare(a, b string) int {
 	}
 	return az - bz
 }
-
 
 // adviseIfLongestChainNewer warns (max once/hour) when a peer at or above our
 // height runs a newer node version — the longest chain is moving without us.

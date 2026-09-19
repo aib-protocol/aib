@@ -109,8 +109,9 @@ type Node struct {
 	epochFees     *epochFeeAccumulator
 
 	// P2P network
-	peerManager *p2p.ChainPeerManager
-	blockSyncer *p2p.ChainBlockSyncer
+	peerManager   *p2p.ChainPeerManager
+	blockSyncer   *p2p.ChainBlockSyncer
+	finality      *FinalityTracker
 	genesisHash string
 
 	// Key pair
@@ -859,6 +860,25 @@ func (n *Node) startP2P(nodeID string) error {
 	})
 	pm.StartAutoSync(15 * time.Second)
 
+	// Headers-first fork probe (v0.11.33): periodically compare our header
+	// chain against the best peer's; on divergence fetch the fork block by
+	// hash and let AddBlock's fork choice resolve it.
+	pm.SetHeaderProvider(
+		n.getHeaderAt,
+		n.localHeaderHash,
+		n.blockByHashStr,
+		n.onForkRepairBlock,
+		func() uint64 { return n.chainState.GetBestBlockHeight() },
+	)
+	pm.StartHeaderSync()
+
+	// Finality votes (v0.11.33): count gossiped votes; validators vote for tip.
+	ft := NewFinalityTracker(n.consensus, n.chainState, pm, n.privateKey, n.walletAddress(), n.logger.Printf)
+	n.finality = ft
+	pm.SetFinalityVoteHandler(ft.HandleVote)
+	n.chainState.SetFinalityGuard(ft.CanonicalGuard)
+	ft.StartVoteLoop(func() bool { return n.config.Validator })
+
 	// Start block syncer
 	syncer := p2p.NewChainBlockSyncer(pm, n.logger)
 	syncer.SetHandlers(
@@ -964,6 +984,75 @@ func (n *Node) applyBlockReputationUpdates(block *utxoPkg.Block) {
 	}
 	// Ignore error - reputation update is best-effort
 	_ = n.reputationMgr.SubmitScore(score)
+}
+
+// ============================================================================
+// Headers-first sync callbacks (v0.11.33)
+// ============================================================================
+
+// getHeaderAt returns a lightweight header for headers-first sync.
+func (n *Node) getHeaderAt(height uint64) (p2p.BlockHeaderData, bool) {
+	block, err := n.chainState.GetBlockByHeight(height)
+	if err != nil || block == nil {
+		return p2p.BlockHeaderData{}, false
+	}
+	return p2p.BlockHeaderData{
+		Height:    block.Header.Height,
+		Hash:      hex.EncodeToString(block.Hash[:]),
+		PrevHash:  hex.EncodeToString(block.Header.PrevBlockHash[:]),
+		Timestamp: block.Header.Timestamp,
+		Proposer:  hex.EncodeToString(block.Header.Proposer[:]),
+		Bits:      block.Header.Bits,
+	}, true
+}
+
+// localHeaderHash returns the local chain's block hash at a height.
+func (n *Node) localHeaderHash(height uint64) (string, bool) {
+	hd, ok := n.getHeaderAt(height)
+	return hd.Hash, ok
+}
+
+// blockByHashStr returns a full block by hex hash string (fork repair).
+func (n *Node) blockByHashStr(hashStr string) (p2p.BlockData, bool) {
+	raw, err := hex.DecodeString(hashStr)
+	if err != nil || len(raw) != 32 {
+		return p2p.BlockData{}, false
+	}
+	var h [32]byte
+	copy(h[:], raw)
+	block, err := n.chainState.GetBlockByHash(h)
+	if err != nil || block == nil {
+		return p2p.BlockData{}, false
+	}
+	return p2p.BlockData{
+		Height:        block.Header.Height,
+		Hash:          hex.EncodeToString(block.Hash[:]),
+		PrevBlockHash: hex.EncodeToString(block.Header.PrevBlockHash[:]),
+		MerkleRoot:    hex.EncodeToString(block.Header.MerkleRoot[:]),
+		Timestamp:     block.Header.Timestamp,
+		Proposer:      hex.EncodeToString(block.Header.Proposer[:]),
+		Signature:     hex.EncodeToString(block.Header.Signature),
+		SignedHash:    func() string { sh := computeSignedHash(block); return hex.EncodeToString(sh[:]) }(),
+		TxCount:       len(block.Transactions),
+		RawBlock:      block.SerializeBlock(),
+	}, true
+}
+
+// onForkRepairBlock processes a block fetched by hash during fork repair.
+// AddBlock's own fork-choice logic decides whether it extends the active
+// chain; if not, it becomes a known side-chain block for future reorg.
+func (n *Node) onForkRepairBlock(bd p2p.BlockData) error {
+	block, err := utxoPkg.DeserializeBlock(bd.RawBlock)
+	if err != nil {
+		return fmt.Errorf("deserialize fork block: %w", err)
+	}
+	if err := n.chainState.AddBlock(block); err != nil {
+		// Fork block may be non-extending; AddBlock handles side-chain store.
+		log.Printf("[AIB] [FORK-REPAIR] block %d not accepted: %v", block.Header.Height, err)
+		return nil // swallow: repair is best-effort
+	}
+	log.Printf("[AIB] [FORK-REPAIR] block %d accepted via header-divergence repair", block.Header.Height)
+	return nil
 }
 
 // handleGetBlocks returns blocks for a peer sync request.

@@ -32,6 +32,10 @@ type ChainState struct {
 	utxoStore    *PersistentUTXOStore
 	mempool      *Mempool
 	consensus    *ConsensusState
+
+	// Finality guard (v0.11.33): optional callback; returns error to reject
+	// a block that conflicts with a finalized height.
+	finalityGuard func(height uint64, blockHash [32]byte) error
 }
 
 // ChainBucket names for bbolt
@@ -382,6 +386,13 @@ func (cs *ChainState) ValidateBlock(block *Block) error {
 	// 2. Timestamp validation
 	if err := cs.validateBlockTimestamp(block); err != nil {
 		return fmt.Errorf("timestamp validation: %w", err)
+	}
+
+	// Finality guard (v0.11.33): refuse blocks that conflict with finalized history.
+	if cs.finalityGuard != nil {
+		if err := cs.finalityGuard(block.Header.Height, block.Hash); err != nil {
+			return fmt.Errorf("finality: %w", err)
+		}
 	}
 
 	// 3. Parent chain validation
@@ -1157,4 +1168,10 @@ func (cs *ChainState) UTXOSetRootHash() [32]byte {
 	var out [32]byte
 	copy(out[:], h.Sum(nil))
 	return out
+}
+
+
+// SetFinalityGuard installs the finality enforcement callback.
+func (cs *ChainState) SetFinalityGuard(g func(height uint64, blockHash [32]byte) error) {
+	cs.finalityGuard = g
 }
