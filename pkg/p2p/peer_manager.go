@@ -90,21 +90,22 @@ type ChainPeerManager struct {
 
 // ChainPeer represents a connected blockchain peer.
 type ChainPeer struct {
-	mu         sync.Mutex
-	conn       net.Conn
-	nodeID     string
-	nickname   string
-	address    string // remote ip:port
-	listenPort int    // port the peer listens on for P2P
-	validator  bool   // peer runs in validator mode
-	stakeAddr  string // hex staking address (when staked)
-	userAgent  string // peer's reported /aib-node/<version> string
-	bestHeight uint64
-	lastPing   time.Time
-	lastPong   time.Time
-	connected  time.Time
-	outbound   bool // true if we initiated the connection
-	verified   bool // true after VERSION/VERACK exchange
+	mu          sync.Mutex
+	conn        net.Conn
+	nodeID      string
+	nickname    string
+	address     string // remote ip:port
+	listenPort  int    // port the peer listens on for P2P
+	validator   bool   // peer runs in validator mode
+	stakeAddr   string // hex staking address (when staked)
+	userAgent   string // peer's reported /aib-node/<version> string
+	bestHeight  uint64
+	lastPing    time.Time
+	lastPong    time.Time
+	connectedAt time.Time
+	connected   time.Time
+	outbound    bool // true if we initiated the connection
+	verified    bool // true after VERSION/VERACK exchange
 }
 
 // ChainPeerConfig configures ChainPeerManager.
@@ -722,6 +723,9 @@ haveVerack:
 		conn.Close()
 		return fmt.Errorf("already connected to %s", peer.nodeID[:8])
 	}
+	if peer.connectedAt.IsZero() {
+		peer.connectedAt = time.Now()
+	}
 	pm.peers[peer.nodeID] = peer
 	pm.mu.Unlock()
 
@@ -876,6 +880,9 @@ func (pm *ChainPeerManager) handleInbound(conn net.Conn) {
 		return
 	}
 	pm.mu.Lock()
+	if peer.connectedAt.IsZero() {
+		peer.connectedAt = time.Now()
+	}
 	pm.peers[peer.nodeID] = peer
 	pm.mu.Unlock()
 
@@ -991,6 +998,20 @@ func (pm *ChainPeerManager) handleChainMessage(peer *ChainPeer, msgType uint8, p
 	case MsgGetBlocks:
 		var msg GetBlocksMsg
 		if err := UnmarshalMsg(payload, &msg); err != nil {
+			return
+		}
+		// MIN_PROTOCOL_VERSION gate: nodes below the floor compute different
+		// consensus results (P27 sortition); serving them blocks only feeds
+		// a doomed stale view. Refuse + tell them why.
+		if belowMinVersion(peer.userAgent) {
+			pm.logger.Printf("[P2P] ⛔ GETBLOCKS from outdated node %s (%s) refused — minimum %s",
+				peer.nodeID[:8], orUnknown(peer.userAgent), MinNodeVersion)
+			rej := RejectMsg{Reason: "node version below minimum " + MinNodeVersion + " — upgrade: curl -fsSL https://aib.one/install.sh | bash", Code: 0x10}
+			if d, err := MarshalMsg(MsgReject, &rej); err == nil {
+				peer.mu.Lock()
+				peer.conn.Write(d)
+				peer.mu.Unlock()
+			}
 			return
 		}
 		if pm.onGetBlocks != nil {
@@ -1341,6 +1362,17 @@ func (pm *ChainPeerManager) checkTimeouts() {
 	var stale []*ChainPeer
 	for _, p := range pm.peers {
 		p.mu.Lock()
+
+		// MIN_PROTOCOL_VERSION enforcement: disconnect outdated nodes after a
+		// 10-minute grace window (they got the REJECT + advisory logs first).
+		if belowMinVersion(p.userAgent) && time.Since(p.connectedAt) > 10*time.Minute {
+			p.mu.Unlock()
+			pm.logger.Printf("[P2P] ⛔ disconnecting outdated node %s (%s) — below minimum %s",
+				p.nodeID[:8], orUnknown(p.userAgent), MinNodeVersion)
+			stale = append(stale, p)
+			continue
+		}
+
 		if !p.lastPing.IsZero() && time.Since(p.lastPong) > 120*time.Second {
 			stale = append(stale, p)
 		}
@@ -1552,6 +1584,55 @@ func (pm *ChainPeerManager) HasPeerAt(addr string) bool {
 		}
 	}
 	return false
+}
+
+// MinNodeVersion is the minimum node version for P2P participation.
+// v0.11.32 implemented P27 slot-skip sortition: older nodes compute a
+// DIFFERENT winner on ~5% of heights — accepting their blocks would fork
+// the chain. Nodes below this version are disconnected after the grace
+// window and their sync-serving requests are refused.
+// Testnet-current minimum: v0.11.32.
+const MinNodeVersion = "v0.11.32"
+
+// minNodeVersionTuple caches the parsed MinNodeVersion.
+type vtuple struct{ x, y, z int }
+
+var minNodeVersionTuple = func() vtuple {
+	x, y, z := parseVersionTuple(MinNodeVersion)
+	return vtuple{x, y, z}
+}()
+
+func parseVersionTuple(s string) (int, int, int) {
+	var x, y, z int
+	if i := strings.Index(s, "/"); i >= 0 {
+		s = s[i+1:]
+	}
+	s = strings.TrimPrefix(s, "v")
+	fmt.Sscanf(s, "%d.%d.%d", &x, &y, &z)
+	return x, y, z
+}
+
+// belowMinVersion reports whether a user agent predates MinNodeVersion.
+func belowMinVersion(peerUA string) bool {
+	if peerUA == "" {
+		return true // unknown = assume old
+	}
+	x, y, z := parseVersionTuple(peerUA)
+	mx, my, mz := minNodeVersionTuple.x, minNodeVersionTuple.y, minNodeVersionTuple.z
+	if x != mx {
+		return x < mx
+	}
+	if y != my {
+		return y < my
+	}
+	return z < mz
+}
+
+func orUnknown(s string) string {
+	if s == "" {
+		return "no user-agent (very old)"
+	}
+	return s
 }
 
 // warnIfOutdated logs a local, per-peer advisory when a peer runs a
