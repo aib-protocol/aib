@@ -477,12 +477,18 @@ func (pm *ChainPeerManager) BroadcastTx(tx *utxoPkg.Transaction) {
 	data := tx.Serialize()
 	msg := EncodeMessage(MsgTx, data)
 	pm.mu.RLock()
-	defer pm.mu.RUnlock()
+	targets := make([]*ChainPeer, 0, len(pm.peers))
 	for _, p := range pm.peers {
+		if p.conn != nil {
+			targets = append(targets, p)
+		}
+	}
+	pm.mu.RUnlock()
+	for _, p := range targets {
 		p.mu.Lock()
 		if p.conn != nil {
-			p.conn.SetWriteDeadline(time.Now().Add(5 * time.Second))
-			p.conn.Write(msg)
+			p.conn.SetWriteDeadline(time.Now().Add(3 * time.Second))
+			_, _ = p.conn.Write(msg)
 			p.conn.SetWriteDeadline(time.Time{})
 		}
 		p.mu.Unlock()
@@ -1139,18 +1145,20 @@ func (pm *ChainPeerManager) handleChainMessage(peer *ChainPeer, msgType uint8, p
 }
 
 // relayToPeersExcept forwards a raw frame to all peers except origin.
+// IMPORTANT: snapshot peers under RLock, then write AFTER releasing the
+// manager lock — a stalled TCP peer must never block the whole peer table
+// (the /v1/peers 44s stall bug). Each write gets a hard deadline.
 func (pm *ChainPeerManager) relayToPeersExcept(from *ChainPeer, msgType uint8, payload []byte) {
 	data := EncodeMessage(msgType, payload)
 	pm.mu.RLock()
-	defer pm.mu.RUnlock()
+	targets := make([]*ChainPeer, 0, len(pm.peers))
 	for _, p := range pm.peers {
-		if p == from || !p.verified {
-			continue
+		if p != from && p.verified {
+			targets = append(targets, p)
 		}
-		p.mu.Lock()
-		p.conn.Write(data)
-		p.mu.Unlock()
 	}
+	pm.mu.RUnlock()
+	pm.writeToPeers(targets, data)
 }
 
 // BroadcastFinalityVote sends our vote to all peers.
@@ -1161,14 +1169,30 @@ func (pm *ChainPeerManager) BroadcastFinalityVote(vote FinalityVoteMsg) {
 	}
 	frame := EncodeMessage(MsgFinalityVote, data)
 	pm.mu.RLock()
-	defer pm.mu.RUnlock()
+	targets := make([]*ChainPeer, 0, len(pm.peers))
 	for _, p := range pm.peers {
-		if !p.verified {
-			continue
+		if p.verified {
+			targets = append(targets, p)
 		}
+	}
+	pm.mu.RUnlock()
+	pm.writeToPeers(targets, frame)
+}
+
+// writeToPeers writes a frame to each peer with a bounded write deadline.
+// Locks are taken per peer (never while holding pm.mu).
+func (pm *ChainPeerManager) writeToPeers(targets []*ChainPeer, data []byte) {
+	for _, p := range targets {
 		p.mu.Lock()
-		p.conn.Write(frame)
+		if tc, ok := p.conn.(*net.TCPConn); ok {
+			_ = tc.SetWriteDeadline(time.Now().Add(3 * time.Second))
+		}
+		_, err := p.conn.Write(data)
 		p.mu.Unlock()
+		if err != nil {
+			// stalled peer: drop it so it can't hold resources
+			pm.removePeer(p)
+		}
 	}
 }
 
@@ -1562,14 +1586,18 @@ func GenerateNodeID(pubKey []byte) string {
 func (pm *ChainPeerManager) relayTx(from *ChainPeer, payload []byte) {
 	msg := EncodeMessage(MsgTx, payload)
 	pm.mu.RLock()
-	defer pm.mu.RUnlock()
+	targets := make([]*ChainPeer, 0, len(pm.peers))
 	for _, p := range pm.peers {
 		if p == from || p.conn == nil {
 			continue
 		}
+		targets = append(targets, p)
+	}
+	pm.mu.RUnlock()
+	for _, p := range targets {
 		p.mu.Lock()
-		p.conn.SetWriteDeadline(time.Now().Add(5 * time.Second))
-		p.conn.Write(msg)
+		p.conn.SetWriteDeadline(time.Now().Add(3 * time.Second))
+		_, _ = p.conn.Write(msg)
 		p.mu.Unlock()
 	}
 }
