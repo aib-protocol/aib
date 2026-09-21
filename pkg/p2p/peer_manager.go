@@ -927,6 +927,15 @@ func (pm *ChainPeerManager) readLoop(peer *ChainPeer) {
 			return
 		}
 
+		// Liveness: ANY received message counts as alive. During bulk block
+		// download (500-block BlocksMsg), the peer's read loop is busy
+		// processing and cannot answer Pings fast enough — judging liveness
+		// by Pong alone kills healthy syncing peers every ~2 minutes
+		// (observed: 34 spurious disconnects / 3h on a home-uplink sync node).
+		peer.mu.Lock()
+		peer.lastPong = time.Now()
+		peer.mu.Unlock()
+
 		pm.handleChainMessage(peer, msgType, payload)
 	}
 }
