@@ -139,7 +139,9 @@ func runSetup(dataDir string, apiPort, p2pPort int, nodeArgs []string) error {
 
 	// 2. mining — auto-skip when the PoW era is already over (chain height > 1000)
 	powEraOver := false
+	heightProbed := false
 	if body, code, err := setupGet("/v1/block/latest"); err == nil && code == 200 {
+		heightProbed = true
 		var b struct {
 			Data struct {
 				Header struct {
@@ -153,6 +155,13 @@ func runSetup(dataDir string, apiPort, p2pPort int, nodeArgs []string) error {
 	}
 	if powEraOver {
 		fmt.Println("  ✓ PoW era is over (height > 1000) — CPU mining skipped. To earn blocks, stake AIB: POST /v1/stake")
+	} else if !heightProbed {
+		// Could not read chain height (fresh node, API not up yet). Assume the
+		// PoW era is over (it ended long ago at height 10,000) — asking a new
+		// validator to "start CPU mining" is a fossil prompt that confuses
+		// PoS users. Skip it and point to staking instead.
+		fmt.Println("  ✓ Validator mode — PoS only, CPU mining not needed.")
+		fmt.Println("    To earn blocks, stake AIB: POST /v1/stake (or re-run setup after sync)")
 	} else if askYesNo(r, "Start CPU mining now (validator mode)?", true) {
 		// stop current node instance (best-effort, cross-platform: ask user if it fails)
 		fmt.Println("  Restarting node in validator mode...")
