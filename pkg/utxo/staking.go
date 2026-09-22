@@ -21,7 +21,11 @@ import (
 const StakeScriptTag byte = 0xA1
 
 // UnstakeCooldownBlocks is how long an unstake takes to become spendable.
-const UnstakeCooldownBlocks = 500
+// Flexible-staking model (user directive 2026-09-22): stake is node-side and
+// fully liquid — AIB in a stake output earns block-proposal weight, taking it
+// out stops mining. The cooldown keeps only a minimal reorg-safety depth
+// (3 blocks ≈ 1.5–3 min), NOT an economic lockup.
+const UnstakeCooldownBlocks = 3
 
 // IsStakeOutput reports whether a UTXO is stake-locked.
 func IsStakeOutput(u *UTXO) bool {

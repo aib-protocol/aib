@@ -17,6 +17,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"strconv"
 	"time"
 )
 
@@ -72,6 +73,74 @@ func setupPost(path string, body any) ([]byte, int, error) {
 	defer resp.Body.Close()
 	b, _ := io.ReadAll(resp.Body)
 	return b, resp.StatusCode, nil
+}
+
+
+
+// trimF formats a float without trailing zeros (for JSON amount_aib).
+func trimF(f float64) string {
+	return strconv.FormatFloat(f, 'f', -1, 64)
+}
+
+// setupGuideStaking: PoS-era staking guide (user directive 2026-09-22).
+// Flexible-staking UX: stake is liquid, no lockup. If the node wallet has a
+// spendable balance, offer to stake it right now (one question); otherwise
+// print the validator wallet address and tell the user to fund it, then
+// re-run setup (or POST /v1/stake) — staking activates within ~1 block.
+func setupGuideStaking(r *bufio.Reader, dataDir string) {
+	type walletInfo struct {
+		Data struct {
+			Address    string  `json:"address"`
+			BalanceAIB float64 `json:"balance_aib"`
+		} `json:"data"`
+	}
+	var w walletInfo
+	haveInfo := false
+	if body, code, err := setupGet("/v1/wallet/info"); err == nil && code == 200 {
+		if json.Unmarshal(body, &w) == nil && w.Data.Address != "" {
+			haveInfo = true
+		}
+	}
+	fmt.Println()
+	fmt.Println("  ── PoS STAKING ─────────────────────────────────────")
+	fmt.Println("  Flexible staking: AIB staked = mining weight.")
+	fmt.Println("  Stake now → mining weight within ~1 block; unstake → coins back in ~2 blocks. No lockup.")
+	if !haveInfo {
+		fmt.Println("  Could not read wallet info; after sync run: curl " + setupAPIBase + "/v1/wallet/info")
+		return
+	}
+	fmt.Printf("  Validator wallet: %s\n", w.Data.Address)
+	if w.Data.BalanceAIB < 1000 {
+		fmt.Printf("  Liquid balance : %.4f AIB — below the 1000 AIB minimum stake.\n", w.Data.BalanceAIB)
+		fmt.Println("  → Transfer AIB to the address above, then run:  aib-node setup  (it will offer to stake).")
+		return
+	}
+	fmt.Printf("  Liquid balance : %.4f AIB\n", w.Data.BalanceAIB)
+	stakeAmt := w.Data.BalanceAIB - 10 // keep a dust buffer for fees
+	if !askYesNo(r, fmt.Sprintf("Stake %.0f AIB now and start PoS mining?", stakeAmt), true) {
+		fmt.Println("  Skipped — stake any time: POST /v1/stake")
+		return
+	}
+	// The validator wallet key IS the node key (node_key.pem, raw 64-byte
+	// ed25519 seed+pub). The setup process can read it from the data dir.
+	keyData, err := os.ReadFile(filepath.Join(dataDir, "node_key.pem"))
+	if err != nil || len(keyData) < 64 {
+		fmt.Println("  ! Could not read node_key.pem — stake manually with your wallet key:")
+		fmt.Println("    POST /v1/stake {\"private_key\": \"<hex>\", \"amount_aib\": \"" + trimF(stakeAmt) + "\"}")
+		return
+	}
+	pkHex := hex.EncodeToString(keyData[:64])
+	body, code, err := setupPost("/v1/stake", map[string]string{
+		"private_key": pkHex,
+		"amount_aib":  trimF(stakeAmt),
+	})
+	if err != nil || code != 200 {
+		fmt.Printf("  ! Stake call failed (HTTP %d): %s\n", code, string(body))
+		fmt.Println("    Stake manually: POST /v1/stake")
+		return
+	}
+	fmt.Println("  ✓ STAKED — mining weight active from the next block.")
+	fmt.Println("    Check : curl " + setupAPIBase + "/v1/wallet/info")
 }
 
 func runSetup(dataDir string, apiPort, p2pPort int, nodeArgs []string) error {
@@ -154,14 +223,16 @@ func runSetup(dataDir string, apiPort, p2pPort int, nodeArgs []string) error {
 		}
 	}
 	if powEraOver {
-		fmt.Println("  ✓ PoW era is over (height > 1000) — CPU mining skipped. To earn blocks, stake AIB: POST /v1/stake")
+		fmt.Println("  ✓ PoW era is over — this chain is pure PoS now (no CPU mining, ever).")
+		setupGuideStaking(r, dataDir)
 	} else if !heightProbed {
 		// Could not read chain height (fresh node, API not up yet). Assume the
 		// PoW era is over (it ended long ago at height 10,000) — asking a new
 		// validator to "start CPU mining" is a fossil prompt that confuses
 		// PoS users. Skip it and point to staking instead.
 		fmt.Println("  ✓ Validator mode — PoS only, CPU mining not needed.")
-		fmt.Println("    To earn blocks, stake AIB: POST /v1/stake (or re-run setup after sync)")
+		fmt.Println("  Node is still syncing; staking will be offered once you have AIB.")
+		fmt.Println("  (Re-run setup after sync, or stake any time: POST /v1/stake)")
 	} else if askYesNo(r, "Start CPU mining now (validator mode)?", true) {
 		// stop current node instance (best-effort, cross-platform: ask user if it fails)
 		fmt.Println("  Restarting node in validator mode...")

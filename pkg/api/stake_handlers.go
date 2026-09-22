@@ -25,7 +25,10 @@ const (
 
 	// UnstakeUnlockPeriod is the unlock period (approx. 7 days, assuming 60 seconds/block)
 	// 7 * 24 * 60 * 60 / 60 = 10080 blocks
-	UnstakeUnlockBlocks = 10080
+	// Flexible staking: unlock after just 2 blocks of reorg-safety depth.
+	// Stake earns sortition weight immediately (validator set rebuilds from
+	// live stake UTXOs on every block); unstake frees coins ~2 blocks later.
+	UnstakeUnlockBlocks = 2
 
 	// StakingScriptType is the staking script type identifier
 	StakingScriptType = "staking"

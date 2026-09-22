@@ -43,7 +43,7 @@ func DefaultPoSConfig() *PoSConfig {
 		MinStake:        1000 * 1e8, // 1000 AIB
 		BlockReward:     50 * 1e8,   // 50 AIB
 		MaxValidators:   100,
-		StakeLockPeriod: 100,
+		StakeLockPeriod: 3, // flexible: join/leave the validator set near-instantly
 		EpochDuration:   100 * TargetBlockTime, // ~100 min/epoch
 
 		// Transaction fees: 1 AIB = 1e8 satoshi
