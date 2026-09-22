@@ -21,7 +21,7 @@ import (
 	"time"
 )
 
-const setupAPIBase = "http://127.0.0.1:8080"
+var setupAPIBase = "http://127.0.0.1:8080"
 
 func setupTTYReader() *bufio.Reader {
 	if f, err := os.OpenFile("/dev/tty", os.O_RDWR, 0); err == nil {
@@ -144,6 +144,7 @@ func setupGuideStaking(r *bufio.Reader, dataDir string) {
 }
 
 func runSetup(dataDir string, apiPort, p2pPort int, nodeArgs []string) error {
+	setupAPIBase = fmt.Sprintf("http://127.0.0.1:%d", apiPort)
 	r := setupTTYReader()
 
 	fmt.Println("╔══════════════════════════════════════╗")
@@ -213,12 +214,20 @@ func runSetup(dataDir string, apiPort, p2pPort int, nodeArgs []string) error {
 		heightProbed = true
 		var b struct {
 			Data struct {
+				Height uint64 `json:"height"` // /v1/block/latest: data.height (no header wrapper)
 				Header struct {
 					Height uint64 `json:"height"`
 				} `json:"header"`
 			} `json:"data"`
 		}
-		if json.Unmarshal(body, &b) == nil && b.Data.Header.Height > 1000 {
+		h := uint64(0)
+		if json.Unmarshal(body, &b) == nil {
+			h = b.Data.Height
+			if h == 0 {
+				h = b.Data.Header.Height
+			}
+		}
+		if h > 1000 {
 			powEraOver = true
 		}
 	}
