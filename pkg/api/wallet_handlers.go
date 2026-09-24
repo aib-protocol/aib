@@ -266,11 +266,12 @@ type WalletBalanceResponse struct {
 
 // SendTransactionRequest send transaction request
 type SendTransactionRequest struct {
-	FromAddress string `json:"from_address"` // sender address
-	ToAddress   string `json:"to_address"`   // recipient address
-	Amount      uint64 `json:"amount"`       // amount (smallest unit)
-	Fee         uint64 `json:"fee"`          // transaction fee (optional, auto-computed)
-	PrivateKey  string `json:"private_key"`  // private key (for signing)
+	FromAddress string  `json:"from_address"` // sender address
+	ToAddress   string  `json:"to_address"`   // recipient address
+	Amount      uint64  `json:"amount"`       // amount (smallest unit)
+	AmountAIB   float64 `json:"amount_aib"`   // amount in AIB (takes precedence when > 0)
+	Fee         uint64  `json:"fee"`          // transaction fee (optional, auto-computed)
+	PrivateKey  string  `json:"private_key"`  // private key (for signing)
 	Memo        string `json:"memo"`         // memo (optional)
 }
 
@@ -537,6 +538,12 @@ func (s *Server) handleSendTransaction(w http.ResponseWriter, r *http.Request) {
 	if err := decodeJSON(r, &req); err != nil {
 		writeError(w, http.StatusBadRequest, ErrCodeInvalidRequest, "Invalid request body", err.Error())
 		return
+	}
+
+	// amount_aib (float AIB) takes precedence over amount (raw units) —
+	// prevents the "sent 0 coins" footgun when callers use AIB units.
+	if req.AmountAIB > 0 {
+		req.Amount = uint64(req.AmountAIB * 1e8)
 	}
 
 	// decode the private key

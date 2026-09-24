@@ -101,6 +101,25 @@ func setupGuideStaking(r *bufio.Reader, dataDir string) {
 			haveInfo = true
 		}
 	}
+	// Liquid balance + staked amount from the stake info endpoint. NOTE:
+	// /v1/wallet/info's balance_aib includes STAKED coins — using it here
+	// caused a bogus "Stake 199,990 AIB now?" prompt (and a confusing
+	// INSUFFICIENT_BALANCE error) for wallets that were ALREADY staking.
+	var liquid, staked float64
+	if body, code, err := setupGet("/v1/stake/info/" + w.Data.Address); err == nil && code == 200 {
+		var si struct {
+			Data struct {
+				LiquidAIB float64 `json:"liquid_aib"`
+				StakedAIB float64 `json:"staked_aib"`
+			} `json:"data"`
+		}
+		if json.Unmarshal(body, &si) == nil {
+			liquid, staked = si.Data.LiquidAIB, si.Data.StakedAIB
+		}
+	}
+	if liquid == 0 && staked == 0 {
+		liquid = w.Data.BalanceAIB // endpoint unavailable — fall back
+	}
 	fmt.Println()
 	fmt.Println("  ── PoS STAKING ─────────────────────────────────────")
 	fmt.Println("  Flexible staking: AIB staked = mining weight.")
@@ -110,13 +129,21 @@ func setupGuideStaking(r *bufio.Reader, dataDir string) {
 		return
 	}
 	fmt.Printf("  Validator wallet: %s\n", w.Data.Address)
-	if w.Data.BalanceAIB < 1000 {
-		fmt.Printf("  Liquid balance : %.4f AIB — below the 1000 AIB minimum stake.\n", w.Data.BalanceAIB)
+	if staked > 0 {
+		fmt.Printf("  ✓ ALREADY STAKED: %.4f AIB — you are PoS mining right now.\n", staked)
+		fmt.Printf("    Liquid (unstaked): %.4f AIB\n", liquid)
+		if liquid < 1000 {
+			fmt.Println("  Nothing more to do — stake covers all liquid balance.")
+			return
+		}
+		fmt.Println("  Extra liquid balance available — you may stake more:")
+	} else if liquid < 1000 {
+		fmt.Printf("  Liquid balance : %.4f AIB — below the 1000 AIB minimum stake.\n", liquid)
 		fmt.Println("  → Transfer AIB to the address above, then run:  aib-node setup  (it will offer to stake).")
 		return
 	}
-	fmt.Printf("  Liquid balance : %.4f AIB\n", w.Data.BalanceAIB)
-	stakeAmt := w.Data.BalanceAIB - 10 // keep a dust buffer for fees
+	fmt.Printf("  Liquid balance : %.4f AIB\n", liquid)
+	stakeAmt := liquid - 10 // keep a dust buffer for fees
 	if !askYesNo(r, fmt.Sprintf("Stake %.0f AIB now and start PoS mining?", stakeAmt), true) {
 		fmt.Println("  Skipped — stake any time: POST /v1/stake")
 		return
@@ -135,11 +162,20 @@ func setupGuideStaking(r *bufio.Reader, dataDir string) {
 		"amount_aib":  trimF(stakeAmt),
 	})
 	if err != nil || code != 200 {
-		fmt.Printf("  ! Stake call failed (HTTP %d): %s\n", code, string(body))
-		fmt.Println("    Stake manually: POST /v1/stake")
+		fmt.Println()
+		fmt.Println("  \033[1;37;41m                                                \033[0m")
+		fmt.Printf("  \033[1;37;41m  ⚠ STAKE FAILED (HTTP %d) — READ THIS, DO NOT SKIP  \033[0m\n", code)
+		fmt.Println("  \033[1;37;41m                                                \033[0m")
+		fmt.Printf("  \033[0;31m  Error: %s\033[0m\n", string(body))
+		fmt.Println("  \033[0;31m  If this says INSUFFICIENT_BALANCE but you DID stake before,\033[0m")
+		fmt.Println("  \033[0;31m  your coins are already staked — nothing was lost. Check:\033[0m")
+		fmt.Println("  \033[0;31m  curl " + setupAPIBase + "/v1/stake/info/" + w.Data.Address + "\033[0m")
+		fmt.Println()
+		fmt.Print("  \033[1;31m  Acknowledge before continuing [press Enter]\033[0m ")
+		_, _ = r.ReadString('\n')
 		return
 	}
-	fmt.Println("  ✓ STAKED — mining weight active from the next block.")
+	fmt.Println("  \033[1;32m  ✓ STAKED — mining weight active from the next block.\033[0m")
 	fmt.Println("    Check : curl " + setupAPIBase + "/v1/wallet/info")
 }
 
