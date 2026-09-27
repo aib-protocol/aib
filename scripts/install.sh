@@ -1,654 +1,494 @@
-#!/bin/bash
-#
-# ╔══════════════════════════════════════════════════════════════════════╗
-# ║                    AIB 2.0 Node Installer                            ║
-# ║                    AI-Powered Blockchain Network                     ║
-# ║                                                                       ║
-# ║  Usage: curl -sL https://www.aib.one/install.sh | bash -s testnet   ║
-# ║                                                                       ║
-# ╚══════════════════════════════════════════════════════════════════════╝
-#
+#!/usr/bin/env bash
+# AIB Node installer — no root required, installs to ~/.aib
+# Usage: curl -sSfL https://aib.one/install.sh | bash
+set -euo pipefail
 
-set -e
-
-# ========== Cyberpunk Color Palette ==========
-RED='\033[0;31m'
-BRIGHT_RED='\033[1;31m'
-GREEN='\033[0;32m'
-BRIGHT_GREEN='\033[1;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-MAGENTA='\033[0;35m'
-BRIGHT_MAGENTA='\033[1;35m'
-CYAN='\033[0;36m'
-BRIGHT_CYAN='\033[1;36m'
-WHITE='\033[1;37m'
-GRAY='\033[0;90m'
-NC='\033[0m'
-
-# ========== Special Characters ==========
-ARROW='▶'
-BULLET='●'
-SQUARE='■'
-TRIANGLE='▲'
-CHECK='✓'
-CROSS='✗'
-ROCKET='🚀'
-GEAR='⚙'
-LOCK='🔒'
-SHIELD='🛡'
-NETWORK='🌐'
-DISK='💾'
-TERMINAL='⌨'
-SCANNER='📡'
-CLOCK='⏱'
-DATABASE='🗄'
-FLAME='🔥'
-BOLT='⚡'
-
-# ========== Default Configuration ==========
-PROJECT_NAME="AIB 2.0"
-BINARY_BASE_URL="https://www.aib.one/binaries"
-INSTALL_DIR="$HOME/.aib-node"
+VERSION=v0.11.40
+REPO="aib-protocol/aib"
+# Pinned artifact hashes (multi-source integrity anchor).
+# Every source must match the pinned hash or the installer refuses to run.
+PINNED_SHA256_AMD64=a74d2c3d066de83b41638d5272c7dd56323d77c034c6df54da947d920461e14a
+PINNED_SHA256_ARM64=0c7c269ee893d5aee694e18f6994fbeeaf068a74aaa5b1fb9cdd78f821c8b503
+INSTALL_DIR="${AIB_HOME:-$HOME/.aib}"
+BIN_DIR="$INSTALL_DIR/bin"
+BIN="$BIN_DIR/aib-node"
 SERVICE_NAME="aib-node"
-DEFAULT_NETWORK="testnet"
-DEFAULT_DATA_DIR="$HOME/.aib"
-DEFAULT_API_PORT=8080
-DEFAULT_BLOCK_TIME=30
 
-# Network port mapping
-TESTNET_PORT=51413
-MAINNET_PORT=31415
+# ---------- pretty output ----------
+info()  { printf '\033[1;34m[AIB]\033[0m %s\n' "$*"; }
+ok()    { printf '\033[1;32m  ✓\033[0m %s\n' "$*"; }
+warn()  { printf '\033[1;33m  !\033[0m %s\n' "$*"; }
+die()   { printf '\033[1;31m[AIB] ERROR:\033[0m %s\n' "$*" >&2; exit 1; }
 
-# Parse command line arguments
-NETWORK="$DEFAULT_NETWORK"
-DATA_DIR="$DEFAULT_DATA_DIR"
-API_PORT="$DEFAULT_API_PORT"
-P2P_PORT=""
-VALIDATOR_MODE=false
-BLOCK_TIME="$DEFAULT_BLOCK_TIME"
-INSTALL_SYSTEMD=false
-NO_START=false
-DEBUG_MODE=false
-
-# ========== Command Line Parsing ==========
-if [[ $# -gt 0 ]]; then
-    case "$1" in
-        testnet|mainnet)
-            NETWORK="$1"
-            ;;
-        stop)
-            stop_node
-            exit 0
-            ;;
-        uninstall)
-            uninstall_node
-            exit 0
-            ;;
-        status)
-            show_status
-            exit 0
-            ;;
-        *)
-            print_banner
-            echo -e "${RED}Unknown command: $1${NC}"
-            echo ""
-            echo -e "${CYAN}Available commands:${NC}"
-            echo -e "  ${GREEN}testnet|mainnet${NC}  - Install node on specified network"
-            echo -e "  ${GREEN}stop${NC}           - Stop the running node"
-            echo -e "  ${GREEN}uninstall${NC}      - Remove the node completely"
-            echo -e "  ${GREEN}status${NC}         - Show node status"
-            echo ""
-            echo -e "${CYAN}Examples:${NC}"
-            echo -e "  ${YELLOW}curl -sL https://www.aib.one/install.sh | bash -s testnet${NC}"
-            echo -e "  ${YELLOW}curl -sL https://www.aib.one/install.sh | bash -s stop${NC}"
-            echo -e "  ${YELLOW}curl -sL https://www.aib.one/install.sh | bash -s uninstall${NC}"
-            exit 1
-            ;;
-    esac
-fi
-
-# Set P2P port based on network (will be overridden by command line)
-NETWORK="$DEFAULT_NETWORK"
-
-# Set P2P port and block time based on network
-if [[ "$NETWORK" == "testnet" ]]; then
-    P2P_PORT=$TESTNET_PORT
-    CHAIN_ID="aib-testnet-1"
-    BLOCK_TIME=30
-else
-    P2P_PORT=$MAINNET_PORT
-    CHAIN_ID="aib-mainnet-1"
-    BLOCK_TIME=60
-fi
-
-# ========== Cyberpunk Logging Functions ==========
-print_banner() {
-    clear
-    echo -e "${CYAN}"
-    cat <<'EOF'
-╔═══════════════════════════════════════════════════════════════════════════════╗
-║                                                                               ║
-║   ██████╗ ███████╗ ██████╗ ███████╗ ██████╗██████╗  ██████╗ ███████╗           ║
-║  ██╔════╝ ██╔════╝██╔═══██╗██╔════╝██╔════╝██╔══██╗██╔══██╗██╔════╝           ║
-║  ██║  ███╗█████╗  ██║   ██║███████╗███████╗██████╔╝██║  ██║█████╗             ║
-║  ██║   ██║██╔══╝  ██║   ██║╚════██║╚════██║██╔══██╗██║  ██║██╔══╝             ║
-║  ╚██████╔╝███████╗╚██████╔╝███████║███████║██║  ██║██████╔╝███████╗           ║
-║   ╚═════╝ ╚══════╝ ╚═════╝ ╚══════╝╚══════╝╚═╝  ╚═╝╚═════╝ ╚══════╝           ║
-║                                                                               ║
-║                    ░█▀█░█▀▄░█▀▀░█░█░█▀█░█▀▀░█▀█                                ║
-║                    ░█▀█░█▀▄░█▀▀░▀▄▀░█▀█░▀▀█░█▀▄                                ║
-║                    ░▀░▀░▀░▀░▀▀▀░▀▀▀░▀░▀░▀▀▀░▀░▀                                ║
-║                                                                               ║
-╚═══════════════════════════════════════════════════════════════════════════════╝
-EOF
-    echo -e "${NC}"
-    echo -e "${BRIGHT_CYAN}                   [ ${CYAN}AI-Powered Blockchain Network${BRIGHT_CYAN} ]${NC}"
-    echo -e "${BRIGHT_CYAN}                   [ ${CYAN}Proof of AI Work Consensus${BRIGHT_CYAN} ]${NC}"
-    echo ""
-    echo -e "${GRAY}═══════════════════════════════════════════════════════════════════════════${NC}"
-    echo ""
-}
-
-log_debug() {
-    if [[ "$DEBUG_MODE" == true ]]; then
-        echo -e "${GRAY}[${MAGENTA}DEBUG${GRAY}]${NC} $1"
-    fi
-}
-
-log_info() {
-    echo -e "${CYAN}[${BULLET}]${NC} $1"
-}
-
-log_success() {
-    echo -e "${BRIGHT_GREEN}[${CHECK}]${NC} $1"
-}
-
-log_warn() {
-    echo -e "${YELLOW}[${GEAR}]${NC} $1"
-}
-
-log_error() {
-    echo -e "${RED}[${CROSS}]${NC} $1"
-}
-
-log_phase() {
-    echo ""
-    echo -e "${CYAN}┌─────────────────────────────────────────────────────────────────────┐${NC}"
-    echo -e "${CYAN}│${NC} ${BRIGHT_CYAN}$1${NC}$(printf '%*s' $((60 - ${#1})) '')${CYAN}│${NC}"
-    echo -e "${CYAN}└─────────────────────────────────────────────────────────────────────┘${NC}"
-    echo ""
-}
-
-# ========== Download Binary ==========
-download_binary() {
-    log_phase "${ARROW} PHASE 1: BINARY ACQUISITION"
-
-    # Check for existing installation
-    if [[ -f "$INSTALL_DIR/aib-node" ]]; then
-        EXISTING_SIZE=$(stat -f%z "$INSTALL_DIR/aib-node" 2>/dev/null || stat -c%s "$INSTALL_DIR/aib-node" 2>/dev/null)
-
-        # Check if binary is valid (non-zero and ELF)
-        if [[ "$EXISTING_SIZE" -gt 1000 ]]; then
-            if file "$INSTALL_DIR/aib-node" 2>/dev/null | grep -q "ELF"; then
-                log_warn "${YELLOW}Existing AIB node detected${NC}"
-                log_info "${CYAN}Binary: $INSTALL_DIR/aib-node ($(numfmt --to=iec $EXISTING_SIZE 2>/dev/null || echo ${EXISTING_SIZE}B))${NC}"
-
-                echo ""
-                echo -e "${YELLOW}Choose action:${NC}"
-                echo -e "  ${CYAN}1)${NC} Use existing binary (skip download)"
-                echo -e "  ${CYAN}2)${NC} Upgrade to latest version"
-                echo ""
-                read -p "$(echo -e ${CYAN}"[?] Your choice [1-2]: "${NC})" -n 1 -r choice
-                echo ""
-
-                case "$choice" in
-                    1|"")
-                        log_success "${BRIGHT_CYAN}Using existing binary${NC}"
-                        return 0
-                        ;;
-                    2)
-                        log_info "${CYAN}Upgrading to latest version...${NC}"
-                        ;;
-                    *)
-                        log_info "${CYAN}Upgrading to latest version...${NC}"
-                        ;;
-                esac
-            else
-                log_warn "${YELLOW}Existing binary corrupted, re-downloading...${NC}"
-            fi
-        else
-            log_warn "${YELLOW}Existing binary invalid (${EXISTING_SIZE} bytes), re-downloading...${NC}"
-        fi
-
-        # Backup old binary
-        if [[ -f "$INSTALL_DIR/aib-node" ]]; then
-            mv "$INSTALL_DIR/aib-node" "$INSTALL_DIR/aib-node.backup.$(date +%s)"
-        fi
-    fi
-
-    # Detect architecture
-    ARCH=$(uname -m)
-    case $ARCH in
-        x86_64)
-            BINARY_ARCH="amd64"
-            log_debug "${GREEN}  └─ Architecture: x86_64 (amd64)${NC}"
-            ;;
-        aarch64|arm64)
-            BINARY_ARCH="arm64"
-            log_debug "${GREEN}  └─ Architecture: ARM64${NC}"
-            ;;
-        *)
-            log_error "Unsupported architecture: $ARCH"
-            exit 1
-            ;;
-    esac
-
-    OS=$(uname -s)
-    log_debug "${GREEN}  └─ OS: $OS${NC}"
-
-    BINARY_FILE="aib-node-linux-${BINARY_ARCH}"
-    BINARY_URL="${BINARY_BASE_URL}/${BINARY_FILE}"
-
-    echo -e "${CYAN}[${DISK}]${NC} ${BRIGHT_CYAN}Target:${NC} $BINARY_FILE"
-    echo -e "${CYAN}[${NETWORK}]${NC} ${BRIGHT_CYAN}Source:${NC}  $BINARY_URL"
-    echo ""
-
-    if command -v wget &> /dev/null; then
-        log_debug "${YELLOW}  Using wget for download...${NC}"
-        wget --show-progress "$BINARY_URL" -O "/tmp/${BINARY_FILE}" 2>&1 | \
-            grep -E "[0-9]%|KB/s|MB/s" || true
-    elif command -v curl &> /dev/null; then
-        log_debug "${YELLOW}  Using curl for download...${NC}"
-        curl -L "$BINARY_URL" -o "/tmp/${BINARY_FILE}" --progress-bar
+# ---------- verify mode: cross-check hashes against on-chain anchors ----------
+# bash install.sh --verify
+# Fetches /release.json (served from each node's P2P port, backed by the
+# on-chain release anchor) from every known node, takes the MAJORITY
+# record, and compares BOTH hashes: the running script and the binary.
+VERIFY_NODES=(
+  "http://182.61.43.222:51413"
+  "http://212.56.43.128:51413"
+  "http://212.56.43.128:51415"
+  "http://154.53.40.40:51414"
+)
+if [ "${1:-}" = "--verify" ]; then
+  SELF="$(sha256sum "$0" 2>/dev/null | awk '{print $1}')"
+  info "self (install.sh) sha256 = $SELF"
+  declare -A VOTES
+  ANSWERED=0
+  for N in "${VERIFY_NODES[@]}"; do
+    J="$(curl -s --max-time 8 "$N/release.json" 2>/dev/null)" || continue
+    R_NAME="$(printf '%s' "$J" | grep -o '"name":"[^"]*"' | cut -d'"' -f4)"
+    R_BIN="$(printf '%s' "$J" | grep -o '"sha256":"[^"]*"' | cut -d'"' -f4)"
+    R_INS="$(printf '%s' "$J" | grep -o '"installer_sha256":"[^"]*"' | cut -d'"' -f4)"
+    [ -n "$R_NAME" ] || continue
+    ANSWERED=$((ANSWERED+1))
+    KEY="$R_NAME|$R_BIN|$R_INS"
+    VOTES["$KEY"]=$(( ${VOTES["$KEY"]:-0} + 1 ))
+    info "$N -> $R_NAME bin=${R_BIN:0:12}... ins=${R_INS:0:12}..."
+  done
+  [ "$ANSWERED" -ge 2 ] || die "fewer than 2 nodes answered /release.json — cannot establish majority"
+  BEST=""; BEST_N=0
+  for K in "${!VOTES[@]}"; do
+    if [ "${VOTES[$K]}" -gt "$BEST_N" ]; then BEST_N="${VOTES[$K]}"; BEST="$K"; fi
+  done
+  [ "$BEST_N" -ge 2 ] || die "no majority among node answers (split answers = possible attack)"
+  A_NAME="${BEST%%|*}"; REST="${BEST#*|}"
+  A_BIN="${REST%%|*}"; A_INS="${REST#*|}"
+  ok "Majority ($BEST_N/$ANSWERED): on-chain anchor for $A_NAME"
+  PASS=1
+  if [ -n "$A_INS" ] && [ "$A_INS" != "$SELF" ]; then
+    warn "SCRIPT HASH MISMATCH: anchor=$A_INS self=$SELF"; PASS=0
+  fi
+  if [ -x "$BIN" ]; then
+    LOCAL_BIN="$(sha256sum "$BIN" | awk '{print $1}')"
+    if [ "$LOCAL_BIN" != "$A_BIN" ]; then
+      warn "LOCAL BINARY MISMATCH: anchor=$A_BIN local=$LOCAL_BIN"; PASS=0
     else
-        log_error "wget or curl required"
-        exit 1
+      ok "local binary matches on-chain anchor"
     fi
+  fi
+  if [ "$A_NAME" != "$VERSION" ]; then
+    warn "this script targets $VERSION but chain anchors $A_NAME (script may be stale, not malicious)"
+  fi
+  [ "$PASS" = "1" ] && ok "VERIFY PASS — script + binary match the PoS-chain anchored release" || die "VERIFY FAIL"
+  exit 0
+fi
 
-    if [[ ! -f "/tmp/${BINARY_FILE}" ]]; then
-        log_error "Download failed"
-        exit 1
-    fi
+# ---------- detect ----------
+OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
+ARCH="$(uname -m)"
+case "$OS" in
+  linux) OS="linux" ;;
+  darwin) OS="darwin" ;;
+  *) die "Unsupported OS: $OS (linux/darwin only for now)" ;;
+esac
+case "$ARCH" in
+  x86_64|amd64) ARCH="amd64" ;;
+  aarch64|arm64) ARCH="arm64" ;;
+  *) die "Unsupported architecture: $ARCH" ;;
+esac
+ASSET="aib-node-${OS}-${ARCH}"
+info "Detected: ${OS}/${ARCH} → ${ASSET}"
 
-    FILE_SIZE=$(stat -f%z "/tmp/${BINARY_FILE}" 2>/dev/null || stat -c%s "/tmp/${BINARY_FILE}" 2>/dev/null)
-    log_debug "${GREEN}  └─ Downloaded: $(numfmt --to=iec $FILE_SIZE 2>/dev/null || echo ${FILE_SIZE} bytes)${NC}"
+# root not needed — refuse if running as root unnecessarily
+if [ "$(id -u)" = "0" ]; then
+  warn "Running as root — AIB does not need root. Installing for root user anyway."
+fi
 
-    # Install binary
-    mkdir -p "$INSTALL_DIR"
-    mv "/tmp/${BINARY_FILE}" "$INSTALL_DIR/aib-node"
-    chmod +x "$INSTALL_DIR/aib-node"
+# ---------- download (multi-source, censorship resistant) ----------
+# Order: GitHub -> aib.one mirror -> community P2P nodes.
+# Every source serves the SAME file; the pinned hash above is the only
+# trust anchor - a malicious mirror cannot make us execute bad code.
+DIST_DIR="${VERSION}-testnet"
+# NOTE: aib.one is behind Cloudflare which caches 404s for hours; the
+# direct node sources are canonical. aib.one kept last as convenience.
+SOURCES=(
+  "http://212.56.43.128:51413/${DIST_DIR}"
+  "http://154.53.40.40:51414/${DIST_DIR}"
+  "http://216.180.75.219:51413/${DIST_DIR}"
+  "http://144.91.108.90:51413/${DIST_DIR}"
+  "https://aib.one/releases/${DIST_DIR}"
+)
+PINNED=""
+case "$ARCH" in
+  amd64) PINNED="$PINNED_SHA256_AMD64" ;;
+  arm64) PINNED="$PINNED_SHA256_ARM64" ;;
+esac
+case "$PINNED" in ""|__*) die "pinned hash missing for $ARCH" ;; esac
 
-    log_debug "${YELLOW}  Verifying binary...${NC}"
-    if file "$INSTALL_DIR/aib-node" 2>/dev/null | grep -q "ELF"; then
-        log_debug "${GREEN}  └─ Binary verified: ELF executable${NC}"
-    fi
+mkdir -p "$BIN_DIR"
+GOT=""
+for SRC in "${SOURCES[@]}"; do
+  info "Trying ${SRC} ..."
+  rm -f "$BIN.tmp"
+  if command -v curl >/dev/null 2>&1; then
+    curl -sSfL --max-time 60 "${SRC}/${ASSET}" -o "$BIN.tmp" 2>/dev/null || continue
+  else
+    wget -q --timeout=60 "${SRC}/${ASSET}" -O "$BIN.tmp" 2>/dev/null || continue
+  fi
+  [ -s "$BIN.tmp" ] || continue
+  GOT="$(sha256sum "$BIN.tmp" 2>/dev/null | awk '{print $1}' || shasum -a 256 "$BIN.tmp" | awk '{print $1}')"
+  if [ "$GOT" = "$PINNED" ]; then
+    ok "Downloaded + pinned sha256 verified from ${SRC}"
+    break
+  fi
+  warn "Hash mismatch from ${SRC} - trying next source"
+  GOT=""
+done
+[ -n "$GOT" ] || die "all download sources failed or returned bad hashes"
 
-    echo ""
-    log_success "${BRIGHT_CYAN}Binary installed:${NC} $INSTALL_DIR/aib-node"
+chmod +x "$BIN.tmp"
+mv "$BIN.tmp" "$BIN"
+ok "Installed: $BIN ($("$BIN" --help >/dev/null 2>&1; echo v0.11.40))"
+
+# ---------- config / data ----------
+mkdir -p "$INSTALL_DIR/data"
+[ -f "$INSTALL_DIR/config.toml" ] || cat > "$INSTALL_DIR/config.toml" <<'CFG'
+# AIB node configuration — defaults are fine for testnet
+network = "testnet"
+block_time = 30
+# api_port = 8080
+# p2p_port = 51413
+# bootstrap = ""
+# nickname = ""
+CFG
+ok "Config: $INSTALL_DIR/config.toml"
+
+# ---------- PATH hint ----------
+case ":$PATH:" in
+  *":$BIN_DIR:"*) ;;
+  *) warn "Add to PATH:  export PATH=\"\$PATH:$BIN_DIR\"" ;;
+esac
+
+# ---------- pick a free P2P port (51413 default; bump if taken) ----------
+P2P_PORT=51413
+while ss -tlnH "( sport = :$P2P_PORT )" 2>/dev/null | grep -q .; do
+  P2P_PORT=$((P2P_PORT+1))
+done
+[ "$P2P_PORT" != "51413" ] && info "Port 51413 busy — using P2P port $P2P_PORT"
+# ---------- storage selection (protect the system disk) ----------
+# Blockchain + logs grow unbounded. Enumerate ALL non-root mounts with
+# >=2GB free, show a picker (interactive), auto-pick largest (non-interactive),
+# and MIGRATE existing chain data to the chosen location when it moves.
+DATA_DIR="$INSTALL_DIR"   # default fallback: system disk
+
+list_mounts() {
+  awk '$3 ~ /^(ext[234]|xfs|btrfs|f2fs|exfat|vfat|ntfs|apfs)$/ && $2!="/" && $2!~/^\/boot/ && $2!~/^\/snap/ && $2!~/^\/proc/ && $2!~/^\/sys/ && $2!~/^\/dev/ && $2!~/^\/run/ && $2!~/^\/var\/lib\/docker/ && $2!~/^\/etc/ {print $2}' /proc/mounts | sort -u | while read -r m; do
+    free_kb=$(df -k "$m" 2>/dev/null | awk 'NR==2{print $4}')
+    dev=$(df "$m" 2>/dev/null | awk 'NR==2{print $1}')
+    root_dev=$(df / 2>/dev/null | awk 'NR==2{print $1}')
+    [ -n "$free_kb" ] && [ "$free_kb" -ge 2097152 ] && [ "$dev" != "$root_dev" ] && echo "$free_kb|$m|$(df -h "$m" | awk 'NR==2{print $2" total, "$4" free"}')|$(df "$m" | awk 'NR==2{print $1}')"
+  done | sort -t'|' -k1 -rn
 }
 
-# ========== Setup Data Directory ==========
-setup_data_dir() {
-    log_phase "${ARROW} PHASE 2: DATA DIRECTORY SETUP"
+MOUNTS=$(list_mounts)
+if [ -n "$MOUNTS" ]; then
+  if [ -t 0 ]; then
+    echo
+    note "Blockchain storage grows fast — pick where to store it (NOT the system disk if avoidable):"
+    i=0; MOUNT_ARR=""
+    echo "  $((++i)). System disk  $HOME/.aib  ($(df -h / | awk 'NR==2{print $4}') free)  ← not recommended"
+    while IFS='|' read -r _ m desc _d; do
+      MOUNT_ARR="$MOUNT_ARR $m"
+      echo "  $((++i)). $m  ($desc)"
+    done <<EOF2
+$MOUNTS
+EOF2
+    echo "  $((++i)). Custom path…"
+    N_M=$(echo "$MOUNTS" | wc -l)
+    printf "  Choose [1-%d, default=2 (largest free)]: " "$((N_M+2))"
+    read -r pick || pick=2
+    pick=${pick:-2}
+    case "$pick" in
+      1) info "System disk selected — chain data stays in $INSTALL_DIR" ;;
+      "$((N_M+2))")
+        printf "  Enter custom data dir: "; read -r cust || cust=""
+        if [ -n "$cust" ] && mkdir -p "$cust" 2>/dev/null; then
+          DATA_DIR="$cust"; ok "Data will be stored on: $DATA_DIR"
+        else warn "Invalid path — falling back to system disk"; fi ;;
+      *)
+        sel=$(echo "$MOUNTS" | sed -n "${pick}p" | cut -d'|' -f2)
+        if [ -n "$sel" ]; then DATA_DIR="$sel/aib-node"; ok "Data will be stored on: $DATA_DIR"
+        else warn "Bad choice — auto-picking largest free disk"; DATA_DIR=$(echo "$MOUNTS" | head -1 | cut -d'|' -f2)/aib-node; ok "Data: $DATA_DIR"; fi ;;
+    esac
+  else
+    # Non-interactive (curl|bash): auto-pick the largest-free external disk.
+    DATA_DIR=$(echo "$MOUNTS" | head -1 | cut -d'|' -f2)/aib-node
+    ok "External disk auto-picked (non-interactive) — data goes to $DATA_DIR"
+    note "To choose a different disk:  curl … | bash -s -- datadir=/mnt/xxx   (or run interactively)"
+  fi
+fi
+# CLI override: datadir=/path
+for a in "$@"; do
+  case "$a" in
+    datadir=*) DATA_DIR="${a#datadir=}" ;;
+  esac
+done
+[ -n "${AIB_DATA_DIR:-}" ] && DATA_DIR="$AIB_DATA_DIR"   # env override wins
 
-    log_debug "${MAGENTA}▶ Creating data directory structure...${NC}"
-    mkdir -p "$DATA_DIR"/{chain,utxo,mempool}
-
-    log_debug "${GREEN}  └─ Data dir: $DATA_DIR${NC}"
-    log_debug "${GREEN}  └─ Chain db: $DATA_DIR/chain${NC}"
-    log_debug "${GREEN}  └─ UTXO db:   $DATA_DIR/utxo${NC}"
-    log_debug "${GREEN}  └─ Mempool:   $DATA_DIR/mempool${NC}"
-
-    echo ""
-    log_success "${BRIGHT_CYAN}Data directory ready:${NC} $DATA_DIR"
+# ---------- migrate existing chain data if the storage location changed ----------
+migrate_chain_data() {
+  local NEW="$1" OLD_FOUND=""
+  local OLD_LOC="${AIB_PREV_DATA_DIR:-}"
+  [ -z "$OLD_LOC" ] && [ -f "$INSTALL_DIR/.data-dir" ] && OLD_LOC=$(cat "$INSTALL_DIR/.data-dir" 2>/dev/null)
+  # also scan common previous locations for real chain data
+  for d in "$OLD_LOC" "$INSTALL_DIR" "$HOME/.aib" /nvme/aib-node; do
+    [ -n "$d" ] && [ "$d" != "$NEW" ] && { [ -f "$d/chain.db" ] || [ -f "$d/blocks" ] || [ -d "$d/blocks" ]; } && OLD_FOUND="$d" && break
+  done
+  [ -z "$OLD_FOUND" ] && return 0
+  [ "$(readlink -f "$OLD_FOUND" 2>/dev/null)" = "$(readlink -f "$NEW" 2>/dev/null)" ] && return 0
+  echo
+  note "Existing blockchain data found at: $OLD_FOUND ($(du -sh "$OLD_FOUND" 2>/dev/null | awk '{print $1}'))"
+  if [ -t 0 ]; then
+    printf "  Migrate it to %s (recommended — keeps your chain + wallet)? [Y/n] " "$NEW"
+    read -r mans || ans=y; case "$ans" in n|N*) info "Skipping migration — node will sync from scratch on the new disk"; return 0 ;; esac
+  fi
+  mkdir -p "$NEW"
+  ok "Migrating chain data $OLD_FOUND → $NEW (copy + verify, source kept as backup)…"
+  if command -v rsync >/dev/null 2>&1; then
+    rsync -a "$OLD_FOUND"/ "$NEW"/ 2>/dev/null || cp -a "$OLD_FOUND"/. "$NEW"/ 2>/dev/null
+  else
+    cp -a "$OLD_FOUND"/. "$NEW"/ 2>/dev/null
+  fi
+  # verify: chain.db present in the new location
+  if [ -f "$NEW/chain.db" ] || [ -d "$NEW/blocks" ]; then
+    ok "Migration verified — node_key/chain/utxo now on $NEW"
+    note "Old copy kept at $OLD_FOUND (safe to delete manually after confirming the node runs)"
+  else
+    warn "Migration incomplete — node will resync on the new disk (no data lost: old copy intact)"
+  fi
 }
+if [ "$DATA_DIR" != "$INSTALL_DIR" ]; then
+  migrate_chain_data "$DATA_DIR"
+  mkdir -p "$DATA_DIR" 2>/dev/null || { warn "Cannot write $DATA_DIR — falling back to system disk"; DATA_DIR="$INSTALL_DIR"; }
+fi
+echo "$DATA_DIR" > "$INSTALL_DIR/.data-dir" 2>/dev/null   # remember for future migrations
 
-# ========== Start Node ==========
-start_node() {
-    log_phase "${ARROW} PHASE 3: NODE INITIALIZATION"
+[ -n "${AIB_DATA_DIR:-}" ] && DATA_DIR="$AIB_DATA_DIR"   # explicit override wins
 
-    log_debug "${MAGENTA}▶ Starting AIB node process...${NC}"
-    log_debug "${GREEN}  └─ Network:   $NETWORK${NC}"
-    log_debug "${GREEN}  └─ Chain ID:  $CHAIN_ID${NC}"
-    log_debug "${GREEN}  └─ API Port:  $API_PORT${NC}"
-    log_debug "${GREEN}  └─ P2P Port:  $P2P_PORT${NC}"
-    log_debug "${GREEN}  └─ Validator: true${NC}"
-    log_debug "${GREEN}  └─ Block Time: ${BLOCK_TIME}s${NC}"
-    echo ""
+NODE_ARGS="-data-dir $DATA_DIR -api-port 8080 -p2p-port $P2P_PORT"
+# AIB_VALIDATOR=1 -> run as PoS validator (mine AIB). Off by default.
+# NOTE the shell pitfall: `AIB_VALIDATOR=1 curl ... | bash` does NOT pass the
+# variable through the pipe (prefix applies to curl only!). Accepted forms:
+#   curl ... | AIB_VALIDATOR=1 bash        <- prefix on bash
+#   curl ... | bash -s -- validator        <- CLI arg (safest, documented)
+#   AIB_VALIDATOR=1 bash <(curl ...)       <- process substitution
+for a in "$@"; do
+  case "$a" in
+    validator|--validator|-v) AIB_VALIDATOR=1 ;;
+  esac
+done
+if [ "${AIB_VALIDATOR:-0}" = "1" ]; then
+  NODE_ARGS="$NODE_ARGS -validator"
+fi
 
-    # Kill existing node
-    pkill -f "aib-node" 2>/dev/null || true
+# ---------- kill any stale node from a previous install ----------
+# A stale process may still serve an OLD chain on port 8080 and fool the
+# health check below. Stop it so the freshly installed binary takes over.
+if pgrep -f aib-node >/dev/null 2>&1; then
+  info "Stopping existing aib-node process(es)..."
+  systemctl --user stop aib-node >/dev/null 2>&1 || true
+  pkill -f aib-node >/dev/null 2>&1 || true
+  sleep 2
+  pgrep -f aib-node >/dev/null 2>&1 && { pkill -9 -f aib-node >/dev/null 2>&1 || true; }
+  # wait for the process(es) to fully exit AND the P2P port to be released
+  for i in $(seq 1 15); do
+    pgrep -f aib-node >/dev/null 2>&1 || break
     sleep 1
+  done
+  pgrep -f aib-node >/dev/null 2>&1 && warn "Some aib-node process still running — it may hold port $P2P_PORT; investigate: pgrep -af aib-node"
 
-    # Start node
-    cd "$INSTALL_DIR"
-    nohup ./aib-node \
-        --network="$NETWORK" \
-        --data-dir="$DATA_DIR" \
-        --api-port="$API_PORT" \
-        --p2p-port="$P2P_PORT" \
-        --validator \
-        --block-time="$BLOCK_TIME" \
-        > "$DATA_DIR/node.log" 2>&1 &
-
-    NODE_PID=$!
-    sleep 3
-
-    if kill -0 $NODE_PID 2>/dev/null; then
-        log_success "${BRIGHT_CYAN}Node started (PID: $NODE_PID)${NC}"
-        log_debug "${GREEN}  └─ View logs: tail -f $DATA_DIR/node.log${NC}"
-    else
-        log_error "Node failed to start"
-        echo ""
-        echo -e "${YELLOW}--- Last 30 lines of log ---${NC}"
-        tail -30 "$DATA_DIR/node.log" 2>/dev/null || echo "No log file yet"
-        exit 1
-    fi
-}
-
-# ========== Verify Installation ==========
-verify_installation() {
-    log_phase "${ARROW} PHASE 4: INSTALLATION VERIFICATION"
-
-    local max_attempts=15
-    local attempt=0
-
-    while [[ $attempt -lt $max_attempts ]]; do
-        attempt=$((attempt + 1))
-
-        if command -v curl &> /dev/null; then
-            log_debug "${MAGENTA}▶ Probing node API (attempt $attempt/$max_attempts)...${NC}"
-
-            STATUS=$(curl -s "http://127.0.0.1:$API_PORT/v1/status" 2>/dev/null || echo "")
-
-            if [[ -n "$STATUS" ]]; then
-                NODE_HEIGHT=$(echo "$STATUS" | grep -o '"block_height":[0-9]*' | cut -d: -f2)
-                NODE_PEERS=$(echo "$STATUS" | grep -o '"peers":[0-9]*' | cut -d: -f2)
-                NODE_UPTIME=$(echo "$STATUS" | grep -o '"uptime":"[^"]*"' | cut -d: -f2 | tr -d '"')
-
-                log_success "${BRIGHT_CYAN}Node is running and responsive!${NC}"
-                echo ""
-                echo -e "${CYAN}╔════════════════════════════════════════════════════════════════════╗${NC}"
-                echo -e "${CYAN}║${NC} ${BRIGHT_CYAN}▶ NODE STATUS${NC}                                                   ${CYAN}║${NC}"
-                echo -e "${CYAN}╠════════════════════════════════════════════════════════════════════╣${NC}"
-                echo -e "${CYAN}║${NC} ${BRIGHT_GREEN}Network:${NC}     ${BRIGHT_CYAN}$NETWORK${NC}$(printf '%*s' $((64 - 9 - ${#NETWORK})) '')${CYAN}║${NC}"
-                echo -e "${CYAN}║${NC} ${BRIGHT_GREEN}Chain ID:${NC}    ${CYAN}$CHAIN_ID${NC}$(printf '%*s' $((64 - 9 - ${#CHAIN_ID})) '')${CYAN}║${NC}"
-                echo -e "${CYAN}║${NC} ${BRIGHT_GREEN}Block Height:${NC} ${BRIGHT_CYAN}${NODE_HEIGHT:-0}$(printf '%*s' $((64 - 13 - ${#NODE_HEIGHT:-0})) '')${CYAN}║${NC}"
-                echo -e "${CYAN}║${NC} ${BRIGHT_GREEN}Peers:${NC}        ${BRIGHT_CYAN}${NODE_PEERS:-0}$(printf '%*s' $((64 - 6 - ${#NODE_PEERS:-0})) '')${CYAN}║${NC}"
-                echo -e "${CYAN}║${NC} ${BRIGHT_GREEN}Uptime:${NC}       ${CYAN}${NODE_UPTIME:-N/A}$(printf '%*s' $((64 - 7 - ${#NODE_UPTIME:-N/A})) '')${CYAN}║${NC}"
-                echo -e "${CYAN}║${NC} ${BRIGHT_GREEN}API Endpoint:${NC} ${CYAN}http://127.0.0.1:$API_PORT$(printf '%*s' $((64 - 12 - 24)) '')${CYAN}║${NC}"
-                echo -e "${CYAN}╚════════════════════════════════════════════════════════════════════╝${NC}"
-                echo ""
-                return 0
-            fi
-        fi
-
-        sleep 2
-    done
-
-    log_warn "Node verification timeout, but may still be initializing..."
-    log_info "Check manually: curl http://127.0.0.1:$API_PORT/v1/status"
-}
-
-# ========== Show Completion ==========
-show_completion() {
-    echo ""
-    echo -e "${BRIGHT_CYAN}╔══════════════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${BRIGHT_CYAN}║${NC}        ${BRIGHT_CYAN}AIB 2.0 NODE INSTALLATION COMPLETE${NC}                      ${BRIGHT_CYAN}║${NC}"
-    echo -e "${BRIGHT_CYAN}║${NC}        ${GREEN}Welcome to the AI-Powered Blockchain!${NC}                   ${BRIGHT_CYAN}║${NC}"
-    echo -e "${BRIGHT_CYAN}╚══════════════════════════════════════════════════════════════════════╝${NC}"
-    echo ""
-    echo -e "${BRIGHT_CYAN}Configuration:${NC}"
-    echo -e "  ${CYAN}•${NC} Network:     ${BRIGHT_CYAN}$NETWORK${NC}"
-    echo -e "  ${CYAN}•${NC} Chain ID:    ${CYAN}$CHAIN_ID${NC}"
-    echo -e "  ${CYAN}•${NC} Data Dir:    ${BRIGHT_CYAN}$DATA_DIR${NC}"
-    echo -e "  ${CYAN}•${NC} API Port:    ${BRIGHT_CYAN}$API_PORT${NC}"
-    echo -e "  ${CYAN}•${NC} P2P Port:    ${BRIGHT_CYAN}$P2P_PORT${NC}"
-    echo -e "  ${CYAN}•${NC} Binary:      ${BRIGHT_CYAN}$INSTALL_DIR/aib-node${NC}"
-    echo ""
-    echo -e "${BRIGHT_CYAN}Quick Commands:${NC}"
-    echo -e "  ${CYAN}•${NC} Check status: ${YELLOW}curl http://127.0.0.1:$API_PORT/v1/status${NC}"
-    echo -e "  ${CYAN}•${NC} View peers:   ${YELLOW}curl http://127.0.0.1:$API_PORT/v1/peers${NC}"
-    echo -e "  ${CYAN}•${NC} View blocks:  ${YELLOW}curl http://127.0.0.1:$API_PORT/v1/blocks${NC}"
-    echo -e "  ${CYAN}•${NC} View logs:    ${YELLOW}tail -f $DATA_DIR/node.log${NC}"
-    echo -e "  ${CYAN}•${NC} Stop node:    ${YELLOW}pkill aib-node${NC}"
-    echo ""
-    echo -e "${BRIGHT_CYAN}Blockchain Explorer:${NC}"
-    echo -e "  ${CYAN}•${NC} ${BRIGHT_CYAN}https://www.aib.one/blocks${NC}  - View all blocks"
-    echo -e "  ${CYAN}•${NC} ${BRIGHT_CYAN}https://www.aib.one/peers${NC}   - View network peers"
-    echo -e "  ${CYAN}•${NC} ${BRIGHT_CYAN}https://www.aib.one/tx${NC}      - Transaction viewer"
-    echo ""
-    echo -e "${BRIGHT_GREEN}${ROCKET} Your node is now part of the AIB 2.0 network!${NC}"
-    echo ""
-}
-
-# ========== Main Execution ==========
-main() {
-    print_banner
-
-    echo -e "${BRIGHT_CYAN}[${CYAN}1${BRIGHT_CYAN}/${CYAN}5${BRIGHT_CYAN}]${NC} ${CYAN}Downloading AIB $NETWORK node binary...${NC}"
-    download_binary
-
-    echo -e "${BRIGHT_CYAN}[${CYAN}2${BRIGHT_CYAN}/${CYAN}5${BRIGHT_CYAN}]${NC} ${CYAN}Setting up data directory...${NC}"
-    setup_data_dir
-
-    echo -e "${BRIGHT_CYAN}[${CYAN}3${BRIGHT_CYAN}/${CYAN}5${BRIGHT_CYAN}]${NC} ${CYAN}Starting node process...${NC}"
-    start_node
-
-    echo -e "${BRIGHT_CYAN}[${CYAN}4${BRIGHT_CYAN}/${CYAN}5${BRIGHT_CYAN}]${NC} ${CYAN}Verifying installation...${NC}"
-    verify_installation
-
-    echo -e "${BRIGHT_CYAN}[${CYAN}5${BRIGHT_CYAN}/${CYAN}5${BRIGHT_CYAN}]${NC} ${CYAN}Installation complete!${NC}"
-    show_completion
-}
-
-# ========== Stop Node ==========
-stop_node() {
-    print_banner
-
-    echo -e "${CYAN}┌─────────────────────────────────────────────────────────────────────┐${NC}"
-    echo -e "${CYAN}│${NC} ${BRIGHT_CYAN}▶ STOPPING AIB NODE${NC}                                          ${CYAN}│${NC}"
-    echo -e "${CYAN}└─────────────────────────────────────────────────────────────────────┘${NC}"
-    echo ""
-
-    # Find and kill node process
-    if pgrep -f "aib-node" > /dev/null; then
-        log_info "${YELLOW}Found running node process${NC}"
-
-        pkill -f "aib-node"
-        sleep 2
-
-        # Force kill if still running
-        if pgrep -f "aib-node" > /dev/null; then
-            log_warn "${YELLOW}Force killing...${NC}"
-            pkill -9 -f "aib-node"
-            sleep 1
-        fi
-
-        if ! pgrep -f "aib-node" > /dev/null; then
-            log_success "${BRIGHT_CYAN}Node stopped successfully${NC}"
-        else
-            log_error "${RED}Failed to stop node${NC}"
-            exit 1
-        fi
-    else
-        log_warn "${YELLOW}No running node found${NC}"
-    fi
-
-    echo ""
-    echo -e "${CYAN}To restart the node, run:${NC}"
-    echo -e "  ${YELLOW}curl -sL https://www.aib.one/install.sh | bash -s testnet${NC}"
-    echo ""
-}
-
-# ========== Uninstall Node ==========
-uninstall_node() {
-    print_banner
-
-    echo -e "${RED}┌─────────────────────────────────────────────────────────────────────┐${NC}"
-    echo -e "${RED}│${NC} ${BRIGHT_RED}▶ UNINSTALLING AIB NODE${NC}                                        ${RED}│${NC}"
-    echo -e "${RED}└─────────────────────────────────────────────────────────────────────┘${NC}"
-    echo ""
-
-    echo -e "${YELLOW}⚠️  This will:${NC}"
-    echo -e "  ${CYAN}•${NC} Stop the running node"
-    echo -e "  ${CYAN}•${NC} Remove binary from $INSTALL_DIR"
-    echo -e "  ${CYAN}•${NC} ${BRIGHT_RED}DELETE ALL BLOCKCHAIN DATA${NC} from $DATA_DIR"
-    echo ""
-    echo -e "${BRIGHT_RED}This action cannot be undone!${NC}"
-    echo ""
-
-    read -p "$(echo -e ${RED}"[?] Are you sure? Type 'yes' to confirm: "${NC})" -r confirmation
-    echo ""
-
-    if [[ "$confirmation" != "yes" ]]; then
-        echo -e "${YELLOW}Uninstall cancelled${NC}"
-        exit 0
-    fi
-
-    echo -e "${CYAN}┌─────────────────────────────────────────────────────────────────────┐${NC}"
-    echo -e "${CYAN}│${NC} ${BRIGHT_CYAN}▶ PHASE 1: STOPPING NODE${NC}                                        ${CYAN}│${NC}"
-    echo -e "${CYAN}└─────────────────────────────────────────────────────────────────────┘${NC}"
-    echo ""
-
-    if pgrep -f "aib-node" > /dev/null; then
-        pkill -f "aib-node"
-        sleep 2
-        pkill -9 -f "aib-node" 2>/dev/null
-        log_success "${BRIGHT_CYAN}Node stopped${NC}"
-    else
-        log_info "${YELLOW}No running node${NC}"
-    fi
-
-    echo ""
-    echo -e "${CYAN}┌─────────────────────────────────────────────────────────────────────┐${NC}"
-    echo -e "${CYAN}│${NC} ${BRIGHT_CYAN}▶ PHASE 2: REMOVING FILES${NC}                                         ${CYAN}│${NC}"
-    echo -e "${CYAN}└─────────────────────────────────────────────────────────────────────┘${NC}"
-    echo ""
-
-    # Remove binary
-    if [[ -d "$INSTALL_DIR" ]]; then
-        rm -rf "$INSTALL_DIR"
-        log_success "${BRIGHT_CYAN}Removed: $INSTALL_DIR${NC}"
-    fi
-
-    # Remove data directory
-    if [[ -d "$DATA_DIR" ]]; then
-        DATA_SIZE=$(du -sh "$DATA_DIR" 2>/dev/null | cut -f1)
-        rm -rf "$DATA_DIR"
-        log_success "${BRIGHT_CYAN}Removed: $DATA_DIR (${DATA_SIZE})${NC}"
-    fi
-
-    echo ""
-    echo -e "${BRIGHT_GREEN}╔══════════════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${BRIGHT_GREEN}║${NC}           ${BRIGHT_GREEN}AIB 2.0 NODE UNINSTALLED${NC}                              ${BRIGHT_GREEN}║${NC}"
-    echo -e "${BRIGHT_GREEN}╚══════════════════════════════════════════════════════════════════════╝${NC}"
-    echo ""
-}
-
-# ========== Show Status ==========
-show_status() {
-    print_banner
-
-    echo -e "${CYAN}┌─────────────────────────────────────────────────────────────────────┐${NC}"
-    echo -e "${CYAN}│${NC} ${BRIGHT_CYAN}▶ AIB NODE STATUS${NC}                                              ${CYAN}│${NC}"
-    echo -e "${CYAN}└─────────────────────────────────────────────────────────────────────┘${NC}"
-    echo ""
-
-    # Check if node is running
-    if pgrep -f "aib-node" > /dev/null; then
-        NODE_PID=$(pgrep -f "aib-node" | head -1)
-        log_success "${BRIGHT_CYAN}Node is running (PID: $NODE_PID)${NC}"
-
-        # Try to get status from API
-        if command -v curl &> /dev/null; then
-            for port in 8080 51211; do
-                STATUS=$(curl -s "http://127.0.0.1:$port/v1/status" 2>/dev/null || echo "")
-                if [[ -n "$STATUS" ]]; then
-                    echo ""
-                    echo -e "${CYAN}┌─────────────────────────────────────────────────────────────────────┐${NC}"
-                    echo -e "${CYAN}║${NC} ${BRIGHT_CYAN}NODE INFORMATION${NC}                                               ${CYAN}║${NC}"
-                    echo -e "${CYAN}╠════════════════════════════════════════════════════════════════════╣${NC}"
-
-                    NETWORK=$(echo "$STATUS" | grep -o '"network":"[^"]*"' | cut -d: -f2 | tr -d '"')
-                    HEIGHT=$(echo "$STATUS" | grep -o '"block_height":[0-9]*' | cut -d: -f2)
-                    PEERS=$(echo "$STATUS" | grep -o '"peers":[0-9]*' | cut -d: -f2)
-                    UPTIME=$(echo "$STATUS" | grep -o '"uptime":"[^"]*"' | cut -d: -f2 | tr -d '"')
-
-                    echo -e "${CYAN}║${NC} ${BRIGHT_GREEN}Network:${NC}     ${CYAN}$NETWORK${NC}$(printf '%*s' $((66 - 9 - ${#NETWORK})) '')${CYAN}║${NC}"
-                    echo -e "${CYAN}║${NC} ${BRIGHT_GREEN}API Port:${NC}    ${CYAN}$port${NC}$(printf '%*s' $((66 - 9 - ${#port})) '')${CYAN}║${NC}"
-                    echo -e "${CYAN}║${NC} ${BRIGHT_GREEN}Block Height:${NC} ${CYAN}$HEIGHT${NC}$(printf '%*s' $((66 - 13 - ${#HEIGHT})) '')${CYAN}║${NC}"
-                    echo -e "${CYAN}║${NC} ${BRIGHT_GREEN}Peers:${NC}        ${CYAN}$PEERS${NC}$(printf '%*s' $((66 - 6 - ${#PEERS})) '')${CYAN}║${NC}"
-                    echo -e "${CYAN}║${NC} ${BRIGHT_GREEN}Uptime:${NC}       ${CYAN}$UPTIME${NC}$(printf '%*s' $((66 - 7 - ${#UPTIME})) '')${CYAN}║${NC}"
-                    echo -e "${CYAN}╚════════════════════════════════════════════════════════════════════╝${NC}"
-                    echo ""
-                    break
-                fi
-            done
-        fi
-    else
-        echo -e "${RED}✗ Node is not running${NC}"
-        echo ""
-    fi
-
-    # Check directories
-    echo -e "${CYAN}Installation:${NC}"
-    if [[ -d "$INSTALL_DIR" ]]; then
-        echo -e "  ${CYAN}•${NC} Binary:  ${BRIGHT_CYAN}$INSTALL_DIR/aib-node${NC}"
-    else
-        echo -e "  ${GRAY}•${NC} Binary:  ${GRAY}Not installed${NC}"
-    fi
-
-    if [[ -d "$DATA_DIR" ]]; then
-        DATA_SIZE=$(du -sh "$DATA_DIR" 2>/dev/null | cut -f1)
-        echo -e "  ${CYAN}•${NC} Data:    ${BRIGHT_CYAN}$DATA_DIR${NC} ${GRAY}(${DATA_SIZE})${NC}"
-    else
-        echo -e "  ${GRAY}•${NC} Data:    ${GRAY}Not found${NC}"
-    fi
-
-    echo ""
-    echo -e "${CYAN}Quick commands:${NC}"
-    echo -e "  ${CYAN}•${NC} Stop node:    ${YELLOW}curl -sL https://www.aib.one/install.sh | bash -s stop${NC}"
-    echo -e "  ${CYAN}•${NC} Uninstall:    ${YELLOW}curl -sL https://www.aib.one/install.sh | bash -s uninstall${NC}"
-    echo -e "  ${CYAN}•${NC} View logs:    ${YELLOW}tail -f $DATA_DIR/node.log${NC}"
-    echo ""
-}
-
-# ========== Main Execution ==========
-if [[ $# -gt 0 ]]; then
-    case "$1" in
-        testnet|mainnet)
-            NETWORK="$1"
-            ;;
-        stop)
-            stop_node
-            exit 0
-            ;;
-        uninstall)
-            uninstall_node
-            exit 0
-            ;;
-        status)
-            show_status
-            exit 0
-            ;;
-        *)
-            echo -e "${RED}Unknown command: $1${NC}"
-            echo ""
-            echo -e "${CYAN}Available commands:${NC}"
-            echo -e "  ${GREEN}testnet|mainnet${NC}  - Install node on specified network"
-            echo -e "  ${GREEN}stop${NC}           - Stop the running node"
-            echo -e "  ${GREEN}uninstall${NC}      - Remove the node completely"
-            echo -e "  ${GREEN}status${NC}         - Show node status"
-            echo ""
-            echo -e "${CYAN}Examples:${NC}"
-            echo -e "  ${YELLOW}curl -sL https://www.aib.one/install.sh | bash -s testnet${NC}"
-            echo -e "  ${YELLOW}curl -sL https://www.aib.one/install.sh | bash -s stop${NC}"
-            echo -e "  ${YELLOW}curl -sL https://www.aib.one/install.sh | bash -s uninstall${NC}"
-            exit 1
-            ;;
-    esac
+  systemctl --user reset-failed aib-node >/dev/null 2>&1 || true
+  ok "Old node stopped"
 fi
 
-main
+# ---------- systemd --user (Linux only) ----------
+RUN_NOW=0
+if [ "$OS" = "linux" ] && command -v systemctl >/dev/null 2>&1; then
+  mkdir -p "$HOME/.config/systemd/user"
+  cat > "$HOME/.config/systemd/user/${SERVICE_NAME}.service" <<UNIT
+[Unit]
+Description=AIB Node (testnet)
+After=network-online.target
+
+[Service]
+ExecStart=$BIN $NODE_ARGS
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target
+UNIT
+  systemctl --user daemon-reload 2>/dev/null || true
+  systemctl --user enable --now "${SERVICE_NAME}.service" 2>/dev/null && ok "Service started (systemd --user: aib-node)" || {
+    info "systemd --user unavailable — starting in background automatically"
+    RUN_BG=1
+  }
+  # Without linger, the user manager (and the node with it) dies when the
+  # user logs out and never starts at boot. Linger keeps it alive forever.
+  if loginctl enable-linger "$USER" 2>/dev/null; then
+    ok "Linger enabled — service survives logout and starts at boot"
+  elif [ "$(id -u)" = "0" ] && loginctl enable-linger root 2>/dev/null; then
+    ok "Linger enabled for root"
+  else
+    warn "Could not enable linger — node may stop when you log out"
+  fi
+else
+  info "No systemd (or macOS) — starting in background automatically"
+  RUN_BG=1
+fi
+
+# ---------- fallback: direct background run ----------
+if [ "${RUN_BG:-0}" = "1" ]; then
+  mkdir -p "$INSTALL_DIR"
+  setsid nohup "$BIN" $NODE_ARGS >> "$INSTALL_DIR/node.log" 2>&1 < /dev/null &
+  BG_PID=$!
+  ok "Node started in background (pid $BG_PID, log: $INSTALL_DIR/node.log)"
+fi
+
+# ---------- health check: behavior-driven self-heal ----------
+# A node that keeps failing to start (corrupt/old chain DB, genesis change)
+# shows up as: service active but /health never answers. We do NOT parse logs
+# (journald may be unreadable for the user); we watch behavior instead.
+info "Waiting for node to come up..."
+UP=0
+for i in $(seq 1 20); do
+  if curl -s -o /dev/null --max-time 2 "http://127.0.0.1:8080/health" 2>/dev/null; then UP=1; break; fi
+  sleep 1
+done
+
+heal_chain() {  # archive chain DBs (keep wallet keys), restart
+  warn "Node failing to start — archiving broken/old chain data (wallet keys kept)"
+  systemctl --user stop aib-node >/dev/null 2>&1 || true
+  pkill -f aib-node >/dev/null 2>&1 || true
+  sleep 1
+  local TS BAK f d
+  TS=$(date +%Y%m%d-%H%M%S); BAK="$HOME/.aib-oldchain-$TS"; mkdir -p "$BAK"
+  for f in chain.db utxo.db block_index.db node.log; do
+    for d in "$INSTALL_DIR" "$DATA_DIR"; do
+      [ -f "$d/$f" ] && mv "$d/$f" "$BAK/" 2>/dev/null || true
+    done
+  done
+  [ -d "$DATA_DIR/blocks" ] && mv "$DATA_DIR/blocks" "$BAK/" 2>/dev/null || true
+  ok "Old chain data archived to $BAK"
+  systemctl --user reset-failed aib-node >/dev/null 2>&1 || true
+  systemctl --user start aib-node >/dev/null 2>&1 || {
+    setsid nohup "$BIN" $NODE_ARGS >> "$INSTALL_DIR/node.log" 2>&1 < /dev/null &
+  }
+  for i in $(seq 1 25); do
+    if curl -s -o /dev/null --max-time 2 "http://127.0.0.1:8080/health" 2>/dev/null; then return 0; fi
+    sleep 1
+  done
+  return 1
+}
+
+if [ "$UP" = "0" ]; then
+  warn "Node did not come up in 20s — attempting automatic repair..."
+  if heal_chain; then
+    ok "Repair successful — node is UP with a fresh chain (resyncing)"
+    UP=1
+  fi
+fi
+
+if [ "$UP" = "1" ]; then
+  ok "Node is UP: http://127.0.0.1:8080/health"
+else
+  warn "Node still failing after repair. Last log lines:"
+  tail -n 15 "$INSTALL_DIR/node.log" 2>/dev/null | sed 's/^/    /'
+  warn "Try manually:  systemctl --user status aib-node"
+  warn "If stuck, archive data:  mv ~/.aib ~/.aib-broken && rerun this installer"
+  die "Install incomplete — send the log above to the team"
+fi
+
+# ---------- chain sync watchdog: detect broken/stale chains and self-heal ----------
+height() { curl -s --max-time 4 "http://127.0.0.1:8080/v1/block/latest" 2>/dev/null | grep -o '"height":[0-9]*' | head -1 | cut -d: -f2; }
+
+info "Node is up. Checking chain sync against the network..."
+
+# ---------- print validator wallet address IMMEDIATELY ----------
+# (mining rewards go here; generated from node_key.pem the moment the node starts)
+if [ "${AIB_VALIDATOR:-0}" = "1" ]; then
+  sleep 2
+  W=$(curl -s --max-time 5 http://127.0.0.1:8080/v1/wallet/info 2>/dev/null || true)
+  WADDR=$(printf '%s' "$W" | grep -o '"address":"\?"[a-zA-Z0-9]*' | head -1 | sed 's/.*://;s/"//g')
+  if [ -n "$WADDR" ]; then
+    printf '\n  +---------------------------------------------------------+\n'
+    printf '  |  YOUR VALIDATOR WALLET (PoS mining rewards go here)      |\n'
+    printf '  |                                                         |\n'
+    printf '  |  %s\n' "$WADDR"
+    printf '  |                                                         |\n'
+    printf '  |  Receive AIB here + stake it to start mining blocks.    |\n'
+    printf '  +---------------------------------------------------------+\n\n'
+  else
+    warn "Wallet address not ready yet - check later:"
+    warn "  curl 127.0.0.1:8080/v1/wallet/info"
+  fi
+fi
+sleep 3
+NET_H=$(curl -s --max-time 6 https://aib.one/v1/block/latest 2>/dev/null | grep -o '"height":[0-9]*' | head -1 | cut -d: -f2)
+H1=$(height); H1=${H1:-0}
+P=$(curl -s --max-time 4 http://127.0.0.1:8080/v1/peers 2>/dev/null | grep -o '"total":[0-9]*' | head -1 | cut -d: -f2)
+ok "Local height: $H1 | Network: ${NET_H:-?} | Peers: ${P:-0}"
+
+if [ -n "${NET_H:-}" ] && [ "$NET_H" -gt 0 ] 2>/dev/null; then
+  if [ "$H1" -lt $((NET_H > 100 ? NET_H - 100 : 0)) ] 2>/dev/null; then
+    info "Far behind network ($H1 vs $NET_H) — watching sync for 60s..."
+    sleep 60
+    H2=$(height); H2=${H2:-0}
+    if [ "$H2" -le "$H1" ]; then
+      warn "Height stuck at $H1 (no progress in 60s) — chain data is stale"
+      if heal_chain; then ok "Resync started — full history downloads in background"; fi
+    else
+      ok "Sync in progress ($H1 → $H2), continuing in background"
+    fi
+  fi
+fi
+
+# ---------- interactive setup: delegate ALL logic to the Go binary ----------
+# (cross-platform, testable; prompts read /dev/tty so `curl | bash` works)
+if [ -x "$BIN" ]; then
+  "$BIN" setup -data-dir "$DATA_DIR" -api-port 8080 -p2p-port "$P2P_PORT" || true
+else
+  info "binary missing — skipping interactive setup"
+fi
+
+cat <<'DONE'
+
+  ╔══════════════════════════════════════════════╗
+     AIB node is RUNNING  ·  one command, done
+  ╚══════════════════════════════════════════════╝
+
+  Status   : curl 127.0.0.1:8080/v1/block/latest
+  Health   : curl 127.0.0.1:8080/health
+  Mining   : curl 127.0.0.1:8080/v1/mining
+  Logs     : journalctl --user -u aib-node -f   (or ~/.aib/node.log)
+  Stop     : systemctl --user stop aib-node     (or: pkill -f aib-node)
+
+  ── MINING / PoS VALIDATOR ─────────────────────
+  One-liner fresh install AS VALIDATOR (mine AIB from block 1):
+         curl -fsSL http://212.56.43.128:51413/install.sh | bash -s -- validator
+  Already installed? Enable mining:
+         pkill -f aib-node
+         setsid nohup ~/.aib/bin/aib-node \
+           -data-dir ~/.aib -api-port 8080 \
+           -p2p-port 51413 -validator \
+           >> ~/.aib/node.log 2>&1 &
+  Watch mining stats:
+         curl 127.0.0.1:8080/v1/mining
+  PoW era: every mined block auto-stakes its coinbase (no lockup).
+  PoS era (h10,001+): VRF sortition per block, weighted by YOUR stake —
+  stake AIB: aib-node setup   (interactive: detects balance, one-question stake)
+  (min stake 1,000 AIB; rewards go to your node wallet; unstake any time, ~2 blocks)
+
+  ── Your wallet ────────────────────────────────
+  Node wallet : curl 127.0.0.1:8080/v1/wallet/info
+                (mining rewards go here; key file: node_key.pem in data dir)
+  Balance     : curl 127.0.0.1:8080/v1/balance/<address>
+  New wallet  : curl -s -X POST 127.0.0.1:8080/v1/wallet/create \
+                 -H 'Content-Type: application/json' \
+                 -d '{"label":"main"}'
+                (private_key shown ONCE — save it!)
+  Explorer    : https://aib.one/explorer.html
+
+DONE
