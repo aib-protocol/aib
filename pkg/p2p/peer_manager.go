@@ -1174,6 +1174,33 @@ func (pm *ChainPeerManager) handleChainMessage(peer *ChainPeer, msgType uint8, p
 		// relay to other peers (gossip)
 		pm.relayToPeersExcept(peer, msgType, payload)
 
+	case MsgPunchRegister:
+		// We are (possibly) a rendezvous. Record the peer's observed
+		// endpoint and try to introduce it to its target.
+		var reg PunchRegisterMsg
+		if err := UnmarshalMsg(payload, &reg); err != nil {
+			return
+		}
+		if pm.puncher != nil {
+			pm.puncher.HandleRegister(peer.nodeID, peer.address, reg)
+		}
+
+	case MsgPunchIntro:
+		// We received an introduction: dial the given endpoint at the
+		// scheduled time (simultaneous open). The punched connection then
+		// runs the normal VERSION/VERACK handshake.
+		var intro PunchIntroMsg
+		if err := UnmarshalMsg(payload, &intro); err != nil {
+			return
+		}
+		pm.executePunch(&intro)
+
+	case MsgPunchDial:
+		// marker on a punched stream — liveness bookkeeping only
+		peer.mu.Lock()
+		peer.lastPong = time.Now()
+		peer.mu.Unlock()
+
 	default:
 		pm.logger.Printf("[P2P] Unknown message type %s from %s", MsgTypeName(msgType), peer.nodeID[:8])
 	}
