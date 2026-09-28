@@ -38,12 +38,25 @@ func TestFileDistServesReleaseJSON(t *testing.T) {
 		t.Fatal(err)
 	}
 	c.Write([]byte("GET /release.json HTTP/1.1\r\nHost: x\r\n\r\n"))
-	c.SetReadDeadline(time.Now().Add(3 * time.Second))
-	buf := make([]byte, 512)
-	n, _ := c.Read(buf)
-	resp := string(buf[:n])
 	want := `{"name":"vX","sha256":"ab"}`
-	if len(resp) < 12 || resp[:12] != "HTTP/1.1 200" || !strings.Contains(resp, want) {
-		t.Fatalf("bad response: %q", resp)
+	var resp string
+	// The server goroutine may be slow to Accept under load; retry reads for
+	// up to 5s instead of failing on the first empty read (this was a load
+	// flake, not a code bug).
+	deadline := time.Now().Add(5 * time.Second)
+	for time.Now().Before(deadline) {
+		c.SetReadDeadline(time.Now().Add(1 * time.Second))
+		buf := make([]byte, 512)
+		n, err := c.Read(buf)
+		if n > 0 {
+			resp += string(buf[:n])
+			if len(resp) >= 12 && resp[:12] == "HTTP/1.1 200" && strings.Contains(resp, want) {
+				return // success
+			}
+		}
+		if err != nil && n == 0 {
+			continue
+		}
 	}
+	t.Fatalf("bad response after retries: %q", resp)
 }

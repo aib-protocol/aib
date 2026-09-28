@@ -62,6 +62,8 @@ type ChainPeerManager struct {
 
 	// NAT hole punching (rendezvous + puncher)
 	puncher *PunchManager
+	// targets we asked a rendezvous to introduce us to (anti-spoof set)
+	punchWants map[string]time.Time
 
 	// Control
 	logger *log.Logger
@@ -159,6 +161,7 @@ func NewChainPeerManager(cfg ChainPeerConfig) *ChainPeerManager {
 		ctx:           ctx,
 		cancel:        cancel,
 	}
+	pm.punchWants = map[string]time.Time{}
 	pm.puncher = NewPunchManager(cfg.Logger, func(nodeID string, m *PunchIntroMsg) bool {
 		p := pm.findByNodeID(nodeID)
 		if p == nil {
@@ -656,7 +659,15 @@ func (pm *ChainPeerManager) connectToPeer(addr string) error {
 	if err != nil {
 		return fmt.Errorf("dial %s: %w", addr, err)
 	}
+	return pm.handshakeExistingConn(conn, addr)
+}
 
+// handshakeExistingConn runs the VERSION/VERACK handshake on an ALREADY
+// ESTABLISHED connection (used by connectToPeer after dialing, and by
+// executePunch on a punched-through stream — re-dialing there would ask the
+// NAT for a fresh mapping and fail; the whole point of the punch was this
+// conn).
+func (pm *ChainPeerManager) handshakeExistingConn(conn net.Conn, addr string) error {
 	// Send VERSION message
 	height := pm.bestHeight
 	if pm.onBestHeight != nil {
@@ -1034,7 +1045,7 @@ func (pm *ChainPeerManager) handleChainMessage(peer *ChainPeer, msgType uint8, p
 		if err := UnmarshalMsg(payload, &msg); err != nil {
 			return
 		}
-		pm.handlePeersList(msg.Peers)
+		pm.handlePeersListFrom(peer, msg.Peers)
 
 	case MsgGetBlocks:
 		var msg GetBlocksMsg
@@ -1428,26 +1439,82 @@ func (pm *ChainPeerManager) findByNodeID(nodeID string) *ChainPeer {
 	return pm.peers[nodeID]
 }
 
-// executePunch dials the introduced endpoint at the scheduled time; on
-// success the stream runs the standard outbound VERSION handshake and joins
-// the peer table exactly like a bootstrap dial would.
+// executePunch dials the introduced endpoint at the scheduled time. On
+// success the PUNCHED conn itself runs the standard VERSION/VERACK handshake
+// (handshakeExistingConn) — re-dialing would discard the freshly opened NAT
+// mapping (the #1 field bug: punch succeeds, re-dial gets a NEW source port,
+// the peer's NAT drops it).
 func (pm *ChainPeerManager) executePunch(intro *PunchIntroMsg) {
 	if pm.findByNodeID(intro.PeerNodeID) != nil {
 		return // already linked
 	}
+	// Anti-spoof: we only honor an intro for a target WE registered intent
+	// for (prevents a malicious node from PUNCHINTRO-ing us into dialing an
+	// arbitrary address / DDoS victim).
+	pm.mu.Lock()
+	_, wanted := pm.punchWants[intro.PeerNodeID]
+	if !wanted {
+		pm.mu.Unlock()
+		pm.logger.Printf("[PUNCH] unsolicited intro from %s — ignored (anti-spoof)", shortID(intro.PeerNodeID))
+		pm.punchAudit("intro_unsolicited", intro.PeerNodeID, intro.PeerAddr, intro.SessionID, "not registered")
+		return
+	}
+	delete(pm.punchWants, intro.PeerNodeID) // one intro per intent
+	pm.mu.Unlock()
+	pm.punchAudit("intro_recv", intro.PeerNodeID, intro.PeerAddr, intro.SessionID, "")
 	plan := PlanDial(intro)
 	go ExecuteDial(plan, func(conn net.Conn, o PunchOutcome) {
 		if !o.Success {
 			pm.logger.Printf("[PUNCH] session %d to %s failed: %s", o.SessionID, o.Addr, o.Err)
+			pm.punchAudit("dial_fail", intro.PeerNodeID, o.Addr, o.SessionID, o.Err)
 			return
 		}
 		pm.logger.Printf("[PUNCH] session %d punched through to %s (%s) — handshaking", o.SessionID, o.Addr, o.Elapsed.Round(time.Millisecond))
+		pm.punchAudit("dial_ok", intro.PeerNodeID, o.Addr, o.SessionID, "")
 		pm.wg.Add(1)
-		if err := pm.connectToPeer(o.Addr); err != nil {
+		if err := pm.handshakeExistingConn(conn, o.Addr); err != nil {
 			pm.logger.Printf("[PUNCH] handshake after punch failed: %v", err)
+			pm.punchAudit("handshake_fail", intro.PeerNodeID, o.Addr, o.SessionID, err.Error())
+			return
 		}
-		conn.Close() // connectToPeer dials its own conn; this punched one is redundant on success path
+		pm.punchAudit("linked", intro.PeerNodeID, o.Addr, o.SessionID, "")
 	})
+}
+
+// requestPunchVia asks a connected peer (any rendezvous) to introduce us to
+// targetNodeID. Rate-limited per target (once per minute).
+func (pm *ChainPeerManager) requestPunchVia(via *ChainPeer, targetNodeID string) {
+	if via == nil || via.nodeID == targetNodeID {
+		return
+	}
+	pm.mu.Lock()
+	if t, ok := pm.punchWants[targetNodeID]; ok && time.Since(t) < time.Minute {
+		pm.mu.Unlock()
+		return // already asked recently
+	}
+	pm.punchWants[targetNodeID] = time.Now()
+	pm.mu.Unlock()
+	reg := PunchRegisterMsg{TargetNodeID: targetNodeID}
+	data, err := MarshalMsg(MsgPunchRegister, &reg)
+	if err != nil {
+		return
+	}
+	via.mu.Lock()
+	via.conn.SetWriteDeadline(time.Now().Add(10 * time.Second))
+	_, err = via.conn.Write(data)
+	via.conn.SetWriteDeadline(time.Time{})
+	via.mu.Unlock()
+	if err == nil {
+		pm.punchAudit("register_sent", targetNodeID, via.address, 0, "")
+	}
+}
+
+// punchAudit logs every hole-punch lifecycle event to a dedicated audit
+// file (~/.aib/punch-audit.log via the node's log dir when wired in cmd/,
+// stdout otherwise). One line per event, grep-friendly:
+//   [PUNCH-AUDIT] <event> peer=<id> addr=<ip:port> session=<n> err=<...>
+func (pm *ChainPeerManager) punchAudit(event, peerID, addr string, session uint64, errMsg string) {
+	pm.logger.Printf("[PUNCH-AUDIT] %s peer=%s addr=%s session=%d err=%s", event, peerID, addr, session, errMsg)
 }
 
 // ObserveEndpoint feeds the local PunchManager (rendezvous role) with a
@@ -1621,6 +1688,34 @@ func (pm *ChainPeerManager) handlePeersList(peers []ChainPeerInfo) {
 				_ = err
 			}
 		}(info.Address)
+	}
+}
+
+// handlePeersListFrom is handlePeersList plus the SOURCE peer: after the
+// normal direct-dial attempts, we ask the source (a working rendezvous
+// candidate) to introduce us to any still-unconnected node — hole punching
+// for peers behind NAT (their advertised Address is unreachable directly).
+func (pm *ChainPeerManager) handlePeersListFrom(src *ChainPeer, peers []ChainPeerInfo) {
+	pm.handlePeersList(peers)
+	if src == nil {
+		return
+	}
+	pm.mu.RLock()
+	count := len(pm.peers)
+	pm.mu.RUnlock()
+	if count >= pm.maxPeers {
+		return
+	}
+	for _, info := range peers {
+		if info.NodeID == pm.nodeID || info.NodeID == src.nodeID {
+			continue
+		}
+		pm.mu.RLock()
+		_, exists := pm.peers[info.NodeID]
+		pm.mu.RUnlock()
+		if !exists {
+			pm.requestPunchVia(src, info.NodeID)
+		}
 	}
 }
 

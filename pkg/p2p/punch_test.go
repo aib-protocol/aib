@@ -1,6 +1,7 @@
 package p2p
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"net"
@@ -219,4 +220,69 @@ func TestExecuteDialFailurePath(t *testing.T) {
 	}
 }
 
+// ---------- hardening: rate limit / TTL / pending cap ----------
 
+func TestRendezvousRateLimit(t *testing.T) {
+	send := func(string, *PunchIntroMsg) bool { return true }
+	pm := NewPunchManager(tl, send)
+	pm.Observe("a", "1.1.1.1:1")
+	pm.Observe("b", "2.2.2.2:2")
+	base := time.Now()
+	pm.now = func() time.Time { return base }
+	if pm.HandleRegister("a", "1.1.1.1:1", PunchRegisterMsg{TargetNodeID: "b"}) == nil {
+		t.Fatal("first register must succeed")
+	}
+	// immediate second register from same node = rate limited
+	if pm.HandleRegister("a", "1.1.1.1:1", PunchRegisterMsg{TargetNodeID: "b"}) != nil {
+		t.Fatal("second register within interval must be dropped")
+	}
+	// after interval passes it works again
+	pm.now = func() time.Time { return base.Add(11 * time.Second) }
+	if pm.HandleRegister("a", "1.1.1.1:1", PunchRegisterMsg{TargetNodeID: "b"}) == nil {
+		t.Fatal("register after interval must succeed")
+	}
+}
+
+func TestRendezvousPendingTTL(t *testing.T) {
+	send := func(string, *PunchIntroMsg) bool { return true }
+	pm := NewPunchManager(tl, send)
+	base := time.Now()
+	pm.now = func() time.Time { return base }
+	pm.Observe("target", "9.9.9.9:9")
+	pm.pending["target"] = map[string]PunchRegisterMsg{"x": {}}
+	pm.pendingSince["target"] = base.Add(-punchPendingTTL - time.Second)
+	// next register triggers cleanupLocked which drops the stale entry
+	pm.Observe("fresh", "8.8.8.8:8")
+	pm.Observe("other", "7.7.7.7:7")
+	// register targeting a DIFFERENT node triggers cleanupLocked without
+	// recreating target's pending list
+	pm.HandleRegister("fresh", "8.8.8.8:8", PunchRegisterMsg{TargetNodeID: "other"})
+	pm.mu.Lock()
+	_, stale := pm.pendingSince["target"]
+	pm.mu.Unlock()
+	if stale {
+		t.Fatal("stale pending list not cleaned")
+	}
+}
+
+func TestRendezvousPendingCap(t *testing.T) {
+	send := func(string, *PunchIntroMsg) bool { return true }
+	pm := NewPunchManager(tl, send)
+	pm.Observe("target", "9.9.9.9:9")
+	base := time.Now()
+	pm.now = func() time.Time { return base }
+	accepted := 0
+	for i := 0; i < punchMaxPendingPerTarget+3; i++ {
+		reg := fmt.Sprintf("node%032d", i) // unique registrant: no rate limit
+		pm.Observe(reg, fmt.Sprintf("10.0.0.%d:1", i))
+		if pm.HandleRegister(reg, fmt.Sprintf("10.0.0.%d:1", i), PunchRegisterMsg{TargetNodeID: "target"}) != nil {
+			accepted++
+		}
+	}
+	if accepted > punchMaxPendingPerTarget {
+		t.Fatalf("pending cap violated: %d accepted", accepted)
+	}
+	if len(pm.pending["target"]) > punchMaxPendingPerTarget {
+		t.Fatalf("pending list over cap: %d", len(pm.pending["target"]))
+	}
+}
