@@ -1,103 +1,47 @@
 # AIB Protocol Specification
 
-> 在线版: https://aib.one/spec.html (与 aib-node v0.11.40 源码对齐)
+> 在线版: https://aib.one/spec.html (与 aib-node v0.11.42 源码对齐)
 
 SPECIFICATION v1
 AIB Protocol 技术规范
 一份文档讲透 AIB Protocol —— 代币经济、共识机制、质押规则、API、节点运维与第三方集成。所有项目(MM 做市、网关、钱包、浏览器)以本文档为唯一权威参照。
 
-当前版本: aib-node v0.11.40创世算法: ed25519当前测试网 tip: …状态: Testnet-3 活跃
+当前版本: aib-node v0.11.42创世算法: ed25519当前测试网 tip: …状态: Testnet-3 活跃
 
 1. 代币经济学
 2. 共识机制 (PoW→PoS)
 3. 质押 Staking
 4. 地址与签名
-5. HTTP API 全集
-6. 节点与网络
-7. 第三方集成指南
-8. 错误码参考
 
-1. 代币经济学
+签名体系: ed25519(确定性签名,无随机数陷阱,验签快 ~50µs)。AIB 是 PoS 链,每个区块的提议与投票都在签名/验签。
 
-参数值说明
+4.1 地址命名方案(权威定义)
+- AIB 地址 = ed25519 公钥原样 32 字节(同 Solana/Cardano/Stellar 学派,链上/API canonical = 64 位 hex)
+- 显示格式: AIB1… bech32m 大写(BIP-350,6 位校验和防手滑,不可与 EVM 0x 混淆);aib1… 全小写合法;混合大小写非法
+- v0.11.42 起转账 API 双格式兼容(AIB1/aib1/64hex 全部接受);EVM 0x 地址直接拒绝,返回明确错误,资金零损失
+- 换算: AIB1 ↔ 64hex = 同一 32 字节的两种拼写
 
-代币符号 | AIB | 8 位小数,最小单位 sat(1 AIB = 10⁸ sats)
+| 用途 | AIB1 显示格式 | 64位hex |
+|---|---|---|
+| faucet | AIB1W4GT7S3DGVJZSDWE4UPGE8WMXWUHHSAYP88VUS9DMM379SW4RGMSZR6VZT | 7550bf42…1d51a37 |
+| validator示例 | AIB16F6D7QZJPQYCP46MMV9TWQWGJZ6GU9UNN99LGN94JD0PXWS4RZWSHER5JY | d274df00…a15189d |
 
-总量上限 | 3,141,592,653 AIB (π×10⁹) | 绝对上限,链上强制,永不再增发
+4.2 三大地址体系对比
+| 维度 | AIB(ed25519 32B) | ETH(0x+20B哈希) | Bitcoin(base58check) |
+|---|---|---|---|
+| 签名算法 | ed25519 确定性 | ECDSA secp256k1 | ECDSA secp256k1 |
+| 随机数坏→私钥泄露 | 数学上不可能 | 历史真实盗币 | 同左 |
+| 验签速度 | ~50µs 最快档 | ~200-400µs | ~200-400µs |
+| 地址=身份 | 公钥就是地址 | 公钥哈希后20B | 公钥双重哈希 |
+| 校验和 | AIB1 6位bech32m | EIP-55半个 | 完整 |
+| 前缀辨识 | AIB1 | 0x | 1/3/bc1 |
+| PoS高频签名 | 最优 | 可用 | 可用 |
 
-PoW 初始补贴 | 747 AIB/块 | h1–h10,000 引导窗口
+结论: PoS 链签名密度百倍于 PoW → 确定性+吞吐是刚需 → ed25519 裸公钥 + bech32m 显示层兼得安全与可用性。显示层 v0.11.42 上线,链上零改动零分叉。
 
-减半周期 | 2,102,400 块 (≈4年) | Bitcoin 式减半
+4.3 bech32m 技术细节
+BIP-350: 校验常数 0x2bc830a3,编码时 6 零填充,HRP=aib,5bit 分组,6 字符校验和。早期实现校验和计算有误(缺零填充+用错常数),v0.11.42 修复为标准 BIP-350 并经独立参考实现逐字节交叉验证。
 
-出块间隔 | 60 秒 | 难度调整窗口 64 块,幅度钳制 [1/4, 4x]
-
-PoS 时代增发 | 0 | h10,001 起无 coinbase,验证者只收手续费(fee-to-validator)
-
-手续费销毁 | 部分销毁(fee-burn) | 详见 RFC-002
-
-当前流通量 ≈ PoW 窗口铸造量(h1–10,000 × 747 ≈ 747 万 AIB)+ PoS 时代零增发。任何"转 1000 万 AIB"的请求需先核对流通量。
-
-2. 共识机制:PoW 引导 → 纯 PoS
-
-2.1 两阶段设计(RFC-003 Bootstrap Window)
-
-阶段一 PoW 引导(h1 – h10,000):无预挖、无 ICO。任何人 CPU 挖矿,按 PoW 出块,coinbase 747 AIB 自动质押(无锁定期)。
-
-阶段二 纯 PoS(h10,001+):PoW 永久关闭。VRF 按质押权重抽签出块,coinbase=0,验证者收取块内全部手续费。消除了 PoS 冷启动死锁(无币→无块→无币)。
-
-2.2 VRF 出块抽签
-
-// 出块者选择 (每高度每 attempt)
-msg     = "AIB-VRF-v1" || seed || height
-output  = SHA512(pubkey || msg || ed25519.Sign(msg))
-ticket  = SHA256("AIB-VRF-v1" || seed || height || output)
-命中条件: ticket < stake × 2²⁵⁶ / totalStake   // 质押占比 = 中签概率
-// slot 空转时按 attempt 轮转重抽 (v0.11.32+,防卡死)
-验证者被抽中后签名出块(ed25519)。多 attempt 轮转解决离线验证者导致的链停滞(P27)。
-
-2.3 终局性 Finality(v0.11.33+)
-
-gossip 投票机制:验证者对近期块投票,2/3 质押权重确认后块标记 finalized,finalized 块禁止回滚。非侵入式设计(不改块头格式)。
-
-2.4 同步协议
-
-Headers-first 同步(v0.11.33+):先拉块头链验证连续性,再批量拉块体(每批 500 块)
-
-活性判定(v0.11.36+):任何收到消息(block/inv/headers/tx)都算对端活着,批量传输期间不误杀
-
-版本强制(v0.11.34+):低于 v0.11.32 的节点 GETBLOCKS 被拒 + 10 分钟断连,拒绝消息附带升级指引
-
-3. 质押 Staking(灵活流动质押,v0.11.38+)
-
-参数值说明
-
-最低质押 | 1,000 AIB | MinStakeAmount
-
-生效 | 下一块 | validator 集每个区块重建,质押即挖
-
-UnstakeCooldown | 3 块 (~1.5-3 分钟) | 解除质押冷却
-
-UnstakeUnlock | 2 块 (~1-2 分钟) | 币回到流动余额
-
-StakeLockPeriod | 3 块 | 最小防重组深度
-
-奖励 | 块内全部手续费 | fee-to-validator,PoS 无 coinbase
-
-一句话:质押进去 ~1-2 分钟开挖,拿出来 ~2 分钟到账,无锁定期。权重 = 你的质押 / 全网总质押,当前全网总质押见 GET /v1/stake/validators。
-
-4. 地址与签名
-
-项规范
-
-密码学 | ed25519(密钥 64 字节 = seed‖pub,地址 = 公钥)
-
-地址格式 | 64 位 hex,无 0x 前缀(32 字节公钥的 hex)。⚠️ 不是 EVM 0x…40位 格式!
-
-nodeID | hex(publicKey[:16]) = 32 位,peer 表按 nodeID 记账,同 IP 多节点天然隔离
-
-钱包体系 | 节点钱包(node_key.pem)= 出块+质押+签名身份;主钱包独立密钥。挖矿奖励进节点钱包,不自动转账
-
-交易模型 | UTXO(Bitcoin 式),非 Account/EVM 模型
 
 5. HTTP API 全集(节点 :8080)
 
