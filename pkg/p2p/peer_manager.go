@@ -592,15 +592,21 @@ func (pm *ChainPeerManager) bootstrapConnect() {
 		default:
 		}
 		if pm.GetPeerCount() > 0 {
-			// We have peers; still refresh every 5 min in case we drop to zero.
+			// Bitcoin-style: we are content with live peers, but re-probe every
+			// 45s. If ALL peers are zombie (present in the table yet failing
+			// writes — half-dead TCP behind aggressive NAT), the count says >0
+			// while nothing flows. countHealthyPeers() counts only peers whose
+			// last successful read is fresh; zombie-only states fall through
+			// to a bootstrap redial below.
 			select {
 			case <-pm.ctx.Done():
 				return
-			case <-time.After(5 * time.Minute):
+			case <-time.After(45 * time.Second):
 			}
-			if pm.GetPeerCount() > 0 {
+			if pm.countHealthyPeers() > 0 {
 				continue
 			}
+			pm.logger.Printf("[P2P] All %d peers zombie (no fresh reads) — redialing bootstrap", pm.GetPeerCount())
 		}
 		for _, addr := range pm.bootstrap {
 			select {
@@ -1368,6 +1374,25 @@ func (pm *ChainPeerManager) heartbeatLoop() {
 	}
 }
 
+// countHealthyPeers counts peers with a fresh successful read (last 2 min).
+// A peer stuck in the table with zero recent reads is a zombie: TCP may still
+// be "established" but nothing flows (aggressive NAT / half-dead link).
+func (pm *ChainPeerManager) countHealthyPeers() int {
+	pm.mu.RLock()
+	defer pm.mu.RUnlock()
+	fresh := time.Now().Add(-2 * time.Minute)
+	n := 0
+	for _, p := range pm.peers {
+		p.mu.Lock()
+		t := p.lastPong
+		p.mu.Unlock()
+		if !t.Before(fresh) {
+			n++
+		}
+	}
+	return n
+}
+
 func (pm *ChainPeerManager) sendPings() {
 	pm.mu.RLock()
 	peers := make([]*ChainPeer, 0, len(pm.peers))
@@ -1382,10 +1407,16 @@ func (pm *ChainPeerManager) sendPings() {
 	for _, p := range peers {
 		p.mu.Lock()
 		p.lastPing = time.Now()
+		p.conn.SetWriteDeadline(time.Now().Add(10 * time.Second))
 		_, err := p.conn.Write(data)
+		p.conn.SetWriteDeadline(time.Time{})
 		p.mu.Unlock()
 		if err != nil {
-			pm.logger.Printf("[P2P] Ping to %s failed: %v", p.nodeID[:8], err)
+			// Write failed = half-dead TCP (NAT dropped the mapping, zero-window
+			// peer, etc). Kicking immediately lets bootstrapConnect redial a
+			// FRESH connection instead of idling on a dead one for minutes.
+			pm.logger.Printf("[P2P] Ping to %s failed (%v) — kicking for immediate redial", p.nodeID[:8], err)
+			pm.removePeer(p)
 		}
 	}
 }
