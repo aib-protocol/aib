@@ -3,12 +3,12 @@
 # Usage: curl -sSfL https://aib.one/install.sh | bash
 set -euo pipefail
 
-VERSION=v0.11.42
+VERSION=v0.11.45
 REPO="aib-protocol/aib"
 # Pinned artifact hashes (multi-source integrity anchor).
 # Every source must match the pinned hash or the installer refuses to run.
-PINNED_SHA256_AMD64="c15e72a34b77df61ba64911b68dd5d78d10f6a2adbcd3ddc89498f1f9af5b67a"
-PINNED_SHA256_ARM64="1a61a53ba08b1a26b4522b31c9b4db4a40dcf959bdb7dd15b095c0b05e533cb7"
+PINNED_SHA256_AMD64="36f9756dc492dfd924414cc8fb5d3cbf81a470a488f3dd0b183b4957bf598952"
+PINNED_SHA256_ARM64="93d2a7ec277607fcb7396657e47d36561033d8e8ca1325c0bbd50e97e12b18cd"
 INSTALL_DIR="${AIB_HOME:-$HOME/.aib}"
 BIN_DIR="$INSTALL_DIR/bin"
 BIN="$BIN_DIR/aib-node"
@@ -358,7 +358,7 @@ UNIT
   }
   # Without linger, the user manager (and the node with it) dies when the
   # user logs out and never starts at boot. Linger keeps it alive forever.
-  if loginctl enable-linger "$USER" 2>/dev/null; then
+  if loginctl enable-linger "${USER:-$(id -un)}" 2>/dev/null; then
     ok "Linger enabled — service survives logout and starts at boot"
   elif [ "$(id -u)" = "0" ] && loginctl enable-linger root 2>/dev/null; then
     ok "Linger enabled for root"
