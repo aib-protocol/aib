@@ -47,6 +47,16 @@ const (
 	// Finality votes (v0.11.33): validators gossip attestations for tip
 	// heights; 2/3 stake majority marks a height finalized (no rollback).
 	MsgFinalityVote uint8 = 18
+
+	// NAT hole punching (v0.11.44, Bitcoin-style rendezvous): a public-IP
+	// node acts as rendezvous. A NATed node registers its observed endpoint
+	// and asks to be introduced to another NATed node; the rendezvous tells
+	// both sides each other's public endpoint; both dial SIMULTANEOUSLY so
+	// the two outbound SYNs open each other's NAT mapping (TCP simultaneous
+	// open). Established streams run the normal VERSION/VERACK handshake.
+	MsgPunchRegister uint8 = 19 // NATed -> rendezvous: my punch intent + target
+	MsgPunchIntro    uint8 = 20 // rendezvous -> both: each other's endpoints
+	MsgPunchDial     uint8 = 21 // after simultaneous open succeeds: marker
 )
 
 // MsgTypeName returns human-readable name for message type
@@ -88,6 +98,12 @@ func MsgTypeName(t uint8) string {
 		return "BLOCKBYHASHRESP"
 	case MsgFinalityVote:
 		return "FINALITYVOTE"
+	case MsgPunchRegister:
+		return "PUNCHREGISTER"
+	case MsgPunchIntro:
+		return "PUNCHINTRO"
+	case MsgPunchDial:
+		return "PUNCHDIAL"
 	default:
 		return fmt.Sprintf("UNKNOWN(%d)", t)
 	}
@@ -194,6 +210,26 @@ type PongMsg struct {
 	Nonce      uint64 `json:"nonce"`
 	Height     uint64 `json:"height,omitempty"`
 	UserAgent  string `json:"user_agent,omitempty"` // version advisory: longest-chain versioning
+}
+
+// PunchRegisterMsg: a NATed node tells the rendezvous (any connected public
+// peer) which node it wants a direct link to. The rendezvous learns the
+// registrant's observed endpoint from the live TCP connection itself.
+type PunchRegisterMsg struct {
+	TargetNodeID string `json:"target_node_id"` // who we want to reach
+	WantHeight   uint64 `json:"want_height"`    // advisory: requester's height
+}
+
+// PunchIntroMsg: rendezvous -> BOTH parties. Each receives the other side's
+// public endpoint (ip:port as observed by the rendezvous) and a nonce pair;
+// both sides then dial the other endpoint at the SAME moment (the rendezvous
+// relays a synchronized start time).
+type PunchIntroMsg struct {
+	PeerNodeID  string `json:"peer_node_id"`  // who you should dial
+	PeerAddr    string `json:"peer_addr"`     // ip:port of that peer (as seen by rendezvous)
+	MyAddr      string `json:"my_addr"`       // your own endpoint (echoed for info)
+	SessionID   uint64 `json:"session_id"`    // correlation id
+	StartAtUnix int64  `json:"start_at_unix"` // both sides dial at this unix time
 }
 
 // GetBlocksMsg requests blocks from a peer.

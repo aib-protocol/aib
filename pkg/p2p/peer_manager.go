@@ -60,6 +60,9 @@ type ChainPeerManager struct {
 	// Block verification
 	blockVerifier BlockVerifier
 
+	// NAT hole punching (rendezvous + puncher)
+	puncher *PunchManager
+
 	// Control
 	logger *log.Logger
 	ctx    context.Context
@@ -137,7 +140,7 @@ func NewChainPeerManager(cfg ChainPeerConfig) *ChainPeerManager {
 
 	ctx, cancel := context.WithCancel(context.Background())
 
-	return &ChainPeerManager{
+	pm := &ChainPeerManager{
 		nodeID:        cfg.NodeID,
 		nickname:      cfg.Nickname,
 		selfValidator: cfg.Validator,
@@ -156,6 +159,23 @@ func NewChainPeerManager(cfg ChainPeerConfig) *ChainPeerManager {
 		ctx:           ctx,
 		cancel:        cancel,
 	}
+	pm.puncher = NewPunchManager(cfg.Logger, func(nodeID string, m *PunchIntroMsg) bool {
+		p := pm.findByNodeID(nodeID)
+		if p == nil {
+			return false
+		}
+		data, err := MarshalMsg(MsgPunchIntro, m)
+		if err != nil {
+			return false
+		}
+		p.mu.Lock()
+		p.conn.SetWriteDeadline(time.Now().Add(10 * time.Second))
+		_, err = p.conn.Write(data)
+		p.conn.SetWriteDeadline(time.Time{})
+		p.mu.Unlock()
+		return err == nil
+	})
+	return pm
 }
 
 // SetHandlers sets callback handlers for block events.
@@ -1371,6 +1391,43 @@ func (pm *ChainPeerManager) heartbeatLoop() {
 			pm.sendPings()
 			pm.checkTimeouts()
 		}
+	}
+}
+
+// findByNodeID locates a connected peer by node id.
+func (pm *ChainPeerManager) findByNodeID(nodeID string) *ChainPeer {
+	pm.mu.RLock()
+	defer pm.mu.RUnlock()
+	return pm.peers[nodeID]
+}
+
+// executePunch dials the introduced endpoint at the scheduled time; on
+// success the stream runs the standard outbound VERSION handshake and joins
+// the peer table exactly like a bootstrap dial would.
+func (pm *ChainPeerManager) executePunch(intro *PunchIntroMsg) {
+	if pm.findByNodeID(intro.PeerNodeID) != nil {
+		return // already linked
+	}
+	plan := PlanDial(intro)
+	go ExecuteDial(plan, func(conn net.Conn, o PunchOutcome) {
+		if !o.Success {
+			pm.logger.Printf("[PUNCH] session %d to %s failed: %s", o.SessionID, o.Addr, o.Err)
+			return
+		}
+		pm.logger.Printf("[PUNCH] session %d punched through to %s (%s) — handshaking", o.SessionID, o.Addr, o.Elapsed.Round(time.Millisecond))
+		pm.wg.Add(1)
+		if err := pm.connectToPeer(o.Addr); err != nil {
+			pm.logger.Printf("[PUNCH] handshake after punch failed: %v", err)
+		}
+		conn.Close() // connectToPeer dials its own conn; this punched one is redundant on success path
+	})
+}
+
+// ObserveEndpoint feeds the local PunchManager (rendezvous role) with a
+// peer's observed endpoint — called on every completed handshake.
+func (pm *ChainPeerManager) ObserveEndpoint(nodeID, addr string) {
+	if pm.puncher != nil {
+		pm.puncher.Observe(nodeID, addr)
 	}
 }
 
