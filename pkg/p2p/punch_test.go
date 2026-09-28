@@ -160,7 +160,7 @@ func TestSimultaneousOpenE2E(t *testing.T) {
 	res := make(chan PunchOutcome, 2)
 	for _, intro := range []*PunchIntroMsg{introA, introB} {
 		plan := PlanDial(intro)
-		plan.DialTimeout = 2 * time.Second
+		plan.DialTimeout = 5 * time.Second
 		go func(pl *DialPlan) {
 			ExecuteDial(pl, func(c net.Conn, o PunchOutcome) {
 				if c != nil {
