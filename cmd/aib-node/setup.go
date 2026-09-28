@@ -8,6 +8,7 @@ package main
 // All logic in Go: cross-platform, testable, no shell quirks.
 
 import (
+	"github.com/aib-protocol/aib/pkg/utxo"
 	"bufio"
 	"encoding/hex"
 	"encoding/json"
@@ -82,6 +83,19 @@ func trimF(f float64) string {
 	return strconv.FormatFloat(f, 'f', -1, 64)
 }
 
+// setupDisplayAddress renders the raw hex wallet address in the AIB1...
+// bech32m display format (checksummed, uppercase, cannot be confused with
+// EVM 0x addresses). Pure display — the raw hex stays canonical.
+func setupDisplayAddress(hexAddr string) (string, error) {
+	var a [32]byte
+	b, err := hex.DecodeString(strings.TrimSpace(hexAddr))
+	if err != nil || len(b) != 32 {
+		return "", fmt.Errorf("bad address")
+	}
+	copy(a[:], b)
+	return utxo.EncodeDisplayAddress(a)
+}
+
 // setupGuideStaking: PoS-era staking guide (user directive 2026-09-22).
 // Flexible-staking UX: stake is liquid, no lockup. If the node wallet has a
 // spendable balance, offer to stake it right now (one question); otherwise
@@ -129,6 +143,9 @@ func setupGuideStaking(r *bufio.Reader, dataDir string) {
 		return
 	}
 	fmt.Printf("  Validator wallet: %s\n", w.Data.Address)
+	if disp, err := setupDisplayAddress(w.Data.Address); err == nil {
+		fmt.Printf("  Display format : %s\n", disp)
+	}
 	if staked > 0 {
 		fmt.Printf("  ✓ ALREADY STAKED: %.4f AIB — you are PoS mining right now.\n", staked)
 		fmt.Printf("    Liquid (unstaked): %.4f AIB\n", liquid)
@@ -217,6 +234,9 @@ func runSetup(dataDir string, apiPort, p2pPort int, nodeArgs []string) error {
 			}
 			if json.Unmarshal(body, &w) == nil && w.Data.Address != "" {
 				fmt.Printf("    Address: %s\n", w.Data.Address)
+				if disp, err := setupDisplayAddress(w.Data.Address); err == nil {
+					fmt.Printf("    Display  : %s\n", disp)
+				}
 			}
 		}
 	} else if askYesNo(r, "Create a new wallet now?", true) {

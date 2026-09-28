@@ -5,6 +5,7 @@ package utxo
 import (
 	"bytes"
 	"crypto/sha256"
+	"strings"
 	"fmt"
 )
 
@@ -59,6 +60,11 @@ func DecodeBech32m(encoded string) (string, []byte, error) {
 	if len(encoded) < 14 {
 		return "", nil, fmt.Errorf("encoded string too short")
 	}
+	// BIP-350: accept all-lowercase or all-uppercase; reject mixed case.
+	if encoded != strings.ToLower(encoded) && encoded != strings.ToUpper(encoded) {
+		return "", nil, fmt.Errorf("mixed-case bech32 address")
+	}
+	encoded = strings.ToLower(encoded)
 
 	// Find the separator
 	sepIndex := -1
@@ -134,13 +140,20 @@ func convertBits(data []byte, fromBits, toBits int, pad bool) []byte {
 	return result
 }
 
-// bech32mChecksum generates a 6-byte checksum for bech32m encoding.
-// Based on BIP 350.
+// bech32mConst is the BIP-350 validity constant for bech32m.
+// (Plain bech32 uses 1; bech32m uses 0x2bc830a3.)
+const bech32mConst = 0x2bc830a3
+
+// bech32mChecksum generates a 6-byte checksum for bech32m encoding per BIP-350:
+// polymod over hrp+data PLUS SIX ZERO PAD VALUES, XOR the bech32m constant.
+// (The original implementation XORed ^1 with no padding — bech32, not bech32m —
+// producing addresses its own decoder rejected. Fixed to spec.)
 func bech32mChecksum(hrp string, data []byte) []byte {
 	// Compute bech32m polymod
 	values := expandHrp(hrp)
 	values = append(values, data...)
-	polymod := bech32mPolymod(values) ^ 1
+	values = append(values, 0, 0, 0, 0, 0, 0) // REQUIRED zero padding (BIP-350)
+	polymod := bech32mPolymod(values) ^ bech32mConst
 
 	result := make([]byte, 6)
 	for i := 0; i < 6; i++ {
@@ -186,7 +199,7 @@ func verifyBech32mChecksum(hrp string, values []byte) bool {
 	copy(combined, expanded)
 	copy(combined[len(expanded):], values)
 
-	return bech32mPolymod(combined)^1 == 0
+	return bech32mPolymod(combined) == bech32mConst
 }
 
 // AddressFromPublicKey creates an address from a public key.

@@ -575,15 +575,14 @@ func (s *Server) handleSendTransaction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// decode the recipient address
-	toAddrBytes, err := hex.DecodeString(req.ToAddress)
-	if err != nil || len(toAddrBytes) != 32 {
-		writeError(w, http.StatusBadRequest, ErrCodeInvalidRequest, "Invalid to address format", "")
+	// decode the recipient address (accepts AIB1... bech32m display format,
+	// lowercase aib1..., and legacy 64-char hex; rejects EVM 0x strings with a
+	// pointed error)
+	toAddr, err := utxo.ParseAddressAny(req.ToAddress)
+	if err != nil {
+		writeError(w, http.StatusBadRequest, ErrCodeInvalidRequest, err.Error(), "")
 		return
 	}
-
-	var toAddr [32]byte
-	copy(toAddr[:], toAddrBytes)
 
 	// get the UTXO store and mempool
 	if s.utxoStore == nil {
