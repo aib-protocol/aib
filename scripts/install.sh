@@ -3,12 +3,12 @@
 # Usage: curl -sSfL https://aib.one/install.sh | bash
 set -euo pipefail
 
-VERSION=v0.11.40
+VERSION=v0.11.42
 REPO="aib-protocol/aib"
 # Pinned artifact hashes (multi-source integrity anchor).
 # Every source must match the pinned hash or the installer refuses to run.
-PINNED_SHA256_AMD64=a74d2c3d066de83b41638d5272c7dd56323d77c034c6df54da947d920461e14a
-PINNED_SHA256_ARM64=0c7c269ee893d5aee694e18f6994fbeeaf068a74aaa5b1fb9cdd78f821c8b503
+PINNED_SHA256_AMD64="c15e72a34b77df61ba64911b68dd5d78d10f6a2adbcd3ddc89498f1f9af5b67a"
+PINNED_SHA256_ARM64="1a61a53ba08b1a26b4522b31c9b4db4a40dcf959bdb7dd15b095c0b05e533cb7"
 INSTALL_DIR="${AIB_HOME:-$HOME/.aib}"
 BIN_DIR="$INSTALL_DIR/bin"
 BIN="$BIN_DIR/aib-node"
@@ -18,6 +18,7 @@ SERVICE_NAME="aib-node"
 info()  { printf '\033[1;34m[AIB]\033[0m %s\n' "$*"; }
 ok()    { printf '\033[1;32m  ✓\033[0m %s\n' "$*"; }
 warn()  { printf '\033[1;33m  !\033[0m %s\n' "$*"; }
+note()  { printf '\033[1;36m  •\033[0m %s\n' "$*"; }
 die()   { printf '\033[1;31m[AIB] ERROR:\033[0m %s\n' "$*" >&2; exit 1; }
 
 # ---------- verify mode: cross-check hashes against on-chain anchors ----------
@@ -301,6 +302,36 @@ if pgrep -f aib-node >/dev/null 2>&1; then
 
   systemctl --user reset-failed aib-node >/dev/null 2>&1 || true
   ok "Old node stopped"
+fi
+
+# ---------- forked/stale chain auto-heal ----------
+# A chain frozen at a PRE-FORK height that never advances across reinstall
+# cycles (classic symptom: same height for days, always OUTDATED) means the
+# local chain data is on a dead fork with finality marks — the node is
+# cryptographically forbidden from switching to the canonical chain. The ONLY
+# cure is archiving chain DBs (wallet keys are KEPT) and resyncing fresh.
+if [ -n "$DATA_DIR" ] && [ -d "$DATA_DIR" ] && command -v curl >/dev/null 2>&1; then
+  LOCAL_H=$(curl -s -m3 http://127.0.0.1:8080/v1/block/latest 2>/dev/null | grep -oE '"height":[0-9]+' | head -1 | grep -oE '[0-9]+' || echo 0)
+  if [ "${LOCAL_H:-0}" -gt 0 ] && [ "${LOCAL_H:-0}" -lt 13000 ]; then
+    warn "Local chain frozen at h$LOCAL_H — this is a DEAD FORK (pre-VRF-fix era, h~13274)"
+    if [ -t 0 ]; then
+      printf "  Archive chain data + resync fresh (wallet keys kept)? [Y/n] "
+      read -r heal_ans || heal_ans=y
+    else
+      heal_ans=y   # non-interactive: auto-heal, keys kept, old chain archived not deleted
+    fi
+    case "$heal_ans" in
+      n|N*) warn "Keeping forked chain — node will stay OUTDATED forever until healed" ;;
+      *)
+        TS=$(date +%Y%m%d-%H%M%S); BAK="$HOME/.aib-oldfork-$TS"; mkdir -p "$BAK"
+        for f in chain.db utxo.db block_index.db blocks node.log; do
+          [ -e "$DATA_DIR/$f" ] && mv "$DATA_DIR/$f" "$BAK/" 2>/dev/null || true
+        done
+        ok "Dead-fork chain archived to $BAK (node_key/wallet untouched)"
+        note "Node will resync the canonical chain from genesis"
+        ;;
+    esac
+  fi
 fi
 
 # ---------- systemd --user (Linux only) ----------
