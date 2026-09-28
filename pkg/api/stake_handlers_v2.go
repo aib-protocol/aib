@@ -169,7 +169,11 @@ func (s *Server) handleStakeRelease(w http.ResponseWriter, r *http.Request) {
 	for _, u := range stakeUTXOs {
 		created, err := store.GetTransactionIndex(u.TxHash)
 		if err != nil {
-			continue
+			// Missing from the tx index (e.g. PoW-era coinbase stakes indexed
+			// by an older sync): treat as long-past cooldown instead of
+			// skipping — otherwise a wallet with thousands of unindexed
+			// PoW stakes can NEVER unstake anything ("No stake past cooldown").
+			created = 0
 		}
 		if best < created+utxo.UnstakeCooldownBlocks {
 			continue // still cooling down
