@@ -162,12 +162,9 @@ case ":$PATH:" in
   *) warn "Add to PATH:  export PATH=\"\$PATH:$BIN_DIR\"" ;;
 esac
 
-# ---------- pick a free P2P port (51413 default; bump if taken) ----------
-P2P_PORT=51413
-while ss -tlnH "( sport = :$P2P_PORT )" 2>/dev/null | grep -q .; do
-  P2P_PORT=$((P2P_PORT+1))
-done
-[ "$P2P_PORT" != "51413" ] && info "Port 51413 busy — using P2P port $P2P_PORT"
+# P2P port picked AFTER stale-process kill below (see pick_p2p_port) —
+# checking before the kill would see the zombie's port and hide the node
+# on 51414 forever (Explorer OUTDATED root cause on TK5-138).
 # ---------- storage selection (protect the system disk) ----------
 # Blockchain + logs grow unbounded. Enumerate ALL non-root mounts with
 # >=2GB free, show a picker (interactive), auto-pick largest (non-interactive),
@@ -268,21 +265,6 @@ echo "$DATA_DIR" > "$INSTALL_DIR/.data-dir" 2>/dev/null   # remember for future 
 
 [ -n "${AIB_DATA_DIR:-}" ] && DATA_DIR="$AIB_DATA_DIR"   # explicit override wins
 
-NODE_ARGS="-data-dir $DATA_DIR -api-port 8080 -p2p-port $P2P_PORT"
-# AIB_VALIDATOR=1 -> run as PoS validator (mine AIB). Off by default.
-# NOTE the shell pitfall: `AIB_VALIDATOR=1 curl ... | bash` does NOT pass the
-# variable through the pipe (prefix applies to curl only!). Accepted forms:
-#   curl ... | AIB_VALIDATOR=1 bash        <- prefix on bash
-#   curl ... | bash -s -- validator        <- CLI arg (safest, documented)
-#   AIB_VALIDATOR=1 bash <(curl ...)       <- process substitution
-for a in "$@"; do
-  case "$a" in
-    validator|--validator|-v) AIB_VALIDATOR=1 ;;
-  esac
-done
-if [ "${AIB_VALIDATOR:-0}" = "1" ]; then
-  NODE_ARGS="$NODE_ARGS -validator"
-fi
 
 # ---------- kill any stale node from a previous install ----------
 # A stale process may still serve an OLD chain on port 8080 and fool the
@@ -302,7 +284,35 @@ if pgrep -f aib-node >/dev/null 2>&1; then
 
   systemctl --user reset-failed aib-node >/dev/null 2>&1 || true
   ok "Old node stopped"
+
 fi
+
+# ---------- pick a free P2P port AFTER any kill (51413 default) ----------
+pick_p2p_port() {
+  P2P_PORT=51413
+  while ss -tlnH "( sport = :$P2P_PORT )" 2>/dev/null | grep -q .; do
+    P2P_PORT=$((P2P_PORT+1))
+  done
+  [ "$P2P_PORT" != "51413" ] && info "Port 51413 busy — using P2P port $P2P_PORT"
+}
+pick_p2p_port
+
+NODE_ARGS="-data-dir $DATA_DIR -api-port 8080 -p2p-port $P2P_PORT"
+# AIB_VALIDATOR=1 -> run as PoS validator (mine AIB). Off by default.
+# NOTE the shell pitfall: `AIB_VALIDATOR=1 curl ... | bash` does NOT pass the
+# variable through the pipe (prefix applies to curl only!). Accepted forms:
+#   curl ... | AIB_VALIDATOR=1 bash        <- prefix on bash
+#   curl ... | bash -s -- validator        <- CLI arg (safest, documented)
+#   AIB_VALIDATOR=1 bash <(curl ...)       <- process substitution
+for a in "$@"; do
+  case "$a" in
+    validator|--validator|-v) AIB_VALIDATOR=1 ;;
+  esac
+done
+if [ "${AIB_VALIDATOR:-0}" = "1" ]; then
+  NODE_ARGS="$NODE_ARGS -validator"
+fi
+
 
 # ---------- forked/stale chain auto-heal ----------
 # A chain frozen at a PRE-FORK height that never advances across reinstall
